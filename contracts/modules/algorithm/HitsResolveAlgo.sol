@@ -19,37 +19,8 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-pragma solidity >=0.5.0 <0.6.0;
-
-import "./interfaces/INTAllContracts.sol";
-import "./interfaces/INTContractManager.sol";
-
-contract HitsResolveAlgo is INTAllContracts {
+pragma solidity ^0.5.5;
 
 
-INTContractManager contractManager;
-DSAuthINT dsAuth;
-DSNoteINT dsnote;
-GamesManagerINT xxx;
-
-
-  constructor(address _contractManager, address _dsAuth, address _dsNote) public {
-    contractManager = INTContractManager(_contractManager);
-
-    dsAuth = DSAuthINT(contractManager.getContract("DSAuth"));
-    dsnote = DSNoteINT(contractManager.getContract("DSNote"));
-
-  }
-
-  //set up all other initial contracts
-  function initContracts() public auth returns(bool){
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-
-  }
-
-
+contract HitsResolve {
 }

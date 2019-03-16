@@ -1,15 +1,15 @@
-pragma solidity 0.4.21;
+pragma solidity ^0.5.5;
 
 contract Owned {
-    address public owner;
-    function Owned() public {
+    address payable public owner;
+    constructor() public {
         owner = msg.sender;
     }
     modifier onlyOwner() {
         assert(msg.sender == owner);
         _;
     }
-    function transferOwnership(address newOwner) external onlyOwner {
+    function transferOwnership(address payable newOwner) external onlyOwner {
         if (newOwner != address(0)) {
             owner = newOwner;
         }

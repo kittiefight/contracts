@@ -20,19 +20,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pragma solidity 0.4.21;
+pragma solidity ^0.5.5;
 
-import "./interfaces/INTAllContracts.sol";
-import "./interfaces/INTContractManager.sol";
+import "./interfaces/IContractManager.sol";
 
-
-contract GameVarAndFee is INTAllContracts {
-
-  constructor(address _contractManager, address _dsAuth, address _dsNote) public {
-    contractManager = INTContractManager(_contractManager);
-    dsAuth = DSAuthINT(contractManager.getContract("DSAuth"));
-    dsnote = DSNoteINT(contractManager.getContract("DSNote"));
-
-  }
-
+contract GameVarAndFee {
 }

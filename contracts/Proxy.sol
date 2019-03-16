@@ -17,8 +17,8 @@
 
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./authority/auth.sol";
-import "./authority/guard.sol";
+import "./authority/DSGuard.sol";
+import "./DSNote.sol";
 
 
 // DSProxy
@@ -26,7 +26,7 @@ import "./authority/guard.sol";
 // useful to execute a sequence of atomic actions. Since the owner of
 // the proxy can be changed, this allows for dynamic ownership models
 // i.e. a multisig
-contract DSProxy is DSAuth, DSNote {
+contract DSProxy is DSGuard, DSNote {
     DSProxyCache public cache;  // global cache for contracts
 
     constructor(address _cacheAddr) public {
