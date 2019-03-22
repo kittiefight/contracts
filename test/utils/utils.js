@@ -4,25 +4,6 @@ const chaiAsPromised = require('chai-as-promised');
 const assert = chai.assert;
 chai.use(chaiAsPromised);
 
-const mineBlock = (web3, reject, resolve) => {
-    web3.currentProvider.sendAsync({
-      method: "evm_mine",
-      jsonrpc: "2.0",
-      id: new Date().getTime()
-    }, (e) => (e ? reject(e) : resolve()));
-};
-
-const increaseTimestamp = (web3, increase) => {
-  return new Promise((resolve, reject) => {
-    web3.currentProvider.sendAsync({
-      method: "evm_increaseTime",
-      params: [increase],
-      jsonrpc: "2.0",
-      id: new Date().getTime()
-    }, (e) => (e ? reject(e) : mineBlock(web3, reject, resolve)))
-  });
-};
-
 const balanceOf = (web3, account) => {
   return new Promise((resolve, reject) => web3.eth.getBalance(account,
       (e, balance) => (e ? reject(e) : resolve(balance))))
@@ -48,7 +29,6 @@ const isUnableToAccEther = async (contract, account, amount) => {
 };
 
 Object.assign(exports, {
-  increaseTimestamp,
   balanceOf,
   promFuncCall,
   isUnableToAccEther
