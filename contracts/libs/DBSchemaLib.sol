@@ -29,8 +29,7 @@ library DBSchemaLib {
     uint256 id;
     address owner;
     KittyStatus kittyStatus;
-    bytes32 cryptokittiesHomeLink;
-    bytes32 cryptokittiesImageUrl;
+    uint256 cryptokittyId;
     bytes32[4] torMagnetsImagelinks;
     uint256 losses;
     uint256 totalFights;
@@ -39,5 +38,18 @@ library DBSchemaLib {
     uint256 listingEndAt;
     uint256 genes;
     bytes32 description;
+  }
+
+  struct FeeLimits {
+    uint256 fightFeeLimit;
+    uint256 resurrectionFeeLimit;
+  }
+
+  struct Fees {
+    uint256 paidDate;
+    uint256 feeType;
+    uint256 expirationDate;
+    bool paid;
+    FeeLimits feelimits;
   }
 }
