@@ -12,14 +12,14 @@ contract ProxyBase is ContractManager, ContractNames {
     /**
      * Getters for KittyFight system contracts
      */
-     function addressOfRegister() public view returns(address)          {return getContract(CONTRACT_NAME_REGISTER);}
-     function addressOfProfileDB() public view returns(address)         {return getContract(CONTRACT_NAME_PROFILE_DB);}
-     function addressOfKittieHell() public view returns(address)        {return getContract(CONTRACT_NAME_KITTIEHELL);}
-     function addressOfKittieHellDB() public view returns(address)      {return getContract(CONTRACT_NAME_KITTIEHELL_DB);}
-     function addressOfGameManager() public view returns(address)       {return getContract(CONTRACT_NAME_GAMEMANAGER);}
-     function addressOfGameManagerDB() public view returns(address)     {return getContract(CONTRACT_NAME_GAMEMANAGER_DB);}
-     function addressOfTimeContract() public view returns(address)      {return getContract(CONTRACT_NAME_TIMECONTRACT);}
-     function addressOfCronJob() public view returns(address)           {return getContract(CONTRACT_NAME_CRONJOB);}
+     function addressOfRegister() public view returns(address)          {return getContract(CONTRACT_REGISTER);}
+     function addressOfProfileDB() public view returns(address)         {return getContract(CONTRACT_PROFILE_DB);}
+     function addressOfKittieHell() public view returns(address)        {return getContract(CONTRACT_KITTIEHELL);}
+     function addressOfKittieHellDB() public view returns(address)      {return getContract(CONTRACT_KITTIEHELL_DB);}
+     function addressOfGameManager() public view returns(address)       {return getContract(CONTRACT_GAMEMANAGER);}
+     function addressOfGameManagerDB() public view returns(address)     {return getContract(CONTRACT_GAMEMANAGER_DB);}
+     function addressOfTimeContract() public view returns(address)      {return getContract(CONTRACT_TIMECONTRACT);}
+     function addressOfCronJob() public view returns(address)           {return getContract(CONTRACT_CRONJOB);}
 
 
 }
