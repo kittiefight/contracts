@@ -28,7 +28,7 @@ contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
 
 
-  function _setProxy(address _proxy) external {
+  function _setProxy(address _proxy) external onlyOwner {
     setProxy(Proxy(_proxy));
   }
 
@@ -141,7 +141,7 @@ contract GenericDB is EternalStorage, Proxied {
     string memory contractName,
     bytes32 key
   )
-    public view onlyContract(contractName) returns (bool)
+    public view returns (bool)
   {
     return boolStorage[keccak256(abi.encodePacked(contractName, key))];
   }
@@ -202,6 +202,17 @@ contract GenericDB is EternalStorage, Proxied {
     
     linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].remove(nodeId);
     return true;
+  }
+
+  function getAdjacent(
+    string memory contractName,
+    string memory linkedListName,
+    uint256 nodeId,
+    bool dir
+  )
+    public view returns (bool, uint256)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].getAdjacent(nodeId, dir);
   }
 
   function doesNodeExist(

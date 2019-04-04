@@ -15,6 +15,7 @@ pragma solidity ^0.5.5;
 import "../../Proxy.sol";
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
+import "../../libs/SafeMath.sol";
 
 
 /**
@@ -22,12 +23,13 @@ import "./GenericDB.sol";
  * @author @psychoplasma
  */
 contract ProfileDB is Proxied {
+  using SafeMath for uint256;
 
-  GenericDB genericDB;
+  GenericDB public genericDB;
 
-  string constant TABLE_NAME = "ProfileTable";
-  string constant ERROR_ALREADY_EXIST = "Profile with the given id already exists in ProfileDB";
-  string constant ERROR_DOES_EXIST = "Profile with the given id does not exists in ProfileDB";
+  string internal constant TABLE_NAME = "ProfileTable";
+  string internal constant ERROR_ALREADY_EXIST = "Profile already exists";
+  string internal constant ERROR_DOES_NOT_EXIST = "Profile not exists";
 
 
   function _setProxy(address _proxy) public onlyOwner {
@@ -39,103 +41,119 @@ contract ProfileDB is Proxied {
   }
 
   function create(uint256 _id)
-    external returns (bool)
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
     // Creates a linked list with the given keys, if it does not exist
     // otherwise just returs.
     genericDB.createLinkedList(CONTRACT_NAME_PROFILE_DB, TABLE_NAME);
     // Push the new profile pointer to the list
     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_ALREADY_EXIST);
-    return true;
   }
 
-  function setUintAttribute(uint256 _id, string calldata attrName, uint256 value)
-    external onlyContract(CONTRACT_NAME_REGISTER) returns (bool)
+  function setAccountAttributes(
+    uint256 _id,
+    address owner,
+    bytes calldata genes,
+    bytes calldata description
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)), value);
-    return true;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "ownerAddress")), owner);
+    genericDB.setBytesStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "description")), description);
+    genericDB.setBytesStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "genes")), genes);
   }
 
-  function getUintAttribute(uint256 _id, string memory attrName)
-    public view returns (uint256)
+  function setLoginStatus(uint256 _id, bool isLoggedIn)
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    return genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)));
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isLoggedIn")), isLoggedIn);
   }
 
-  function setIntAttribute(uint256 _id, string calldata attrName, int256 value)
-    external onlyContract(CONTRACT_NAME_REGISTER) returns (bool)
+  function setKittieAttributes(
+    uint256 _id,
+    uint256 kittieId,
+    uint256 kittieHash,
+    uint256 deadAt,
+    string calldata kittieReferalHash,
+    string calldata kittieStatus
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    genericDB.setIntStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)), value);
-    return true;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    uint256 numberOfKitties = genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieLength")));
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieLength")), numberOfKitties.add(1));
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieId")), kittieId);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieHash")), kittieHash);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "deadAt")), deadAt);
+    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieReferalHash")), kittieReferalHash);
+    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieStatus")), kittieStatus);
   }
 
-  function getIntAttribute(uint256 _id, string memory attrName)
-    public view returns (int256)
+  function setGamingAttributes(
+    uint256 _id,
+    uint256 totalWins,
+    uint256 totalLosses,
+    uint256 tokensWon,
+    uint256 lastFeeDate,
+    uint256 feeHistory,
+    bool isFreeToPlay
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    return genericDB.getIntStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)));
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "totalWins")), totalWins);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "totalLosses")), totalLosses);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "tokensWon")), tokensWon);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "lastFeeDate")), lastFeeDate);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "feeHistory")), feeHistory);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isFreeToPlay")), isFreeToPlay);
   }
 
-  function setAddressAttribute(uint256 _id, string calldata attrName, address value)
-    external onlyContract(CONTRACT_NAME_REGISTER) returns (bool)
+  function setFightingAttributes(
+    uint256 _id,
+    uint256 totalFights,
+    uint256 nextFight,
+    uint256 listingStart,
+    uint256 listingEnd
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    genericDB.setAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)), value);
-    return true;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "totalFights")), totalFights);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "nextFight")), nextFight);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "listingStart")), listingStart);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "listingEnd")), listingEnd);
   }
 
-  function getAddressAttribute(uint256 _id, string memory attrName)
-    public view returns (address)
+  function setFeeAttributes(
+    uint256 _id,
+    uint256 feeType,
+    uint256 paidDate,
+    uint256 expirationDate,
+    bool isPaid
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    return genericDB.getAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)));
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "feeType")), feeType);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "paidDate")), paidDate);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "expirationDate")), expirationDate);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isPaid")), isPaid);
   }
 
-  function setBoolAttribute(uint256 _id, string calldata attrName, bool value)
-    external onlyContract(CONTRACT_NAME_REGISTER) returns (bool)
+  function setTokenEconomyAttributes(
+    uint256 _id,
+    uint256 kittieFightTokens,
+    uint256 superDAOTokens,
+    bool isStakingSuperDAO
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)), value);
-    return true;
-  }
-
-  function getBoolAttribute(uint256 _id, string memory attrName)
-    public view returns (bool)
-  {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    return genericDB.getBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)));
-  }
-
-  function setStringAttribute(uint256 _id, string calldata attrName, string calldata value)
-    external onlyContract(CONTRACT_NAME_REGISTER) returns (bool)
-  {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)), value);
-    return true;
-  }
-
-  function getStringAttribute(uint256 _id, string memory attrName)
-    public view returns (string memory)
-  {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    return genericDB.getStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)));
-  }
-
-  function setBytesAttribute(uint256 _id, string calldata attrName, bytes calldata value)
-    external onlyContract(CONTRACT_NAME_REGISTER) returns (bool)
-  {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    genericDB.setBytesStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)), value);
-    return true;
-  }
-
-  function getBytesAttribute(uint256 _id, string memory attrName)
-    public view returns (bytes memory)
-  {
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_EXIST);
-    return genericDB.getBytesStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, attrName)));
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieFightTokens")), kittieFightTokens);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "superDAOTokens")), superDAOTokens);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isStakingSuperDAO")), isStakingSuperDAO);
   }
 }

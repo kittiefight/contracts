@@ -2,15 +2,19 @@
 module.exports = {
   compilers: {
     solc: {
-      version: '^0.5.5'
+      version: '^0.5.5',
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   },
   networks: {
     development: {
-      host: "127.0.0.1",
-      port: 8544,
-      network_id: 999,
-      gas: 2000000
+      host: "localhost",
+      port: 8545,
+      network_id: "*",
+      gas: 8000000
     },
     live: {
       host: "127.0.0.1",
