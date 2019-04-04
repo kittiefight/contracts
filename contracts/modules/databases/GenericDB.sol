@@ -146,34 +146,6 @@ contract GenericDB is EternalStorage, Proxied {
     return boolStorage[keccak256(abi.encodePacked(contractName, key))];
   }
 
-  function createLinkedList(
-    string calldata contractName,
-    string calldata linkedListName
-  )
-    external onlyContract(contractName) returns (bool)
-  {
-    if (linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists()) {
-      return false;
-    }
-    
-    linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))] = LinkedListLib.LinkedList();
-    return true;
-  }
-
-  function deleteLinkedList(
-    string calldata contractName,
-    string calldata linkedListName
-  )
-    external onlyContract(contractName) returns (bool)
-  {
-    if (!linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists()) {
-      return false;
-    }
-
-    delete linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))];
-    return true;
-  }
-
   function pushNodeToLinkedList(
     string calldata contractName,
     string calldata linkedListName,
@@ -213,6 +185,15 @@ contract GenericDB is EternalStorage, Proxied {
     public view returns (bool, uint256)
   {
     return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].getAdjacent(nodeId, dir);
+  }
+
+  function doesListExist(
+    string memory contractName,
+    string memory linkedListName
+  )
+    public view returns (bool)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists();
   }
 
   function doesNodeExist(
