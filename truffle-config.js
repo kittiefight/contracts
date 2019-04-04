@@ -10,7 +10,11 @@ const providerFactory = network => new HDWalletProvider(
 module.exports = {
   compilers: {
     solc: {
-      version: '^0.5.5'
+      version: '^0.5.5',
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   },
   networks: {

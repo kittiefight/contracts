@@ -19,6 +19,213 @@ import "./EternalStorage.sol";
  * @title EternalStorage
  * @dev This contract holds all the necessary state variables to carry out the storage of any contract.
  */
-contract GenericDB is EternalStorage {
-  
+contract GenericDB is EternalStorage, Proxied {
+  using LinkedListLib for LinkedListLib.LinkedList;
+
+
+  function _setProxy(address _proxy) external onlyOwner {
+    setProxy(Proxy(_proxy));
+  }
+
+  function setIntStorage(
+    string calldata contractName,
+    bytes32 key,
+    int256 value
+  )
+    external onlyContract(contractName) 
+  {
+    intStorage[keccak256(abi.encodePacked(contractName, key))] = value;
+  }
+
+  function getIntStorage(
+    string memory contractName,
+    bytes32 key
+  )
+    public view returns (int256)
+  {
+    return intStorage[keccak256(abi.encodePacked(contractName, key))];
+  }
+
+  function setUintStorage(
+    string calldata contractName,
+    bytes32 key,
+    uint256 value
+  )
+    external onlyContract(contractName) 
+  {
+    uintStorage[keccak256(abi.encodePacked(contractName, key))] = value;
+  }
+
+  function getUintStorage(
+    string memory contractName,
+    bytes32 key
+  )
+    public view returns (uint256)
+  {
+    return uintStorage[keccak256(abi.encodePacked(contractName, key))];
+  }
+
+  function setStringStorage(
+    string calldata contractName,
+    bytes32 key,
+    string calldata value
+  )
+    external onlyContract(contractName) 
+  {
+    stringStorage[keccak256(abi.encodePacked(contractName, key))] = value;
+  }
+
+  function getStringStorage(
+    string memory contractName,
+    bytes32 key
+  )
+    public view returns (string memory)
+  {
+    return stringStorage[keccak256(abi.encodePacked(contractName, key))];
+  }
+
+  function setAddressStorage(
+    string calldata contractName,
+    bytes32 key,
+    address value
+  )
+    external onlyContract(contractName) 
+  {
+    addressStorage[keccak256(abi.encodePacked(contractName, key))] = value;
+  }
+
+  function getAddressStorage(
+    string memory contractName,
+    bytes32 key
+  )
+    public view returns (address)
+  {
+    return addressStorage[keccak256(abi.encodePacked(contractName, key))];
+  }
+
+  function setBytesStorage(
+    string calldata contractName,
+    bytes32 key,
+    bytes calldata value
+  )
+    external onlyContract(contractName) 
+  {
+    bytesStorage[keccak256(abi.encodePacked(contractName, key))] = value;
+  }
+
+  function getBytesStorage(
+    string memory contractName,
+    bytes32 key
+  )
+    public view returns (bytes memory)
+  {
+    return bytesStorage[keccak256(abi.encodePacked(contractName, key))];
+  }
+
+  function setBoolStorage(
+    string calldata contractName,
+    bytes32 key,
+    bool value
+  )
+    external onlyContract(contractName) 
+  {
+    boolStorage[keccak256(abi.encodePacked(contractName, key))] = value;
+  }
+
+  function getBoolStorage(
+    string memory contractName,
+    bytes32 key
+  )
+    public view returns (bool)
+  {
+    return boolStorage[keccak256(abi.encodePacked(contractName, key))];
+  }
+
+  function createLinkedList(
+    string calldata contractName,
+    string calldata linkedListName
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists()) {
+      return false;
+    }
+    
+    linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))] = LinkedListLib.LinkedList();
+    return true;
+  }
+
+  function deleteLinkedList(
+    string calldata contractName,
+    string calldata linkedListName
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (!linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists()) {
+      return false;
+    }
+
+    delete linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))];
+    return true;
+  }
+
+  function pushNodeToLinkedList(
+    string calldata contractName,
+    string calldata linkedListName,
+    uint256 nodeId
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId)) {
+      return false;
+    }
+
+    linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].push(nodeId, true);
+    return true;
+  }
+
+  function removeNodeFromLinkedList(
+    string calldata contractName,
+    string calldata linkedListName,
+    uint256 nodeId
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (!linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId)) {
+      return false;
+    }
+    
+    linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].remove(nodeId);
+    return true;
+  }
+
+  function getAdjacent(
+    string memory contractName,
+    string memory linkedListName,
+    uint256 nodeId,
+    bool dir
+  )
+    public view returns (bool, uint256)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].getAdjacent(nodeId, dir);
+  }
+
+  function doesNodeExist(
+    string memory contractName,
+    string memory linkedListName,
+    uint256 nodeId
+  )
+    public view returns (bool)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId);
+  }
+
+  function getLinkedListSize(
+    string memory contractName,
+    string memory linkedListName
+  )
+    public view returns (uint256)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].sizeOf();
+  }
 }

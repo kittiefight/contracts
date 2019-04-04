@@ -1,176 +1,289 @@
+const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB');
+const Proxy = artifacts.require('Proxy');
 const BigNumber = require('bignumber.js');
+const CONTRACT_NAME = 'ProfileDB';
+const DB_TABLE_NAME = 'ProfileTable';
+
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
   .should();
 
-
-contract('ProfileDB', ([creator, user1, user2, unauthorizedUser]) => {
-  const user1Profile = {
-    id: 12345,
-    owner: user1,
-    losses: 23,
-    totalFights: 50,
-    kittyStatus: {
-      dead: false,
-      playing: true,
-      deadAt: 500
-    },
-    nextFight: 0,
-    listingStartAt: 12345,
-    listingEndAt: 12315456,
-    genes: BigNumber(5678342),
-    cryptokittyId: 98765,
-    torMagnetsImagelinks: [
-      'torImageLink1',
-      'torImageLink2',
-      'torImageLink3'
-    ],
-    description: [
-      'kittie description - 1',
-      'kittie description - 2',
-      'kittie description - 3',
-      'kittie description - 4',
-      'kittie description - 5'
-    ],
-    fees: {
-      paidDate: 12313,
-      feeType: 1,
-      expirationDate: 45672,
-      isPaid: false,
-      feelimits: {
-        fightFeeLimit: 100,
-        resurrectionFeeLimit: 50
-      }
-    },
-    fighterList: [
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-      '0x0000000000000000000000000000000000000000000000000000000000000002'
-    ],
-    kittieHashList: [
-      '0x000000000000000000000000000000000000000000000000000000000000000f',
-      '0x000000000000000000000000000000000000000000000000000000000000000e'
-    ],
-    referalHash: '0x00000000000000000000000000000000000000000000000000000000000000ff',
-    totalWins: 11,
-    totalLosses: 14,
-    tokensWon: 200,
-    lastDateListing: 12314,
-    superDAOTokens: 100,
-    kittieFightTokens: 50,
-    lastFeeDate: 10000,
-    feeHistory: 0,
-    isStakingSuperDAO: false,
-    isFreeToPlay: true,
-  };
+  
+contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress]) => {
+  let userId = 12324353;
 
   beforeEach(async () => {
+    this.genericDB = await GenericDB.new();
     this.profileDB = await ProfileDB.new();
+    this.proxy = await Proxy.new();
+
+    await this.proxy.addContract('ProfileDB', this.profileDB.address);
+    // Set the primary address as if it is Register Contract to call ProfileDB for testing purpose
+    await this.proxy.addContract('Register', creator);
+    await this.genericDB._setProxy(this.proxy.address);
+    await this.profileDB._setProxy(this.proxy.address);
+    await this.profileDB.setGenericDB(this.genericDB.address);
   });
 
-  describe('ProfileDB', () => {
-    it('creates a profile item', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
+  describe('ProfileDB::Authority', () => {
+    it('sets proxy and db', async () => {
+      await this.profileDB._setProxy(randomAddress).should.be.fulfilled;
+      await this.profileDB.setGenericDB(randomAddress).should.be.fulfilled;
+
+      let proxy = await this.profileDB.proxy();
+      let genericDB = await this.profileDB.genericDB();
+
+      proxy.should.be.equal(randomAddress);
+      genericDB.should.be.equal(randomAddress);
     });
 
-    it('deletes a profile item', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.remove(user1Profile.id).should.be.fulfilled;
-      // For double check, after deletion any attribute getter should be reverted
-      await this.profileDB.setOwnerAddress(user1Profile.id).should.be.rejected;
+    it('does not allow unauthorized address to access proxy/db setter functions', async () => {
+      await this.profileDB._setProxy(this.proxy.address, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setGenericDB(this.genericDB.address, {from: unauthorizedUser}).should.be.rejected;
     });
 
-    it('gets table size', async () => {
-      await this.profileDB.create(123).should.be.fulfilled;
-      await this.profileDB.create(425).should.be.fulfilled;
-      await this.profileDB.create(123413).should.be.fulfilled;
-      let size = await this.profileDB.getTableSize().should.be.fulfilled;
-      BigNumber(size).should.be.bignumber.equal(3);
+    it('does not allow unauthorized address to access attribute setter functions', async () => {
+      await this.profileDB.create(userId, {from: unauthorizedUser}).should.be.rejected;
+
+      // Create a user with authorized address to test authorization for setter functions
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Check whether the node with the given user id is added to profile linked list
+      (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+
+      await this.profileDB.setLoginStatus(userId, true, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setAccountAttributes(userId, user1, web3.utils.utf8ToHex('asadad'), web3.utils.utf8ToHex('asdad'), {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setFeeAttributes(userId, 1, 2, 3, false, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setTokenEconomyAttributes(userId, 1, 2, true, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setKittieAttributes(userId, 1, 2, 3, 'test', 'dead', {from: unauthorizedUser}).should.be.rejected;
     });
-  
-    it('sets & gets attribute::Owner', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setOwnerAddress(user1Profile.id, user1Profile.owner).should.be.fulfilled;
-      let _owner = await this.profileDB.getOwnerAddress(user1Profile.id).should.be.fulfilled;
-      _owner.should.be.equal(user1Profile.owner);
+  });
+
+  describe('ProfileDB::Attributes', () => {
+    it('creates a profile', async () => {
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Check whether the node with the given user id is added to profile linked list
+      (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
     });
-  
-    it('sets & gets attribute::KittieStatus', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setKittieStatus(
-        user1Profile.id,
-        user1Profile.kittyStatus.dead,
-        user1Profile.kittyStatus.playing,
-        user1Profile.kittyStatus.deadAt
+
+    it('sets/gets account attributes', async () => {
+      let genes = web3.utils.utf8ToHex('0x0101110110100101101011010');
+      let description = web3.utils.utf8ToHex('%$*_&random description which does not make sense at all...');
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set account attributes
+      await this.profileDB.setAccountAttributes(
+        userId,
+        user1,
+        genes,
+        description
       ).should.be.fulfilled;
-      let status = await this.profileDB.getKittieStatus(user1Profile.id).should.be.fulfilled;
-      status[0].should.be.equal(user1Profile.kittyStatus.dead);
-      status[1].should.be.equal(user1Profile.kittyStatus.playing);
-      BigNumber(status[2]).should.be.bignumber.equal(user1Profile.kittyStatus.deadAt);
+      // Get attributes back for the given user and compare them with the actual values
+      let attrOwner = await this.genericDB.getAddressStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'ownerAddress'));
+      let attrGenes = await this.genericDB.getBytesStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'genes'));
+      let attrDescription = await this.genericDB.getBytesStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'description'));
+      attrOwner.should.be.equal(user1);
+      attrGenes.should.be.equal(genes);
+      attrDescription.should.be.equal(description);
     });
 
-    it('sets & gets attribute::Genes', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setKittieGenes(user1Profile.id, user1Profile.genes).should.be.fulfilled;
-      let _genes = await this.profileDB.getKittieGenes(user1Profile.id).should.be.fulfilled;
-      BigNumber(_genes).should.be.bignumber.equal(user1Profile.genes);
-    });
-
-    it('sets & gets attribute::CryptokittyId', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setCryptokittyId(
-        user1Profile.id,
-        user1Profile.cryptokittyId
+    it('sets/gets gaming attributes', async () => {
+      let totalWins = 20;
+      let totalLosses = 34;
+      let tokensWon = 12000;
+      let lastFeeDate = 1233242;
+      let feeHistory = 1236742;
+      let isFreeToPlay = true;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set gaming attributes
+      await this.profileDB.setGamingAttributes(
+        userId,
+        totalWins,
+        totalLosses,
+        tokensWon,
+        lastFeeDate,
+        feeHistory,
+        isFreeToPlay
       ).should.be.fulfilled;
-      let _cryptokittyId = await this.profileDB.getCryptokittyId(user1Profile.id).should.be.fulfilled;
-      BigNumber(_cryptokittyId).should.be.bignumber.equal(user1Profile.cryptokittyId);
+      
+      let attrWin = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'totalWins'));
+      let attrLoss = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'totalLosses'));
+      let attrTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'tokensWon'));
+      let attrFeeDate = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'lastFeeDate'));
+      let attrFeeHistory = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'feeHistory'));
+      let attrIsFree = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isFreeToPlay'));
+
+      attrWin.toNumber().should.be.equal(totalWins);
+      attrLoss.toNumber().should.be.equal(totalLosses);
+      attrTokens.toNumber().should.be.equal(tokensWon);
+      attrFeeDate.toNumber().should.be.equal(lastFeeDate);
+      attrFeeHistory.toNumber().should.be.equal(feeHistory);
+      attrIsFree.should.be.equal(isFreeToPlay);
     });
 
-    it('sets & gets attribute::torMagnetsImagelinks', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      // TODO: Implement this
-    });
-
-    it('sets & gets attribute::ListingDates', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setListingDate(
-        user1Profile.id,
-        user1Profile.listingStartAt,
-        user1Profile.listingEndAt
+    it('sets/gets fighting attributes', async () => {
+      let totalFights = 101;
+      let nextFight = 12348678;
+      let listingStart = 675413;
+      let listingEnd = 7562424;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set fighting attributes
+      await this.profileDB.setFightingAttributes(
+        userId,
+        totalFights,
+        nextFight,
+        listingStart,
+        listingEnd
       ).should.be.fulfilled;
-      let listingDates = await this.profileDB.getListingDate(user1Profile.id).should.be.fulfilled;
-      BigNumber(listingDates[0]).should.be.bignumber.equal(user1Profile.listingStartAt);
-      BigNumber(listingDates[1]).should.be.bignumber.equal(user1Profile.listingEndAt);
+      
+      let attrTotalFights = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'totalFights'));
+      let attrNextFight = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'nextFight'));
+      let attrListingStart = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'listingStart'));
+      let attrListingEnd = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'listingEnd'));
+
+      attrTotalFights.toNumber().should.be.equal(totalFights);
+      attrNextFight.toNumber().should.be.equal(nextFight);
+      attrListingStart.toNumber().should.be.equal(listingStart);
+      attrListingEnd.toNumber().should.be.equal(listingEnd);
     });
 
-    it('sets & gets attribute::NextFight', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setNextFight(user1Profile.id, user1Profile.nextFight).should.be.fulfilled;
-      let _nextFight = await this.profileDB.getNextFight(user1Profile.id).should.be.fulfilled;
-      BigNumber(_nextFight).should.be.bignumber.equal(user1Profile.nextFight);
+    it('sets/gets fee attributes', async () => {
+      let feeType = 1;
+      let paidDate = 12348678;
+      let expirationDate = 11236777;
+      let isPaid = false;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set fee attributes
+      await this.profileDB.setFeeAttributes(
+        userId,
+        feeType,
+        paidDate,
+        expirationDate,
+        isPaid
+      ).should.be.fulfilled;
+      
+      let attrFeeType = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'feeType'));
+      let attrPaidDate = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'paidDate'));
+      let attrExpirationDate = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'expirationDate'));
+      let attrIsPaid = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isPaid'));
+
+      attrFeeType.toNumber().should.be.equal(feeType);
+      attrPaidDate.toNumber().should.be.equal(paidDate);
+      attrExpirationDate.toNumber().should.be.equal(expirationDate);
+      attrIsPaid.should.be.equal(isPaid);
     });
 
-    it('sets & gets attribute::Losses', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setLosses(user1Profile.id, user1Profile.losses).should.be.fulfilled;
-      let _losses = await this.profileDB.getLosses(user1Profile.id).should.be.fulfilled;
-      BigNumber(_losses).should.be.bignumber.equal(user1Profile.losses);
+    it('sets/gets token economy attributes', async () => {
+      let kittieFightTokens = 1000;
+      let superDAOTokens = 5000;
+      let isStakingSuperDAO = true;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set token economy attributes
+      await this.profileDB.setTokenEconomyAttributes(
+        userId,
+        kittieFightTokens,
+        superDAOTokens,
+        isStakingSuperDAO
+      ).should.be.fulfilled;
+      
+      let attrKittieFightTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieFightTokens'));
+      let attrSuperDAOTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'superDAOTokens'));
+      let attrIsStakingSuperDAO = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isStakingSuperDAO'));
+
+      attrKittieFightTokens.toNumber().should.be.equal(kittieFightTokens);
+      attrSuperDAOTokens.toNumber().should.be.equal(superDAOTokens);
+      attrIsStakingSuperDAO.should.be.equal(isStakingSuperDAO);
     });
 
-    it('sets & gets attribute::TotalFights', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setTotalFights(user1Profile.id, user1Profile.totalFights).should.be.fulfilled;
-      let _totalFights = await this.profileDB.getTotalFights(user1Profile.id).should.be.fulfilled;
-      BigNumber(_totalFights).should.be.bignumber.equal(user1Profile.totalFights);
+    it('sets/gets kittie attributes', async () => {
+      let kittieId = 1000;
+      let kittieHash = 5000;
+      let deadAt = 1134567945;
+      let kittieReferalHash = 'asdasdkjifhfamdbv';
+      let kittieStatus = 'dead';
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set kittie attributes
+      await this.profileDB.setKittieAttributes(
+        userId,
+        kittieId,
+        kittieHash,
+        deadAt,
+        kittieReferalHash,
+        kittieStatus
+      ).should.be.fulfilled;
+      
+      let attrKittieId = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieId'));
+      let attrKittieHash = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieHash'));
+      let attrDeadAt = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'deadAt'));
+      let attrKittieReferalHash = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieReferalHash'));
+      let attrKittieStatus = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieStatus'));
+
+      attrKittieId.toNumber().should.be.equal(kittieId);
+      attrKittieHash.toNumber().should.be.equal(kittieHash);
+      attrDeadAt.toNumber().should.be.equal(deadAt);
+      attrKittieReferalHash.should.be.equal(kittieReferalHash);
+      attrKittieStatus.should.be.equal(kittieStatus);
     });
 
-    it('sets & gets attribute::Description', async () => {
-      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setDescription(user1Profile.id, user1Profile.description).should.be.fulfilled;
-      let _description = await this.profileDB.getDescription(user1Profile.id).should.be.fulfilled;
-      _description.should.shallowDeepEqual(user1Profile.description);
+    it('sets/gets login status', async () => {
+      let isLoggedIn = true;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set kittie attributes
+      await this.profileDB.setLoginStatus(userId, isLoggedIn).should.be.fulfilled;
+      // Get login status back
+      let attrIsLoggedIn = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isLoggedIn'));
+
+      attrIsLoggedIn.should.be.equal(isLoggedIn);
+    });
+
+    it('can iterate all profiles', async () => {
+      let userIds = [1234, 45667, 34456, 342452, 123178];
+
+      // First create some profiles in DB
+      for (let i = 0; i < userIds.length; i++) {
+        await this.profileDB.create(userIds[i]).should.be.fulfilled;
+      }
+
+      let totalUsers = (await this.genericDB.getLinkedListSize(CONTRACT_NAME, DB_TABLE_NAME)).toNumber();
+      totalUsers.should.be.equal(userIds.length);
+
+      let profile = 0; // Start from the HEAD. HEAD is always 0.
+      let index = totalUsers - 1;
+      do {
+        let ret = await this.genericDB.getAdjacent(CONTRACT_NAME, DB_TABLE_NAME, profile, true);
+        // ret value includes direction and node id. Ex => {'0': true, '1': 1234}
+        profile = ret['1'].toNumber();
+
+        // Means that we reach the end of the list
+        if (!profile) break;
+        // The first item in TRUE direction is the last item pushed => LIFO (stack)
+        profile.should.be.equal(userIds[index]);
+        index--;
+      } while (profile)
+    });
+  });
+
+  describe('ProfileDB::Attributes::Negatives', () => {
+    it('does not allow to create duplicate profiles', async () => {
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Check whether the node with the given user id is added to profile linked list
+      (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+
+      await this.profileDB.create(userId).should.be.rejected;
+    });
+
+    it('does not allow to set an attribute for a non-existent profile', async () => {
+      await this.profileDB.setLoginStatus(userId, true).should.be.rejected;
     });
   });
 });
