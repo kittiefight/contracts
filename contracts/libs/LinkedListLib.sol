@@ -42,7 +42,7 @@ library LinkedListLib {
   bool constant PREV = false;
   bool constant NEXT = true;
   
-  struct LinkedList{
+  struct LinkedList {
     mapping (uint256 => mapping (bool => uint256)) list;
   }
 
@@ -189,7 +189,7 @@ library LinkedListLib {
       bool exists;
       uint256 adj;
 
-      (exists,adj) = getAdjacent(self, HEAD, _direction);
+      (exists, adj) = getAdjacent(self, HEAD, _direction);
 
       return remove(self, adj);
   }

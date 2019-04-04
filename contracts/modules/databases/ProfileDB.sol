@@ -64,9 +64,7 @@ contract ProfileDB is Proxied {
     external onlyContract(CONTRACT_NAME_REGISTER)
   {
     // Creates a linked list with the given keys, if it does not exist
-    // otherwise just returs.
-    genericDB.createLinkedList(CONTRACT_NAME_PROFILE_DB, TABLE_NAME);
-    // Push the new profile pointer to the list
+    // And push the new profile pointer to the list
     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_ALREADY_EXIST);
   }
 
