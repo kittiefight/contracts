@@ -30,20 +30,12 @@ contract ProfileDB is Proxied {
   string internal constant ERROR_ALREADY_EXIST = "Profile already exists";
   string internal constant ERROR_DOES_NOT_EXIST = "Profile not exists";
 
-  /// @dev Creates empty profile item in ProfileDB table with the given id
-  /// @param _id uint256 Unique identifier for the profile to be created
-  function create(uint256 _id)
-    external auth returns (bool)
-  {
-    require(!profileTable.nodeExists(_id), "Item already exists in ProfileDB");
-    require(profileTable.push(_id, true), "Cannot add item to ProfileDB");
-    DBSchemaLib.ProfileSchema memory profile;
-    profileBucket[_id] = profile;
-    return true;
+  constructor(GenericDB _genericDB) public {
+    setGenericDB(_genericDB);
   }
 
-  function setGenericDB(address _genericDB) public onlyOwner {
-    genericDB = GenericDB(_genericDB);
+  function setGenericDB(GenericDB _genericDB) public onlyOwner {
+    genericDB = _genericDB;
   }
 
   function create(uint256 _id)

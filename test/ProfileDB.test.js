@@ -17,7 +17,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
 
   beforeEach(async () => {
     this.genericDB = await GenericDB.new();
-    this.profileDB = await ProfileDB.new();
+    this.profileDB = await ProfileDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
 
     await this.proxy.addContract('ProfileDB', this.profileDB.address);
