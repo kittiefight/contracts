@@ -12,214 +12,145 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-import "../../libs/LinkedListLib.sol";
-import "../../libs/DBSchemaLib.sol";
-import "../../authority/DSGuard.sol";
+import "../../Proxy.sol";
+import "../proxy/Proxied.sol";
+import "./GenericDB.sol";
+import "../../libs/SafeMath.sol";
 
 
 /**
  * @title ProfileDB
- * @author @kittieFIGHT @psychoplasma
+ * @author @psychoplasma
  */
-contract ProfileDB is DSGuard {
-  using LinkedListLib for LinkedListLib.LinkedList;
+contract ProfileDB is Proxied {
+  using SafeMath for uint256;
 
-  /// Data table which keeps items' id in linked list for easy tracking and sorting
-  LinkedListLib.LinkedList private profileTable;
+  GenericDB public genericDB;
 
-  /// Data bucket where profile items are actually stored
-  mapping (uint256 => DBSchemaLib.ProfileSchema) profileBucket;
+  string internal constant TABLE_NAME = "ProfileTable";
+  string internal constant ERROR_ALREADY_EXIST = "Profile already exists";
+  string internal constant ERROR_DOES_NOT_EXIST = "Profile not exists";
 
+  constructor(GenericDB _genericDB) public {
+    setGenericDB(_genericDB);
+  }
 
-  /// @dev Creates empty profile item in ProfileDB table with the given id
-  /// @param _id uint256 Unique identifier for the profile to be created
+  function setGenericDB(GenericDB _genericDB) public onlyOwner {
+    genericDB = _genericDB;
+  }
+
   function create(uint256 _id)
-    external auth returns (bool)
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(!profileTable.nodeExists(_id), "Item already exists in ProfileDB");
-    require(profileTable.push(_id, true), "Cannot add item to ProfileDB");
-    DBSchemaLib.ProfileSchema memory profile;
-    profileBucket[_id] = profile;
-    return true;
+    // Creates a linked list with the given keys, if it does not exist
+    // And push the new profile pointer to the list
+    require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_ALREADY_EXIST);
   }
 
-  /// @dev Deletes the profile item from ProfileDB with the given id
-  /// @param _id uint256 Unique identifier for the profile to be deleted
-  function remove(uint256 _id) 
-    external auth returns (bool) 
+  function setAccountAttributes(
+    uint256 _id,
+    address owner,
+    bytes calldata genes,
+    bytes calldata description
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(profileTable.nodeExists(_id), "Item does not exist in ProfileDB");
-    require(profileTable.remove(_id) != 0, "Cannot remove item from ProfileDB");
-    delete profileBucket[_id];
-    return true;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "ownerAddress")), owner);
+    genericDB.setBytesStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "description")), description);
+    genericDB.setBytesStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "genes")), genes);
   }
 
-  /// @dev Returns the size of the DB table
-  function getTableSize()
-    external auth view returns (uint256) 
+  function setLoginStatus(uint256 _id, bool isLoggedIn)
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    return profileTable.sizeOf();
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isLoggedIn")), isLoggedIn);
   }
 
-  function setOwnerAddress(uint256 _id, address _owner)
-    external auth returns (bool)
+  function setKittieAttributes(
+    uint256 _id,
+    uint256 kittieId,
+    uint256 kittieHash,
+    uint256 deadAt,
+    string calldata kittieReferalHash,
+    string calldata kittieStatus
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].owner = _owner;
-    return true;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    uint256 numberOfKitties = genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieLength")));
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieLength")), numberOfKitties.add(1));
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieId")), kittieId);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieHash")), kittieHash);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "deadAt")), deadAt);
+    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieReferalHash")), kittieReferalHash);
+    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieStatus")), kittieStatus);
   }
 
-  function getOwnerAddress(uint256 _id)
-    external auth view returns (address)
+  function setGamingAttributes(
+    uint256 _id,
+    uint256 totalWins,
+    uint256 totalLosses,
+    uint256 tokensWon,
+    uint256 lastFeeDate,
+    uint256 feeHistory,
+    bool isFreeToPlay
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].owner;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "totalWins")), totalWins);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "totalLosses")), totalLosses);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "tokensWon")), tokensWon);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "lastFeeDate")), lastFeeDate);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "feeHistory")), feeHistory);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isFreeToPlay")), isFreeToPlay);
   }
 
-  function setKittieStatus(uint256 _id, bool _dead, bool _playing, uint256 _deadAt)
-    external auth returns (bool)
+  function setFightingAttributes(
+    uint256 _id,
+    uint256 totalFights,
+    uint256 nextFight,
+    uint256 listingStart,
+    uint256 listingEnd
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].kittyStatus = DBSchemaLib.KittyStatus({
-      dead: _dead,
-      playing: _playing,
-      deadAt: _deadAt
-    });
-    return true;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "totalFights")), totalFights);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "nextFight")), nextFight);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "listingStart")), listingStart);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "listingEnd")), listingEnd);
   }
 
-  function getKittieStatus(uint256 _id)
-    external auth view returns (bool, bool, uint256)
+  function setFeeAttributes(
+    uint256 _id,
+    uint256 feeType,
+    uint256 paidDate,
+    uint256 expirationDate,
+    bool isPaid
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return (
-      profileBucket[_id].kittyStatus.dead,
-      profileBucket[_id].kittyStatus.playing,
-      profileBucket[_id].kittyStatus.deadAt
-    );
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "feeType")), feeType);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "paidDate")), paidDate);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "expirationDate")), expirationDate);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isPaid")), isPaid);
   }
 
-  function setKittieGenes(uint256 _id, uint256 _genes)
-    external auth returns (bool)
+  function setTokenEconomyAttributes(
+    uint256 _id,
+    uint256 kittieFightTokens,
+    uint256 superDAOTokens,
+    bool isStakingSuperDAO
+  )
+    external onlyContract(CONTRACT_NAME_REGISTER)
   {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].genes = _genes;
-    return true;
-  }
-
-  function getKittieGenes(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].genes;
-  }
-
-  function setCryptokittyId(uint256 _id, uint256 _cryptokittyId)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].cryptokittyId = _cryptokittyId;
-    return true;
-  }
-
-  function getCryptokittyId(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].cryptokittyId;
-  }
-
-  function setTorMagnetsImagelinks(uint256 _id, bytes32[4] calldata _torMagnetsImagelinks)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].torMagnetsImagelinks = _torMagnetsImagelinks;
-    return true;
-  }
-
-  function getTorMagnetsImagelinks(uint256 _id)
-    external auth view returns (bytes32[4] memory)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].torMagnetsImagelinks;
-  }
-
-  function setListingDate(uint256 _id, uint256 _listingStartAt, uint256 _listingEndAt)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].listingStartAt = _listingStartAt;
-    profileBucket[_id].listingEndAt = _listingEndAt;
-    return true;
-  }
-
-  function getListingDate(uint256 _id)
-    external auth view returns (uint256, uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return (
-      profileBucket[_id].listingStartAt,
-      profileBucket[_id].listingEndAt
-    );
-  }
-
-  function setNextFight(uint256 _id, uint256 _nextFight)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].nextFight = _nextFight;
-    return true;
-  }
-
-  function getNextFight(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].nextFight;
-  }
-
-  function setTotalLosses(uint256 _id, uint256 _losses)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].losses = _losses;
-    return true;
-  }
-
-  function getTotalLosses(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].losses;
-  }
-
-  function setTotalFights(uint256 _id, uint256 _totalFights)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].totalFights = _totalFights;
-    return true;
-  }
-
-  function getTotalFights(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].totalFights;
-  }
-
-  function setDescription(uint256 _id, bytes32 _description)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].description = _description;
-    return true;
-  }
-
-  function getDescription(uint256 _id)
-    external auth view returns (bytes32)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].description;
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, TABLE_NAME, _id), ERROR_DOES_NOT_EXIST);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "kittieFightTokens")), kittieFightTokens);
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "superDAOTokens")), superDAOTokens);
+    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(_id, "isStakingSuperDAO")), isStakingSuperDAO);
   }
 }
