@@ -35,7 +35,6 @@ contract Proxied is Owned, ContractNames {
         address allowedSender = proxy.getContract(name);
         assert(allowedSender != address(0));    //If this fails, name is probably incorrect
         require(msg.sender == allowedSender, "Access is only allowed from specific contract");
-        _;
     }
 
     function _isProxy() internal view {
