@@ -42,22 +42,8 @@ contract ProfileDB is Proxied {
     return true;
   }
 
-  /// @dev Deletes the profile item from ProfileDB with the given id
-  /// @param _id uint256 Unique identifier for the profile to be deleted
-  function remove(uint256 _id) 
-    external auth returns (bool) 
-  {
-    require(profileTable.nodeExists(_id), "Item does not exist in ProfileDB");
-    require(profileTable.remove(_id) != 0, "Cannot remove item from ProfileDB");
-    delete profileBucket[_id];
-    return true;
-  }
-
-  /// @dev Returns the size of the DB table
-  function getTableSize()
-    external auth view returns (uint256) 
-  {
-    return profileTable.sizeOf();
+  function setGenericDB(address _genericDB) public onlyOwner {
+    genericDB = GenericDB(_genericDB);
   }
 
   function create(uint256 _id)

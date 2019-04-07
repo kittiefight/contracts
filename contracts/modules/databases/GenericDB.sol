@@ -22,11 +22,6 @@ import "./EternalStorage.sol";
 contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
 
-
-  function _setProxy(address _proxy) external onlyOwner {
-    setProxy(Proxy(_proxy));
-  }
-
   function setIntStorage(
     string calldata contractName,
     bytes32 key,
