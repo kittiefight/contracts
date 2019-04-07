@@ -1,6 +1,6 @@
 const KittieFIGHTToken = artifacts.require('KittieFIGHTToken');
 const web3 = KittieFIGHTToken.web3;
-const utils = require('./utils');
+const utils = require('./utils/utils');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const assert = chai.assert;
