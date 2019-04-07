@@ -4,7 +4,7 @@ import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 
 
-contract RoleDB is Proxied, GenericDB {
+contract RoleDB is Proxied {
   GenericDB public genericDB;
 
   event RoleAdded(address indexed account, string role);
