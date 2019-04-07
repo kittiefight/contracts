@@ -31,13 +31,12 @@ contract ProfileDB is Proxied {
   string internal constant ERROR_ALREADY_EXIST = "Profile already exists";
   string internal constant ERROR_DOES_NOT_EXIST = "Profile not exists";
 
-
-  function _setProxy(address _proxy) public onlyOwner {
-    setProxy(Proxy(_proxy));
+  constructor(GenericDB _genericDB) public {
+    setGenericDB(_genericDB);
   }
 
-  function setGenericDB(address _genericDB) public onlyOwner {
-    genericDB = GenericDB(_genericDB);
+  function setGenericDB(GenericDB _genericDB) public onlyOwner {
+    genericDB = _genericDB;
   }
 
   function create(uint256 _id)

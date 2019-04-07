@@ -20,18 +20,18 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
 
     // Set the primary address as if it is ProfileDB Contract to use GenericDB for testing purpose
     await this.proxy.addContract('ProfileDB', creator);
-    await this.genericDB._setProxy(this.proxy.address);
+    await this.genericDB.setProxy(this.proxy.address);
   });
 
   describe('GenericDB::Authority', () => {
     it('sets proxy', async () => {
-      await this.genericDB._setProxy(randomAddr).should.be.fulfilled;
+      await this.genericDB.setProxy(randomAddr).should.be.fulfilled;
       let proxy = await this.genericDB.proxy();
       proxy.should.be.equal(randomAddr);
     });
 
     it('does not allow unauthorized address to access proxy setter function', async () => {
-      await this.genericDB._setProxy(this.proxy.address, {from: unauthorizedAddr}).should.be.rejected;
+      await this.genericDB.setProxy(this.proxy.address, {from: unauthorizedAddr}).should.be.rejected;
     });
 
     it('does not allow unauthorized address to access attribute setter functions', async () => {

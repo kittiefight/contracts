@@ -17,20 +17,19 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
 
   beforeEach(async () => {
     this.genericDB = await GenericDB.new();
-    this.profileDB = await ProfileDB.new();
+    this.profileDB = await ProfileDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
 
     await this.proxy.addContract('ProfileDB', this.profileDB.address);
     // Set the primary address as if it is Register Contract to call ProfileDB for testing purpose
     await this.proxy.addContract('Register', creator);
-    await this.genericDB._setProxy(this.proxy.address);
-    await this.profileDB._setProxy(this.proxy.address);
-    await this.profileDB.setGenericDB(this.genericDB.address);
+    await this.genericDB.setProxy(this.proxy.address);
+    await this.profileDB.setProxy(this.proxy.address);
   });
 
   describe('ProfileDB::Authority', () => {
     it('sets proxy and db', async () => {
-      await this.profileDB._setProxy(randomAddress).should.be.fulfilled;
+      await this.profileDB.setProxy(randomAddress).should.be.fulfilled;
       await this.profileDB.setGenericDB(randomAddress).should.be.fulfilled;
 
       let proxy = await this.profileDB.proxy();
@@ -41,7 +40,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     });
 
     it('does not allow unauthorized address to access proxy/db setter functions', async () => {
-      await this.profileDB._setProxy(this.proxy.address, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setProxy(this.proxy.address, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setGenericDB(this.genericDB.address, {from: unauthorizedUser}).should.be.rejected;
     });
 
