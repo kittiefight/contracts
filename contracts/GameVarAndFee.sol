@@ -37,30 +37,29 @@ contract GameVarAndFee is Proxied {
   IContractManager contractManager;
 
   // Variables used by dateandtime contract
-  uint public gamePrestart;
-  uint public gameDuration;
-  uint public kittieHellExpiration;
-  uint public honeypotExpiration;
-  uint public futureGameTime;
-  uint public scheduleTimeLimits;
+  uint48 public gamePrestart;
+  uint48 public gameDuration;
+  uint48 public kittieHellExpiration;
+  uint48 public honeypotExpiration;
+  uint48 public futureGameTime;
+  uint48 public scheduleTimeLimits;
 
   // ---  
+  uint48 public gameTimes;
   uint public ethPerGame;
-  uint public dailyGameAvailability;
-  uint public gameTimes;
-  uint public gamesRateLimitFee;
+  uint public dailyGameAvailability;  
+  uint public gameLimit;
+  uint public gamesRateLimitFee;  
   uint public kittieExpiry;
   uint public honeyPotDuration;
   
   //---expressed in KTY tokens 
   uint public tokensPerGame;
-
   uint public ticketFee;
   uint public bettingFee;
   uint public kittieRedemptionFee;
 
-  //games per day allowed per address
-  mapping (address => uint) gamesRateLimit;
+ 
 
    /// @notice Distribution percentage for each participator in game
   struct DistributionRates {
@@ -79,68 +78,106 @@ contract GameVarAndFee is Proxied {
     contractManager = IContractManager(_contractManager);
   }
 
-  // dateandtime 
+  // DateTime Functions   
 
   /// @notice Sets the time in future that a game is to be played
-  function setFutureGameTime() public onlyProxy {
-
+  function setFutureGameTime(uint48 _futureGameTime) 
+  public 
+  onlyProxy 
+  returns(uint48) {
+    futureGameTime = _futureGameTime;
+    return futureGameTime;
   }
 
   /// @notice Sets the 2 min alloted time whereby both players must initiate start or forfeit game.
-  function setGamePrestart() public onlyProxy {
-
+  function setGamePrestart(uint48 _gamePrestart) 
+  public onlyProxy 
+  returns (uint48) {
+    gamePrestart = _gamePrestart;
+    return gamePrestart;
   }
 
   /// @notice Sets Game duration, how long a game lasts 
-  function setGameDuration() public onlyProxy {
-
+  function setGameDuration(uint48 _gameDuration) 
+  public onlyProxy 
+  returns (uint48) {
+    gameDuration = _gameDuration;
+    return gameDuration;
   }
 
   /// @notice Sets how long to wait for payment for kittie in kittiehell before kittie is lost forever 
-  function setKittieHellExpiration() public onlyProxy {
-
+  function setKittieHellExpiration(uint48 _kittieHellExpiration) 
+  public onlyProxy 
+  returns (uint48) {
+    kittieHellExpiration = _kittieHellExpiration;
+    return kittieHellExpiration;
   }
 
   /// @notice Sets the time at which honey pot will be dissolved,after a game is over, used by time contract at end of gameduration
-  function setHoneypotExpiration() public onlyProxy {
-
+  function setHoneypotExpiration(uint48 _honeypotExpiration) 
+  public onlyProxy 
+  returns (uint48) {
+    honeypotExpiration = _honeypotExpiration;
+    return honeypotExpiration;
   }
 
   /// @notice Sets the farthest time in futre when a game can be schedule
-  function setScheduleTimeLimits() public onlyProxy {
-
+  function setScheduleTimeLimits(uint48 _scheduleTimeLimits) 
+  public onlyProxy 
+  returns (uint48) {
+    scheduleTimeLimits = _scheduleTimeLimits;
+    return scheduleTimeLimits;
   }
 
   //---------------------------
+  
 
   /// @notice Amount of initial KTY Tokens allowed to be drawn from EndowmentFund to be allocated to game
-  function setTokensPerGame() public onlyProxy {
-
+  function setTokensPerGame(uint _tokensPerGame) 
+  public onlyProxy 
+  returns (uint) {
+    tokensPerGame = _tokensPerGame;
+    return tokensPerGame;
   } 
   
   /// @notice Amount of initial ETH allowed to be drawn from EndowmentFund to be allocated to game
-  function setEthPerGame() public onlyProxy {
-
+  function setEthPerGame(uint _ethPerGame)
+  public onlyProxy 
+  returns (uint) {
+    ethPerGame = _ethPerGame;
+    return ethPerGame;
   }
 
   /// @notice Amount of games allowed per day 
-  function setDailyGameAvailability() public onlyProxy {
-
+  function setDailyGameAvailability(uint _dailyGameAvailability)
+  public onlyProxy 
+  returns (uint) {
+    dailyGameAvailability = _dailyGameAvailability;
+    return dailyGameAvailability;
   } 
 
   /// @notice Times duration between each game per day
-  function setGameTimes() public onlyProxy {
-
+  function setGameTimes(uint48 _gameTimes)
+  public onlyProxy 
+  returns (uint48) {
+    gameTimes = _gameTimes;
+    return gameTimes;
   }
 
   /// @notice Games per day allowed per address "Games rate limit"
-  function setGameLimit() public onlyProxy {
-
+  function setGameLimit(uint _gameLimit)
+  public onlyProxy 
+  returns (uint) {
+    gameLimit = _gameLimit;
+    return gameLimit;
   }
 
   /// @notice Set fee paid to lift the limit of the number of games allowed per day, per address
-  function setGamesRateLimitFee() public onlyProxy {
-
+  function setGamesRateLimitFee(uint _gamesRateLimitFee)
+  public onlyProxy 
+  returns (uint) {
+    gamesRateLimitFee = _gamesRateLimitFee;
+    return gamesRateLimitFee;
   }
 
     /// @notice Distribution percentage for each participator in game
