@@ -24,19 +24,25 @@ pragma solidity >=0.5.0 <0.6.0;
 
 
 import "./interfaces/IContractManager.sol";
+import "./DSNote.sol";
+
+/// @dev it will implement Guard/modifier class
 import "./modules/proxy/Proxied.sol";
+
 
 
 /**
  * @title moderates the various fees, timing limits, expiry date/time, 
  * schedules, eth allocation per game, token allocation per game, kittiehell 
- * kittie expiration, time durations, distribution percentages e.t.c
+ * kittie expiration, time durations, distribution percentages e.t.c.
+ * The note modifier will log event for each function call.
  */
-contract GameVarAndFee is Proxied {
+contract GameVarAndFee is Proxied, DSNote {
 
   IContractManager contractManager;
 
-  // Variables used by dateandtime contract
+  // Variables used by DateTime contract
+  /// @dev we can even lower these to uint36 (year 2106)
   uint48 public gamePrestart;
   uint48 public gameDuration;
   uint48 public kittieHellExpiration;
@@ -44,7 +50,8 @@ contract GameVarAndFee is Proxied {
   uint48 public futureGameTime;
   uint48 public scheduleTimeLimits;
 
-  // ---  
+
+  /// @dev what other variables can we optimize for gas costs   
   uint48 public gameTimes;
   uint public ethPerGame;
   uint public dailyGameAvailability;  
@@ -70,6 +77,8 @@ contract GameVarAndFee is Proxied {
     uint8 endownment;       // Endowment, ( 15% is sent back to Endowment fund,later it will be split between endowment fund and DAO stakeholders) .
   }
 
+  DistributionRates public distributionRate;
+
   /**
    * @notice creating GameVarAndFee contract using `_contractManager` as contract manager address
    * @param _contractManager the contract manager used by the game
@@ -78,55 +87,42 @@ contract GameVarAndFee is Proxied {
     contractManager = IContractManager(_contractManager);
   }
 
-  // DateTime Functions   
+  // --- DateTime Functions --- 
 
   /// @notice Sets the time in future that a game is to be played
   function setFutureGameTime(uint48 _futureGameTime) 
-  public 
-  onlyProxy 
-  returns(uint48) {
+  public onlyProxy note {
     futureGameTime = _futureGameTime;
-    return futureGameTime;
   }
 
   /// @notice Sets the 2 min alloted time whereby both players must initiate start or forfeit game.
   function setGamePrestart(uint48 _gamePrestart) 
-  public onlyProxy 
-  returns (uint48) {
+  public onlyProxy note {
     gamePrestart = _gamePrestart;
-    return gamePrestart;
   }
 
   /// @notice Sets Game duration, how long a game lasts 
   function setGameDuration(uint48 _gameDuration) 
-  public onlyProxy 
-  returns (uint48) {
+  public onlyProxy note {
     gameDuration = _gameDuration;
-    return gameDuration;
   }
 
   /// @notice Sets how long to wait for payment for kittie in kittiehell before kittie is lost forever 
   function setKittieHellExpiration(uint48 _kittieHellExpiration) 
-  public onlyProxy 
-  returns (uint48) {
+  public onlyProxy note {
     kittieHellExpiration = _kittieHellExpiration;
-    return kittieHellExpiration;
   }
 
   /// @notice Sets the time at which honey pot will be dissolved,after a game is over, used by time contract at end of gameduration
   function setHoneypotExpiration(uint48 _honeypotExpiration) 
-  public onlyProxy 
-  returns (uint48) {
+  public onlyProxy note {
     honeypotExpiration = _honeypotExpiration;
-    return honeypotExpiration;
   }
 
   /// @notice Sets the farthest time in futre when a game can be schedule
   function setScheduleTimeLimits(uint48 _scheduleTimeLimits) 
-  public onlyProxy 
-  returns (uint48) {
+  public onlyProxy note {
     scheduleTimeLimits = _scheduleTimeLimits;
-    return scheduleTimeLimits;
   }
 
   //---------------------------
@@ -134,88 +130,93 @@ contract GameVarAndFee is Proxied {
 
   /// @notice Amount of initial KTY Tokens allowed to be drawn from EndowmentFund to be allocated to game
   function setTokensPerGame(uint _tokensPerGame) 
-  public onlyProxy 
-  returns (uint) {
+  public onlyProxy note {
     tokensPerGame = _tokensPerGame;
-    return tokensPerGame;
   } 
   
   /// @notice Amount of initial ETH allowed to be drawn from EndowmentFund to be allocated to game
   function setEthPerGame(uint _ethPerGame)
-  public onlyProxy 
-  returns (uint) {
+  public onlyProxy note {
     ethPerGame = _ethPerGame;
-    return ethPerGame;
   }
 
   /// @notice Amount of games allowed per day 
   function setDailyGameAvailability(uint _dailyGameAvailability)
-  public onlyProxy 
-  returns (uint) {
+  public onlyProxy note {
     dailyGameAvailability = _dailyGameAvailability;
-    return dailyGameAvailability;
   } 
 
   /// @notice Times duration between each game per day
   function setGameTimes(uint48 _gameTimes)
-  public onlyProxy 
-  returns (uint48) {
+  public onlyProxy note {
     gameTimes = _gameTimes;
-    return gameTimes;
   }
 
   /// @notice Games per day allowed per address "Games rate limit"
   function setGameLimit(uint _gameLimit)
-  public onlyProxy 
-  returns (uint) {
+  public onlyProxy note {
     gameLimit = _gameLimit;
-    return gameLimit;
   }
 
   /// @notice Set fee paid to lift the limit of the number of games allowed per day, per address
   function setGamesRateLimitFee(uint _gamesRateLimitFee)
-  public onlyProxy 
-  returns (uint) {
+  public onlyProxy note {
     gamesRateLimitFee = _gamesRateLimitFee;
-    return gamesRateLimitFee;
   }
 
-    /// @notice Distribution percentage for each participator in game
-  function setDistributionRate() public onlyProxy {
+  /// @notice Distribution percentage for each participator in game
+  function setDistributionRate(
+    uint8 _winningKittie, uint8 _topBettor, uint8 _secondRunnerUp, 
+    uint8 _otherBettors, uint8 _endownment) 
+    public onlyProxy note {
 
+        distributionRate.winningKittie = _winningKittie;
+        distributionRate.topBettor =_topBettor;
+        distributionRate.secondRunnerUp = _secondRunnerUp;
+        distributionRate.otherBettors = _otherBettors;
+        distributionRate.endownment = _endownment;
   } 
 
   /// @notice Get Distribution Rates
-  function getDistributionRate() public onlyProxy {
+  /// @dev or should it each have a different getter?
+  function getDistributionRate() 
+  public  view onlyProxy 
+  returns (uint8, uint8, uint8, uint8, uint8) {
+    
+    return (
+      distributionRate.winningKittie,
+      distributionRate.topBettor,
+      distributionRate.secondRunnerUp,
+      distributionRate.otherBettors,
+      distributionRate.endownment
+    );
   }
 
   /// @notice Set ticket fee in KTY for betting participators
-  function setTicketFee() public onlyProxy {
-
+  function setTicketFee(uint _ticketFee) public onlyProxy note {
+        ticketFee=_ticketFee;
   } 
 
   /// @notice Set betting fee in KTY for betting participators
-  function setBettingFee() public onlyProxy {
-
+  function setBettingFee(uint _bettingFee) public onlyProxy note {
+        bettingFee=_bettingFee;
   } 
 
   /// @notice Set kittieHELL redemption fee in KTY for redeeming kitties
-  function setKittieRedemptionFee() public onlyProxy {
-
+  function setKittieRedemptionFee(uint _RedemptionFee) public onlyProxy note {
+      kittieRedemptionFee=_RedemptionFee;
+    
   }
 
   /// @notice Set Kittie expiry time in kittieHELL 
-  function setKittieExpiry() public onlyProxy {
-
+  function setKittieExpiry(uint _kittieExpiry) public onlyProxy note {
+        kittieExpiry=_kittieExpiry;
   } 
 
   /// @notice Set honeyPot duration/expiry after game end 
-  function setHoneyPotDuration() public onlyProxy {
-    
+  function setHoneyPotDuration(uint _portDuration) public onlyProxy note {
+    honeyPotDuration=_portDuration; 
   } 
-
-  /* function getters or public variables : write public getters or public variables 
-  to access variable values important to other contracts dependent on them...*/
 
 
 }
