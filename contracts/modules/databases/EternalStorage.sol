@@ -12,7 +12,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-import "../../libs/LinkedListLib.sol";
 
 /**
  * @title EternalStorage
@@ -25,5 +24,4 @@ contract EternalStorage {
   mapping(bytes32 => bytes) internal bytesStorage;
   mapping(bytes32 => bool) internal boolStorage;
   mapping(bytes32 => int256) internal intStorage;
-  mapping(bytes32 => LinkedListLib.LinkedList) internal linkedListStorage;
 }
