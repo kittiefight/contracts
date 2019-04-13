@@ -23,14 +23,14 @@ pragma solidity ^0.5.5;
 
 import "../../libs/LinkedListLib.sol";
 import "../../libs/DBSchemaLib.sol";
-import "../../authority/DSGuard.sol";
+import "../../interfaces/IDatabaseAPI.sol";
 
 
 /**
  * @title ProfileDB
  * @author @kittieFIGHT @psychoplasma
  */
-contract ProfileDB is DSGuard {
+contract ProfileDB is IDatabaseAPI {
   using LinkedListLib for LinkedListLib.LinkedList;
 
   /// Data table which keeps items' id in linked list for easy tracking and sorting
@@ -39,11 +39,13 @@ contract ProfileDB is DSGuard {
   /// Data bucket where profile items are actually stored
   mapping (uint256 => DBSchemaLib.ProfileSchema) profileBucket;
 
+  constructor () public {
+  }
 
   /// @dev Creates empty profile item in ProfileDB table with the given id
   /// @param _id uint256 Unique identifier for the profile to be created
   function create(uint256 _id)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(!profileTable.nodeExists(_id), "Item already exists in ProfileDB");
     require(profileTable.push(_id, true), "Cannot add item to ProfileDB");
@@ -55,7 +57,7 @@ contract ProfileDB is DSGuard {
   /// @dev Deletes the profile item from ProfileDB with the given id
   /// @param _id uint256 Unique identifier for the profile to be deleted
   function remove(uint256 _id) 
-    external auth returns (bool) 
+    external returns (bool) 
   {
     require(profileTable.nodeExists(_id), "Item does not exist in ProfileDB");
     require(profileTable.remove(_id) != 0, "Cannot remove item from ProfileDB");
@@ -65,13 +67,13 @@ contract ProfileDB is DSGuard {
 
   /// @dev Returns the size of the DB table
   function getTableSize()
-    external auth view returns (uint256) 
+    external view returns (uint256) 
   {
     return profileTable.sizeOf();
   }
 
   function setOwnerAddress(uint256 _id, address _owner)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].owner = _owner;
@@ -79,14 +81,14 @@ contract ProfileDB is DSGuard {
   }
 
   function getOwnerAddress(uint256 _id)
-    external auth view returns (address)
+    external view returns (address)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].owner;
   }
 
   function setKittieStatus(uint256 _id, bool _dead, bool _playing, uint256 _deadAt)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].kittyStatus = DBSchemaLib.KittyStatus({
@@ -98,7 +100,7 @@ contract ProfileDB is DSGuard {
   }
 
   function getKittieStatus(uint256 _id)
-    external auth view returns (bool, bool, uint256)
+    external view returns (bool, bool, uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return (
@@ -109,7 +111,7 @@ contract ProfileDB is DSGuard {
   }
 
   function setKittieGenes(uint256 _id, uint256 _genes)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].genes = _genes;
@@ -117,29 +119,44 @@ contract ProfileDB is DSGuard {
   }
 
   function getKittieGenes(uint256 _id)
-    external auth view returns (uint256)
+    external view returns (uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].genes;
   }
 
-  function setCryptokittyId(uint256 _id, uint256 _cryptokittyId)
-    external auth returns (bool)
+  function setCryptokittiesHomeLink(uint256 _id, bytes32 _cryptokittiesHomeLink)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].cryptokittyId = _cryptokittyId;
+    profileBucket[_id].cryptokittiesHomeLink = _cryptokittiesHomeLink;
     return true;
   }
 
-  function getCryptokittyId(uint256 _id)
-    external auth view returns (uint256)
+  function getCryptokittiesHomeLink(uint256 _id)
+    external view returns (bytes32)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].cryptokittyId;
+    return profileBucket[_id].cryptokittiesHomeLink;
+  }
+
+  function setCryptokittiesImageUrl(uint256 _id, bytes32 _cryptokittiesImageUrl)
+    external returns (bool)
+  {
+    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
+    profileBucket[_id].cryptokittiesImageUrl = _cryptokittiesImageUrl;
+    return true;
+  }
+
+  function getCryptokittiesImageUrl(uint256 _id)
+    external view returns (bytes32)
+  {
+    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
+    return profileBucket[_id].cryptokittiesImageUrl;
   }
 
   function setTorMagnetsImagelinks(uint256 _id, bytes32[4] calldata _torMagnetsImagelinks)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].torMagnetsImagelinks = _torMagnetsImagelinks;
@@ -147,14 +164,14 @@ contract ProfileDB is DSGuard {
   }
 
   function getTorMagnetsImagelinks(uint256 _id)
-    external auth view returns (bytes32[4] memory)
+    external view returns (bytes32[4] memory)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].torMagnetsImagelinks;
   }
 
   function setListingDate(uint256 _id, uint256 _listingStartAt, uint256 _listingEndAt)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].listingStartAt = _listingStartAt;
@@ -163,7 +180,7 @@ contract ProfileDB is DSGuard {
   }
 
   function getListingDate(uint256 _id)
-    external auth view returns (uint256, uint256)
+    external view returns (uint256, uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return (
@@ -173,7 +190,7 @@ contract ProfileDB is DSGuard {
   }
 
   function setNextFight(uint256 _id, uint256 _nextFight)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].nextFight = _nextFight;
@@ -181,14 +198,14 @@ contract ProfileDB is DSGuard {
   }
 
   function getNextFight(uint256 _id)
-    external auth view returns (uint256)
+    external view returns (uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].nextFight;
   }
 
   function setTotalLosses(uint256 _id, uint256 _losses)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].losses = _losses;
@@ -196,14 +213,14 @@ contract ProfileDB is DSGuard {
   }
 
   function getTotalLosses(uint256 _id)
-    external auth view returns (uint256)
+    external view returns (uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].losses;
   }
 
   function setTotalFights(uint256 _id, uint256 _totalFights)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].totalFights = _totalFights;
@@ -211,14 +228,14 @@ contract ProfileDB is DSGuard {
   }
 
   function getTotalFights(uint256 _id)
-    external auth view returns (uint256)
+    external view returns (uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].totalFights;
   }
 
   function setDescription(uint256 _id, bytes32 _description)
-    external auth returns (bool)
+    external returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     profileBucket[_id].description = _description;
@@ -226,7 +243,7 @@ contract ProfileDB is DSGuard {
   }
 
   function getDescription(uint256 _id)
-    external auth view returns (bytes32)
+    external view returns (bytes32)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].description;

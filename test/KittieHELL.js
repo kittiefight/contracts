@@ -1,6 +1,6 @@
 const KittieHELL = artifacts.require('KittieHELL');
 const KittieCore = artifacts.require('KittyCore');
-const utils = require('./utils/utils.js');
+const utils = require('./utils.js');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const assert = chai.assert;

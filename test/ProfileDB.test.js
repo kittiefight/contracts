@@ -1,3 +1,5 @@
+const { ether } = require('./utils/ether');
+const { getCurrentTimestamp, increaseTime } = require('./utils/evm');
 const ProfileDB = artifacts.require('ProfileDB');
 const BigNumber = require('bignumber.js');
 require('chai')
@@ -22,7 +24,8 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser]) => {
     listingStartAt: 12345,
     listingEndAt: 12315456,
     genes: BigNumber(5678342),
-    cryptokittyId: 98765,
+    cryptokittiesHomeLink: 'test/kittie/home/link',
+    cryptokittiesImageUrl: 'test/kittie/image/url',
     torMagnetsImagelinks: [
       'torImageLink1',
       'torImageLink2',
@@ -83,14 +86,24 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser]) => {
       BigNumber(_genes).should.be.bignumber.equal(user1Profile.genes);
     });
 
-    it('sets & gets attribute::CryptokittyId', async () => {
+    it('sets & gets attribute::CryptokittiesHomeLink', async () => {
       await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setCryptokittyId(
+      await this.profileDB.setCryptokittiesHomeLink(
         user1Profile.id,
-        user1Profile.cryptokittyId
+        web3.utils.utf8ToHex(user1Profile.cryptokittiesHomeLink)
       ).should.be.fulfilled;
-      let _cryptokittyId = await this.profileDB.getCryptokittyId(user1Profile.id).should.be.fulfilled;
-      BigNumber(_cryptokittyId).should.be.bignumber.equal(user1Profile.cryptokittyId);
+      let homeLink = await this.profileDB.getCryptokittiesHomeLink(user1Profile.id).should.be.fulfilled;
+      web3.utils.hexToUtf8(homeLink).should.be.equal(user1Profile.cryptokittiesHomeLink);
+    });
+
+    it('sets & gets attribute::CryptokittiesImageUrl', async () => {
+      await this.profileDB.create(user1Profile.id).should.be.fulfilled;
+      await this.profileDB.setCryptokittiesImageUrl(
+        user1Profile.id,
+        web3.utils.utf8ToHex(user1Profile.cryptokittiesImageUrl)
+      ).should.be.fulfilled;
+      let imgUrl = await this.profileDB.getCryptokittiesImageUrl(user1Profile.id).should.be.fulfilled;
+      web3.utils.hexToUtf8(imgUrl).should.be.equal(user1Profile.cryptokittiesImageUrl);
     });
 
     it('sets & gets attribute::torMagnetsImagelinks', async () => {
