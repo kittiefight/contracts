@@ -27,7 +27,6 @@ import "../../libs/LinkedListLib.sol";
 contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
 
-
   function setIntStorage(
     string calldata contractName,
     bytes32 key,
