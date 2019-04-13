@@ -20,25 +20,18 @@ contract Proxied is Owned, ContractNames {
         proxy = _proxy;
     }
 
-    modifier onlyProxy() {
-        _isProxy();
+    modifier onlyProxy(){
+        require(address(proxy) != address(0), "Set Proxy address first");
+        require(msg.sender == address(proxy), "Access is only allowed through Proxy");
         _;
     }
 
-    modifier onlyContract(string memory name) {
-        _isContractAuthorized(name);
-        _;
-    }
-
-    function _isContractAuthorized(string memory name) internal view {
-        require(address(proxy) != address(0), "No Proxy");
+    modifier onlyContract(string memory name){
+        require(address(proxy) != address(0), "Set Proxy address first");
         address allowedSender = proxy.getContract(name);
         assert(allowedSender != address(0));    //If this fails, name is probablu incorrect
-        require(msg.sender == allowedSender, "Only specific contract");
+        require(msg.sender == allowedSender, "Access is only allowed from specific contract");
+        _;
     }
 
-    function _isProxy() internal view {
-        require(address(proxy) != address(0), "No Proxy");
-        require(msg.sender == address(proxy), "Only through Proxy");
-    }
 }
