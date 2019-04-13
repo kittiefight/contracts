@@ -1,16 +1,12 @@
 pragma solidity ^0.5.5;
 
 import "./Owned.sol";
+import "./SystemRoles.sol";
 import "../modules/databases/RoleDB.sol";
 
 
-contract Guard is Owned {
+contract Guard is Owned, SystemRoles {
   RoleDB public roleDB;
-
-  string constant private SUPER_ADMIN_ROLE = "super_admin";
-  string constant private ADMIN_ROLE = "admin";
-  string constant private PLAYER_ROLE = "player";
-  string constant private BETTOR_ROLE = "bettor";
 
 
   constructor (RoleDB _roleDB) public {
