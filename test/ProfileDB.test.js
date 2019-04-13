@@ -28,42 +28,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser]) => {
       'torImageLink2',
       'torImageLink3'
     ],
-    description: [
-      'kittie description - 1',
-      'kittie description - 2',
-      'kittie description - 3',
-      'kittie description - 4',
-      'kittie description - 5'
-    ],
-    fees: {
-      paidDate: 12313,
-      feeType: 1,
-      expirationDate: 45672,
-      isPaid: false,
-      feelimits: {
-        fightFeeLimit: 100,
-        resurrectionFeeLimit: 50
-      }
-    },
-    fighterList: [
-      '0x0000000000000000000000000000000000000000000000000000000000000001',
-      '0x0000000000000000000000000000000000000000000000000000000000000002'
-    ],
-    kittieHashList: [
-      '0x000000000000000000000000000000000000000000000000000000000000000f',
-      '0x000000000000000000000000000000000000000000000000000000000000000e'
-    ],
-    referalHash: '0x00000000000000000000000000000000000000000000000000000000000000ff',
-    totalWins: 11,
-    totalLosses: 14,
-    tokensWon: 200,
-    lastDateListing: 12314,
-    superDAOTokens: 100,
-    kittieFightTokens: 50,
-    lastFeeDate: 10000,
-    feeHistory: 0,
-    isStakingSuperDAO: false,
-    isFreeToPlay: true,
+    description: 'kittie description',
   };
 
   beforeEach(async () => {
@@ -152,10 +117,10 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser]) => {
       BigNumber(_nextFight).should.be.bignumber.equal(user1Profile.nextFight);
     });
 
-    it('sets & gets attribute::Losses', async () => {
+    it('sets & gets attribute::TotalLosses', async () => {
       await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setLosses(user1Profile.id, user1Profile.losses).should.be.fulfilled;
-      let _losses = await this.profileDB.getLosses(user1Profile.id).should.be.fulfilled;
+      await this.profileDB.setTotalLosses(user1Profile.id, user1Profile.losses).should.be.fulfilled;
+      let _losses = await this.profileDB.getTotalLosses(user1Profile.id).should.be.fulfilled;
       BigNumber(_losses).should.be.bignumber.equal(user1Profile.losses);
     });
 
@@ -168,9 +133,12 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser]) => {
 
     it('sets & gets attribute::Description', async () => {
       await this.profileDB.create(user1Profile.id).should.be.fulfilled;
-      await this.profileDB.setDescription(user1Profile.id, user1Profile.description).should.be.fulfilled;
+      await this.profileDB.setDescription(
+        user1Profile.id,
+        web3.utils.utf8ToHex(user1Profile.description)
+      ).should.be.fulfilled;
       let _description = await this.profileDB.getDescription(user1Profile.id).should.be.fulfilled;
-      _description.should.shallowDeepEqual(user1Profile.description);
+      web3.utils.hexToUtf8(_description).should.be.equal(user1Profile.description);
     });
   });
 });

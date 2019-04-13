@@ -30,32 +30,17 @@ library DBSchemaLib {
     address owner;
     KittyStatus kittyStatus;
     uint256 cryptokittyId;
-    bytes32[3] torMagnetsImagelinks;
+    bytes32[4] torMagnetsImagelinks;
     uint256 losses;
     uint256 totalFights;
     uint256 nextFight;
     uint256 listingStartAt;
     uint256 listingEndAt;
     uint256 genes;
-    bytes32[5] description;
-    Fees fees;
-    bytes32[10] fighterList;
-    bytes32[10] kittieHashList;
-    bytes32 referalHash;
-    uint256 totalWins;
-    uint256 totalLosses;
-    uint256 tokensWon;
-    uint256 lastDateListing;
-    uint256 superDAOTokens;
-    uint256 kittieFightTokens;
-    uint256 lastFeeDate;
-    uint256 feeHistory;
-    bool isStakingSuperDAO;
-    bool isFreeToPlay;
+    bytes32 description;
   }
 
   struct FeeLimits {
-    // TODO: Define the struct
     uint256 fightFeeLimit;
     uint256 resurrectionFeeLimit;
   }
@@ -64,7 +49,7 @@ library DBSchemaLib {
     uint256 paidDate;
     uint256 feeType;
     uint256 expirationDate;
-    bool isPaid;
+    bool paid;
     FeeLimits feelimits;
   }
 }

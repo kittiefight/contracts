@@ -138,7 +138,7 @@ contract ProfileDB is DSGuard {
     return profileBucket[_id].cryptokittyId;
   }
 
-  function setTorMagnetsImagelinks(uint256 _id, bytes32[3] calldata _torMagnetsImagelinks)
+  function setTorMagnetsImagelinks(uint256 _id, bytes32[4] calldata _torMagnetsImagelinks)
     external auth returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
@@ -147,7 +147,7 @@ contract ProfileDB is DSGuard {
   }
 
   function getTorMagnetsImagelinks(uint256 _id)
-    external auth view returns (bytes32[3] memory)
+    external auth view returns (bytes32[4] memory)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
     return profileBucket[_id].torMagnetsImagelinks;
@@ -187,7 +187,7 @@ contract ProfileDB is DSGuard {
     return profileBucket[_id].nextFight;
   }
 
-  function setLosses(uint256 _id, uint256 _losses)
+  function setTotalLosses(uint256 _id, uint256 _losses)
     external auth returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
@@ -195,7 +195,7 @@ contract ProfileDB is DSGuard {
     return true;
   }
 
-  function getLosses(uint256 _id)
+  function getTotalLosses(uint256 _id)
     external auth view returns (uint256)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
@@ -217,7 +217,7 @@ contract ProfileDB is DSGuard {
     return profileBucket[_id].totalFights;
   }
 
-  function setDescription(uint256 _id, bytes32[5] calldata _description)
+  function setDescription(uint256 _id, bytes32 _description)
     external auth returns (bool)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
@@ -226,285 +226,9 @@ contract ProfileDB is DSGuard {
   }
 
   function getDescription(uint256 _id)
-    external auth view returns (bytes32[5] memory)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].description;
-  }
-
-// TODO: TODO: TODO: TODO:
-
-  function setIsStakingSuperDAO(uint256 _id, bool _isStakingSuperDAO)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].isStakingSuperDAO = _isStakingSuperDAO;
-    return true;
-  }
-
-  function getIsStakingSuperDAO(uint256 _id)
-    external auth view returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].isStakingSuperDAO;
-  }
-
-  function setIsFreeToPlay(uint256 _id, bool _isFreeToPlay)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].isFreeToPlay = _isFreeToPlay;
-    return true;
-  }
-
-  function getIsFreeToPlay(uint256 _id)
-    external auth view returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].isFreeToPlay;
-  }
-
-  function setKittieFightTokens(uint256 _id, uint256 _kittieFightTokens)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].kittieFightTokens = _kittieFightTokens;
-    return true;
-  }
-
-  function getKittieFightTokens(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].kittieFightTokens;
-  }
-
-  function setTotalWins(uint256 _id, uint256 _totalWins)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].totalWins = _totalWins;
-    return true;
-  }
-
-  function getTotalWins(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].totalWins;
-  }
-
-  function setTotalLosses(uint256 _id, uint256 _totalLosses)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].totalLosses = _totalLosses;
-    return true;
-  }
-
-  function getTotalLosses(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].totalLosses;
-  }
-
-  function setTokensWon(uint256 _id, uint256 _tokensWon)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].tokensWon = _tokensWon;
-    return true;
-  }
-
-  function getTokensWon(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].tokensWon;
-  }
-
-  function setLastDateListing(uint256 _id, uint256 _lastDateListing)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].lastDateListing = _lastDateListing;
-    return true;
-  }
-
-  function getLastDateListing(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].lastDateListing;
-  }
-
-  function setSuperDAOTokens(uint256 _id, uint256 _superDAOTokens)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].superDAOTokens = _superDAOTokens;
-    return true;
-  }
-
-  function getSuperDAOTokens(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].superDAOTokens;
-  }
-
-  function setLastFeeDate(uint256 _id, uint256 _lastFeeDate)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].lastFeeDate = _lastFeeDate;
-    return true;
-  }
-
-  function getLastFeeDate(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].lastFeeDate;
-  }
-
-  function setFeeHistory(uint256 _id, uint256 _feeHistory)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].feeHistory = _feeHistory;
-    return true;
-  }
-
-  function getFeeHistory(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].feeHistory;
-  }
-
-  function setReferalHash(uint256 _id, bytes32 _referalHash)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].referalHash = _referalHash;
-    return true;
-  }
-
-  function getReferalHash(uint256 _id)
     external auth view returns (bytes32)
   {
     require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].referalHash;
-  }
-
-  function setFighterList(uint256 _id, bytes32[10] calldata _fighterList)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fighterList = _fighterList;
-    return true;
-  }
-
-  function getFighterList(uint256 _id)
-    external auth view returns (bytes32[10] memory)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].fighterList;
-  }
-
-  function setLittieHashList(uint256 _id, bytes32[10] calldata _kittieHashList)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fighterList = _kittieHashList;
-    return true;
-  }
-
-  function getKittieHashList(uint256 _id)
-    external auth view returns (bytes32[10] memory)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].kittieHashList;
-  }
-
-  function setFeePaidDate(uint256 _id, uint256 _paidDate)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fees.paidDate = _paidDate;
-    return true;
-  }
-
-  function getFeePaidDate(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].fees.paidDate;
-  }
-
-  function setFeeType(uint256 _id, uint256 _feeType)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fees.feeType = _feeType;
-    return true;
-  }
-
-  function getFeeType(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].fees.feeType;
-  }
-
-  function setFeeExpirationDate(uint256 _id, uint256 _expirationDate)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fees.expirationDate = _expirationDate;
-    return true;
-  }
-
-  function getFeeExpirationDate(uint256 _id)
-    external auth view returns (uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].fees.expirationDate;
-  }
-
-  function setIsPaid(uint256 _id, bool _isPaid)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fees.isPaid = _isPaid;
-    return true;
-  }
-
-  function getIsPaid(uint256 _id)
-    external auth view returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return profileBucket[_id].fees.isPaid;
-  }
-
-  function setFeelimits(uint256 _id, uint256 _fightFeeLimit, uint256 _resurrectionFeeLimit)
-    external auth returns (bool)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    profileBucket[_id].fees.feelimits.fightFeeLimit = _fightFeeLimit;
-    profileBucket[_id].fees.feelimits.resurrectionFeeLimit = _resurrectionFeeLimit;
-    return true;
-  }
-
-  function getFeelimits(uint256 _id)
-    external auth view returns (uint256, uint256)
-  {
-    require(profileTable.nodeExists(_id), "Profile with the given id does not exists in ProfileDB");
-    return (
-      profileBucket[_id].fees.feelimits.fightFeeLimit,
-      profileBucket[_id].fees.feelimits.resurrectionFeeLimit
-    );
+    return profileBucket[_id].description;
   }
 }

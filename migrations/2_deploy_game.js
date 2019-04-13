@@ -1,14 +1,10 @@
 const SafeMath = artifacts.require('libs/SafeMath');
 const KittieHELL = artifacts.require('KittieHELL');
-//const KittieFIGHTToken = artifacts.require('KittieFIGHTToken');
+const KittieFIGHTToken = artifacts.require('KittieFIGHTToken');
 const ContractManager = artifacts.require('ContractManager');
 const KittyCoreMock = artifacts.require('KittyCore');
 
 module.exports = (deployer, network, accounts) => {
-  if ( network === 'test' || network === 'development') {
-    // Do not deploy anything in case of tests, let Truffle do it
-    return;
-  }
   let contractManagerInst;
 
   deployer.deploy(SafeMath, {from: accounts[0]});
