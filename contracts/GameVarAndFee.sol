@@ -1,7 +1,7 @@
 /**
  * @title GameVarAndFee
  *
- * @author @kittieFIGHT @ola
+ * @author @wafflemakr @hamaad
  *
  */
 //modifier class (DSAuth )
@@ -43,16 +43,16 @@ contract GameVarAndFee is Proxied, DSNote {
 
   // Variables used by DateTime contract
   /// @dev we can even lower these to uint36 (year 2106)
-  uint48 public gamePrestart;
-  uint48 public gameDuration;
-  uint48 public kittieHellExpiration;
-  uint48 public honeypotExpiration;
-  uint48 public futureGameTime;
-  uint48 public scheduleTimeLimits;
+  uint public gamePrestart;
+  uint public gameDuration;
+  uint public kittieHellExpiration;
+  uint public honeypotExpiration;
+  uint public futureGameTime;
+  uint public scheduleTimeLimits;
 
 
   /// @dev what other variables can we optimize for gas costs   
-  uint48 public gameTimes;
+  uint public gameTimes;
   uint public ethPerGame;
   uint public dailyGameAvailability;  
   uint public gameLimit;
@@ -90,37 +90,37 @@ contract GameVarAndFee is Proxied, DSNote {
   // --- DateTime Functions --- 
 
   /// @notice Sets the time in future that a game is to be played
-  function setFutureGameTime(uint48 _futureGameTime) 
+  function setFutureGameTime(uint _futureGameTime) 
   public onlyProxy note {
     futureGameTime = _futureGameTime;
   }
 
   /// @notice Sets the 2 min alloted time whereby both players must initiate start or forfeit game.
-  function setGamePrestart(uint48 _gamePrestart) 
+  function setGamePrestart(uint _gamePrestart) 
   public onlyProxy note {
     gamePrestart = _gamePrestart;
   }
 
   /// @notice Sets Game duration, how long a game lasts 
-  function setGameDuration(uint48 _gameDuration) 
+  function setGameDuration(uint _gameDuration) 
   public onlyProxy note {
     gameDuration = _gameDuration;
   }
 
   /// @notice Sets how long to wait for payment for kittie in kittiehell before kittie is lost forever 
-  function setKittieHellExpiration(uint48 _kittieHellExpiration) 
+  function setKittieHellExpiration(uint _kittieHellExpiration) 
   public onlyProxy note {
     kittieHellExpiration = _kittieHellExpiration;
   }
 
   /// @notice Sets the time at which honey pot will be dissolved,after a game is over, used by time contract at end of gameduration
-  function setHoneypotExpiration(uint48 _honeypotExpiration) 
+  function setHoneypotExpiration(uint _honeypotExpiration) 
   public onlyProxy note {
     honeypotExpiration = _honeypotExpiration;
   }
 
   /// @notice Sets the farthest time in futre when a game can be schedule
-  function setScheduleTimeLimits(uint48 _scheduleTimeLimits) 
+  function setScheduleTimeLimits(uint _scheduleTimeLimits) 
   public onlyProxy note {
     scheduleTimeLimits = _scheduleTimeLimits;
   }
@@ -147,7 +147,7 @@ contract GameVarAndFee is Proxied, DSNote {
   } 
 
   /// @notice Times duration between each game per day
-  function setGameTimes(uint48 _gameTimes)
+  function setGameTimes(uint _gameTimes)
   public onlyProxy note {
     gameTimes = _gameTimes;
   }
