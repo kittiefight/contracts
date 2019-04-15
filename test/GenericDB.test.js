@@ -1,6 +1,7 @@
 const GenericDB = artifacts.require('GenericDB');
 const Proxy = artifacts.require('Proxy');
 const BigNumber = require('bignumber.js');
+const { ZERO_ADDRESS } = require('./utils/constants');
 const CONTRACT_NAME = 'ProfileDB';
 const DB_TABLE_NAME = 'TestTable';
 
@@ -13,6 +14,7 @@ require('chai')
 
 contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
   let nodeId = 12324353;
+  let addrNodeId = '0x0000000000000000000000000000000000000001';
 
   beforeEach(async () => {
     this.genericDB = await GenericDB.new();
@@ -43,10 +45,15 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
       await this.genericDB.setBytesStorage(CONTRACT_NAME, key, web3.utils.toHex(123), {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.setStringStorage(CONTRACT_NAME, key, 'asdad', {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId, {from: unauthorizedAddr}).should.be.rejected;
+      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId, {from: unauthorizedAddr}).should.be.rejected;
       
       // Create a linked list and an item in the list with authorized address to test the remaining functions
       await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId).should.be.fulfilled;
       await this.genericDB.removeNodeFromLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId, {from: unauthorizedAddr}).should.be.rejected;
+
+      // Create a linked list(address) and an item in the list with authorized address to test the remaining functions
+      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId).should.be.fulfilled;
+      await this.genericDB.removeNodeFromLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId, {from: unauthorizedAddr}).should.be.rejected;
     });
   });
 
@@ -96,6 +103,20 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
 
       doesExist = await this.genericDB.doesListExist(CONTRACT_NAME, DB_TABLE_NAME);
       doesExist.should.be.false;
+
+      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId).should.be.fulfilled;
+      doesExist = await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId);
+      doesExist.should.be.true;
+
+      doesExist = await this.genericDB.doesListAddrExist(CONTRACT_NAME, DB_TABLE_NAME);
+      doesExist.should.be.true;
+
+      await this.genericDB.removeNodeFromLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId).should.be.fulfilled;
+      doesExist = await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId);
+      doesExist.should.be.false;
+
+      doesExist = await this.genericDB.doesListAddrExist(CONTRACT_NAME, DB_TABLE_NAME);
+      doesExist.should.be.false;
     });
 
     it('iterates all items in linklist', async () => {
@@ -120,6 +141,38 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
         if (!node) break;
         // The first item in TRUE direction is the last item pushed => LIFO (stack)
         node.should.be.equal(nodeIds[index]);
+        index--;
+      } while (node)
+    });
+
+    it('iterates all items in linklistAddr', async () => {
+      let addrNodeIds = [
+        '0x0000000000000000000000000000000000000001',
+        '0x0000000000000000000000000000000000000002',
+        '0x0000000000000000000000000000000000000003',
+        '0x0000000000000000000000000000000000000004',
+        '0x0000000000000000000000000000000000000005'
+      ];
+
+      // First create some nodes in DB
+      for (let i = 0; i < addrNodeIds.length; i++) {
+        await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeIds[i]).should.be.fulfilled;
+      }
+
+      let totalUsers = (await this.genericDB.getLinkedListAddrSize(CONTRACT_NAME, DB_TABLE_NAME)).toNumber();
+      totalUsers.should.be.equal(addrNodeIds.length);
+
+      let node = ZERO_ADDRESS; // Start from the HEAD. HEAD is always 0x0.
+      let index = totalUsers - 1;
+      do {
+        let ret = await this.genericDB.getAdjacentAddr(CONTRACT_NAME, DB_TABLE_NAME, node, true);
+        // ret value includes direction and node id. Ex => {'0': true, '1': 0xa0a214...}
+        node = ret['1'];
+
+        // it means that we reach the end of the list
+        if (node === ZERO_ADDRESS) break;
+        // The first item in TRUE direction is the last item pushed => LIFO (stack)
+        node.should.be.equal(addrNodeIds[index]);
         index--;
       } while (node)
     });

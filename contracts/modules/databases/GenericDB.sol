@@ -13,6 +13,10 @@
 pragma solidity ^0.5.5;
 
 import "./EternalStorage.sol";
+import "../proxy/Proxied.sol";
+import "../../Proxy.sol";
+import "../../libs/LinkedListLib.sol";
+import "../../libs/LinkedListAddrLib.sol";
 
 
 /**
@@ -21,6 +25,7 @@ import "./EternalStorage.sol";
  */
 contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
+  using LinkedListAddrLib for LinkedListAddrLib.LinkedList;
 
   function setIntStorage(
     string calldata contractName,
@@ -203,5 +208,74 @@ contract GenericDB is EternalStorage, Proxied {
     public view returns (uint256)
   {
     return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].sizeOf();
+  }
+
+  function pushNodeToLinkedListAddr(
+    string calldata contractName,
+    string calldata linkedListName,
+    address nodeId
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId)) {
+      return false;
+    }
+
+    linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].push(nodeId, true);
+    return true;
+  }
+
+  function removeNodeFromLinkedListAddr(
+    string calldata contractName,
+    string calldata linkedListName,
+    address nodeId
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (!linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId)) {
+      return false;
+    }
+    
+    linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].remove(nodeId);
+    return true;
+  }
+
+  function getAdjacentAddr(
+    string memory contractName,
+    string memory linkedListName,
+    address nodeId,
+    bool dir
+  )
+    public view returns (bool, address)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].getAdjacent(nodeId, dir);
+  }
+
+  function doesListAddrExist(
+    string memory contractName,
+    string memory linkedListName
+  )
+    public view returns (bool)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists();
+  }
+
+  function doesNodeAddrExist(
+    string memory contractName,
+    string memory linkedListName,
+    address nodeId
+  )
+    public view returns (bool)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId);
+  }
+
+  function getLinkedListAddrSize(
+    string memory contractName,
+    string memory linkedListName
+  )
+    public view returns (uint256)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, linkedListName))].sizeOf();
   }
 }
