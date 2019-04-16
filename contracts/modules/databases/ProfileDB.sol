@@ -153,9 +153,8 @@ contract ProfileDB is Proxied {
     genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isPaid")), isPaid);
   }
 
-  function setTokenEconomyAttributes(
+  function setSuperDAOTokens(
     address account,
-    uint256 kittieFightTokens,
     uint256 superDAOTokens,
     bool isStakingSuperDAO
   )
@@ -163,9 +162,27 @@ contract ProfileDB is Proxied {
     onlyContract(CONTRACT_NAME_REGISTER)
     onlyExistentProfile(account)
   {
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "kittieFightTokens")), kittieFightTokens);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "superDAOTokens")), superDAOTokens);
     genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isStakingSuperDAO")), isStakingSuperDAO);
+  }
+
+  function setKittieFightTokens(
+    address account,
+    uint256 kittieFightTokens
+  )
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "kittieFightTokens")), kittieFightTokens);
+  }
+
+  function getKittieFightTokens(address account)
+    public
+    onlyExistentProfile(account)
+    view returns (uint256 amount)
+  {
+    amount = genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "kittieFightTokens")));
   }
 
   function doesProfileExist(address account) public view returns (bool) {
@@ -182,5 +199,12 @@ contract ProfileDB is Proxied {
       (dir, nextKittie) = genericDB.getAdjacent(CONTRACT_NAME_PROFILE_DB, tableKey, nextKittie, dir);
       if (nextKittie != 0) {kitties[i++] = nextKittie;}
     } while (nextKittie != 0);
+  }
+
+  function getKittieCount(address account) public view returns (uint256) {
+    return genericDB.getLinkedListSize(
+      CONTRACT_NAME_PROFILE_DB,
+      keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
+    );
   }
 }

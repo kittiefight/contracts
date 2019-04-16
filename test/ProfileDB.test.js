@@ -60,7 +60,8 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
       await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setFeeAttributes(userId, 1, 2, 3, false, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setTokenEconomyAttributes(userId, 1, 2, true, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setSuperDAOTokens(userId, 2, true, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setKittieFightTokens(userId, 1, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.addKittie(userId, 1, 2, 'dead', {from: unauthorizedUser}).should.be.rejected;
 
       // First add a kittie to test update and remove functions
@@ -168,27 +169,37 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
       attrIsPaid.should.be.equal(isPaid);
     });
 
-    it('sets/gets token economy attributes', async () => {
-      let kittieFightTokens = 1000;
+    it('sets/gets DAO tokens', async () => {
       let superDAOTokens = 5000;
       let isStakingSuperDAO = true;
       // First create a user in DB
       await this.profileDB.create(userId).should.be.fulfilled;
       // Set token economy attributes
-      await this.profileDB.setTokenEconomyAttributes(
+      await this.profileDB.setSuperDAOTokens(
         userId,
-        kittieFightTokens,
         superDAOTokens,
         isStakingSuperDAO
       ).should.be.fulfilled;
       
-      let attrKittieFightTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieFightTokens'));
       let attrSuperDAOTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'superDAOTokens'));
       let attrIsStakingSuperDAO = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isStakingSuperDAO'));
 
-      attrKittieFightTokens.toNumber().should.be.equal(kittieFightTokens);
       attrSuperDAOTokens.toNumber().should.be.equal(superDAOTokens);
       attrIsStakingSuperDAO.should.be.equal(isStakingSuperDAO);
+    });
+
+    it('sets/gets Kittie Fight tokens', async () => {
+      let kittieFightTokens = 1000;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set token economy attributes
+      await this.profileDB.setKittieFightTokens(
+        userId,
+        kittieFightTokens
+      ).should.be.fulfilled;
+      
+      let attrKittieFightTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieFightTokens'));
+      attrKittieFightTokens.toNumber().should.be.equal(kittieFightTokens);
     });
 
     it('adds/updates/removes kittie and attributes', async () => {
