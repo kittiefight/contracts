@@ -1,15 +1,17 @@
-const GenericDB = artifacts.require('GenericDB');
-const ProfileDB = artifacts.require('ProfileDB');
-const Proxy = artifacts.require('Proxy');
 const BigNumber = require('bignumber.js');
-const CONTRACT_NAME = 'ProfileDB';
-const DB_TABLE_NAME = 'ProfileTable';
-
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
   .should();
+
+const GenericDB = artifacts.require('GenericDB');
+const ProfileDB = artifacts.require('ProfileDB');
+const Proxy = artifacts.require('Proxy');
+
+const CONTRACT_NAME = 'ProfileDB';
+const TABLE_NAME_PROFILE = 'ProfileTable';
+const TABLE_NAME_KITTIE = 'KittieTable';
 
   
 contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress]) => {
@@ -46,12 +48,14 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     });
 
     it('does not allow unauthorized address to access attribute setter functions', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+
       await this.profileDB.create(userId, {from: unauthorizedUser}).should.be.rejected;
 
       // Create a user with authorized address to test authorization for setter functions
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
-      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
 
       await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, {from: unauthorizedUser}).should.be.rejected;
@@ -68,9 +72,11 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
 
   describe('ProfileDB::Attributes', () => {
     it('creates a profile', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
-      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
     });
 
     it('sets/gets gaming attributes', async () => {
@@ -194,13 +200,11 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
 
       // Add a kittie under this account
       await this.profileDB.addKittie(userId, kittieId, deadAt, kittieStatus).should.be.fulfilled;
-      // Check if the kittie is added and its attributes
-      let attrKittieId = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieId'));
-      let attrNumOfKitties = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'numOfKitties'));
+      // Check if the kittie is added and its attributes\
+      let doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, web3.utils.soliditySha3(userId, TABLE_NAME_KITTIE), kittieId);
       let attrDeadAt = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, kittieId, 'deadAt'));
       let attrKittieStatus = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, kittieId, 'kittieStatus'));
-      attrKittieId.toNumber().should.be.equal(kittieId);
-      attrNumOfKitties.toNumber().should.be.equal(1);
+      doesExist.should.be.true;
       attrDeadAt.toNumber().should.be.equal(deadAt);
       attrKittieStatus.should.be.equal(kittieStatus);
 
@@ -215,18 +219,18 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
       // Remove kittie
       await this.profileDB.removeKittie(userId, kittieId).should.be.fulfilled;
       // Check if the kittie is removed and the number of kitties decremented by one
-      attrKittieId = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieId'));
-      attrNumOfKitties = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'numOfKitties'));
-      attrKittieId.toNumber().should.be.equal(kittieId);
-      attrNumOfKitties.toNumber().should.be.equal(0);
+      doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, web3.utils.soliditySha3(userId, TABLE_NAME_KITTIE), kittieId);
+      doesExist.should.be.false;
     });
   });
 
   describe('ProfileDB::Attributes::Negatives', () => {
     it('does not allow to create duplicate profiles', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
-      (await this.genericDB.doesNodeAddrExist (CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
 
       await this.profileDB.create(userId).should.be.rejected;
     });

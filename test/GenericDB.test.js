@@ -38,22 +38,23 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
 
     it('does not allow unauthorized address to access attribute setter functions', async () => {
       let key = web3.utils.soliditySha3('data_key');
+      let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
       await this.genericDB.setIntStorage(CONTRACT_NAME, key, -123, {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.setUintStorage(CONTRACT_NAME, key, 123, {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.setAddressStorage(CONTRACT_NAME, key, randomAddr, {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.setBoolStorage(CONTRACT_NAME, key, true, {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.setBytesStorage(CONTRACT_NAME, key, web3.utils.toHex(123), {from: unauthorizedAddr}).should.be.rejected;
       await this.genericDB.setStringStorage(CONTRACT_NAME, key, 'asdad', {from: unauthorizedAddr}).should.be.rejected;
-      await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId, {from: unauthorizedAddr}).should.be.rejected;
-      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId, {from: unauthorizedAddr}).should.be.rejected;
+      await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, tableKey, nodeId, {from: unauthorizedAddr}).should.be.rejected;
+      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeId, {from: unauthorizedAddr}).should.be.rejected;
       
       // Create a linked list and an item in the list with authorized address to test the remaining functions
-      await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId).should.be.fulfilled;
-      await this.genericDB.removeNodeFromLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId, {from: unauthorizedAddr}).should.be.rejected;
+      await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, tableKey, nodeId).should.be.fulfilled;
+      await this.genericDB.removeNodeFromLinkedList(CONTRACT_NAME, tableKey, nodeId, {from: unauthorizedAddr}).should.be.rejected;
 
       // Create a linked list(address) and an item in the list with authorized address to test the remaining functions
-      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId).should.be.fulfilled;
-      await this.genericDB.removeNodeFromLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId, {from: unauthorizedAddr}).should.be.rejected;
+      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeId).should.be.fulfilled;
+      await this.genericDB.removeNodeFromLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeId, {from: unauthorizedAddr}).should.be.rejected;
     });
   });
 
@@ -90,50 +91,53 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
     });
 
     it('creates and modifies linklist', async () => {
-      await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId).should.be.fulfilled;
-      let doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, nodeId);
+      let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
+
+      await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, tableKey, nodeId).should.be.fulfilled;
+      let doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, tableKey, nodeId);
       doesExist.should.be.true;
 
-      doesExist = await this.genericDB.doesListExist(CONTRACT_NAME, DB_TABLE_NAME);
+      doesExist = await this.genericDB.doesListExist(CONTRACT_NAME, tableKey);
       doesExist.should.be.true;
 
-      await this.genericDB.removeNodeFromLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeId).should.be.fulfilled;
-      doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, nodeId);
+      await this.genericDB.removeNodeFromLinkedList(CONTRACT_NAME, tableKey, nodeId).should.be.fulfilled;
+      doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, tableKey, nodeId);
       doesExist.should.be.false;
 
-      doesExist = await this.genericDB.doesListExist(CONTRACT_NAME, DB_TABLE_NAME);
+      doesExist = await this.genericDB.doesListExist(CONTRACT_NAME, tableKey);
       doesExist.should.be.false;
 
-      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId).should.be.fulfilled;
-      doesExist = await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId);
+      await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeId).should.be.fulfilled;
+      doesExist = await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, addrNodeId);
       doesExist.should.be.true;
 
-      doesExist = await this.genericDB.doesListAddrExist(CONTRACT_NAME, DB_TABLE_NAME);
+      doesExist = await this.genericDB.doesListAddrExist(CONTRACT_NAME, tableKey);
       doesExist.should.be.true;
 
-      await this.genericDB.removeNodeFromLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId).should.be.fulfilled;
-      doesExist = await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, DB_TABLE_NAME, addrNodeId);
+      await this.genericDB.removeNodeFromLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeId).should.be.fulfilled;
+      doesExist = await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, addrNodeId);
       doesExist.should.be.false;
 
-      doesExist = await this.genericDB.doesListAddrExist(CONTRACT_NAME, DB_TABLE_NAME);
+      doesExist = await this.genericDB.doesListAddrExist(CONTRACT_NAME, tableKey);
       doesExist.should.be.false;
     });
 
     it('iterates all items in linklist', async () => {
+      let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
       let nodeIds = [1234, 45667, 34456, 342452, 123178];
 
       // First create some nodes in DB
       for (let i = 0; i < nodeIds.length; i++) {
-        await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, DB_TABLE_NAME, nodeIds[i]).should.be.fulfilled;
+        await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, tableKey, nodeIds[i]).should.be.fulfilled;
       }
 
-      let totalUsers = (await this.genericDB.getLinkedListSize(CONTRACT_NAME, DB_TABLE_NAME)).toNumber();
+      let totalUsers = (await this.genericDB.getLinkedListSize(CONTRACT_NAME, tableKey)).toNumber();
       totalUsers.should.be.equal(nodeIds.length);
 
       let node = 0; // Start from the HEAD. HEAD is always 0.
       let index = totalUsers - 1;
       do {
-        let ret = await this.genericDB.getAdjacent(CONTRACT_NAME, DB_TABLE_NAME, node, true);
+        let ret = await this.genericDB.getAdjacent(CONTRACT_NAME, tableKey, node, true);
         // ret value includes direction and node id. Ex => {'0': true, '1': 1234}
         node = ret['1'].toNumber();
 
@@ -146,6 +150,7 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
     });
 
     it('iterates all items in linklistAddr', async () => {
+      let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
       let addrNodeIds = [
         '0x0000000000000000000000000000000000000001',
         '0x0000000000000000000000000000000000000002',
@@ -156,16 +161,16 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
 
       // First create some nodes in DB
       for (let i = 0; i < addrNodeIds.length; i++) {
-        await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, DB_TABLE_NAME, addrNodeIds[i]).should.be.fulfilled;
+        await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeIds[i]).should.be.fulfilled;
       }
 
-      let totalUsers = (await this.genericDB.getLinkedListAddrSize(CONTRACT_NAME, DB_TABLE_NAME)).toNumber();
+      let totalUsers = (await this.genericDB.getLinkedListAddrSize(CONTRACT_NAME, tableKey)).toNumber();
       totalUsers.should.be.equal(addrNodeIds.length);
 
       let node = ZERO_ADDRESS; // Start from the HEAD. HEAD is always 0x0.
       let index = totalUsers - 1;
       do {
-        let ret = await this.genericDB.getAdjacentAddr(CONTRACT_NAME, DB_TABLE_NAME, node, true);
+        let ret = await this.genericDB.getAdjacentAddr(CONTRACT_NAME, tableKey, node, true);
         // ret value includes direction and node id. Ex => {'0': true, '1': 0xa0a214...}
         node = ret['1'];
 
