@@ -30,6 +30,11 @@ contract ProfileDB is Proxied {
   string internal constant ERROR_ALREADY_EXIST = "Profile already exists";
   string internal constant ERROR_DOES_NOT_EXIST = "Profile not exists";
 
+  modifier onlyExistentProfile(address account) {
+    require(doesProfileExist(account), ERROR_DOES_NOT_EXIST);
+    _;
+  }
+
   constructor(GenericDB _genericDB) public {
     setGenericDB(_genericDB);
   }
@@ -52,9 +57,10 @@ contract ProfileDB is Proxied {
     uint256 deadAt,
     string calldata kittieStatus
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     // Check if kittie exists under this account
     require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
@@ -67,9 +73,10 @@ contract ProfileDB is Proxied {
     uint256 deadAt,
     string calldata kittieStatus
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     // Check if kittie exists or not under this account
     // If it does not, add it to kittie table under this account
     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
@@ -82,9 +89,10 @@ contract ProfileDB is Proxied {
     address account,
     uint256 kittieId
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     // Check if kittie exists under this account
     // If it exists, remove the kittie from kittie table under this account
     require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
@@ -99,9 +107,10 @@ contract ProfileDB is Proxied {
     uint256 feeHistory,
     bool isFreeToPlay
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalWins")), totalWins);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalLosses")), totalLosses);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "tokensWon")), tokensWon);
@@ -117,9 +126,10 @@ contract ProfileDB is Proxied {
     uint256 listingStart,
     uint256 listingEnd
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalFights")), totalFights);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "nextFight")), nextFight);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "listingStart")), listingStart);
@@ -133,9 +143,10 @@ contract ProfileDB is Proxied {
     uint256 expirationDate,
     bool isPaid
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "feeType")), feeType);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "paidDate")), paidDate);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "expirationDate")), expirationDate);
@@ -148,15 +159,28 @@ contract ProfileDB is Proxied {
     uint256 superDAOTokens,
     bool isStakingSuperDAO
   )
-    external onlyContract(CONTRACT_NAME_REGISTER)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
   {
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_DOES_NOT_EXIST);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "kittieFightTokens")), kittieFightTokens);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "superDAOTokens")), superDAOTokens);
     genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isStakingSuperDAO")), isStakingSuperDAO);
   }
 
-  function doesExist(address account) public view returns (bool) {
+  function doesProfileExist(address account) public view returns (bool) {
     return genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account);
+  }
+
+  function getKitties(address account) public view returns (uint256[] memory kitties) {
+    bytes32 tableKey = keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE));
+    bool dir;
+    uint256 nextKittie;
+    uint256 i;
+
+    do {
+      (dir, nextKittie) = genericDB.getAdjacent(CONTRACT_NAME_PROFILE_DB, tableKey, nextKittie, dir);
+      if (nextKittie != 0) {kitties[i++] = nextKittie;}
+    } while (nextKittie != 0);
   }
 }
