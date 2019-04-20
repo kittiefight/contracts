@@ -194,6 +194,7 @@ contract ProfileDB is Proxied {
     bool dir;
     uint256 nextKittie;
     uint256 i;
+    kitties = new uint256[](genericDB.getLinkedListSize(CONTRACT_NAME_PROFILE_DB, tableKey));
 
     do {
       (dir, nextKittie) = genericDB.getAdjacent(CONTRACT_NAME_PROFILE_DB, tableKey, nextKittie, dir);
