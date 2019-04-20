@@ -44,7 +44,6 @@ contract Register is Proxied, SystemRoles {
   string constant internal KITTIE_STATUS_DEAD = "dead";
   string constant internal KITTIE_STATUS_GHOST = "ghost";
 
-  constructor() public {}
 
   function initialize() external onlyOwner {
     profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
@@ -146,11 +145,19 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
-  function payFees(address account, uint256 amount) external onlyProxy returns (bool) {
+  function payFees(address account, uint256 amount)
+    external
+    onlyProxy
+    returns (bool)
+  {
     // TODO: Implement this
   }
 
-  function lockTokens(address account, uint256 amount) external onlyProxy returns (bool) {
+  function lockTokens(address account, uint256 amount)
+    external
+    onlyProxy
+    returns (bool)
+  {
     require(amount > 0);
     uint256 lockedBalance = profileDB.getKittieFightTokens(account);
     // TODO: Change the owner address to the address of token custody contract later
@@ -159,7 +166,11 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
-  function releaseTokens(address account, uint256 amount) external onlyProxy returns (bool) {
+  function releaseTokens(address account, uint256 amount)
+    external
+    onlyProxy
+    returns (bool)
+  {
     require(amount > 0);
     uint256 lockedBalance = profileDB.getKittieFightTokens(account);
     require(lockedBalance >= amount);

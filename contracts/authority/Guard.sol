@@ -1,43 +1,37 @@
 pragma solidity ^0.5.5;
 
-import "./Owned.sol";
 import "./SystemRoles.sol";
 import "../modules/databases/RoleDB.sol";
+import "../modules/proxy/ProxyBase.sol";
 
 
-contract Guard is Owned, SystemRoles {
-  RoleDB public roleDB;
-
-
-  constructor (RoleDB _roleDB) public {
-    setRoleDB(_roleDB);
-  }
-
+contract Guard is ProxyBase, SystemRoles {
+  
   modifier onlySuperAdmin() {
     assert(msg.sender != address(0));
-    require(roleDB.hasRole(SUPER_ADMIN_ROLE, msg.sender), "Only super admin");
+    require(checkRole(SUPER_ADMIN_ROLE), "Only super admin");
     _;
   }
 
   modifier onlyAdmin() {
     assert(msg.sender != address(0));
-    require(roleDB.hasRole(ADMIN_ROLE, msg.sender), "Only admin");
+    require(checkRole(ADMIN_ROLE), "Only admin");
     _;
   }
 
   modifier onlyPlayer() {
     assert(msg.sender != address(0));
-    require(roleDB.hasRole(PLAYER_ROLE, msg.sender), "Only player");
+    require(checkRole(PLAYER_ROLE), "Only player");
     _;
   }
 
   modifier onlyBettor() {
     assert(msg.sender != address(0));
-    require(roleDB.hasRole(BETTOR_ROLE, msg.sender), "Only bettor");
+    require(checkRole(BETTOR_ROLE), "Only bettor");
     _;
   }
 
-  function setRoleDB(RoleDB _roleDB) public onlyOwner {
-    roleDB = _roleDB;
+  function checkRole(string memory role) internal view returns (bool) {
+    return RoleDB(addressOfRoleDB()).hasRole(role, msg.sender);
   }
 }
