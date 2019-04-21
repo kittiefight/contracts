@@ -5,25 +5,20 @@
 *
 */
 
-
-pragma solidity >=0.5.0 <0.6.0;
+pragma solidity ^0.5.5;
 
 import "./DateTimeAPI.sol";
-import "../../interfaces/IContractManager.sol";
 import "../../GameVarAndFee.sol";
+import "../proxy/Proxied.sol";
 
-contract DateTime is DateTimeAPI{
+/**
+ * @title Contract to track minutes, hour, daily, the weekly and monthly schedule 
+ * for scheduling activities within the platform. Used by contract to for time tracking,
+ * accurately scheduling game events within the kittiefight sytem .
+ * @dev check return variables, depending of what other contracts need.
+ */
+contract DateTime is Proxied, DateTimeAPI {
     
-    IContractManager contractManager;
-
-    /**
-    * @notice creating DateTime contract using `_contractManager` as contract manager address
-    * @param _contractManager the contract manager used by the game
-    */
-    constructor(address _contractManager) public {
-        contractManager = IContractManager(_contractManager);
-    }
-
     /**
     * @notice Uses the variable  "futureGameTime" from gameVarAndFeeManager 
     * to compare against current time and determine the countdown start of the 
@@ -36,11 +31,11 @@ contract DateTime is DateTimeAPI{
     uint16 _year, uint8 _month, uint8 _day, uint8 _hour, 
     uint8 _minute, uint8 second, uint8 weekday) 
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(contractManager.getContract("GameVarAndFee"));
-        uint _futureGameTime = gameVarAndFee.futureGameTime();
-        uint _gamePrestart = gameVarAndFee.gamePrestart();
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+        uint _futureGameTime = gameVarAndFee.getFutureGameTime();
+        uint _gamePrestart = gameVarAndFee.getGamePrestart();
 
-        _DateTime dt = parseTimestamp(now + _futureGameTime - _gamePrestart);
+        _DateTime memory dt = parseTimestamp(now + _futureGameTime - _gamePrestart);
 
         return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday);
     }
@@ -55,10 +50,10 @@ contract DateTime is DateTimeAPI{
     returns(
     uint8 _hour, uint8 _minute, uint8 second)
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(contractManager.getContract("GameVarAndFee"));
-        uint _gameDuration = gameVarAndFee.gameDuration();
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+        uint _gameDuration = gameVarAndFee.getGameDuration();
 
-        _DateTime dt = parseTimestamp(now + _gameDuration);
+        _DateTime memory dt = parseTimestamp(now + _gameDuration);
 
         return (dt.hour, dt.minute, dt.second);
 
@@ -74,10 +69,10 @@ contract DateTime is DateTimeAPI{
     returns(
     uint8 _hour, uint8 _minute, uint8 second)
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(contractManager.getContract("GameVarAndFee"));
-        uint _kittieHellExpiration = gameVarAndFee.kittieHellExpiration();
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+        uint _kittieHellExpiration = gameVarAndFee.getKittieHellExpiration();
 
-        _DateTime dt = parseTimestamp(_gameEndTime + _kittieHellExpiration);
+        _DateTime memory dt = parseTimestamp(_gameEndTime + _kittieHellExpiration);
 
         return (dt.hour, dt.minute, dt.second);
 
@@ -93,13 +88,12 @@ contract DateTime is DateTimeAPI{
     returns(
     uint8 _hour, uint8 _minute, uint8 second)
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(contractManager.getContract("GameVarAndFee"));
-        uint _honeypotExpiration = gameVarAndFee.honeypotExpiration();
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+        uint _honeypotExpiration = gameVarAndFee.getHoneypotExpiration();
 
-        _DateTime dt = parseTimestamp(_gameEndTime + _honeypotExpiration);
+        _DateTime memory dt = parseTimestamp(_gameEndTime + _honeypotExpiration);
 
         return (dt.hour, dt.minute, dt.second);
-
     } 
 
     /**
@@ -113,10 +107,10 @@ contract DateTime is DateTimeAPI{
     uint16 _year, uint8 _month, uint8 _day, uint8 _hour, 
     uint8 _minute, uint8 second, uint8 weekday) 
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(contractManager.getContract("GameVarAndFee"));
-        uint _futureGameTime = gameVarAndFee.futureGameTime();
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+        uint _futureGameTime = gameVarAndFee.getFutureGameTime();
 
-        _DateTime dt = parseTimestamp(now + _futureGameTime);
+        _DateTime memory dt = parseTimestamp(now + _futureGameTime);
 
         return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday);
 
