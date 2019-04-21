@@ -49,6 +49,7 @@ contract Register is Proxied, SystemRoles {
   /**
    * @dev Sets related database contracts and tokens
    * ProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOToken
+   * @dev Can be called only by the owner of this contract
    */
   function initialize() external onlyOwner {
     profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
@@ -58,6 +59,12 @@ contract Register is Proxied, SystemRoles {
     superDaoToken = ERC20Standard(proxy.getContract('SuperDAOToken'));
   }
 
+  /**
+   * @dev Creates a new profile with the given address in ProfileDB
+   * and sets its role to `bettor` by default.
+   * @dev Can be called only through Proxy contract
+   * @param account address Address of the user to be registered
+   */
   function register(address account)
     external
     onlyProxy
@@ -67,6 +74,13 @@ contract Register is Proxied, SystemRoles {
     _registerRole(account, BETTOR_ROLE);
   }
 
+  /**
+   * @dev Locks the given CryptoKitty to this contract. Prior to this operation,
+   * the owner of the given CryptoKitty should approve this contract for trasfer operation.
+   * @dev Can be called only through Proxy contract
+   * @param account address Address of the owner of CryptoKitty to be locked
+   * @param kittieId uint256 Id of CryptoKitty to be locked
+   */
   function lockKittie(
     address account,
     uint256 kittieId
@@ -83,6 +97,13 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev Transfers the given CryptoKitty from this contract to its user. The kitten's
+   * status should not be dead/ghots nor playing. Otherwise the tx will be reverted.
+   * @dev Can be called only through Proxy contract
+   * @param account address Address of the owner of CryptoKitty to be released
+   * @param kittieId uint256 Id of CryptoKitty to be released
+   */
   function releaseKittie(
     address account,
     uint256 kittieId
@@ -103,6 +124,15 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev Updates the status of the given kitten.
+   * @dev Can be called through other system contracts
+   * @param contractName string Address of the owner of CryptoKitty to be updated
+   * @param account address Address of the owner of CryptoKitty to be updated
+   * @param kittieId uint256 Id of CryptoKitty to be updated
+   * @param deadAt uint256 Time of death of the kitten if its status dead
+   * @param kittieStatus string Status of the kitten in KittieFight system
+   */
   function updateKittie(
     string calldata contractName,
     address account,
@@ -120,6 +150,13 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev ???
+   * @dev Can be called only through Proxy contract
+   * @param account address
+   * @param to address
+   * @param amount uint256
+   */
   // TODO: Implement this
   function sendTokensTo(address account, address to, uint256 amount)
     external
@@ -130,6 +167,12 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev ???
+   * @dev Can be called only through Proxy contract
+   * @param account address
+   * @param amount uint256
+   */
   // TODO: Implement this
   function exchangeTokensForEth(address payable account, uint256 amount)
     external
@@ -145,6 +188,13 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev Stakes SuperDAO tokens to this contract and saves the stake
+   * amount and staking status on ProfileDB.
+   * @dev Can be called only through Proxy contract
+   * @param account address Address of the user who is staking
+   * @param amount uint256 Amount of SuperDAO tokens to be staked
+   */
   function stakeSuperDAO(address account, uint256 amount)
     external
     onlyProxy
@@ -157,6 +207,12 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev ???
+   * @dev Can be called only through Proxy contract
+   * @param account address
+   * @param amount uint256
+   */
   // TODO: Implement this
   function payFees(address account, uint256 amount)
     external
@@ -165,6 +221,13 @@ contract Register is Proxied, SystemRoles {
   {
   }
 
+  /**
+   * @dev Locks KittieFight tokens to this contract and saves the locked
+   * amount on ProfileDB under account's profile.
+   * @dev Can be called only through Proxy contract
+   * @param account address Address of the user whose tokens will be locked
+   * @param amount uint256 Amount of KittieFight tokens to be locked
+   */
   function lockTokens(address account, uint256 amount)
     external
     onlyProxy
@@ -178,6 +241,14 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  /**
+   * @dev Releases KittieFight tokens from this contract to `account`.
+   * Does not allow to release an amount more than the locked amount.
+   * Updates the locked amount on ProfileDB accordingly after release.
+   * @dev Can be called only through Proxy contract
+   * @param account address Address of the user whose tokens will be released
+   * @param amount uint256 Amount of KittieFight tokens to be released
+   */
   function releaseTokens(address account, uint256 amount)
     external
     onlyProxy
@@ -195,18 +266,38 @@ contract Register is Proxied, SystemRoles {
   function getAddressAssets() public view returns (address) {
   }
 
+  /**
+   * @dev Checks whether there is a profile on ProfileDB with the given address.
+   * @param account address Address to be checked
+   * @return bool true if there is a registered profile with the given address, false otherwise.
+   */
   function isRegistered(address account) public view returns (bool) {
     return profileDB.doesProfileExist(account);
   }
 
+  /**
+   * @dev Checks whether there is a kittie registered to the system under the given account.
+   * @param account address Address to be checked
+   * @return bool true if there is a kittie registered to the system under the given account
+   */
   function hasKitties(address account) public view returns (bool) {
     return profileDB.getKitties(account).length > 0;
   }
 
+  /**
+   * @dev Registers a role for the given address on RoleDB.
+   * @param account address Address to be registered for the provided role
+   * @param role string Role to be assigned to the given address
+   */
   function _registerRole(address account, string memory role) internal {
     roleDB.addRole(CONTRACT_NAME_REGISTER, role, account);
   }
 
+  /**
+   * @dev Removes a role from the given address on RoleDB.
+   * @param account address Address that the provided role will be removed from
+   * @param role string Role to be removed from the given address
+   */
   function _removeRole(address account, string memory role) internal {
     roleDB.removeRole(CONTRACT_NAME_REGISTER, role, account);
   }
