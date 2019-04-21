@@ -18,8 +18,7 @@ import "../databases/ProfileDB.sol";
 import "../databases/RoleDB.sol";
 import "../proxy/Proxied.sol";
 import "../../interfaces/ERC721.sol";
-import "../../interfaces/ERC20Basic.sol";
-import "../../interfaces/ERC20Advanced.sol";
+import "../../interfaces/ERC20Standard.sol";
 
 
 /**
@@ -38,6 +37,8 @@ contract Register is Proxied, SystemRoles {
   ProfileDB public profileDB;
   RoleDB public roleDB;
   ERC721 public cryptoKitties;
+  ERC20Standard public kittieFightToken;
+  ERC20Standard public superDaoToken;
 
   string constant internal KITTIE_STATUS_IDLE = "idle";
   string constant internal KITTIE_STATUS_PLAYING = "playing";
@@ -45,18 +46,25 @@ contract Register is Proxied, SystemRoles {
   string constant internal KITTIE_STATUS_GHOST = "ghost";
 
 
+  /**
+   * @dev Sets related database contracts and tokens
+   * ProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOToken
+   */
   function initialize() external onlyOwner {
     profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
     roleDB = RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB));
     cryptoKitties = ERC721(proxy.getContract('CryptoKitties'));
+    kittieFightToken = ERC20Standard(proxy.getContract('KittieFightToken'));
+    superDaoToken = ERC20Standard(proxy.getContract('SuperDAOToken'));
   }
 
   function register(address account)
     external
-    onlyProxy returns (bool)
+    onlyProxy
+    returns (bool)
   {
     profileDB.create(account);
-    registerRole(account, BETTOR_ROLE);
+    _registerRole(account, BETTOR_ROLE);
   }
 
   function lockKittie(
@@ -71,11 +79,11 @@ contract Register is Proxied, SystemRoles {
     // TODO: Change the owner address to the address of kittie custody contract later
     cryptoKitties.transferFrom(account, address(this), kittieId);
     profileDB.addKittie(account, kittieId, 0, KITTIE_STATUS_IDLE);
-    registerRole(account, PLAYER_ROLE);
+    _registerRole(account, PLAYER_ROLE);
     return true;
   }
 
-  function releaseKitty(
+  function releaseKittie(
     address account,
     uint256 kittieId
   )
@@ -85,23 +93,25 @@ contract Register is Proxied, SystemRoles {
   {
     // TODO: Change the owner address to the address of kittie custody contract later
     require(cryptoKitties.ownerOf(kittieId) == address(this));
+    // TODO: Has to check KittyHellDB whether the Kittie is there or not
     profileDB.removeKittie(account, kittieId);
     // If there is no kittie left in custody, remove player status from the profile
     if (profileDB.getKittieCount(account) == 0) {
-      removeRole(account, PLAYER_ROLE);
+      _removeRole(account, PLAYER_ROLE);
     }
     cryptoKitties.transfer(account, kittieId);
     return true;
   }
 
-  function updateKitty(
+  function updateKittie(
+    string calldata contractName,
     address account,
     uint256 kittieId,
     uint256 deadAt,
     string calldata kittieStatus
   )
     external
-    onlyProxy
+    onlyContract(contractName)
     returns (bool)
   {
     // TODO: Change the owner address to the address of kittie custody contract later
@@ -110,15 +120,17 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
+  // TODO: Implement this
   function sendTokensTo(address account, address to, uint256 amount)
     external
     onlyProxy
     returns (bool)
   {
-    require(ERC20Advanced(proxy.getContract('KittieFightToken')).transferFrom(account, to, amount));
+    require(kittieFightToken.transferFrom(account, to, amount));
     return true;
   }
 
+  // TODO: Implement this
   function exchangeTokensForEth(address payable account, uint256 amount)
     external
     onlyProxy
@@ -127,7 +139,7 @@ contract Register is Proxied, SystemRoles {
     // TODO: Calculate exchange rate according to what??!
     uint256 exhangeRate = 1;
     require(amount > 0);
-    require(ERC20Advanced(proxy.getContract('KittieFightToken')).transferFrom(account, address(this), amount));
+    require(kittieFightToken.transferFrom(account, address(this), amount));
     account.transfer(amount.mul(exhangeRate));
     profileDB.setKittieFightTokens(account, amount);
     return true;
@@ -140,17 +152,17 @@ contract Register is Proxied, SystemRoles {
   {
     require(amount > 0);
     // TODO: Change the owner address to the address of token custody contract later
-    require(ERC20Advanced(proxy.getContract('SuperDAOToken')).transferFrom(account, address(this), amount));
+    require(superDaoToken.transferFrom(account, address(this), amount));
     profileDB.setSuperDAOTokens(account, amount, true);
     return true;
   }
 
+  // TODO: Implement this
   function payFees(address account, uint256 amount)
     external
     onlyProxy
     returns (bool)
   {
-    // TODO: Implement this
   }
 
   function lockTokens(address account, uint256 amount)
@@ -161,7 +173,7 @@ contract Register is Proxied, SystemRoles {
     require(amount > 0);
     uint256 lockedBalance = profileDB.getKittieFightTokens(account);
     // TODO: Change the owner address to the address of token custody contract later
-    require(ERC20Advanced(proxy.getContract('KittieFightToken')).transferFrom(account, address(this), amount));
+    require(kittieFightToken.transferFrom(account, address(this), amount));
     profileDB.setKittieFightTokens(account, lockedBalance.add(amount));
     return true;
   }
@@ -175,12 +187,12 @@ contract Register is Proxied, SystemRoles {
     uint256 lockedBalance = profileDB.getKittieFightTokens(account);
     require(lockedBalance >= amount);
     profileDB.setKittieFightTokens(account, lockedBalance.sub(amount));
-    require(ERC20Basic(proxy.getContract('KittieFightToken')).transfer(account, amount));
+    require(kittieFightToken.transfer(account, amount));
     return true;
   }
 
+  // TODO: Implement this
   function getAddressAssets() public view returns (address) {
-    // TODO: Implement this
   }
 
   function isRegistered(address account) public view returns (bool) {
@@ -191,11 +203,11 @@ contract Register is Proxied, SystemRoles {
     return profileDB.getKitties(account).length > 0;
   }
 
-  function registerRole(address account, string memory role) internal {
+  function _registerRole(address account, string memory role) internal {
     roleDB.addRole(CONTRACT_NAME_REGISTER, role, account);
   }
 
-  function removeRole(address account, string memory role) internal {
+  function _removeRole(address account, string memory role) internal {
     roleDB.removeRole(CONTRACT_NAME_REGISTER, role, account);
   }
 }
