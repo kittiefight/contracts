@@ -7,7 +7,6 @@ require("chai")
 
 const GenericDB = artifacts.require("GenericDB");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
-//const GameVarAndFeeDB = artifacts.require("GameVarAndFeeDB");
 const Proxy = artifacts.require("Proxy");
 const RoleDB = artifacts.require("RoleDB");
 
@@ -15,24 +14,22 @@ contract("GameVarAndFee", ([creator, randomAddress]) => {
   let futureGameTime = 12324353;
 
   beforeEach(async () => {
+    //Deploy contracts needed for testing GameVarAndFee
     this.proxy = await Proxy.new();
     this.genericDB = await GenericDB.new();
     this.gameVarAndFee = await GameVarAndFee.new(this.genericDB.address);
-    //this.gameVarAndFeeDB = await GameVarAndFeeDB.new(this.genericDB.address);
     this.roleDB = await RoleDB.new(this.genericDB.address);
 
+    // Add contracts to Contract Manager mapping variable
     await this.proxy.addContract("GameVarAndFee", this.gameVarAndFee.address);
-    // await this.proxy.addContract(
-    //   "GameVarAndFeeDB",
-    //   this.gameVarAndFeeDB.address
-    // );
     await this.proxy.addContract("RoleDB", this.roleDB.address);
 
+    // Set Proxy address in contracts
     await this.gameVarAndFee.setProxy(this.proxy.address);
-    //await this.gameVarAndFeeDB.setProxy(this.proxy.address);
     await this.roleDB.setProxy(this.proxy.address);
     await this.genericDB.setProxy(this.proxy.address);
 
+    //Function only for testing, setting SuperAdmin Role to msg.sender
     await this.gameVarAndFee.initialize();
   });
 
@@ -48,13 +45,13 @@ contract("GameVarAndFee", ([creator, randomAddress]) => {
       dbAdd.should.be.equal(this.genericDB.address);
     });
 
-    it("does not allow set vars outside proxy", async () => {
+    it("does not allow set vars without using proxy", async () => {
       await this.gameVarAndFee.setVarAndFee("futureGameTime", futureGameTime, {
         from: randomAddress
       }).should.be.rejected;
     });
 
-    it("only super admin", async () => {
+    it("only super admin can set variables", async () => {
       await this.proxy.setFutureGameTime(futureGameTime, {
         from: randomAddress
       }).should.be.rejected;
@@ -62,7 +59,7 @@ contract("GameVarAndFee", ([creator, randomAddress]) => {
   });
 
   describe("GameVarAndFee::Storage", () => {
-    it("sets variable in DB", async () => {
+    it("sets variable in DB from proxy", async () => {
       await this.proxy.setFutureGameTime(futureGameTime).should.be.fulfilled;
       let getVar = await this.gameVarAndFee.getFutureGameTime();
 

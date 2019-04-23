@@ -1,6 +1,15 @@
-
+/**
+ * @title GameVarAndFee
+ *
+ * @author @wafflemakr @hamaad
+ *
+ */
 pragma solidity ^0.5.5;
 
+/**
+ * @title Contract that stores the hash of all variable keys 
+    to store in values with eternal storage
+ */
 contract VarAndFeeNames {
 
     string constant TABLE_NAME = "GameVarAndFeeTable";

@@ -29,44 +29,53 @@ import "./DSNote.sol";
 import './misc/VarAndFeeNames.sol';
 
 
-
-
 /**
  * @title Contract that moderates the various fees, timing limits, expiry date/time, 
  * schedules, eth allocation per game, token allocation per game, kittiehell 
  * kittie expiration, time durations, distribution percentages e.t.c.
  * The note modifier will log event for each function call.
- * @dev high gas cost
+ * @dev One setter that is called from GameVarAndFeeProxy contract setters
  */
 contract GameVarAndFee is Proxied, VarAndFeeNames {
 
-    //GameVarAndFeeDB public gameVarAndFeeDB;
-
+    // Declare DB type variable
     GenericDB public genericDB;
 
+    /// @notice Function called when deployed
+    /// @param _genericDB Address of deployed GeneriDB contract
     constructor (GenericDB _genericDB) public {
         setGenericDB(_genericDB);
     }
     
+    /// @notice Set genericDB variable to store data in contract
     function setGenericDB(GenericDB _genericDB) public onlyOwner {
         genericDB = _genericDB;
     }
 
+    /// @notice for testing only
     function initialize() external onlyOwner {
         RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).addRole(CONTRACT_NAME_GAMEVARANDFEE, "super_admin", msg.sender);
     }
 
     // ----- SETTER ------
 
-    /// @notice Generic Setter for all vars and fees
-    /// @dev check if only one setter function can be implemented
+    /// @notice Generic Setter for all vars and fees  
+    /// @param key hash of Table Name and keyName to store in DB
+    /// @param value value of the variable to store
+    /// @dev can only be called by Super Admin through proxy
     function setVarAndFee(bytes32 key, uint value) 
     external onlyProxy {
         genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
-    }
-  
+    }  
 
     // ----- GETTERS -------
+
+    // /// @notice Generic Getter
+    // function getVarAndFee(string memory keyName) 
+    // public view returns(uint) { 
+    //     bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, keyName));
+    //     return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key);
+    // }
         
     /// @notice Gets the time in future that a game is to be played
     function getFutureGameTime() 
