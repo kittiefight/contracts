@@ -2,7 +2,7 @@ pragma solidity ^0.5.5;
 
 import "./libs/zos-lib/Initializable.sol";
 import "./modules/proxy/ProxyBase.sol";
-// import "./modules/proxy/RegisterProxy.sol";
+//import "./modules/proxy/RegisterProxy.sol";
 import "./modules/proxy/GameVarAndFeeProxy.sol";
 
 
@@ -15,7 +15,7 @@ contract Proxy is
     Initializable,          //Allows to use ZeppelinOS Proxy
     ProxyBase,
     //List of public interfaces this proxy supports
-    // RegisterProxy,
+    //RegisterProxy,
     GameVarAndFeeProxy
    {
 
