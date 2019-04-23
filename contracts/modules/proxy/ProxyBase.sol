@@ -21,6 +21,7 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfTimeContract() public view returns(address)      {return getContract(CONTRACT_NAME_TIMECONTRACT);}
      function addressOfCronJob() public view returns(address)           {return getContract(CONTRACT_NAME_CRONJOB);}
      function addressOfGameVarAndFee() public view returns(address)     {return getContract(CONTRACT_NAME_GAMEVARANDFEE);}
+     function addressOfGameVarAndFeeDB() public view returns(address)   {return getContract(CONTRACT_NAME_GAMEVARANDFEE_DB);}
      function addressOfRoleDB() public view returns(address)            {return getContract(CONTRACT_NAME_ROLE_DB);}
 
 }

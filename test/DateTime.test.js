@@ -9,31 +9,37 @@ const GenericDB = artifacts.require("GenericDB");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
 const Proxy = artifacts.require("Proxy");
 const DateTime = artifacts.require("DateTime");
+const RoleDB = artifacts.require("RoleDB");
 
 contract("DateTime", ([creator, randomAddress]) => {
   beforeEach(async () => {
     this.proxy = await Proxy.new();
     this.genericDB = await GenericDB.new();
     this.gameVarAndFee = await GameVarAndFee.new(this.genericDB.address);
+    this.roleDB = await RoleDB.new(this.genericDB.address);
     this.dateTime = await DateTime.new();
 
     await this.proxy.addContract("GameVarAndFee", this.gameVarAndFee.address);
+    await this.proxy.addContract("RoleDB", this.roleDB.address);
 
     await this.gameVarAndFee.setProxy(this.proxy.address);
     await this.genericDB.setProxy(this.proxy.address);
     await this.dateTime.setProxy(this.proxy.address);
+    await this.roleDB.setProxy(this.proxy.address);
+
+    await this.gameVarAndFee.initialize();
   });
 
   describe("DateTime", () => {
     it("sets new proxy", async () => {
-      await this.dateTime.setProxy(creator).should.be.fulfilled;
+      await this.dateTime.setProxy(randomAddress).should.be.fulfilled;
       let proxy = await this.dateTime.proxy();
-      proxy.should.be.equal(creator);
+      proxy.should.be.equal(randomAddress);
     });
 
-    it("calculates correct time", async () => {
-      await this.proxy.setVarAndFee("futureGameTime", 3600);
-      await this.proxy.setVarAndFee("gamePrestart", 120);
+    it("calculates correct Prestart time", async () => {
+      await this.proxy.setFutureGameTime(3600);
+      await this.proxy.setGamePrestart(120);
 
       let gamePrestartTime = await this.dateTime.runGamePrestartTime().should.be
         .fulfilled;

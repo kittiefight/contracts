@@ -24,6 +24,7 @@ contract DateTime is Proxied, DateTimeAPI {
     * to compare against current time and determine the countdown start of the 
     * allocated prestart time in the "gamePrestart" variable. I.e 2 min countdown 
     * @return Date and Time
+    * @dev gameVarAndFee will always get the updated address from contract manager if changed
     */
     function runGamePrestartTime() 
     public view 
