@@ -14,9 +14,9 @@ pragma solidity ^0.5.5;
 
 import "./EternalStorage.sol";
 import "../proxy/Proxied.sol";
+import "../../Proxy.sol";
 import "../../libs/LinkedListLib.sol";
 import "../../libs/LinkedListAddrLib.sol";
-
 
 
 /**
@@ -25,7 +25,6 @@ import "../../libs/LinkedListAddrLib.sol";
  * @author @psychoplasma
  */
 contract GenericDB is EternalStorage, Proxied {
-  
   using LinkedListLib for LinkedListLib.LinkedList;
   using LinkedListAddrLib for LinkedListAddrLib.LinkedList;
 

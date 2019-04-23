@@ -4,9 +4,8 @@ import "./SystemRoles.sol";
 import "../modules/databases/RoleDB.sol";
 import "../modules/proxy/ProxyBase.sol";
 
-
-contract Guard is SystemRoles, ProxyBase {
-
+contract Guard is ProxyBase, SystemRoles {
+  
   modifier onlySuperAdmin() {
     assert(msg.sender != address(0));
     require(checkRole(SUPER_ADMIN_ROLE), "Only super admin");
@@ -35,3 +34,5 @@ contract Guard is SystemRoles, ProxyBase {
     return RoleDB(addressOfRoleDB()).hasRole(role, msg.sender);
   }
 }
+
+
