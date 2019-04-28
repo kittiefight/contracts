@@ -185,11 +185,11 @@ contract GenericDB is EternalStorage, Proxied {
   }
 
   function findNextNodeInSortedLinkedList(
-    string calldata contractName,
-    string calldata linkedListName,
+    string memory contractName,
+    string memory linkedListName,
     uint256 value
   )
-    external onlyContract(contractName) returns (uint256)
+    public view onlyContract(contractName) returns (uint256)
   {
     return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].getSortedSpot(0, value, true); //0 - search from HEAD, true - NEXT direction
   }
