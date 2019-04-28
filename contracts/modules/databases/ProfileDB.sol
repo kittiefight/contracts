@@ -189,17 +189,11 @@ contract ProfileDB is Proxied {
     return genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account);
   }
 
-  function getKitties(address account) public view returns (uint256[] memory kitties) {
-    bytes32 tableKey = keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE));
-    bool dir;
-    uint256 nextKittie;
-    uint256 i;
-    kitties = new uint256[](genericDB.getLinkedListSize(CONTRACT_NAME_PROFILE_DB, tableKey));
-
-    do {
-      (dir, nextKittie) = genericDB.getAdjacent(CONTRACT_NAME_PROFILE_DB, tableKey, nextKittie, dir);
-      if (nextKittie != 0) {kitties[i++] = nextKittie;}
-    } while (nextKittie != 0);
+  function getKitties(address account) public view returns (uint256[] memory) {
+    return genericDB.getAll(
+      CONTRACT_NAME_PROFILE_DB,
+      keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
+    );
   }
 
   function getKittieCount(address account) public view returns (uint256) {

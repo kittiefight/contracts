@@ -182,6 +182,24 @@ contract GenericDB is EternalStorage, Proxied {
     return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].getAdjacent(nodeId, dir);
   }
 
+  function getAll(
+    string memory contractName,
+    bytes32 key
+  )
+    public
+    view returns (uint256[] memory nodes)
+  {
+    uint256 nextNode;
+    uint256 i;
+    uint256 len = getLinkedListSize(contractName, key);
+    nodes = new uint256[](len);
+
+    do {
+      (,nextNode) = getAdjacent(contractName, key, nextNode, true);
+      if (nextNode > 0) {nodes[i++] = nextNode;}
+    } while (nextNode != 0 && i < len);
+  }
+
   function doesListExist(
     string memory contractName,
     bytes32 tableKey
@@ -249,6 +267,24 @@ contract GenericDB is EternalStorage, Proxied {
     public view returns (bool, address)
   {
     return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].getAdjacent(nodeId, dir);
+  }
+
+  function getAllAddr(
+    string memory contractName,
+    bytes32 tableKey
+  )
+    public
+    view returns (address[] memory nodes)
+  {
+    address nextNode;
+    uint256 i;
+    uint256 len = getLinkedListAddrSize(contractName, tableKey);
+    nodes = new address[](len);
+
+    do {
+      (,nextNode) = getAdjacentAddr(contractName, tableKey, nextNode, true);
+      if (nextNode != address(0)) {nodes[i++] = nextNode;}
+    } while (nextNode != address(0) && i < len);
   }
 
   function doesListAddrExist(

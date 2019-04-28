@@ -149,6 +149,26 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
       } while (node)
     });
 
+    it('gets all items in linklist', async () => {
+      let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
+      let nodeIds = [1234, 45667, 34456, 342452, 123178];
+
+      // First create some nodes in DB
+      for (let i = 0; i < nodeIds.length; i++) {
+        await this.genericDB.pushNodeToLinkedList(CONTRACT_NAME, tableKey, nodeIds[i]).should.be.fulfilled;
+      }
+
+      let totalUsers = (await this.genericDB.getLinkedListSize(CONTRACT_NAME, tableKey)).toNumber();
+      totalUsers.should.be.equal(nodeIds.length);
+
+      let allNodes = await this.genericDB.getAll(CONTRACT_NAME, tableKey);
+
+      allNodes.map((node, index) => {
+        // The nodes are aquired in first in last out order
+        node.toNumber().should.be.equal(nodeIds[nodeIds.length - 1 - index]);
+      });
+    });
+
     it('iterates all items in linklistAddr', async () => {
       let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
       let addrNodeIds = [
@@ -180,6 +200,32 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
         node.should.be.equal(addrNodeIds[index]);
         index--;
       } while (node)
+    });
+
+    it('gets all items in linklistAddr', async () => {
+      let tableKey = web3.utils.soliditySha3(DB_TABLE_NAME);
+      let addrNodeIds = [
+        '0x0000000000000000000000000000000000000001',
+        '0x0000000000000000000000000000000000000002',
+        '0x0000000000000000000000000000000000000003',
+        '0x0000000000000000000000000000000000000004',
+        '0x0000000000000000000000000000000000000005'
+      ];
+
+      // First create some nodes in DB
+      for (let i = 0; i < addrNodeIds.length; i++) {
+        await this.genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME, tableKey, addrNodeIds[i]).should.be.fulfilled;
+      }
+
+      let totalUsers = (await this.genericDB.getLinkedListAddrSize(CONTRACT_NAME, tableKey)).toNumber();
+      totalUsers.should.be.equal(addrNodeIds.length);
+
+      let allAddrNodes = await this.genericDB.getAllAddr(CONTRACT_NAME, tableKey);
+
+      allAddrNodes.map((node, index) => {
+        // The nodes are aquired in first in last out order
+        node.should.be.equal(addrNodeIds[addrNodeIds.length - 1 - index]);
+      });
     });
   });
 });
