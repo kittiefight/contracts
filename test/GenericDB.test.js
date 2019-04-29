@@ -1,5 +1,5 @@
 const GenericDB = artifacts.require('GenericDB');
-const Proxy = artifacts.require('Proxy');
+const Proxy = artifacts.require('KFProxy');
 const BigNumber = require('bignumber.js');
 const CONTRACT_NAME = 'ProfileDB';
 const DB_TABLE_NAME = 'TestTable';
@@ -123,5 +123,7 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
         index--;
       } while (node)
     });
+
+
   });
 });
