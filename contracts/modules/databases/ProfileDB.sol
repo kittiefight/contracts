@@ -12,7 +12,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-import "../../Proxy.sol";
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
