@@ -9,7 +9,7 @@ import "./modules/proxy/KittieHellProxy.sol";
  * @title Proxy contract is a main entry point for KittyFight contract system
  * @author @pash7ka
  */
-contract Proxy is
+contract KFProxy is
     Initializable,          //Allows to use ZeppelinOS Proxy
     ProxyBase,
     //List of public interfaces this proxy supports
