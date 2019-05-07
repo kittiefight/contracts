@@ -151,7 +151,7 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
     
     /// @notice Gets Distribution Rates
     function getDistributionRates() 
-    public view returns(uint[] memory rates) {
+    public view returns(uint[5] memory rates) {
                 
         rates[0] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, WINNING_KITTIE);
         
