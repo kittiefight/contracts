@@ -1,4 +1,4 @@
-pragma solidity 0.4.21;
+pragma solidity ^0.5.5;
 
 /**
  * Base class contracts willing to accept ERC223 token transfers must conform to.
@@ -13,5 +13,5 @@ pragma solidity 0.4.21;
  */
 
 interface ERC223Receiver {
-    function tokenFallback(address _from, uint _value, bytes _data) public;
+    function tokenFallback(address _from, uint _value, bytes calldata _data) external;
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.4.21;
+pragma solidity ^0.5.5;
 
 
 /// @title CryptoKittiesCore mock
@@ -8,7 +8,7 @@ contract KittyCore {
 
     mapping(uint256 => address) private kitties;
 
-    function KittyCore() public {
+    constructor() public {
         kitties[0] = msg.sender;
     }
 

@@ -19,49 +19,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-pragma solidity >=0.5.0 <0.6.0;
+pragma solidity ^0.5.5;
 
-import "./interfaces/INTAllContracts.sol";
-import "./interfaces/INTContractManager.sol";
-
-contract GameManager is INTAllContracts {
-
-
-INTContractManager contractManager;
-ChroneJobListINT xxx;
-ForfeiterINT xxx;
-SchedulerINT xxx;
-HitsResolveAlgoINT xxx;
-BettingINT xxx;
-RarityCalculatorINT xxx;
-DSAuthINT dsAuth;
-DSNoteINT dsnote;
-RegisterINT xxx;
-TimeContractINT xxx;
-gameVarAndFeeManagerINT xxx;
-KittieHellINT xxx;
-GamemanagerDBINT xxx;
-EndowmentFundINT xxx;
-CryptoKittiesINT xxx;
-
-
-  constructor(address _contractManager, address _dsAuth, address _dsNote) public {
-    contractManager = INTContractManager(_contractManager);
-
-    dsAuth = DSAuthINT(contractManager.getContract("DSAuth"));
-    dsnote = DSNoteINT(contractManager.getContract("DSNote"));
-
-  }
-
-  //set up all other initial contracts
-  function initContracts() public auth returns(bool){
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-
-  }
-
-
+contract GameManager {
 }

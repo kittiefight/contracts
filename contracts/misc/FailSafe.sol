@@ -1,7 +1,7 @@
-pragma solidity 0.4.21;
+pragma solidity ^0.5.5;
 
-import "../interfaces/ERC20Basic.sol";
-import "../controllers/Owned.sol";
+import "./../interfaces/ERC20Basic.sol";
+import "./../authority/Owned.sol";
 
 /**
  * @title FailSafe
@@ -19,13 +19,13 @@ contract FailSafe is Owned {
      */
     function claimTokens(address _token) public onlyOwner {
         // Transfer ether
-        if (_token == 0x0) {
-            owner.transfer(this.balance);
+        if (_token == address(0)) {
+            owner.transfer(address(this).balance);
             return;
         }
 
         ERC20Basic token = ERC20Basic(_token);
-        uint balance = token.balanceOf(this);
+        uint balance = token.balanceOf(address(this));
         token.transfer(owner, balance);
         emit ClaimedTokens(_token, owner, balance);
     }

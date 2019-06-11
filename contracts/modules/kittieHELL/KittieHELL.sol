@@ -4,8 +4,8 @@ import "../../libs/SafeMath.sol";
 import "../../misc/BasicControls.sol";
 import "../../interfaces/ERC721.sol";
 import "../../interfaces/ERC223Receiver.sol";
-import "../../interfaces/INTAllContracts.sol";
-import "../../interfaces/INTContractManager.sol";
+
+import "../../interfaces/IContractManager.sol";
 
 
 /**
@@ -39,7 +39,7 @@ contract KittieHELL is ERC223Receiver, BasicControls {
      * @notice creating kitty hell contract using `_contractManager` as contract manager address
      * @param _contractManager the contract manager used by the game
      */
-    function KittieHELL(address _contractManager) public {
+    constructor(address _contractManager) public {
         contractManager = _contractManager;
     }
 
@@ -54,7 +54,7 @@ contract KittieHELL is ERC223Receiver, BasicControls {
     public
     onlyNotOwnedKitty(_kittyID)
     returns (bool) {
-        ERC721 ckc = ERC721(INTContractManager(contractManager).getContract("CryptoKittiesCore"));
+        ERC721 ckc = ERC721(IContractManager(contractManager).getContract("CryptoKittiesCore"));
         ckc.transferFrom(owner, address(this), _kittyID);
         require(ckc.ownerOf(_kittyID) == address(this));
         kitties[_kittyID].owner = owner;
@@ -92,10 +92,10 @@ contract KittieHELL is ERC223Receiver, BasicControls {
         return true;
     }
 
-    function tokenFallback(address _from, uint _value, bytes _data)
+    function tokenFallback(address _from, uint _value, bytes memory _data)
     public
     {
-        require(msg.sender == INTContractManager(contractManager).getContract("KittieFIGHTToken"));
+        require(msg.sender == IContractManager(contractManager).getContract("KittieFIGHTToken"));
     }
 
     /**
@@ -130,9 +130,9 @@ contract KittieHELL is ERC223Receiver, BasicControls {
     function releaseKitty(uint256 _kittyID) internal
     onlyOwnedKitty(_kittyID)
     returns (bool) {
-        ERC721 ckc = ERC721(INTContractManager(contractManager).getContract("CryptoKittiesCore"));
+        ERC721 ckc = ERC721(IContractManager(contractManager).getContract("CryptoKittiesCore"));
         ckc.transfer(kitties[_kittyID].owner, _kittyID);
-        kitties[_kittyID].owner = 0;
+        kitties[_kittyID].owner = address(0);
         return true;
     }
 
@@ -141,7 +141,7 @@ contract KittieHELL is ERC223Receiver, BasicControls {
      * the kitty is owned by the game
      */
     modifier onlyOwnedKitty(uint256 _kittyID) {
-        require(kitties[_kittyID].owner != 0);
+        require(kitties[_kittyID].owner != address(0));
         _;
     }
 
@@ -150,7 +150,7 @@ contract KittieHELL is ERC223Receiver, BasicControls {
      * the kitty is not already owned by the game
      */
     modifier onlyNotOwnedKitty(uint256 _kittyID) {
-        require(kitties[_kittyID].owner == 0);
+        require(kitties[_kittyID].owner == address(0));
         _;
     }
 

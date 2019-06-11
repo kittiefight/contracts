@@ -19,44 +19,7 @@
 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-pragma solidity 0.4.21;
+pragma solidity ^0.5.5;
 
-import "./interfaces/INTAllContracts.sol";
-import "./interfaces/INTContractManager.sol";
-
-contract CronJob is INTAllContracts {
-
-
-INTContractManager contractManager;
-DSAuthINT dsAuth;
-DSNoteINT dsnote;
-TimeContractINT xxx;
-SchedulerINT xxx;
-EndowmentFundINT xxx;
-KittieHellINT xxx;
-
-mapping(uint => uint) gameIDTimeExpiry; // game id to time expiration
-mapping(bytes => uint) honeypotIDTimeExpiry; // honeypot id to time expiration
-mapping(bytes => uint) kittieHellIDTimeExpiry; // kittiehell id to time expiration
-
-
-  constructor(address _contractManager, address _dsAuth, address _dsNote) public {
-    contractManager = INTContractManager(_contractManager);
-
-    dsAuth = DSAuthINT(contractManager.getContract("DSAuth"));
-    dsnote = DSNoteINT(contractManager.getContract("DSNote"));
-
-  }
-
-  //set up all other initial contracts
-  function initContracts() public auth returns(bool){
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-    // yy = xxx(contractManager.getContract("zzz"));
-
-  }
-
-
+contract CronJob {
 }
