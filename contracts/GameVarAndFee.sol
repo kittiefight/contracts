@@ -194,4 +194,10 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_DURATION);
     }
 
+    /// @notice Gets minimum contributors needed for the game to continue
+    function getMinimumContributors() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS);
+    }
+
 }

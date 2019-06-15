@@ -36,5 +36,6 @@ contract VarAndFeeNames {
     bytes32 constant KITTIE_REDEMPTION_FEE  = keccak256(abi.encodePacked(TABLE_NAME, "kittieRedemptionFee"));
     bytes32 constant KITTIE_EXPIRY          = keccak256(abi.encodePacked(TABLE_NAME, "kittieExpiry"));
     bytes32 constant HONEY_POT_DURATION     = keccak256(abi.encodePacked(TABLE_NAME, "honeyPotDuration"));
+    bytes32 constant MINIMUM_CONTRIBUTORS   = keccak256(abi.encodePacked(TABLE_NAME, "minimumContributors"));
 
 }

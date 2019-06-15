@@ -134,5 +134,9 @@ contract GameVarAndFeeProxy is ProxyBase, Guard, VarAndFeeNames {
         IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(HONEY_POT_DURATION, value);
     } 
 
+    function setMinimumContributors(uint value)
+    external onlySuperAdmin{
+        IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(MINIMUM_CONTRIBUTORS, value);
+    }
 
 }
