@@ -6,7 +6,7 @@ require('chai')
   .should();
 const { ZERO_ADDRESS } = require('./utils/constants');
 const GenericDB = artifacts.require('GenericDB');
-const Proxy = artifacts.require('Proxy');
+const Proxy = artifacts.require('KFProxy');
 const RoleDB = artifacts.require('RoleDB');
 const GuardImplementor = artifacts.require('GuardImplementor');
 const ROLEDB_CONTRACT_NAME = 'RoleDB';

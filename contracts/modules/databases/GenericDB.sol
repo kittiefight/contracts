@@ -14,7 +14,6 @@ pragma solidity ^0.5.5;
 
 import "./EternalStorage.sol";
 import "../proxy/Proxied.sol";
-import "../../Proxy.sol";
 import "../../libs/LinkedListLib.sol";
 import "../../libs/LinkedListAddrLib.sol";
 

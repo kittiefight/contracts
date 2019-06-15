@@ -1,5 +1,5 @@
 const GenericDB = artifacts.require('GenericDB');
-const Proxy = artifacts.require('Proxy');
+const Proxy = artifacts.require('KFProxy');
 const BigNumber = require('bignumber.js');
 const { ZERO_ADDRESS } = require('./utils/constants');
 const CONTRACT_NAME = 'ProfileDB';

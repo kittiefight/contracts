@@ -7,7 +7,7 @@ require('chai')
 
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB');
-const Proxy = artifacts.require('Proxy');
+const Proxy = artifacts.require('KFProxy');
 
 const CONTRACT_NAME = 'ProfileDB';
 const TABLE_NAME_PROFILE = 'ProfileTable';
