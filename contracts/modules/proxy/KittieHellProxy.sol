@@ -1,6 +1,6 @@
 pragma solidity ^0.5.5;
 
-import '../KittieHELL/KittieHELL.sol';
+import '../kittieHELL/KittieHELL.sol';
 import './ProxyBase.sol';
 
 /**
