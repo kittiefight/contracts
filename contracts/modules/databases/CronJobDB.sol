@@ -24,6 +24,8 @@ import "../../libs/SafeMath.sol";
  * Storage consists of a linked list of ids and data, stored in maps, wehre key is a job id.
  * Job id is created from timestamp and a nonce, which is current count of jobs for specific timestamp.
  * After adding a job, nonce for it's timestamp is incremented. When canceling a job, nonce is NOT decremented.
+ *
+ * This contract should not be used standalone, it is designed as a part of CronJob
  */
 contract CronJobDB is Proxied {
     using SafeMath for uint256;
@@ -58,11 +60,11 @@ contract CronJobDB is Proxied {
     }
 
     function getJobNonceForTimestamp(uint256 time) view public returns(uint16) {
-        uint16(genericDB.getUintStorage(CONTRACT_CRONJOB_DB, keccak256(abi.encodePacked(time, "jobNonce"))));        
+        uint16(genericDB.getUintStorage(CONTRACT_CRONJOB, keccak256(abi.encodePacked(time, "jobNonce"))));        
     }
     function incrementJobNonceForTimestamp(uint256 time) internal {
         uint16 nonce = getJobNonceForTimestamp(time);
-        genericDB.setUintStorage(CONTRACT_CRONJOB_DB, keccak256(abi.encodePacked(time, "jobNonce")), uint256(nonce+1));        
+        genericDB.setUintStorage(CONTRACT_CRONJOB, keccak256(abi.encodePacked(time, "jobNonce")), uint256(nonce+1));        
     }
 
     /**
@@ -71,7 +73,7 @@ contract CronJobDB is Proxied {
      */
     function findNextJob(uint256 time) view public returns(uint256){
         uint256 jobId = generateJobID(time, getJobNonceForTimestamp(time));
-        return genericDB.findNextNodeInSortedLinkedList(CONTRACT_CRONJOB_DB, TABLE_NAME, jobId);
+        return genericDB.findNextNodeInSortedLinkedList(CONTRACT_CRONJOB, TABLE_NAME, jobId);
     }
 
     /**
@@ -79,11 +81,11 @@ contract CronJobDB is Proxied {
      * @param jobId Job to view
      */
     function getJob(uint256 jobId) view public returns(uint256, string memory, bytes memory) {
-        require(genericDB.doesNodeExist(CONTRACT_CRONJOB_DB, TABLE_NAME, jobId), ERROR_DOES_NOT_EXIST);
+        require(genericDB.doesNodeExist(CONTRACT_CRONJOB, TABLE_NAME, jobId), ERROR_DOES_NOT_EXIST);
         uint256 time; uint16 nonce;
         (time,nonce) = parseJobID(jobId);
-        string memory callee = genericDB.getStringStorage(CONTRACT_CRONJOB_DB, keccak256(abi.encodePacked(jobId, "callee")));
-        bytes memory data = genericDB.getBytesStorage(CONTRACT_CRONJOB_DB, keccak256(abi.encodePacked(jobId, "data")));
+        string memory callee = genericDB.getStringStorage(CONTRACT_CRONJOB, keccak256(abi.encodePacked(jobId, "callee")));
+        bytes memory data = genericDB.getBytesStorage(CONTRACT_CRONJOB, keccak256(abi.encodePacked(jobId, "data")));
         return (time, callee, data);
     }
 
@@ -108,14 +110,14 @@ contract CronJobDB is Proxied {
         validateNewJobPosition(jobId, nextJob);
 
         if(nextJob == 0){
-            require(genericDB.pushNodeToLinkedList(CONTRACT_CRONJOB_DB, TABLE_NAME, jobId), ERROR_ALREADY_EXIST);
+            require(genericDB.pushNodeToLinkedList(CONTRACT_CRONJOB, TABLE_NAME, jobId), ERROR_ALREADY_EXIST);
         }else{
-            require(genericDB.insertNodeToLinkedList(CONTRACT_CRONJOB_DB, TABLE_NAME, jobId, nextJob, false), ERROR_ALREADY_EXIST); //false means "prev" direction - insert before nextJob
+            require(genericDB.insertNodeToLinkedList(CONTRACT_CRONJOB, TABLE_NAME, jobId, nextJob, false), ERROR_ALREADY_EXIST); //false means "prev" direction - insert before nextJob
         }
         incrementJobNonceForTimestamp(time);
 
-        genericDB.setStringStorage(CONTRACT_CRONJOB_DB, keccak256(abi.encodePacked(jobId, "callee")), callee);
-        genericDB.setBytesStorage(CONTRACT_CRONJOB_DB, keccak256(abi.encodePacked(jobId, "data")), data);
+        genericDB.setStringStorage(CONTRACT_CRONJOB, keccak256(abi.encodePacked(jobId, "callee")), callee);
+        genericDB.setBytesStorage(CONTRACT_CRONJOB, keccak256(abi.encodePacked(jobId, "data")), data);
 
         return jobId;
     }
@@ -128,17 +130,17 @@ contract CronJobDB is Proxied {
     function removeJob(uint256 jobId) 
         internal //external onlyContract(CONTRACT_CRONJOB) 
     {
-        require(genericDB.removeNodeFromLinkedList(CONTRACT_CRONJOB_DB, TABLE_NAME, jobId), ERROR_DOES_NOT_EXIST);
+        require(genericDB.removeNodeFromLinkedList(CONTRACT_CRONJOB, TABLE_NAME, jobId), ERROR_DOES_NOT_EXIST);
         //TODO: Find out if we need to actually delete the job data from mappings. Test gas price for this.
     }
 
 
     function getFirstJobId() view internal returns(uint256){
-        (bool found, uint256 id) = genericDB.getAdjacent(CONTRACT_CRONJOB_DB, TABLE_NAME, 0, false);    // 0 means HEAD, false means tail of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
+        (bool found, uint256 id) = genericDB.getAdjacent(CONTRACT_CRONJOB, TABLE_NAME, 0, false);    // 0 means HEAD, false means tail of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
         return id;
     }
     function getLastJobId() view internal returns(uint256){
-        (bool found, uint256 id) = genericDB.getAdjacent(CONTRACT_CRONJOB_DB, TABLE_NAME, 0, true);    // 0 means HEAD, true means head of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
+        (bool found, uint256 id) = genericDB.getAdjacent(CONTRACT_CRONJOB, TABLE_NAME, 0, true);    // 0 means HEAD, true means head of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
         return id;
     }
     function getLastScheduledJobTime() view public returns(uint256) {
@@ -154,7 +156,7 @@ contract CronJobDB is Proxied {
         } else {
             //Check that we can insert new job bebore nextJob
             require(newJobId < nextJobId, ERROR_NOT_BEFORE);
-            (bool found, uint256 prevId) = genericDB.getAdjacent(CONTRACT_CRONJOB_DB, TABLE_NAME, nextJobId, false);   // false means "before" (PREV)
+            (bool found, uint256 prevId) = genericDB.getAdjacent(CONTRACT_CRONJOB, TABLE_NAME, nextJobId, false);   // false means "before" (PREV)
             require(!found || newJobId > prevId, ERROR_NOT_FIRST_BEFORE);
         }
     }

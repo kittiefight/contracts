@@ -18,5 +18,4 @@ contract ContractNames {
     string constant CONTRACT_GAMEMANAGER_DB    = "GameManagerDB";
     string constant CONTRACT_TIMECONTRACT      = "TimeContract";
     string constant CONTRACT_CRONJOB           = "CronJob";
-    string constant CONTRACT_CRONJOB_DB        = "CronJobDB";
 }
