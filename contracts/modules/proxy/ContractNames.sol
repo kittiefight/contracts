@@ -22,5 +22,7 @@ contract ContractNames {
     string constant CONTRACT_NAME_ENDOWMENT         = "EndowmentFund";
     string constant CONTRACT_NAME_DISTRIBUTION      = "Distribution";
     string constant CONTRACT_NAME_GAMEVARANDFEE     = "GameVarAndFee";
+    string constant CONTRACT_NAME_FORFEITER         = "Forfeiter";
+    string constant CONTRACT_NAME_SCHEDULER         = "Scheduler";
 
 }

@@ -28,14 +28,21 @@ import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
 import "../endowment/Distribution.sol";
 import "../../interfaces/ERC20Standard.sol";
+import "./Forfeiter.sol";
+import "./Scheduler.sol";
+import "../../DateTime.sol";
 
 contract GameManager is Proxied {
 
+    //Contract Variables
     GameManagerDB public gameManagerDB;
     GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
     Distribution public distribution;
     ERC20Standard public kittieFightToken;
+    Forfeiter public forfeiter;
+    DateTimeAPI public timeContract;
+    Scheduler public scheduler;
 
     /**
    * @dev Sets related contracts
@@ -48,6 +55,9 @@ contract GameManager is Proxied {
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
         distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+        forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
+        timeContract = DateTimeAPI(proxy.getContract(CONTRACT_NAME_TIMECONTRACT));
+        scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
         kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
     }
 
@@ -88,7 +98,6 @@ contract GameManager is Proxied {
         //uint ticketFee = gameVarAndFee.getTicketFee();
         uint ticketFee = 100; //until we merge GVAF contract
         require(kittieFightToken.transferFrom(msg.sender, address(endowmentFund), ticketFee), "Error sending funds to endownment");
-
         
     }
 
@@ -101,7 +110,6 @@ contract GameManager is Proxied {
             generates rarity scale for both players on game start
         */
     }
-
     
 
     /**
