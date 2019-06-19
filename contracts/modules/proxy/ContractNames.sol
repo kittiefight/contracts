@@ -19,4 +19,8 @@ contract ContractNames {
     string constant CONTRACT_NAME_TIMECONTRACT      = "TimeContract";
     string constant CONTRACT_NAME_CRONJOB           = "CronJob";
     string constant CONTRACT_NAME_ROLE_DB           = "RoleDB";
+    string constant CONTRACT_NAME_ENDOWMENT         = "EndowmentFund";
+    string constant CONTRACT_NAME_DISTRIBUTION      = "Distribution";
+    string constant CONTRACT_NAME_GAMEVARANDFEE     = "GameVarAndFee";
+
 }
