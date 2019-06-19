@@ -4,7 +4,6 @@ import "./SystemRoles.sol";
 import "../modules/databases/RoleDB.sol";
 import "../modules/proxy/ProxyBase.sol";
 
-
 contract Guard is ProxyBase, SystemRoles {
   
   modifier onlySuperAdmin() {

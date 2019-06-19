@@ -302,3 +302,4 @@ contract Register is Proxied, SystemRoles {
     roleDB.removeRole(CONTRACT_NAME_REGISTER, role, account);
   }
 }
+
