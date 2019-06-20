@@ -31,6 +31,9 @@ import "../../interfaces/ERC20Standard.sol";
 import "./Forfeiter.sol";
 import "./Scheduler.sol";
 import "../../DateTime.sol";
+import "../algorithm/Betting.sol";
+import "../algorithm/HitsResolveAlgo.sol";
+import "../algorithm/RarityCalculator.sol";
 
 contract GameManager is Proxied {
 
@@ -43,14 +46,18 @@ contract GameManager is Proxied {
     Forfeiter public forfeiter;
     DateTimeAPI public timeContract;
     Scheduler public scheduler;
+    Betting public betting;
+    HitsResolve public hitsResolve;
+    RarityCalculator public rarityCalculator;
 
 
     uint256 public constant PLAYER_STATUS_INITIATED = 1;
     uint256 public constant PLAYER_STATUS_PLAYING = 2;
     uint256 public constant GAME_STATE_CREATED = 0;
-    uint256 public constant GAME_STATE_STARTED = 1;
-    uint256 public constant GAME_STATE_CANCELLED = 2;
-    uint256 public constant GAME_STATE_FINISHED = 3;
+    uint256 public constant GAME_STATE_PRESTART = 1;
+    uint256 public constant GAME_STATE_STARTED = 2;
+    uint256 public constant GAME_STATE_CANCELLED = 3;
+    uint256 public constant GAME_STATE_FINISHED = 4;
 
 
     /**
@@ -67,6 +74,9 @@ contract GameManager is Proxied {
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         timeContract = DateTimeAPI(proxy.getContract(CONTRACT_NAME_TIMECONTRACT));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
+        betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
+        hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
+        rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
     }
 
@@ -75,11 +85,16 @@ contract GameManager is Proxied {
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
     function listKittie(uint kittieId, address player) external onlyProxy {
-        //check if player has kitties register.hasKitties(msg.sender)
-        //check if player account is registered  register.isRegistered(msg.sender)
+        //check if player account is registered
+        //require(register.isRegistered(player))
+
+        //check if player has kitties
+        //register.hasKitties(player)
+
         //check if kittieId belongs to player account (not implemented yet)
-        //store in Kittie list
-        //matchKitties(); //call functions to make the check every time this function is called
+
+        //store in Kittie list - Where to store them?
+        //matchKitties(); //heck every time this function is called
     }
 
     /**
@@ -125,17 +140,29 @@ contract GameManager is Proxied {
         //If both player have payed ticket fee
         //change game state to created (not started because )
         //gameManagerDB.updateGameState(gameId, GAME_STATE_CREATED)
+
+        //forfeiter.checkStatus();
         
     }
 
     /**
      * @dev only both Actual players can call
      */
-    function startGame(uint gameId) external onlyProxy {
+    function startGame(uint gameId, address player, uint randNum) external onlyProxy {
         /**
             Funds honeypot from endowment fund, when both players are active with enough participator threshold .
             generates rarity scale for both players on game start
         */
+
+        //Get cattributes
+
+        //check both player's status
+        //check player's supporters
+
+        //uint honeyPotId = endowmentFund.generateHoneyPot();
+        //rarityCalculator.startGame(cattributes) ??? what params to send
+
+        //forfeiter.checkStatus();
     }
     
 
@@ -149,33 +176,54 @@ contract GameManager is Proxied {
     /**
      * @dev KTY tokens are sent to endowment balance, Eth gets added to ongoing game honeypot
      */
-    function bet(uint gameId, uint amountEth, uint amountKTY, address supportedPlayer) public {
+    function bet
+    (
+        uint gameId, address account, uint amountEth, 
+        uint amountKTY, address supportedPlayer, uint randomNum
+    ) 
+        external
+        onlyProxy 
+    {
         //Add bet to DB
         //gameManagerDB.addBet(gameId, amountEth, supportedPlayer);
 
+        //forfeiter.checkStatus();
+
         // if underperformed then call extendTime();
-        // transfer amountKTY to endowmentFund
+        
+        //endowmentFund.contributeETH(gameId)
+
+        // transfer amountKTY to endowmentFund (endowmentFund.contributeKFT(gameId, account,amountKTY )?)
+        //or
+        //require(kittieFightToken.transferFrom(account, address(endowmentFund), amountKTY));
+
+        //hitResolve
+        //hitsResolve.caluclateCurrentRandom(randomNum)
     }
 
     /**
      * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
      */
     function checkPerformance(uint gameId) external returns(bool) {
-
+        //get initial jackpot
+        //gameManagerDB.getJackpotDetails(gameId)
     }
 
     /**
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEND(uint gameId) internal {
-
+        //what functions calls this internally?
+        //get game end time
+        //uint endTime = gameManagerDB.getEndTime(gameId);
+        //if (endTime > now) gameManagerDB.updateGameState(gameId, GAME_STATE_FINISHED)
     }
 
     /**
      * @dev Determine winner of game based on  **HitResolver **
      */
     function Finalize(uint gameId) external {
-
+        //hitsResolve.finalizeGame()  store returned 7 values
     }
 
     /**
@@ -196,7 +244,7 @@ contract GameManager is Proxied {
      * @dev ?
      */
     function cancelGame(uint gameId) internal {
-
+        //gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED)
     }
 
     /**
