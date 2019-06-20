@@ -11,6 +11,10 @@ import './ProxyBase.sol';
  */
 contract GameManagerProxy is ProxyBase, Guard{
 
+  function listKittie(uint kittieId) external {
+    GameManager(addressOfGameManager()).listKittie(kittieId, msg.sender);
+  }
+
   function manualMatchKitties
   (
     address playerRed, address playerBlack,
@@ -24,5 +28,9 @@ contract GameManagerProxy is ProxyBase, Guard{
 
   function startGame(uint gameId) external onlyPlayer {
     GameManager(addressOfGameManager()).startGame(gameId);
+  }
+
+  function participate(uint gameId) external onlyPlayer {
+    GameManager(addressOfGameManager()).participate(gameId, msg.sender);
   }
 }

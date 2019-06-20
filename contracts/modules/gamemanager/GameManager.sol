@@ -44,6 +44,15 @@ contract GameManager is Proxied {
     DateTimeAPI public timeContract;
     Scheduler public scheduler;
 
+
+    uint256 public constant PLAYER_STATUS_INITIATED = 1;
+    uint256 public constant PLAYER_STATUS_PLAYING = 2;
+    uint256 public constant GAME_STATE_CREATED = 0;
+    uint256 public constant GAME_STATE_STARTED = 1;
+    uint256 public constant GAME_STATE_CANCELLED = 2;
+    uint256 public constant GAME_STATE_FINISHED = 3;
+
+
     /**
    * @dev Sets related contracts
    * @dev Can be called only by the owner of this contract
@@ -65,8 +74,12 @@ contract GameManager is Proxied {
     /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
-    function listKittie(uint kittieId) external {
-
+    function listKittie(uint kittieId, address player) external onlyProxy {
+        //check if player has kitties register.hasKitties(msg.sender)
+        //check if player account is registered  register.isRegistered(msg.sender)
+        //check if kittieId belongs to player account (not implemented yet)
+        //store in Kittie list
+        //matchKitties(); //call functions to make the check every time this function is called
     }
 
     /**
@@ -74,7 +87,8 @@ contract GameManager is Proxied {
      * Matches all 20 players random by pairs, based on non-deterministic data.
      */
     function matchKitties() private {
-
+        //check if kittie list has 20 kitties (we dont have kittie list storage)
+        //call scheduler to create fights
     }
 
     /**
@@ -88,16 +102,29 @@ contract GameManager is Proxied {
         external
         onlyProxy
     {
-        //TODO : onlySuperAdmin Modifier
+        //Requirements? Checks?
+        genFightID(playerRed, playerBlack, kittyRed, kittyBlack);
     }
 
     /**
      * @dev Betters pay a ticket fee to participate in betting .
      */
-    function participate(uint gameId, uint kittieId) external {
+    function participate(uint gameId, address player) external onlyProxy {
+        //use onlyExistentGame(gameId) modifier?
         //uint ticketFee = gameVarAndFee.getTicketFee();
         uint ticketFee = 100; //until we merge GVAF contract
-        require(kittieFightToken.transferFrom(msg.sender, address(endowmentFund), ticketFee), "Error sending funds to endownment");
+
+        //check if sender is one of the players in the gameId
+
+        //(uint kittieId, uint status) = gameManagerDB.getPlayer(gameId, player);
+        // kittieId should not be cero
+
+        //pay ticket fee
+        require(kittieFightToken.transferFrom(player, address(endowmentFund), ticketFee), "Error sending funds to endownment");
+
+        //If both player have payed ticket fee
+        //change game state to created (not started because )
+        //gameManagerDB.updateGameState(gameId, GAME_STATE_CREATED)
         
     }
 
