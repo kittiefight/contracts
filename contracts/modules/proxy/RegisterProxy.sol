@@ -3,6 +3,7 @@ pragma solidity ^0.5.5;
 import '../../authority/Guard.sol';
 import '../registration/Register.sol';
 import './ProxyBase.sol';
+import "../proxy/Proxied.sol";
 
 /**
  * @title RegisterProxy defines public API of Register contract

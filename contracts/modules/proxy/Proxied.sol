@@ -4,6 +4,7 @@ import "../../authority/Owned.sol";
 import "../../KFProxy.sol";
 import './ContractNames.sol';
 
+
 /**
  * @title Proxied provides modifiers to limit direct access to KittieFight contracts
  * All public/external function of KittieFight system contracts should be pure/view or

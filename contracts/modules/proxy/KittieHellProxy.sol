@@ -8,7 +8,4 @@ import './ProxyBase.sol';
  * and redirects calls to KittieHell instance
  */
 contract KittieHellProxy is ProxyBase {
-    function payForResurrection(uint256 _kittyID) public returns(bool){
-        return KittieHELL(addressOfKittieHell()).payForResurrection(_kittyID);
-    }
 }
