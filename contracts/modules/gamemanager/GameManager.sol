@@ -34,6 +34,7 @@ import "../../DateTime.sol";
 import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
+import "../registration/Register.sol";
 
 contract GameManager is Proxied {
 
@@ -49,6 +50,7 @@ contract GameManager is Proxied {
     Betting public betting;
     HitsResolve public hitsResolve;
     RarityCalculator public rarityCalculator;
+    Register public register;
 
 
     uint256 public constant PLAYER_STATUS_INITIATED = 1;
@@ -60,6 +62,13 @@ contract GameManager is Proxied {
     uint256 public constant GAME_STATE_FINISHED = 4;
 
 
+    modifier onlyValidPlayer(address player, uint kittieId) {
+        require(register.isRegistered(player), "Player not registered");
+        require(register.hasKitties(player), "No kitties available");
+        //check if kittieId belongs to player account (not implemented yet)
+        //require(register.isKittyOwner(player, kittieId), "Not owner of kittie"); 
+        _;
+    }
     /**
    * @dev Sets related contracts
    * @dev Can be called only by the owner of this contract
@@ -78,20 +87,15 @@ contract GameManager is Proxied {
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
         rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
+        register = Register(proxy.getContract(CONTRACT_NAME_REGISTER));
     }
 
 
     /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
-    function listKittie(uint kittieId, address player) external onlyProxy {
-        //check if player account is registered
-        //require(register.isRegistered(player))
-
-        //check if player has kitties
-        //register.hasKitties(player)
-
-        //check if kittieId belongs to player account (not implemented yet)
+    function listKittie(uint kittieId, address player) external onlyProxy onlyValidPlayer(player, kittieId) {
+        // listing fee?
 
         //store in Kittie list - Where to store them?
         //matchKitties(); //heck every time this function is called
@@ -116,16 +120,29 @@ contract GameManager is Proxied {
     )
         external
         onlyProxy
+        onlyValidPlayer(playerRed, kittyRed)
+        onlyValidPlayer(playerBlack, kittyBlack)
     {
         //Requirements? Checks?
+        // check both players validity
+        // check if kitties belong to the players
         genFightID(playerRed, playerBlack, kittyRed, kittyBlack);
     }
 
     /**
      * @dev Betters pay a ticket fee to participate in betting .
      */
-    function participate(uint gameId, address player) external onlyProxy {
+    function participate(uint gameId, address supporter, address playerToSupport) external onlyProxy {
         //use onlyExistentGame(gameId) modifier?
+        // no need for modifier as it will be checked in the DB calls - karl
+
+        // check game state
+        // uint gameState = gameManagerDB.getGameState(gameId); // not yet implemented
+
+        // bettor can join before and even a live game
+        // require(gameState == GAME_STATE_PRESTART ||
+        //         gameState == GAME_STATE_STARTED, "Unable to join game"); 
+
         //uint ticketFee = gameVarAndFee.getTicketFee();
         uint ticketFee = 100; //until we merge GVAF contract
 
@@ -135,11 +152,16 @@ contract GameManager is Proxied {
         // kittieId should not be cero
 
         //pay ticket fee
-        require(kittieFightToken.transferFrom(player, address(endowmentFund), ticketFee), "Error sending funds to endownment");
+        require(kittieFightToken.transferFrom(supporter, address(endowmentFund), ticketFee), "Error sending funds to endownment");
+
+        // add supporter to the team
+        // gameManagerDB.addSupporter(gameId, supporter, playerToSupport); // not yet implemented
+
 
         //If both player have payed ticket fee
         //change game state to created (not started because )
         //gameManagerDB.updateGameState(gameId, GAME_STATE_CREATED)
+        // do we need the above statements? - karl
 
         //forfeiter.checkStatus();
         
@@ -149,6 +171,10 @@ contract GameManager is Proxied {
      * @dev only both Actual players can call
      */
     function startGame(uint gameId, address player, uint randNum) external onlyProxy {
+        // check game status or just check the game schedule time?
+        // require(gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game not ready to start"); 
+
+
         /**
             Funds honeypot from endowment fund, when both players are active with enough participator threshold .
             generates rarity scale for both players on game start
@@ -157,12 +183,28 @@ contract GameManager is Proxied {
         //Get cattributes
 
         //check both player's status
+        //(uint kittieId, uint status) = gameManagerDB.getPlayer(gameId, player);
+
+
         //check player's supporters
+        // uint minSupporters = gameVarAndFee.getMinimumContributors()
+        // require(gameManagerDB.getSupportersCount(player) >= minSupporters, "Not enough contributors");
+
+        // update the player's status to READY
+
+        // check both player's status, should be both READY before generating honeypot and starts game
 
         //uint honeyPotId = endowmentFund.generateHoneyPot();
         //rarityCalculator.startGame(cattributes) ??? what params to send
 
+        // add players as bettors?
+        
+
         //forfeiter.checkStatus();
+
+        // update game status
+        // gameManagerDB.updateGameState(gameId, GAME_STATE_STARTED) 
+
     }
     
 
@@ -170,7 +212,10 @@ contract GameManager is Proxied {
      * @dev Extend time of underperforming game indefinitely, each time 1 minute before game ends, by checking at everybet
      */
     function extendTime(uint gameId) internal {
-
+        // check if underperforming
+        if(!checkPerformance(gameId)){
+            // extend time
+        }
     }
 
     /**
@@ -184,8 +229,8 @@ contract GameManager is Proxied {
         external
         onlyProxy 
     {
-        //Add bet to DB
-        //gameManagerDB.addBet(gameId, amountEth, supportedPlayer);
+        // check game status 
+        // require(gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started"); 
 
         //forfeiter.checkStatus();
 
@@ -193,18 +238,25 @@ contract GameManager is Proxied {
         
         //endowmentFund.contributeETH(gameId)
 
+        //Add bet to DB 
+        // we should add it only after successful bet transfer - karl
+        //gameManagerDB.addBet(gameId, amountEth, supportedPlayer);
+
         // transfer amountKTY to endowmentFund (endowmentFund.contributeKFT(gameId, account,amountKTY )?)
         //or
         //require(kittieFightToken.transferFrom(account, address(endowmentFund), amountKTY));
 
         //hitResolve
         //hitsResolve.caluclateCurrentRandom(randomNum)
+
+        // check underperforming game
+        // extendTime(gameId);
     }
 
     /**
      * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
      */
-    function checkPerformance(uint gameId) external returns(bool) {
+    function checkPerformance(uint gameId) internal returns(bool) {
         //get initial jackpot
         //gameManagerDB.getJackpotDetails(gameId)
     }
@@ -213,6 +265,9 @@ contract GameManager is Proxied {
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEND(uint gameId) internal {
+        // check game status 
+        // require(gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started"); 
+
         //what functions calls this internally?
         //get game end time
         //uint endTime = gameManagerDB.getEndTime(gameId);
@@ -241,14 +296,15 @@ contract GameManager is Proxied {
     }
 
     /**
-     * @dev ?
+     * @dev Cancels the game
      */
     function cancelGame(uint gameId) internal {
         //gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED)
     }
 
     /**
-     * @dev ?
+     * @dev Creates game and generates FightID
+     * @return fightId
      */
     function genFightID
     (

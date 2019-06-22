@@ -30,8 +30,10 @@ contract GameManagerProxy is ProxyBase, Guard{
     GameManager(addressOfGameManager()).startGame(gameId, msg.sender, randNum);
   }
 
-  function participate(uint gameId) external onlyPlayer {
-    GameManager(addressOfGameManager()).participate(gameId, msg.sender);
+  // changed onlyBettor instead of onlyPlayer modifier
+  // add fighter as a bettor so we can use onlyBettor for both roles
+  function participate(uint gameId, address playerToSupport) external onlyBettor {
+    GameManager(addressOfGameManager()).participate(gameId, msg.sender, playerToSupport);
   }
 
   function bet
