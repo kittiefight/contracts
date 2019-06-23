@@ -27,8 +27,6 @@ contract GameManagerDB is Proxied {
 
   GenericDB public genericDB;
 
-  uint8 internal constant BET_CURRENCY_ETH = 1;
-  uint8 internal constant BET_CURRENCY_KTY = 2;
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
   string internal constant ERROR_DOES_NOT_EXIST = "Game does not exist";
@@ -82,7 +80,7 @@ contract GameManagerDB is Proxied {
    * @dev Adds a bettor to the given game iff the game exists.
    * If the bettor already exists in the game, updates her bet.
    */
-  function addBettor(uint256 gameId, address bettor, uint256 betAmount, uint8 betCurrency, address supportedPlayer)
+  function addBettor(uint256 gameId, address bettor, uint256 betAmount, address supportedPlayer)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
@@ -110,27 +108,24 @@ contract GameManagerDB is Proxied {
     // Check if the supported player is same in case of additional bet
     require(_supportedPlayer != supportedPlayer, ERROR_CANNOT_SUPPORT_BOTH);
 
-    // Check the currency for bets
-    require(betCurrency == BET_CURRENCY_ETH || betCurrency == BET_CURRENCY_KTY, ERROR_INVALID_CURRENCY);
-
     // Update bettor's total bet amount
-    updateBet(gameId, bettor, betAmount, betCurrency);
+    updateBet(gameId, bettor, betAmount);
 
     // Update total bet amount in the game
-    updateTotalBet(gameId, betAmount, betCurrency);
+    updateTotalBet(gameId, betAmount);
   }
 
   /**
    * @dev Updates the amount of bet for the given bettor in the given game by the given amount.
    */
-  function updateBet(uint256 gameId, address bettor, uint256 amount, uint8 currency) internal {
+  function updateBet(uint256 gameId, address bettor, uint256 amount) internal {
     uint256 prevAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, currency, "betAmount"))
+      keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
     );
     genericDB.setUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, currency, "betAmount")),
+      keccak256(abi.encodePacked(gameId, bettor, "betAmount")),
       prevAmount.add(amount)
     );
   }
@@ -138,15 +133,15 @@ contract GameManagerDB is Proxied {
   /**
    * @dev Updates the total amount of bet in the given game by the given amount.
    */
-  function updateTotalBet(uint256 gameId, uint256 amount, uint8 currency) internal {
+  function updateTotalBet(uint256 gameId, uint256 amount) internal {
     uint256 prevAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, currency, "totalBetAmount"))
+      keccak256(abi.encodePacked(gameId, "totalBetAmount"))
     );
 
     genericDB.setUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, currency, "totalBetAmount")),
+      keccak256(abi.encodePacked(gameId, "totalBetAmount")),
       prevAmount.add(amount)
     );
   }
@@ -173,15 +168,11 @@ contract GameManagerDB is Proxied {
    */
   function getBettor(uint256 gameId, address bettor)
     public view
-    returns (uint256 betAmountETH, uint256 betAmountKTY, address supportedPlayer)
+    returns (uint256 betAmount, address supportedPlayer)
   {
-    betAmountETH = genericDB.getUintStorage(
+    betAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, BET_CURRENCY_ETH, "betAmount"))
-    );
-    betAmountKTY = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, BET_CURRENCY_KTY, "betAmount"))
+      keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
     );
     supportedPlayer = genericDB.getAddressStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
@@ -196,19 +187,15 @@ contract GameManagerDB is Proxied {
   function getGame(uint256 gameId)
     public view
     onlyExistentGame(gameId)
-    returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBetETH, uint256 totalBetKTY, uint256 createdAt)
+    returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBet, uint256 createdAt)
   {
     playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
     playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
     kittyBlack = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")));
     kittyRed = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")));
-    totalBetETH = genericDB.getUintStorage(
+    totalBet = genericDB.getUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, BET_CURRENCY_ETH, "totalBetAmount"))
-    );
-    totalBetKTY = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, BET_CURRENCY_KTY, "totalBetAmount"))
+      keccak256(abi.encodePacked(gameId, "totalBetAmount"))
     );
     createdAt = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "createdAt")));
   }
