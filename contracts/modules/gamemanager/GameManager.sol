@@ -35,8 +35,11 @@ import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../registration/Register.sol";
+import "../../libs/LinkedListLib.sol";
+
 
 contract GameManager is Proxied {
+    using LinkedListLib for LinkedListLib.LinkedList;
 
     //Contract Variables
     GameManagerDB public gameManagerDB;
@@ -61,7 +64,35 @@ contract GameManager is Proxied {
     uint256 public constant GAME_STATE_CANCELLED = 3;
     uint256 public constant GAME_STATE_FINISHED = 4;
 
+    // Temporal variables for a game
+    struct GameState {
+        uint256 state;
+        uint256 preStartTime;
+        uint256 startTime;
+        uint256 endTime;
+        uint256 lastBet;
+        address topBettor;
+        address topSecondBettor;
+        bool playerRedPressedStart;
+        bool playerBlackPressedStart;
+        // Maybe some other variables...
+    }
 
+    // List of games. We can keep the temporal data for games in this mapping.
+    // The key value would be the id of a game which is created in GameManagerDB
+    mapping (uint256 => GameState) public games;
+
+    // We may also keep the list of kitties which are currently listed for possible match
+    // Linked list would provide us abilities like iteration of the list and length of list.
+    LinkedListLib.LinkedList internal listedKitties;
+    // Also may keep a relation with owners for a quick access
+    mapping (uint256 => address) public kittieOwners;
+
+
+    // FIXME: Instead of this modifier, we can use onlyPlayer modifier from contracts/authority/Guard.sol contract
+    // It checks whether the account has player access (which means the account's already given his kitty/ies to the system)
+    // And by default it checks if the account is registered in the system.
+    // To check if a specific kittie belongs to a specific account, you can use doesKittieBelong(address account, uint256 kittieId) function from Register contract.
     modifier onlyValidPlayer(address player, uint kittieId) {
         require(register.isRegistered(player), "Player not registered");
         require(register.hasKitties(player), "No kitties available");
