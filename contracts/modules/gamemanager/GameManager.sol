@@ -20,7 +20,6 @@ import "./Forfeiter.sol";
 
 /**
  * @dev Manages matching players, game creation and states of a game.
- * @author
  */
 contract GameManager is Proxied, Scheduler, Forfeiter {
 
