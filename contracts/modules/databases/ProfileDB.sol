@@ -203,4 +203,8 @@ contract ProfileDB is Proxied {
       keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
     );
   }
+
+  function doesKittieExist(address account, uint256 kittieId) public view returns (bool) {
+    return genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId);
+  }
 }

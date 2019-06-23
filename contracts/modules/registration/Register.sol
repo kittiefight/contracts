@@ -27,7 +27,7 @@ import "../../interfaces/ERC20Standard.sol";
  * and CryptoKitties registration/removal under existing profiles.
  * This contract keeps the registered CryptoKitties, SuperDAO Tokens
  * and KittieFight Tokens. Therefore before user creating a profile
- * or any kind of interaction with the whole system, required approvals 
+ * or any kind of interaction with the whole system, required approvals
  * for both CryptoKitties and ERC20 tokens should be given to this contarct in advance.
  * @author @psychoplasma
  */
@@ -273,6 +273,16 @@ contract Register is Proxied, SystemRoles {
    */
   function isRegistered(address account) public view returns (bool) {
     return profileDB.doesProfileExist(account);
+  }
+
+  /**
+   * @dev Checks whether the kittie provided is registered to the system under the given account.
+   * @param account address Account to be checked against kittie
+   * @param kittieId uint256 Kittie to be checked if it exists
+   * @return bool true if the kittie is registered to the system under the given account
+   */
+  function doesKittieBelong(address account, uint256 kittieId) public view returns (bool) {
+    return profileDB.doesKittieExist(account, kittieId);
   }
 
   /**
