@@ -16,9 +16,10 @@ import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 
+
 /**
  * @title ProfileDB
- * @author @kittieFIGHT @psychoplasma
+ * @author @psychoplasma
  */
 contract ProfileDB is Proxied {
   using SafeMath for uint256;
@@ -201,5 +202,9 @@ contract ProfileDB is Proxied {
       CONTRACT_NAME_PROFILE_DB,
       keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
     );
+  }
+
+  function doesKittieExist(address account, uint256 kittieId) public view returns (bool) {
+    return genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId);
   }
 }
