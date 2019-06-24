@@ -18,28 +18,29 @@ import "../proxy/Proxied.sol";
  * @dev check return variables, depending of what other contracts need.
  */
 contract DateTime is Proxied, DateTimeAPI {
-    
+
+    GameVarAndFee public gameVarAndFee;
+
     /**
-    * @notice Uses the variable  "futureGameTime" from gameVarAndFeeManager 
-    * to compare against current time and determine the countdown start of the 
-    * allocated prestart time in the "gamePrestart" variable. I.e 2 min countdown 
-    * @return Date and Time
-    * @dev gameVarAndFee will always get the updated address from contract manager if changed
+    * @notice initialize the gameVarAndFee contract
     */
-    function runGamePrestartTime() 
-    public view 
-    returns(
-    uint16 _year, uint8 _month, uint8 _day, uint8 _hour, 
-    uint8 _minute, uint8 second, uint8 weekday) 
+    function initialize() external onlyOwner {
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+    }
+
+    /**
+    * @notice generic timestamp parser
+    */
+    function convertTimeStamp(uint timeStamp)
+        public pure
+        returns(
+        uint16 _year, uint8 _month, uint8 _day, uint8 _hour,
+        uint8 _minute, uint8 second, uint8 weekday)
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
-        uint _futureGameTime = gameVarAndFee.getFutureGameTime();
-        uint _gamePrestart = gameVarAndFee.getGamePrestart();
-
-        _DateTime memory dt = parseTimestamp(now + _futureGameTime - _gamePrestart);
-
+        _DateTime memory dt = parseTimestamp(timeStamp);
         return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday);
     }
+
     
     /**
     * @notice Uses the variable "gameDuration" to compare against current time and 
@@ -50,8 +51,7 @@ contract DateTime is Proxied, DateTimeAPI {
     public view 
     returns(
     uint8 _hour, uint8 _minute, uint8 second)
-    {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+    {        
         uint _gameDuration = gameVarAndFee.getGameDuration();
 
         _DateTime memory dt = parseTimestamp(now + _gameDuration);
@@ -69,8 +69,7 @@ contract DateTime is Proxied, DateTimeAPI {
     public view
     returns(
     uint8 _hour, uint8 _minute, uint8 second)
-    {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
+    {        
         uint _kittieHellExpiration = gameVarAndFee.getKittieHellExpiration();
 
         _DateTime memory dt = parseTimestamp(_gameEndTime + _kittieHellExpiration);
@@ -89,7 +88,6 @@ contract DateTime is Proxied, DateTimeAPI {
     returns(
     uint8 _hour, uint8 _minute, uint8 second)
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
         uint _honeypotExpiration = gameVarAndFee.getHoneypotExpiration();
 
         _DateTime memory dt = parseTimestamp(_gameEndTime + _honeypotExpiration);
@@ -108,12 +106,10 @@ contract DateTime is Proxied, DateTimeAPI {
     uint16 _year, uint8 _month, uint8 _day, uint8 _hour, 
     uint8 _minute, uint8 second, uint8 weekday) 
     {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract("GameVarAndFee"));
         uint _futureGameTime = gameVarAndFee.getFutureGameTime();
 
         _DateTime memory dt = parseTimestamp(now + _futureGameTime);
 
         return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday);
-
     }  
 }

@@ -7,7 +7,7 @@ require("chai")
 
 const GenericDB = artifacts.require("GenericDB");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
-const Proxy = artifacts.require("Proxy");
+const Proxy = artifacts.require("KFProxy");
 const DateTime = artifacts.require("DateTime");
 const RoleDB = artifacts.require("RoleDB");
 
@@ -28,6 +28,7 @@ contract("DateTime", ([creator, randomAddress]) => {
     await this.roleDB.setProxy(this.proxy.address);
 
     await this.gameVarAndFee.initialize();
+    await this.dateTime.initialize();
   });
 
   describe("DateTime", () => {
@@ -37,37 +38,28 @@ contract("DateTime", ([creator, randomAddress]) => {
       proxy.should.be.equal(randomAddress);
     });
 
-    it("calculates correct Prestart time", async () => {
-      await this.proxy.setFutureGameTime(3600);
-      await this.proxy.setGamePrestart(120);
+    it("calculates correct game duration time", async () => {
+      await this.proxy.setGameDuration(300);
 
-      let gamePrestartTime = await this.dateTime.runGamePrestartTime().should.be
+      let gameDurationTime = await this.dateTime.runGameDurationTime().should.be
         .fulfilled;
 
       block = await web3.eth.getBlock();
 
-      Date.prototype.addHours = function(h) {
-        this.setHours(this.getHours() + h);
-        return this;
-      };
-
-      Date.prototype.subMinutes = function(m) {
-        this.setMinutes(this.getMinutes() - m);
+      Date.prototype.addMinutes = function (m) {
+        this.setMinutes(this.getMinutes() + m);
         return this;
       };
 
       blockDate = Date(block.timestamp * 1000);
-
       var utcDate = new Date(blockDate);
+      utcDate = utcDate.addMinutes(5);
 
-      //Adds 3600 sec and subtracts 120 seconds
-      utcDate = utcDate.addHours(1).subMinutes(2);
-
-      gamePrestartTime._hour.toNumber().should.be.equal(utcDate.getUTCHours());
-      gamePrestartTime._minute
+      gameDurationTime._hour.toNumber().should.be.equal(utcDate.getUTCHours());
+      gameDurationTime._minute
         .toNumber()
         .should.be.equal(utcDate.getUTCMinutes());
-      gamePrestartTime.second
+      gameDurationTime.second
         .toNumber()
         .should.be.equal(utcDate.getUTCSeconds());
     });
