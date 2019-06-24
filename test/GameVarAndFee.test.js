@@ -7,7 +7,7 @@ require("chai")
 
 const GenericDB = artifacts.require("GenericDB");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
-const Proxy = artifacts.require("Proxy");
+const Proxy = artifacts.require("KFProxy");
 const RoleDB = artifacts.require("RoleDB");
 
 contract("GameVarAndFee", ([creator, randomAddress]) => {

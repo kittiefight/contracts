@@ -2,10 +2,10 @@ pragma solidity ^0.5.5;
 
 import "./libs/zos-lib/Initializable.sol";
 import "./modules/proxy/ProxyBase.sol";
-import "./modules/proxy/KittieHellProxy.sol";
-import "./modules/proxy/GameVarAndFeeProxy.sol";
+//import "./modules/proxy/KittieHellProxy.sol";
+//import "./modules/proxy/GameVarAndFeeProxy.sol";
 //Generates inheritance conflict, need to create interface
-// import "./modules/proxy/RegisterProxy.sol";
+import "./modules/proxy/RegisterProxy.sol";
 
 /**
  * @title Proxy contract is a main entry point for KittyFight contract system
@@ -15,9 +15,9 @@ contract KFProxy is
     Initializable,          //Allows to use ZeppelinOS Proxy
     ProxyBase,
     //List of public interfaces this proxy supports
-    GameVarAndFeeProxy,
-    KittieHellProxy
-    // RegisterProxy
+    //GameVarAndFeeProxy,
+    //KittieHellProxy
+    RegisterProxy
 {
 
     /**
