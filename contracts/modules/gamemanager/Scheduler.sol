@@ -66,7 +66,7 @@ contract Scheduler is Proxied {
     * @param _kittyId kitty id
     * @param _player is the address of the palyer
     */
-    function addKittyToList(uint256 _kittyId, address _player) external {
+    function addKittyToList(uint256 _kittyId, address _player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
 
         KittyList[kittyCount] = Kitty({ kittyId: _kittyId, player: _player });
         kittyCount++;
