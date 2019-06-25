@@ -75,6 +75,7 @@ contract GameManager is Proxied {
         address topSecondBettor;
         bool playerRedPressedStart;
         bool playerBlackPressedStart;
+        uint256 honeyPotId;
         // Maybe some other variables...
         /**
             fight map
@@ -92,18 +93,11 @@ contract GameManager is Proxied {
     // Also may keep a relation with owners for a quick access
     mapping (uint256 => address) public kittieOwners;
 
-
-    // FIXME: Instead of this modifier, we can use onlyPlayer modifier from contracts/authority/Guard.sol contract
-    // It checks whether the account has player access (which means the account's already given his kitty/ies to the system)
-    // And by default it checks if the account is registered in the system.
-    // To check if a specific kittie belongs to a specific account, you can use doesKittieBelong(address account, uint256 kittieId) function from Register contract.
-    modifier onlyValidPlayer(address player, uint kittieId) {
-        require(register.isRegistered(player), "Player not registered");
-        require(register.hasKitties(player), "No kitties available");
-        //check if kittieId belongs to player account (not implemented yet)
-        //require(register.isKittyOwner(player, kittieId), "Not owner of kittie"); 
+    modifier onlyKittyOwner(address account, uint kittieId) {
+        require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
         _;
     }
+
     /**
     * @dev Sets related contracts
     * @dev Can be called only by the owner of this contract
@@ -129,12 +123,9 @@ contract GameManager is Proxied {
     /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
-    function listKittie(uint kittieId, address player) external onlyProxy onlyValidPlayer(player, kittieId) {
-        // listing fee?
-        // check if kitty belongs to player
-
-        //store in Kittie list - Where to store them?
-        //matchKitties(); //heck every time this function is called
+    function listKittie(uint kittieId, address player) external onlyProxy onlyKittyOwner(player, kittieId) {
+        // scheduler.addKittieToList(kittieId, player);
+        // lock kittie?
     }
 
     /**
@@ -157,12 +148,10 @@ contract GameManager is Proxied {
     )
         external
         onlyProxy
-        onlyValidPlayer(playerRed, kittyRed)
-        onlyValidPlayer(playerBlack, kittyBlack)
+        onlyKittyOwner(playerRed, kittyRed)
+        onlyKittyOwner(playerBlack, kittyBlack)
     {
-        //Requirements? Checks?
-        // check both players validity
-        // check if kitties belong to the players
+
         createFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
@@ -179,87 +168,52 @@ contract GameManager is Proxied {
         internal
         returns(uint)
     {
-        return gameManagerDB.createGame(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+        uint256 fightId = gameManagerDB.createGame(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+
+        GameState memory game;
+        game.state = GAME_STATE_CREATED;
+        game.preStartTime = gameVarAndFee.getGamePrestart();
+        game.startTime = gameStartTime;
+        game.endTime = gameStartTime + gameVarAndFee.getGameDuration();
+        
+        games[fightId] = game;
+        return fightId;
     }
 
     /**
      * @dev Betters pay a ticket fee to participate in betting .
+     *      Betters can join before and even a live game.
      */
     function participate(uint gameId, address supporter, address playerToSupport) external onlyProxy {
-        //use onlyExistentGame(gameId) modifier?
-        // no need for modifier as it will be checked in the DB calls - karl
+        require(games[gameId].state == GAME_STATE_PRESTART ||
+                games[gameId].state == GAME_STATE_STARTED, "Unable to join game");
 
-        // check game state
-        // uint gameState = gameManagerDB.getGameState(gameId); // not yet implemented
-
-        // bettor can join before and even a live game
-        // require(gameState == GAME_STATE_PRESTART ||
-        //         gameState == GAME_STATE_STARTED, "Unable to join game"); 
-
-        //uint ticketFee = gameVarAndFee.getTicketFee();
-        uint ticketFee = 100; //until we merge GVAF contract
-
-        //check if sender is one of the players in the gameId
-
-        //(uint kittieId, uint status) = gameManagerDB.getPlayer(gameId, player);
-        // kittieId should not be cero
+        uint ticketFee = gameVarAndFee.getTicketFee();
 
         //pay ticket fee
         require(kittieFightToken.transferFrom(supporter, address(endowmentFund), ticketFee), "Error sending funds to endownment");
-
-        // add supporter to the team
-        // gameManagerDB.addSupporter(gameId, supporter, playerToSupport); // not yet implemented
-
-
-        //If both player have payed ticket fee
-        //change game state to created (not started because )
-        //gameManagerDB.updateGameState(gameId, GAME_STATE_CREATED)
-        // do we need the above statements? - karl
-
-        //forfeiter.checkStatus();
-        
+        gameManagerDB.addBettor(gameId, supporter, 0, playerToSupport);
     }
 
     /**
      * @dev only both Actual players can call
      */
     function startGame(uint gameId, address player, uint randNum) external onlyProxy {
-        // check game status or just check the game schedule time?
-        // require(gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game not ready to start"); 
+        require(gameManagerDB.isPlayer(gameId, player), "Not authorized player");
+   
+        // adding player as a bettor himself, charge separate fee?
+        gameManagerDB.addBettor(gameId, player, 0, player);
 
+        // TODO update playerRedPressedStart or playerBlackPressedStart
+        if(true //forfeiter.checkGameStatus(gameId) TODO send GameState struct as param instead
+            ) {
+            // uint honeyPotId = endowmentFund.generateHoneyPot();
+            games[gameId].honeyPotId = 123; 
 
-        /**
-            Funds honeypot from endowment fund, when both players are active with enough participator threshold .
-            generates rarity scale for both players on game start
-        */
-
-        //Get cattributes
-
-        //check both player's status
-        //(uint kittieId, uint status) = gameManagerDB.getPlayer(gameId, player);
-
-
-        //check player's supporters
-        // uint minSupporters = gameVarAndFee.getMinimumContributors()
-        // require(gameManagerDB.getSupportersCount(player) >= minSupporters, "Not enough contributors");
-
-        // update the player's status to READY
-
-        // check both player's status, should be both READY before generating honeypot and starts game
-
-        //uint honeyPotId = endowmentFund.generateHoneyPot();
-        //rarityCalculator.startGame(cattributes) ??? what params to send
-
-        // add players as bettors?
-        
-
-        //forfeiter.checkStatus();
-
-        // update game status
-        // gameManagerDB.updateGameState(gameId, GAME_STATE_STARTED) 
-
+            //rarityCalculator.startGame(cattributes) ??? what params to send
+            games[gameId].state = GAME_STATE_STARTED;
+        }
     }
-    
 
     /**
      * @dev Extend time of underperforming game indefinitely, each time 1 minute before game ends, by checking at everybet
@@ -282,18 +236,14 @@ contract GameManager is Proxied {
         external
         onlyProxy 
     {
-        // check game status 
-        // require(gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started"); 
 
-        //forfeiter.checkStatus();
+        require(games[gameId].state == GAME_STATE_STARTED, "Game not started");
+        forfeiter.checkGameStatus(gameId);
 
         // if underperformed then call extendTime();
-        
-        //endowmentFund.contributeETH(gameId)
+        //  endowmentFund.contributeETH(gameId)
 
-        //Add bet to DB 
-        // we should add it only after successful bet transfer - karl
-        //gameManagerDB.addBet(gameId, amountEth, supportedPlayer);
+        gameManagerDB.addBettor(gameId, account, amountEth, supportedPlayer);
 
         // transfer amountKTY to endowmentFund (endowmentFund.contributeKFT(gameId, account,amountKTY )?)
         //or
@@ -318,13 +268,9 @@ contract GameManager is Proxied {
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEND(uint gameId) internal {
-        // check game status 
-        // require(gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started"); 
+        require(games[gameId].state == GAME_STATE_STARTED, "Game not started");
 
-        //what functions calls this internally?
-        //get game end time
-        //uint endTime = gameManagerDB.getEndTime(gameId);
-        //if (endTime > now) gameManagerDB.updateGameState(gameId, GAME_STATE_FINISHED)
+        if (games[gameId].endTime > now) games[gameId].state = GAME_STATE_FINISHED;
     }
 
     /**
@@ -339,7 +285,7 @@ contract GameManager is Proxied {
      * @dev Cancels the game
      */
     function cancelGame(uint gameId) internal {
-        //gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED)
+        games[gameId].state = GAME_STATE_CANCELLED;
     }
 
     

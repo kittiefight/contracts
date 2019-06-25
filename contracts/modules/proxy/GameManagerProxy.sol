@@ -11,7 +11,7 @@ import './ProxyBase.sol';
  */
 contract GameManagerProxy is ProxyBase, Guard{
 
-  function listKittie(uint kittieId) external {
+  function listKittie(uint kittieId) external onlyPlayer {
     GameManager(addressOfGameManager()).listKittie(kittieId, msg.sender);
   }
 
