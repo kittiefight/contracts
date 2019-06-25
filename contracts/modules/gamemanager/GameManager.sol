@@ -76,6 +76,10 @@ contract GameManager is Proxied {
         bool playerRedPressedStart;
         bool playerBlackPressedStart;
         // Maybe some other variables...
+        /**
+            fight map
+
+         */
     }
 
     // List of games. We can keep the temporal data for games in this mapping.
@@ -101,9 +105,9 @@ contract GameManager is Proxied {
         _;
     }
     /**
-   * @dev Sets related contracts
-   * @dev Can be called only by the owner of this contract
-   */
+    * @dev Sets related contracts
+    * @dev Can be called only by the owner of this contract
+    */
     function initialize() external onlyOwner {
 
         //TODO: Check what other contracts do we need
@@ -127,6 +131,7 @@ contract GameManager is Proxied {
      */
     function listKittie(uint kittieId, address player) external onlyProxy onlyValidPlayer(player, kittieId) {
         // listing fee?
+        // check if kitty belongs to player
 
         //store in Kittie list - Where to store them?
         //matchKitties(); //heck every time this function is called
@@ -136,10 +141,10 @@ contract GameManager is Proxied {
      * @dev checked and called by ListKittie() at every 20th listing request
      * Matches all 20 players random by pairs, based on non-deterministic data.
      */
-    function matchKitties() private {
-        //check if kittie list has 20 kitties (we dont have kittie list storage)
-        //call scheduler to create fights
-    }
+    // function matchKitties() private {
+    //     //check if kittie list has 20 kitties (we dont have kittie list storage)
+    //     //call scheduler to create fights
+    // }
 
     /**
      * @dev Check to make sure the only superADmin can list, Takes in two kittieID's and accounts as well as the jackpot ether and token number.
@@ -147,7 +152,8 @@ contract GameManager is Proxied {
     function manualMatchKitties
     (
         address playerRed, address playerBlack,
-        uint256 kittyRed, uint256 kittyBlack
+        uint256 kittyRed, uint256 kittyBlack,
+        uint gameStartTime
     )
         external
         onlyProxy
@@ -157,7 +163,23 @@ contract GameManager is Proxied {
         //Requirements? Checks?
         // check both players validity
         // check if kitties belong to the players
-        genFightID(playerRed, playerBlack, kittyRed, kittyBlack);
+        createFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+    }
+
+    /**
+     * @dev Creates game and generates FightID
+     * @return fightId
+     */
+    function createFight
+    (
+        address playerRed, address playerBlack,
+        uint256 kittyRed, uint256 kittyBlack,
+        uint gameStartTime
+    )
+        internal
+        returns(uint)
+    {
+        return gameManagerDB.createGame(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
     /**
@@ -308,8 +330,25 @@ contract GameManager is Proxied {
     /**
      * @dev Determine winner of game based on  **HitResolver **
      */
-    function Finalize(uint gameId) external {
+    function finalize(uint gameId) external {
         //hitsResolve.finalizeGame()  store returned 7 values
+    }
+    
+
+    /**
+     * @dev Cancels the game
+     */
+    function cancelGame(uint gameId) internal {
+        //gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED)
+    }
+
+    
+
+    /**
+     * @dev ?
+     */
+    function claim(uint kittieId) internal {
+
     }
 
     /**
@@ -323,37 +362,6 @@ contract GameManager is Proxied {
      * @dev ?
      */
     function winnersGroupClaim() internal {
-
-    }
-
-    /**
-     * @dev Cancels the game
-     */
-    function cancelGame(uint gameId) internal {
-        //gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED)
-    }
-
-    /**
-     * @dev Creates game and generates FightID
-     * @return fightId
-     */
-    function genFightID
-    (
-        address playerRed, address playerBlack,
-        uint256 kittyRed, uint256 kittyBlack
-    )
-        internal
-        returns(uint)
-    {
-        //Internal or external
-        //Create Game in DB
-        // return gameManagerDB.createGame(playerRed, playerBlack, kittyRed, kittyBlack);
-    }
-
-    /**
-     * @dev ?
-     */
-    function claim(uint kittieId) internal {
 
     }
 }

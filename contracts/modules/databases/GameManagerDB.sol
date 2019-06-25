@@ -49,7 +49,12 @@ contract GameManagerDB is Proxied {
   /**
    * @dev Creates a new game item on game table
    */
-  function createGame(address playerRed, address playerBlack, uint256 kittyRed, uint256 kittyBlack)
+  function createGame
+  (
+    address playerRed, address playerBlack,
+    uint256 kittyRed, uint256 kittyBlack,
+    uint256 gameStartTime
+  )
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     returns (uint256 gameId)
@@ -73,7 +78,7 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")), kittyBlack);
 
     // solium-disable-next-line security/no-block-members
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "createdAt")), block.timestamp);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "createdAt")), gameStartTime);
   }
 
   /**
@@ -108,11 +113,14 @@ contract GameManagerDB is Proxied {
     // Check if the supported player is same in case of additional bet
     require(_supportedPlayer != supportedPlayer, ERROR_CANNOT_SUPPORT_BOTH);
 
-    // Update bettor's total bet amount
-    updateBet(gameId, bettor, betAmount);
+    //When registering supporters before game start
+    if (betAmount > 0) {
+      // Update bettor's total bet amount
+      updateBet(gameId, bettor, betAmount);
 
-    // Update total bet amount in the game
-    updateTotalBet(gameId, betAmount);
+      // Update total bet amount in the game
+      updateTotalBet(gameId, betAmount);
+    }
   }
 
   /**

@@ -18,12 +18,13 @@ contract GameManagerProxy is ProxyBase, Guard{
   function manualMatchKitties
   (
     address playerRed, address playerBlack,
-    uint256 kittyRed, uint256 kittyBlack
+    uint256 kittyRed, uint256 kittyBlack,
+    uint256 gameStartTime
   )
     external
     onlySuperAdmin
   {
-    GameManager(addressOfGameManager()).manualMatchKitties(playerRed, playerBlack, kittyRed, kittyBlack);
+    GameManager(addressOfGameManager()).manualMatchKitties(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
   }
 
   function startGame(uint gameId, uint randNum) external onlyPlayer {
