@@ -23,9 +23,9 @@ pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
 import "../../libs/SafeMath.sol";
-//import "../databases/GameManagerDB.sol";
-//import "../../DateTime.sol"; // used for time formating?
-//import "./GameManager.sol";
+//import "../../authority/Guard.sol";
+import "../../GameVarAndFee.sol";
+import "./GameManager.sol";
 
 
 /**
@@ -38,47 +38,47 @@ contract Scheduler is Proxied {
     using SafeMath for uint256;
 
     //Contract Variables
-    //GameManagerDB public gameManagerDB;
-    //GameManager public gameManager;
-    //DateTimeAPI public timeContract;
+    GameManager public gameManager;
+    GameVarAndFee public gameVarAndFee;
+    //Register public register;
 
     uint256 randomNonce;
 
-    struct MatchedPlayers {
-        uint256     gameId;
-        uint256     gameTime;
-        address     redPlayer;
-        uint256     redPlayerKittyId;
-        address     blackPlayer;
-        uint256     blackPlayerKittyId;
-    }
-    MatchedPlayers[] gameList;
-
     uint256 kittyCount;
-    struct Kittie {
+    struct Kitty {
         uint256 kittyId;
-        address owner;
+        address player;
     }
-    Kittie[] kittieList;
-    Kittie[] kittieListSuffled;
+    Kitty[] KittyList;
+    Kitty[] KittyListSuffled;
 
 
     /**
      * @dev Can be called only by the owner of this contract
      */
     function initialize() public onlyOwner {
-        //gameManager = GameManager(proxy.getContract('GameManager'));
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+        gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
     }
 
     /**
-    * @dev what modifier to add?
+    * @dev what modifier to add? onlyValidPlayer
     * @param _kittyId kitty id
-    * @param _owner is the address of the kittie owner
+    * @param _player is the address of the palyer
     */
-    function addKittieToList(uint256 _kittyId, address _owner) private {
-        kittieList[kittyCount] = Kittie({ kittyId: _kittyId, owner: _owner });
+    function addKittyToList(uint256 _kittyId, address _player) external {
+
+        KittyList[kittyCount] = Kitty({ kittyId: _kittyId, player: _player });
         kittyCount++;
-        // we can matchKitties() from here as well if kittyCount == 20
+
+        // call matchKitties - check with GameVarFee getRequiredNumberMatches()
+        /*
+        // GameVarFee not updated in this branch
+        if (gameVarAndFee.getRequiredNumberMatches() == kittyCount) {
+            matchKitties();
+        }
+        */
+
     }
 
 
@@ -86,95 +86,58 @@ contract Scheduler is Proxied {
      * @dev this will be called by GameManager::matchKitties()
      */
     function matchKitties() private {
-        require((kittyCount % 2) != 0, "kittie count should be even number");
+        require((kittyCount % 2) != 0, "Kitty count should be even number");
 
-        Kittie[] memory redPlayers;
-        Kittie[] memory blackPlayers;
+        Kitty[] memory playerRed;
+        Kitty[] memory playerBlack;
         uint256 gameCount = kittyCount / 2;
 
-        sufflekittieList();
+        suffleKittyList();
 
         for(uint256 i = 0; i < gameCount; i++){
-            redPlayers[i] = kittieListSuffled[i];
+            playerRed[i] = KittyListSuffled[i];
         }
         for(uint256 i = gameCount - 1; i < kittyCount; i++){
-            blackPlayers[i] = kittieListSuffled[i];
+            playerBlack[i] = KittyListSuffled[i];
         }
 
-        //generate match pairs and time
-        uint256 gameId;
-        uint256 gameTime;
-        
-        for(uint256 i = 0; i < gameCount; i++){
-            gameId = generateGameId(redPlayers[i].owner, redPlayers[i].kittyId, blackPlayers[i].owner, blackPlayers[i].kittyId);
-            gameTime = now + 1 hours; // each game to be seperated by 1 hour.
-            gameList[gameId] = MatchedPlayers({
-                                    gameId: gameId,
-                                    gameTime: gameTime,
-                                    redPlayer: redPlayers[i].owner,
-                                    redPlayerKittyId: redPlayers[i].kittyId,
-                                    blackPlayer: blackPlayers[i].owner,
-                                    blackPlayerKittyId: blackPlayers[i].kittyId
-                                });
+        uint gameCreationTime;
+        uint gameTimeSeperation = gameVarAndFee.getGameTimes(); //OR getRequiredTimeDistance() ?
+
+        //generate match pairs
+        for(uint i = 0; i < gameCount; i++){
+            gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
+
+            // createFight not public
+            //gameManager.createFight(playerRed[i].owner, playerBlack[i].owner,  playerRed[i].kittyId, playerBlack[i].kittyId, gameCreationTime);
+
         }
 
-        // Add to DB
-
-
-        // reset kittieList, kittieListSuffled, kittyCount
+        // reset KittyList, KittyListSuffled, kittyCount
         kittyCount = 0;
-        delete kittieList;
-        delete kittieListSuffled;
+        delete KittyList;
+        delete KittyListSuffled;
     }
 
 
     /**
      * needs to be tested
      */
-    function sufflekittieList() private {
+    function suffleKittyList() internal {
         uint256 pos;
         for(uint256 i = 0; i < kittyCount; i++){
             pos = randomNumber(kittyCount);
-            kittieListSuffled[pos] = kittieList[i];
+            KittyListSuffled[pos] = KittyList[i];
         }
     }
 
     /**
      * needs to be tested
      */
-    function randomNumber(uint256 max) internal returns (uint){
-        uint256 random = uint(keccak256(abi.encodePacked(now, msg.sender, randomNonce))) % max;
+    function randomNumber(uint256 max) internal returns (uint256){
+        uint256 random = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randomNonce))) % max;
         randomNonce++;
         return random;
     }
-
-    /**
-     * @dev Generate game ID
-     * @dev since a player may list more than one kittie hence kittyId is also used to generate the game ID
-     */
-    function generateGameId( address redPlayerId, uint256 redPlayerKittyId, address blackPlayerId, uint256 blackPlayerKittyId )
-     public view returns ( uint256 ) {
-        return uint256(keccak256(abi.encodePacked(redPlayerId, redPlayerKittyId, blackPlayerId, blackPlayerKittyId, now)));
-    }
-
-
-
-    /**
-     * returns the game start time
-     */
-    function fightTimeStart(uint256 gameId) internal returns ( uint256 ){
-        // get from the DB
-    }
-
-    /**
-     *
-     */
-    function fightMatchLimit() internal returns ( uint256 ){
-
-    }
-
-
-
-
 
 }
