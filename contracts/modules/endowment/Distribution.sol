@@ -51,8 +51,11 @@ contract Distribution is Proxied {
      * @notice prevent interaction if the address is not on record as one of the
      * winning groups or prevent interaction if the address has already claimed
      */
-    modifier preventClaims(uint gameId, address winner) {
-        // require(gameManagerDB.hasRedeemed(gameId, winner), 'Winner has already claimed');
+    modifier preventClaims(uint gameId) {
+        //address winner = gameManagerDB.getWinner(gameId);
+        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, msg.sender);
+        //require(supportedPlayer == winner, "Not on the winning group");
+        // require(gameManagerDB.hasRedeemed(gameId, winner), 'Winnings already claimed');
         _;
     }
 
@@ -62,11 +65,11 @@ contract Distribution is Proxied {
      * allow address to claim share and dissallow and subsequent claimes by "modifier".
      * Triggered and calls the "sendEndowmentShare" function ONCE after the game is over.
      */
-    function redeem(uint gameId) public preventClaims(gameId, msg.sender) {
+    function redeem(uint gameId) public preventClaims(gameId) {
 
         //uint sharesETH = getWinnerShare(gameId, msg.sender);
 
-        //TODO send ether to adddress        
+        //TODO: send ether to adddress?
 
         // sendEndowmentShare(); // is it needed?
     }
@@ -77,22 +80,24 @@ contract Distribution is Proxied {
     function getWinnerShare(uint gameId, address winner) public view returns(uint) {
         uint256[5] memory rates = gameVarAndFee.getDistributionRates();
 
-        uint256 winningCategory = checkWinner(gameId, winner);
+        uint256 winningCategory = checkWinnerCategory(gameId, winner);
 
-        // uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId); //Or where is the total jackpot stored
+        // uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId); //Or where is the total jackpot stored?
         uint256 totalEthFunds = 1000;
 
         if (winningCategory < 4) return (totalEthFunds.mul(rates[winningCategory])).div(100);
         return 0;
     }
 
-    function checkWinner(uint gameId, address winner) internal pure returns(uint winningGroup) {
-
+    function checkWinnerCategory(uint gameId, address winner) internal pure returns(uint winningGroup) {
+        //address winningSide = gameManagerDB.getWinner(gameId);
         // Not yet implemented in Game Manager DB
-        // if (gameManagerDB.getWinner(gameId) == winner) return 0;
+        // if (winningSide == winner) return 0;
         // if (gameManagerDB.getTopBettor(gameId) == winner) return 1;
         // if (gameManagerDB.getSecondTopBettor(gameId) == winner) return 2;
-        // if (gameManagerDB.isOtherBettorWinner(gameId, winner)) return 3;
+
+        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, winner);
+        // if (winningSide, supportedPlayer) return 3;
         return 100;
     }
 
