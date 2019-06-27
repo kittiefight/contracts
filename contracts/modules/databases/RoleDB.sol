@@ -5,7 +5,6 @@ import "../proxy/Proxied.sol";
 
 
 contract RoleDB is Proxied {
-
   GenericDB public genericDB;
 
   event RoleAdded(address indexed account, string role);
@@ -53,4 +52,3 @@ contract RoleDB is Proxied {
     return genericDB.getBoolStorage(CONTRACT_NAME_ROLE_DB, keccak256(abi.encodePacked(role, account)));
   }
 }
-

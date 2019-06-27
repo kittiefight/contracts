@@ -1,9 +1,8 @@
 pragma solidity ^0.5.5;
 
 import "../../authority/Owned.sol";
-import "../../Proxy.sol";
+import "../../KFProxy.sol";
 import './ContractNames.sol';
-
 
 /**
  * @title Proxied provides modifiers to limit direct access to KittieFight contracts
@@ -12,27 +11,34 @@ import './ContractNames.sol';
  * @author @pash7ka
  */
 contract Proxied is Owned, ContractNames {
-    Proxy public proxy;
+    KFProxy public proxy;
 
     /**
      * @notice Set/update address of Proxy contract
      */
-    function setProxy(Proxy _proxy) public onlyOwner {
+    function setProxy(KFProxy _proxy) public onlyOwner {
         proxy = _proxy;
     }
 
-    modifier onlyProxy(){
-        require(address(proxy) != address(0), "Set Proxy address first");
-        require(msg.sender == address(proxy), "Access is only allowed through Proxy");
+    modifier onlyProxy() {
+        _isProxy();
         _;
     }
 
-    modifier onlyContract(string memory name){
-        require(address(proxy) != address(0), "Set Proxy address first");
+    modifier onlyContract(string memory name) {
+        _isContractAuthorized(name);
+        _;
+    }
+
+    function _isContractAuthorized(string memory name) internal view {
+        require(address(proxy) != address(0), "No Proxy");
         address allowedSender = proxy.getContract(name);
-        assert(allowedSender != address(0));    //If this fails, name is probablu incorrect
+        assert(allowedSender != address(0));    //If this fails, name is probably incorrect
         require(msg.sender == allowedSender, "Access is only allowed from specific contract");
-        _;
     }
 
+    function _isProxy() internal view {
+        require(address(proxy) != address(0), "No Proxy");
+        require(msg.sender == address(proxy), "Only through Proxy");
+    }
 }

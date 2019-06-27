@@ -9,6 +9,7 @@ const Proxy = artifacts.require("Proxy");
 const Distribution = artifacts.require("Distribution");
 const GenericDB = artifacts.require("GenericDB");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
+const Proxy = artifacts.require("KFProxy");
 const RoleDB = artifacts.require("RoleDB");
 const KittieFightToken = artifacts.require('MockERC20Token');
 

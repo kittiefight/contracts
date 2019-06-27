@@ -31,8 +31,6 @@ contract Guard is ProxyBase, SystemRoles {
   }
 
   function checkRole(string memory role) internal view returns (bool) {
-    return RoleDB(getContract(CONTRACT_NAME_ROLE_DB)).hasRole(role, msg.sender);
+    return RoleDB(addressOfRoleDB()).hasRole(role, msg.sender);
   }
 }
-
-

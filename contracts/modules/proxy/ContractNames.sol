@@ -20,8 +20,12 @@ contract ContractNames {
     string constant CONTRACT_NAME_CRONJOB           = "CronJob";
     string constant CONTRACT_NAME_GAMEVARANDFEE     = "GameVarAndFee";
     string constant CONTRACT_NAME_ROLE_DB           = "RoleDB";
+    string constant CONTRACT_NAME_ENDOWMENT         = "EndowmentFund";
     string constant CONTRACT_NAME_DISTRIBUTION      = "Distribution";
-    string constant CONTRACT_NAME_ENDOWMENT         = "Endowment";
-    string constant CONTRACT_NAME_KITTIEFIGHT_TOKEN = "KittieFIGHTToken";
-
+    string constant CONTRACT_NAME_FORFEITER         = "Forfeiter";
+    string constant CONTRACT_NAME_SCHEDULER         = "Scheduler";
+    string constant CONTRACT_NAME_BETTING           = "Betting";
+    string constant CONTRACT_NAME_HITSRESOLVE       = "HitsResolve";
+    string constant CONTRACT_NAME_RARITYCALCULATOR  = "RarityCalculator";
+    string constant CONTRACT_NAME_CRYPTOKITTIES     = "CryptoKitties";
 }

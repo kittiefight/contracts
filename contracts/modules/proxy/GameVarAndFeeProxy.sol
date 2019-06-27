@@ -24,9 +24,14 @@ contract GameVarAndFeeProxy is ProxyBase, Guard, VarAndFeeNames {
 
     */
 
-    function setFutureGameTime(uint value) 
+    function setRequiredNumberMatches(uint value) 
     external onlySuperAdmin { 
-        IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(FUTURE_GAME_TIME, value);
+        IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(REQUIRED_NUMBER_MATCHES, value);
+    }
+
+    function setRequiredTimeDistance(uint value) 
+    external onlySuperAdmin { 
+        IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(REQUIRED_TIME_DISTANCE, value);
     }
 
     function setGamePrestart(uint value) 
@@ -109,6 +114,11 @@ contract GameVarAndFeeProxy is ProxyBase, Guard, VarAndFeeNames {
         IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(ENDOWNMENT, value);
     }  
 
+    function setListingFee(uint value) 
+    external onlySuperAdmin{ 
+        IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(LISTING_FEE, value);
+    }
+
     function setTicketFee(uint value) 
     external onlySuperAdmin{ 
         IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(TICKET_FEE, value);
@@ -134,5 +144,9 @@ contract GameVarAndFeeProxy is ProxyBase, Guard, VarAndFeeNames {
         IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(HONEY_POT_DURATION, value);
     } 
 
+    function setMinimumContributors(uint value)
+    external onlySuperAdmin{
+        IGameVarAndFee(getContract(CONTRACT_NAME_GAMEVARANDFEE)).setVarAndFee(MINIMUM_CONTRIBUTORS, value);
+    }
 
 }
