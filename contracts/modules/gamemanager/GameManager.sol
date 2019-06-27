@@ -35,13 +35,11 @@ import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../registration/Register.sol";
-import "../../libs/LinkedListLib.sol";
-
 import "../../libs/SafeMath.sol";
+import '../kittieHELL/KittieHELL.sol';
 
 
 contract GameManager is Proxied {
-    using LinkedListLib for LinkedListLib.LinkedList;
     using SafeMath for uint256;
 
     //Contract Variables
@@ -57,6 +55,7 @@ contract GameManager is Proxied {
     HitsResolve public hitsResolve;
     RarityCalculator public rarityCalculator;
     Register public register;
+    KittieHELL public kittieHELL;
 
 
     uint256 public constant PLAYER_STATUS_INITIATED = 1;
@@ -67,34 +66,14 @@ contract GameManager is Proxied {
     uint256 public constant GAME_STATE_CANCELLED = 3;
     uint256 public constant GAME_STATE_FINISHED = 4;
 
-    
-    // struct GameState {
-    //     uint256 state;
-    //     uint256 preStartTime;
-    //     uint256 startTime;
-    //     uint256 endTime;
-    //     uint256 lastBet;
-    //     address topBettor;
-    //     address topSecondBettor;
-    //     bool playerRedPressedStart;
-    //     bool playerBlackPressedStart;
-    //     uint256 honeyPotId;
-    //     //fight map
-    // }
-
-    // List of games. We can keep the temporal data for games in this mapping.
-    // The key value would be the id of a game which is created in GameManagerDB
-    //mapping (uint256 => GameState) public games;
-
-    // We may also keep the list of kitties which are currently listed for possible match
-    // Linked list would provide us abilities like iteration of the list and length of list.
-    LinkedListLib.LinkedList internal listedKitties;
-    // Also may keep a relation with owners for a quick access
-    //mapping (uint256 => address) public kittieOwners;
-
     modifier onlyKittyOwner(address account, uint kittieId) {
         require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
         //TODO: ADD verify check here?
+        _;
+    }
+
+    modifier onlyGamePlayer(uint gameId, address player) {
+        require(gameManagerDB.isPlayer(gameId, player), "Invalid player");
         _;
     }
 
@@ -117,16 +96,24 @@ contract GameManager is Proxied {
         rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         register = Register(proxy.getContract(CONTRACT_NAME_REGISTER));
+        kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
 
     /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
-    function listKittie(uint kittieId, address player) external onlyProxy onlyKittyOwner(player, kittieId) {
-        // TODO: Check if player is verified
-        //uint256 listingFee = gameVarAndFee.getListingFee();
-        //TODO: call endowment to charge listing fee
+    function listKittie
+    (
+        uint kittieId, address player
+    )
+        external
+        onlyProxy
+        onlyKittyOwner(player, kittieId)
+    {
+        require(kittieFightToken.transferFrom(player, address(endowmentFund),
+                        gameVarAndFee.getListingFee()),
+                        "Error sending funds to endownment");
 
         scheduler.addKittyToList(kittieId, player);
     }
@@ -146,14 +133,14 @@ contract GameManager is Proxied {
         onlyKittyOwner(playerBlack, kittyBlack)
     {
 
-        createFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+        generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
     /**
-     * @dev Creates game and generates FightID
-     * @return fightId
+     * @dev Creates game and generates gameId
+     * @return gameId
      */
-    function createFight
+    function generateFight
     (
         address playerRed, address playerBlack,
         uint256 kittyRed, uint256 kittyBlack,
@@ -165,19 +152,49 @@ contract GameManager is Proxied {
         uint256 preStartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
         uint256 endTime = gameStartTime.add(gameVarAndFee.getGameDuration());
 
-        uint256 fightId = gameManagerDB.createGame(
+        uint256 gameId = gameManagerDB.createGame(
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
-        return fightId;
+        // uint honeyPotId = endowmentFund.generateHoneyPot();
+        // gameManagerDB.addHoneyPot(gameId, honeyPotId); not yet implemented
+        // endowmentFund.updateHoneyPotState(scheduled); not yet implemented
+        gameManagerDB.updateGameState(gameId, GAME_STATE_CREATED);
+        return gameId;
     }
+
+    /**
+     * @dev External function for Scheduler to call
+     * @return gameId
+     */
+    function createFight
+    (
+        address playerRed, address playerBlack,
+        uint256 kittyRed, uint256 kittyBlack,
+        uint gameStartTime
+    )
+        external
+        onlyContract(CONTRACT_NAME_SCHEDULER)
+        returns(uint)
+    {
+        return generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+    }
+
 
     /**
      * @dev Betters pay a ticket fee to participate in betting .
      *      Betters can join before and even a live game.
      */
-    function participate(uint gameId, address supporter, address playerToSupport) external onlyProxy {
-        require(gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART ||
-                gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Unable to join game");
+    function participate
+    (
+        uint gameId, address supporter,
+        address playerToSupport
+    )
+        external
+        onlyProxy
+        onlyGamePlayer(gameId, playerToSupport)
+    {
+        require(gameManagerDB.getGameState(gameId) != GAME_STATE_CANCELLED &&
+                gameManagerDB.getGameState(gameId) != GAME_STATE_FINISHED, "Unable to join game");
 
         uint ticketFee = gameVarAndFee.getTicketFee();
 
@@ -185,6 +202,7 @@ contract GameManager is Proxied {
         require(kittieFightToken.transferFrom(supporter, address(endowmentFund), ticketFee), "Error sending funds to endownment");
         gameManagerDB.addBettor(gameId, supporter, 0, playerToSupport);
 
+        forfeiter.checkGameStatus(gameId);
 
         //Update state if reached prestart time
         if (gameManagerDB.getPrestartTime(gameId) >= now)
@@ -201,29 +219,21 @@ contract GameManager is Proxied {
     )
         external
         onlyProxy
+        onlyGamePlayer(gameId, player)
         returns(bool)
     {
         require(gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game state is not Prestart");
-        require(gameManagerDB.isPlayer(gameId, player), "Not authorized player");
 
-        //Player hit start button
-        //TODO: Where to put this setter?
         gameManagerDB.setHitStart(gameId, player);
-   
-        // adding player as a bettor himself, charge separate fee?
-        gameManagerDB.addBettor(gameId, player, 0, player);
 
-        // TODO update playerRedPressedStart or playerBlackPressedStart
-        if(true //forfeiter.checkGameStatus(gameId) TODO send GameState struct as param instead
+        if(true //forfeiter.checkGameStatus(gameId)
             ) {
-            // uint honeyPotId = endowmentFund.generateHoneyPot();
-            //uint honeyPotId = 123;
-
-            //rarityCalculator.startGame(cattributes) ??? what params to send
+            // TODO: rarityCalculator.getDefenseLevel()
             gameManagerDB.updateGameState(gameId, GAME_STATE_STARTED);
         }
 
-        //TODO: Lock kittie of player if reached this point
+        // uint256 kittieId = gameManagerDB.getFightingKitty(gameId, player); not yet implemented
+        // kittieHELL.acquireKitty(kittieId, player);
     }
 
     /**
@@ -295,9 +305,12 @@ contract GameManager is Proxied {
     
 
     /**
-     * @dev Cancels the game
+     * @dev Cancels the game before the game starts
      */
-    function cancelGame(uint gameId) internal {
+    function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
+        require(gameManagerDB.getGameState(gameId) == GAME_STATE_CREATED ||
+                gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
+
         gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED);
     }
 
