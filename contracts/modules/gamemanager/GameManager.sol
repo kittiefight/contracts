@@ -30,7 +30,7 @@ import "../endowment/Distribution.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Forfeiter.sol";
 import "./Scheduler.sol";
-import "../../DateTime.sol";
+import "../datetime/DateTime.sol";
 import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
@@ -124,18 +124,10 @@ contract GameManager is Proxied {
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
     function listKittie(uint kittieId, address player) external onlyProxy onlyKittyOwner(player, kittieId) {
-        // scheduler.addKittieToList(kittieId, player);
+        // Check if player is verified
+        scheduler.addKittyToList(kittieId, player);
         // lock kittie?
     }
-
-    /**
-     * @dev checked and called by ListKittie() at every 20th listing request
-     * Matches all 20 players random by pairs, based on non-deterministic data.
-     */
-    // function matchKitties() private {
-    //     //check if kittie list has 20 kitties (we dont have kittie list storage)
-    //     //call scheduler to create fights
-    // }
 
     /**
      * @dev Check to make sure the only superADmin can list, Takes in two kittieID's and accounts as well as the jackpot ether and token number.
@@ -208,7 +200,7 @@ contract GameManager is Proxied {
         if(true //forfeiter.checkGameStatus(gameId) TODO send GameState struct as param instead
             ) {
             // uint honeyPotId = endowmentFund.generateHoneyPot();
-            games[gameId].honeyPotId = 123; 
+            games[gameId].honeyPotId = 123;
 
             //rarityCalculator.startGame(cattributes) ??? what params to send
             games[gameId].state = GAME_STATE_STARTED;

@@ -93,23 +93,5 @@ contract DateTime is Proxied, DateTimeAPI {
         _DateTime memory dt = parseTimestamp(_gameEndTime + _honeypotExpiration);
 
         return (dt.hour, dt.minute, dt.second);
-    } 
-
-    /**
-    * @notice Uses the variable "futureGameTime" to compare against current time "now" 
-    * and determine a future start date and or time for a game
-    * @return Date and Time
-    */
-    function runfutureGameTime() 
-    public view 
-    returns(
-    uint16 _year, uint8 _month, uint8 _day, uint8 _hour, 
-    uint8 _minute, uint8 second, uint8 weekday) 
-    {
-        uint _futureGameTime = gameVarAndFee.getFutureGameTime();
-
-        _DateTime memory dt = parseTimestamp(now + _futureGameTime);
-
-        return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.weekday);
-    }  
+    }   
 }

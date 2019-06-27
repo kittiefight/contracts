@@ -14,7 +14,8 @@ contract VarAndFeeNames {
 
     string constant TABLE_NAME = "GameVarAndFeeTable";
 
-    bytes32 constant FUTURE_GAME_TIME       = keccak256(abi.encodePacked(TABLE_NAME, "futureGameTime"));
+    bytes32 constant REQUIRED_NUMBER_MATCHES= keccak256(abi.encodePacked(TABLE_NAME, "requiredNumberMatches"));
+    bytes32 constant REQUIRED_TIME_DISTANCE = keccak256(abi.encodePacked(TABLE_NAME, "requiredTimeDistance"));
     bytes32 constant GAME_PRESTART          = keccak256(abi.encodePacked(TABLE_NAME, "gamePrestart"));
     bytes32 constant GAME_DURATION          = keccak256(abi.encodePacked(TABLE_NAME, "gameDuration"));
     bytes32 constant KITTIE_HELL_EXPIRATION = keccak256(abi.encodePacked(TABLE_NAME, "kittieHellExpiration"));
@@ -31,6 +32,7 @@ contract VarAndFeeNames {
     bytes32 constant SECOND_RUNNER_UP       = keccak256(abi.encodePacked(TABLE_NAME, "secondRunnerUp"));
     bytes32 constant OTHER_BETTORS          = keccak256(abi.encodePacked(TABLE_NAME, "otherBettors"));
     bytes32 constant ENDOWNMENT             = keccak256(abi.encodePacked(TABLE_NAME, "endownment"));
+    bytes32 constant LISTING_FEE             = keccak256(abi.encodePacked(TABLE_NAME, "listingFee"));
     bytes32 constant TICKET_FEE             = keccak256(abi.encodePacked(TABLE_NAME, "ticketFee"));
     bytes32 constant BETTING_FEE            = keccak256(abi.encodePacked(TABLE_NAME, "bettingFee"));
     bytes32 constant KITTIE_REDEMPTION_FEE  = keccak256(abi.encodePacked(TABLE_NAME, "kittieRedemptionFee"));
