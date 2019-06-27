@@ -43,10 +43,10 @@ module.exports = {
       gasPrice: 50000000000  // 50 Gwei
     },
     'development': {
-        host: "127.0.0.1",
-        port: 8544,
-        network_id: 999,
-        gas: 6000000
+      host: "127.0.0.1",
+      port: 7545,
+      network_id: 5777,
+      gas: 800000000
     },
     'live': {
         host: "127.0.0.1",
@@ -69,6 +69,7 @@ module.exports = {
     }
   },
   mocha: {
+    enableTimeouts: false,
     useColors: true,
     reporter: 'eth-gas-reporter',
     reporterOptions : {
