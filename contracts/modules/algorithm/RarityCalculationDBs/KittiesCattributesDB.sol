@@ -13,9 +13,6 @@ import "../../../interfaces/IContractManager.sol";
  */
 
 contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
-
-     /* Contract manager address */
-    address contractManager;
     
     string[] public dominantGeneBinary;
     mapping(uint => string[]) kittiesDominantGeneBinary;
@@ -23,10 +20,6 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
     mapping(uint => string[]) kittiesDominantGeneKai;
     string[] public dominantCattributes;
     mapping(uint => string[]) kittiesDominantCattributes;
-
-    function setContractManagerAddr(address _contractManager) public {
-        contractManager = _contractManager;
-    }
 
     /**
      * @author @ziweidream
