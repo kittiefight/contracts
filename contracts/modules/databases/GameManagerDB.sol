@@ -192,6 +192,23 @@ contract GameManagerDB is Proxied {
     return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "startTime")));
   }
 
+  /**
+   * @dev set HoneyPotId created by Endowment
+   */
+  function setHoneypotId(uint256 gameId, uint256 honeypotId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
+  }
+
+  function getHoneypotId(uint256 gameId)
+    public view
+    onlyExistentGame(gameId)
+  {
+    genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+  } 
 
   /**
    * @dev Increments the number of supporters for the given player
@@ -269,6 +286,17 @@ contract GameManagerDB is Proxied {
     returns (uint gameState)
   {
     return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")));
+  }
+
+  /**
+   * @dev get fighting kittyId for specific game and player
+   */
+  function getKittieInGame(uint256 gameId, address player)
+    public view
+    onlyExistentGame(gameId)
+    returns (uint)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
   }
 
   /**
