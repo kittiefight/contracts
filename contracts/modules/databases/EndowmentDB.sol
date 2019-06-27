@@ -46,6 +46,7 @@ contract EndowmentDB is Proxied {
   )
     external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    returns (bool)
   {
     // check actual funds
     uint actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
@@ -55,6 +56,7 @@ contract EndowmentDB is Proxied {
     // increase ingame funds
     uint ingameFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY);
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY, ingameFunds.add(amountRequired));
+    return true;
   }
 
   function allocateETH(
@@ -62,6 +64,7 @@ contract EndowmentDB is Proxied {
   )
     external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    returns (bool)
   {
     // check actual funds
     uint actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
@@ -71,6 +74,7 @@ contract EndowmentDB is Proxied {
     // increase ingame funds
     uint ingameFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH);
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH, ingameFunds.add(amountRequired));
+    return true;
   }
 
   function createHoneypot(
@@ -145,7 +149,7 @@ contract EndowmentDB is Proxied {
     if (ethContribution > 0) {
       // add account into list of ETH participants of honeypot
       bytes32 ethContributionKey = keccak256(abi.encodePacked(gameId, TABLE_NAME_CONTRIBUTION_ETH));
-      genericDB.pushNodeToLinkedList(CONTRACT_NAME_ENDOWMENT_DB, ethContributionKey, account);
+      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, ethContributionKey, account);
 
       // set new balance of the honeypot of endowment fund
       bytes32 ethTotalKey = keccak256(abi.encodePacked(gameId, "ethTotal"));
@@ -161,7 +165,7 @@ contract EndowmentDB is Proxied {
     if (ktyContribution > 0) {
       // add account into list of KTY participants of honeypot
       bytes32 ktyContributionKey = keccak256(abi.encodePacked(gameId, TABLE_NAME_CONTRIBUTION_KTY));
-      genericDB.pushNodeToLinkedList(CONTRACT_NAME_ENDOWMENT_DB, ktyContributionKey, account);
+      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, ktyContributionKey, account);
 
       // set new balance of the honeypot of endowment fund
       bytes32 ktyTotalKey = keccak256(abi.encodePacked(gameId, "ktyTotal"));

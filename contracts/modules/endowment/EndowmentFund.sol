@@ -54,7 +54,7 @@ contract EndowmentFund is Proxied {
     uint _ethAllocated = gameVarAndFee.getEthPerGame();
     require(endowmentDB.allocateETH(_ethAllocated));
 
-    _potId = _generatePotId();
+    uint _potId = _generatePotId();
  
     Honeypot memory _honeypot;
     _honeypot.gameId = _potId;
@@ -81,7 +81,7 @@ contract EndowmentFund is Proxied {
       bytes4 sig;
   }
 
-  function tokenFallback(address _from, uint _value, bytes _data) external {
+  function tokenFallback(address _from, uint _value, bytes calldata _data) external {
    /* tokenTx variable is analogue of msg variable of Ether transaction:
     *  tokenTx.sender is person who initiated this token transaction   (analogue of msg.sender)
     *  tokenTx.value the number of tokens that were sent   (analogue of msg.value)
@@ -92,13 +92,13 @@ contract EndowmentFund is Proxied {
     tokenTx.sender = _from;
     tokenTx.value = _value;
     tokenTx.data = _data;
-    (byte4 _sig, uint _gameId) = abi.decode(_data, (bytes4, uint256));
+    (bytes4 _sig, uint _gameId) = abi.decode(_data, (bytes4, uint256));
     tokenTx.sig = _sig;
 
     require(msg.sender == address(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN)));
 
     // invoke the target function
-    (bool _ok, ) = this.call(abi.encodeWithSelector(tokenTx.sig, _gameId, tokenTx.sender, tokenTx.value));
+    (bool _ok, ) = address(this).call(abi.encodeWithSelector(tokenTx.sig, _gameId, tokenTx.sender, tokenTx.value));
     require(_ok);
   }
 
