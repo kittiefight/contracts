@@ -28,6 +28,7 @@ import "../../interfaces/ERC721.sol";
 contract Forfeiter is Proxied {
 
   GameManager public gameManager;
+  GameManagerDB public gameManagerDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
   address public register;
@@ -39,6 +40,7 @@ contract Forfeiter is Proxied {
   // ALTERNATIVE: call proxy.getContract in every checkGameStatus call and remove this function
   function updateContracts() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+    gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     register = proxy.getContract(CONTRACT_NAME_REGISTER);
@@ -53,20 +55,21 @@ contract Forfeiter is Proxied {
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
   {
-    //TODO: Define what the GameManager sends as params (fight struct?), and get fight details
-    //gameManager.gameState(gameId);
+    
+    (address playerBlack, address playerRed, uint256 kittyBlack,
+      uint256 kittyRed, ,) = gameManagerDB.getGame(gameId);
 
-    //Mock response from GameManager
-    uint kittieIdBlack = 1;
-    uint kittieIdRed = 2;
-    uint supportersBlack = 105;
-    uint supportersRed = 98;
-    uint gamePreStartTime = now + 100;
-    uint gameStartTime = now + 220;
-    bool blackStarted = true;
-    bool redStarted = true;
+    //GameManagerDB values
+    //TODO: Optimize calls
+    uint256 gameStartTime = gameManagerDB.getStartTime(gameId);
+    uint256 gamePreStartTime = gameManagerDB.getPrestartTime(gameId);
+    uint supportersBlack = gameManagerDB.getSupporters(gameId, playerBlack);
+    uint supportersRed = gameManagerDB.getSupporters(gameId, playerRed);
+    bool blackStarted = gameManagerDB.didPlayerStart(gameId, playerBlack);
+    bool redStarted = gameManagerDB.didPlayerStart(gameId, playerRed);
 
-    bool conditions = checkPlayersKitties(kittieIdBlack, kittieIdRed) &&
+
+    bool conditions = checkPlayersKitties(kittyBlack, kittyRed) &&
       checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime) &&
       didPlayersStartGame(blackStarted, redStarted, gameStartTime);
 

@@ -165,7 +165,8 @@ contract GameManager is Proxied {
         uint256 preStartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
         uint256 endTime = gameStartTime.add(gameVarAndFee.getGameDuration());
 
-        uint256 fightId = gameManagerDB.createGame(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
+        uint256 fightId = gameManagerDB.createGame(
+            playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
         return fightId;
     }
@@ -204,6 +205,10 @@ contract GameManager is Proxied {
     {
         require(gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game state is not Prestart");
         require(gameManagerDB.isPlayer(gameId, player), "Not authorized player");
+
+        //Player hit start button
+        //TODO: Where to put this setter?
+        gameManagerDB.setHitStart(gameId, player);
    
         // adding player as a bettor himself, charge separate fee?
         gameManagerDB.addBettor(gameId, player, 0, player);

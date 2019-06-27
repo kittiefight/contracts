@@ -170,6 +170,28 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")), state);
   }
 
+  /**
+   * @dev set true when player hit start button
+   */
+  function setHitStart(uint256 gameId, address player)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
+  }
+
+  /**
+   * @dev Did player hit start button
+   */
+  function didPlayerStart(uint256 gameId, address player)
+    public view
+    onlyExistentGame(gameId)
+    returns (bool)
+  {
+    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "startTime")));
+  }
+
 
   /**
    * @dev Increments the number of supporters for the given player
@@ -184,6 +206,19 @@ contract GameManagerDB is Proxied {
       CONTRACT_NAME_GAMEMANAGER_DB,
       keccak256(abi.encodePacked(gameId, player, "supporters")),
       supporters.add(1)
+    );
+  }
+
+  /**
+   * @dev get amount of supporters for given game and player
+   */
+  function getSupporters(uint256 gameId, address player)
+    public view
+    returns (uint)
+  {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, player, "supporters"))
     );
   }
 
