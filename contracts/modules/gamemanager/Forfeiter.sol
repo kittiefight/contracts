@@ -31,7 +31,6 @@ contract Forfeiter is Proxied {
   GameManagerDB public gameManagerDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
-  address public register;
 
   /**
    * @notice Owner can call this function to update the needed contract for checking conditions
@@ -43,7 +42,6 @@ contract Forfeiter is Proxied {
     gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
-    register = proxy.getContract(CONTRACT_NAME_REGISTER);
   }
 
   /**
@@ -54,6 +52,7 @@ contract Forfeiter is Proxied {
   function checkGameStatus(uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    returns (bool)
   {
     
     (address playerBlack, address playerRed, uint256 kittyBlack,
@@ -69,14 +68,14 @@ contract Forfeiter is Proxied {
     bool redStarted = gameManagerDB.didPlayerStart(gameId, playerRed);
 
 
-    bool conditions = checkPlayersKitties(kittyBlack, kittyRed) &&
+    bool conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
       checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime) &&
       didPlayersStartGame(blackStarted, redStarted, gameStartTime);
 
     //If any condition is false, call forfeitGame
     if (!(conditions)) forfeitGame(gameId);
 
-    //TODO: Do we need to return something?
+    return conditions;
   }
 
   /**
@@ -90,39 +89,44 @@ contract Forfeiter is Proxied {
   }
 
   /**
-   * @notice checks that the register contract is owner of the kitties
+   * @notice checks that the each player still own listed kittie
    * @param kittieIdBlack uint256 kittieId of Black Corner
    * @param kittieIdRed uint256 kittieId of Red Corner
+   * @param playerBlack address of Black Player
+   * @param playerRed address of Red Player
    */
-  function checkPlayersKitties(uint kittieIdBlack, uint kittieIdRed)
+  function checkPlayersKitties
+  (
+    uint kittieIdBlack, uint kittieIdRed,
+    address playerBlack, address playerRed
+  )
     internal view returns (bool)
   {
-    bool checkBlack = ckc.ownerOf(kittieIdBlack) == register;
-    bool checkRed = ckc.ownerOf(kittieIdRed) == register;
+    bool checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
+    bool checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
 
     return (checkBlack && checkRed);
   }
 
   /**
-   * @notice checks for correct amount of supporters in each side
+   * @notice checks for correct amount of supporters in each side when prestart time is reached
    * @param supportersBlack uint256 amount of supporters in black corner
    * @param supportersRed uint256 amount of supporters in red corner
    * @param gamePreStartTime uint256 time when game starts 2 min countdown
    */
   function checkAmountSupporters(uint supportersBlack, uint supportersRed, uint gamePreStartTime)
     internal view returns (bool)
-  {
-    //Get minSupporters from GameVarAndFee contract
-    //uint minSupporters = gameVarAndFee.getMinimumContributors();
-
-    uint minSupporters = 100;
-
-    return (supportersBlack > minSupporters) && (supportersRed > minSupporters) && (gamePreStartTime > now);
-
+  { 
+    if (gamePreStartTime <= now) {
+      uint minSupporters = gameVarAndFee.getMinimumContributors();
+      return (supportersBlack > minSupporters) && (supportersRed > minSupporters);
+    }
+    
+    return true;
   }
 
   /**
-   * @notice both players have to trigger "startGame" within 2 minutes
+   * @notice Check if any of players did not hit start when game start time is reached
    * @param blackStarted bool if black player hit start
    * @param redStarted bool if red player hit start
    * @param gameStartTime uint256 time when 2 min countdown ends
@@ -130,6 +134,7 @@ contract Forfeiter is Proxied {
   function didPlayersStartGame(bool blackStarted, bool redStarted, uint gameStartTime)
     internal view returns (bool)
   {
-    return (gameStartTime > now) && blackStarted && redStarted;
+    if (gameStartTime <= now) return blackStarted && redStarted;
+    return true;
   }
 }
