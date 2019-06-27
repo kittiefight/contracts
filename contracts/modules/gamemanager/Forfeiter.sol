@@ -33,10 +33,9 @@ contract Forfeiter is Proxied {
   ERC721 public ckc;
 
   /**
-   * @notice Owner can call this function to update the needed contract for checking conditions
+   * @notice Owner can call this function to update the needed contracts for checking conditions
    * @dev contract addresses are stored in proxy
    */
-  // ALTERNATIVE: call proxy.getContract in every checkGameStatus call and remove this function
   function updateContracts() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
     gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
@@ -85,7 +84,7 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId) internal {
-    //gameManager.cancelGame(gameId);
+    gameManager.cancelGame(gameId);
   }
 
   /**
