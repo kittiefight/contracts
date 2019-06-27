@@ -53,7 +53,8 @@ contract GameManagerDB is Proxied {
   (
     address playerRed, address playerBlack,
     uint256 kittyRed, uint256 kittyBlack,
-    uint256 gameStartTime
+    uint256 gameStartTime, uint256 gamePrestartTime,
+    uint256 gameEndTime
   )
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
@@ -78,7 +79,11 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")), kittyBlack);
 
     // solium-disable-next-line security/no-block-members
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "createdAt")), gameStartTime);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")), gameStartTime);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
+
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
   }
 
   /**
@@ -155,6 +160,18 @@ contract GameManagerDB is Proxied {
   }
 
   /**
+   * @dev Update game to one of 5 states
+   */
+  function updateGameState(uint256 gameId, uint256 state)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+  }
+
+
+  /**
    * @dev Increments the number of supporters for the given player
    */
   function incrementSupporters(uint256 gameId, address player) internal {
@@ -195,7 +212,7 @@ contract GameManagerDB is Proxied {
   function getGame(uint256 gameId)
     public view
     onlyExistentGame(gameId)
-    returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBet, uint256 createdAt)
+    returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBet, uint256 startTime)
   {
     playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
     playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
@@ -205,9 +222,53 @@ contract GameManagerDB is Proxied {
       CONTRACT_NAME_GAMEMANAGER_DB,
       keccak256(abi.encodePacked(gameId, "totalBetAmount"))
     );
-    createdAt = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "createdAt")));
+    startTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
   }
 
+  /**
+   * @dev check game state, 0-4
+   */
+  function getGameState(uint256 gameId)
+    public view
+    onlyExistentGame(gameId)
+    returns (uint gameState)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")));
+  }
+
+  /**
+   * @dev ?
+   */
+  function getStartTime(uint256 gameId)
+    public view
+    onlyExistentGame(gameId)
+    returns (uint)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+  }
+
+  /**
+   * @dev ?
+   */
+  function getPrestartTime(uint256 gameId)
+    public view
+    onlyExistentGame(gameId)
+    returns (uint)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
+  }
+
+  /**
+   * @dev ?
+   */
+  function getEndTime(uint256 gameId)
+    public view
+    onlyExistentGame(gameId)
+    returns (uint)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
+  }
+  
   /**
    * @dev Checks whether the given player is playing in the given game.
    */

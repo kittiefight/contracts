@@ -72,12 +72,9 @@ contract Scheduler is Proxied {
         kittyCount++;
 
         // call matchKitties - check with GameVarFee getRequiredNumberMatches()
-        /*
-        // GameVarFee not updated in this branch
         if (gameVarAndFee.getRequiredNumberMatches() == kittyCount) {
             matchKitties();
         }
-        */
 
     }
 
