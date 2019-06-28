@@ -64,39 +64,30 @@ contract Scheduler is Proxied {
     * @param _player is the address of the player
     */
     function addKittyToList(uint256 _kittyId, address _player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
-        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed for upcomming games");
-        kittyList[kittyList.length] = Kitty({ kittyId: _kittyId, player: _player });
 
-        if (gameVarAndFee.getRequiredNumberMatches() == (kittyList.length * 2) ) {
+        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed for upcomming games");
+
+        Kitty memory newKitty = Kitty(_kittyId, _player);
+        kittyList.push(newKitty);
+
+        if ((gameVarAndFee.getRequiredNumberMatches() * 2) == kittyList.length) {
             matchKitties();
         }
     }
 
     /**
-    * @dev Checkes if kitty is listed for matching in future games
-    */
-    function isKittyListedForMatching(uint256 _kittyId) public view returns (bool) {
-        uint256[] memory unListed = getUnMatchedKitties();
-        for(uint256 i = 0; i < unListed.length ; i++){
-            if (_kittyId == unListed[i]){
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    /**
      * @dev Create red and black corner players
+     * under testing
      */
     function matchKitties() private {
-        require((kittyList.length % 2) != 0, "Number of Kitties should be even number");
-
-        Kitty[] memory playerRed;
-        Kitty[] memory playerBlack;
+        require(((kittyList.length % 2) == 0), "Number of Kitties should be even number");
 
         suffleKittyList();
         uint256 gameCount = kittyListSuffled.length / 2;
+
+        Kitty[] memory playerRed = new Kitty[](gameCount);
+        Kitty[] memory playerBlack = new Kitty[](gameCount);
+
 
         for(uint256 i = 0; i < gameCount; i++){
             playerRed[i] = kittyListSuffled[i];
@@ -118,19 +109,25 @@ contract Scheduler is Proxied {
     }
 
     /**
-     * needs to be tested
+     * Suffle Kitty List
      */
-    function suffleKittyList() internal {
+    function suffleKittyList() public {
 
-        Kitty[] memory kittyListCopy;
+        Kitty[] memory kittyListCopy = new Kitty[](kittyList.length);
         kittyListCopy = kittyList;
-        uint256 suffleKittyListCount = kittyList.length;
         delete kittyList;   // reset
 
         uint256 pos;
-        for(uint256 i = 0; i < suffleKittyListCount; i++){
-            pos = randomNumber(suffleKittyListCount);
-            kittyListSuffled[pos] = kittyListCopy[i];
+        Kitty memory temp;
+        for(uint i = 0; i < kittyListCopy.length; i++){
+            pos = randomNumber(kittyListCopy.length - 1);
+            temp = kittyListCopy[i];
+            kittyListCopy[i] = kittyListCopy[pos];
+            kittyListCopy[pos] = temp;
+        }
+
+        for(uint i = 0; i < kittyListCopy.length; i++){
+            kittyListSuffled.push(kittyListCopy[i]);
         }
     }
 
@@ -141,6 +138,19 @@ contract Scheduler is Proxied {
         uint256 random = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randomNonce))) % max;
         randomNonce++;
         return random;
+    }
+
+    /**
+    * @dev Checkes if kitty is listed for matching in future games
+    */
+    function isKittyListedForMatching(uint256 _kittyId) public view returns (bool) {
+        uint256[] memory unListed = getUnMatchedKitties();
+        for(uint256 i = 0; i < unListed.length ; i++){
+            if (_kittyId == unListed[i]){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -166,9 +176,9 @@ contract Scheduler is Proxied {
     }
 
     /**
-     * return requiredNumber of listed kitties required before the next nbatches of fights is setup
+     * @return requiredNumber of listed kitties required before the next nbatches of fights is setup
      */
-    function getRequiredMatchingnumber(uint256 nbatch) external view returns(uint256){
+    function getRequiredMatchingNumber(uint256 nbatch) external view returns(uint256){
         uint256[] memory currentUnMatchedKitties = getUnMatchedKitties();
         return  (nbatch * 2) - currentUnMatchedKitties.length;
     }
