@@ -23,7 +23,6 @@ pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
 import "../../libs/SafeMath.sol";
-//import "../../authority/Guard.sol";
 import "../../GameVarAndFee.sol";
 import "./GameManager.sol";
 
@@ -77,7 +76,6 @@ contract Scheduler is Proxied {
 
     /**
      * @dev Create red and black corner players
-     * under testing
      */
     function matchKitties() private {
         require(((kittyList.length % 2) == 0), "Number of Kitties should be even number");
@@ -88,12 +86,12 @@ contract Scheduler is Proxied {
         Kitty[] memory playerRed = new Kitty[](gameCount);
         Kitty[] memory playerBlack = new Kitty[](gameCount);
 
-
-        for(uint256 i = 0; i < gameCount; i++){
+        for(uint256 i = 0; i < playerRed.length; i++){
             playerRed[i] = kittyListSuffled[i];
         }
-        for(uint256 i = gameCount - 1; i < kittyListSuffled.length; i++){
-            playerBlack[i] = kittyListSuffled[i];
+
+        for(uint256 i = 0; i < playerBlack.length; i++){
+            playerBlack[i] = kittyListSuffled[i + playerRed.length];
         }
 
         uint256 gameCreationTime;
@@ -142,6 +140,7 @@ contract Scheduler is Proxied {
 
     /**
     * @dev Checkes if kitty is listed for matching in future games
+    * under testing
     */
     function isKittyListedForMatching(uint256 _kittyId) public view returns (bool) {
         uint256[] memory unListed = getUnMatchedKitties();
@@ -155,6 +154,7 @@ contract Scheduler is Proxied {
 
     /**
      * @return uint256[] Returns only ids of currently un mathced kitties
+     * under testing     
      */
     function getUnMatchedKitties() public view returns (uint256[] memory){
         uint256[] memory unMatchedKitties;
@@ -166,6 +166,7 @@ contract Scheduler is Proxied {
 
     /**
      * @return address[] Returns addresses  of currently un mathced players
+     * under testing     
      */
     function getUnMatchedPlayers() public view returns (address[] memory){
         address[] memory unMatchedPlayers;
