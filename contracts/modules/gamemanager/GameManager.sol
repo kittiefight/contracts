@@ -23,7 +23,8 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
-import "../databases/GameManagerDB.sol";
+import "../databases/GameManagerSetterDB.sol";
+import "../databases/GameManagerGetterDB.sol";
 import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
 import "../endowment/Distribution.sol";
@@ -43,7 +44,8 @@ contract GameManager is Proxied {
     using SafeMath for uint256;
 
     //Contract Variables
-    GameManagerDB public gameManagerDB;
+    GameManagerGetterDB public gameManagerGetterDB;
+    GameManagerSetterDB public gameManagerSetterDB;
     GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
     Distribution public distribution;
@@ -73,7 +75,7 @@ contract GameManager is Proxied {
     }
 
     modifier onlyGamePlayer(uint gameId, address player) {
-        require(gameManagerDB.isPlayer(gameId, player), "Invalid player");
+        require(gameManagerGetterDB.isPlayer(gameId, player), "Invalid player");
         _;
     }
 
@@ -84,7 +86,8 @@ contract GameManager is Proxied {
     function initialize() external onlyOwner {
 
         //TODO: Check what other contracts do we need
-        gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
+        gameManagerSetterDB = GameManagerSetterDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_SETTER_DB));
+        gameManagerGetterDB = GameManagerGetterDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
         distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
@@ -152,13 +155,13 @@ contract GameManager is Proxied {
         uint256 preStartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
         uint256 endTime = gameStartTime.add(gameVarAndFee.getGameDuration());
 
-        uint256 gameId = gameManagerDB.createGame(
+        uint256 gameId = gameManagerSetterDB.createGame(
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
         // uint honeyPotId = endowmentFund.generateHoneyPot();
         // gameManagerDB.addHoneyPot(gameId, honeyPotId); not yet implemented
         // endowmentFund.updateHoneyPotState(scheduled); not yet implemented
-        gameManagerDB.updateGameState(gameId, GAME_STATE_CREATED);
+        gameManagerSetterDB.updateGameState(gameId, GAME_STATE_CREATED);
         return gameId;
     }
 
@@ -193,20 +196,20 @@ contract GameManager is Proxied {
         onlyProxy
         onlyGamePlayer(gameId, playerToSupport)
     {
-        require(gameManagerDB.getGameState(gameId) != GAME_STATE_CANCELLED &&
-                gameManagerDB.getGameState(gameId) != GAME_STATE_FINISHED, "Unable to join game");
+        require(gameManagerGetterDB.getGameState(gameId) != GAME_STATE_CANCELLED &&
+                gameManagerGetterDB.getGameState(gameId) != GAME_STATE_FINISHED, "Unable to join game");
 
         uint ticketFee = gameVarAndFee.getTicketFee();
 
         //pay ticket fee
         require(kittieFightToken.transferFrom(supporter, address(endowmentFund), ticketFee), "Error sending funds to endownment");
-        gameManagerDB.addBettor(gameId, supporter, 0, playerToSupport);
+        gameManagerSetterDB.addBettor(gameId, supporter, 0, playerToSupport);
 
         forfeiter.checkGameStatus(gameId);
 
         //Update state if reached prestart time
-        if (gameManagerDB.getPrestartTime(gameId) >= now)
-            gameManagerDB.updateGameState(gameId, GAME_STATE_PRESTART);
+        if (gameManagerGetterDB.getPrestartTime(gameId) >= now)
+            gameManagerSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
     }
 
     /**
@@ -222,14 +225,14 @@ contract GameManager is Proxied {
         onlyGamePlayer(gameId, player)
         returns(bool)
     {
-        require(gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game state is not Prestart");
+        require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game state is not Prestart");
 
-        gameManagerDB.setHitStart(gameId, player);
+        gameManagerSetterDB.setHitStart(gameId, player);
 
         if(true //forfeiter.checkGameStatus(gameId)
             ) {
             // TODO: rarityCalculator.getDefenseLevel()
-            gameManagerDB.updateGameState(gameId, GAME_STATE_STARTED);
+            gameManagerSetterDB.updateGameState(gameId, GAME_STATE_STARTED);
         }
 
         // uint256 kittieId = gameManagerDB.getFightingKitty(gameId, player); not yet implemented
@@ -258,14 +261,14 @@ contract GameManager is Proxied {
         onlyProxy 
     {
 
-        require(gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Game has not started yet");
+        require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game has not started yet");
         
         forfeiter.checkGameStatus(gameId);
 
         // if underperformed then call extendTime();
         //  endowmentFund.contributeETH(gameId)
 
-        gameManagerDB.addBettor(gameId, account, amountEth, supportedPlayer);
+        gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
 
         // transfer amountKTY to endowmentFund (endowmentFund.contributeKFT(gameId, account,amountKTY )?)
         //or
@@ -290,10 +293,10 @@ contract GameManager is Proxied {
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEND(uint gameId) internal {
-        require(gameManagerDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started");
+        require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started");
 
-        if (gameManagerDB.getEndTime(gameId) >= now)
-            gameManagerDB.updateGameState(gameId, GAME_STATE_FINISHED);
+        if (gameManagerGetterDB.getEndTime(gameId) >= now)
+            gameManagerSetterDB.updateGameState(gameId, GAME_STATE_FINISHED);
     }
 
     /**
@@ -308,10 +311,10 @@ contract GameManager is Proxied {
      * @dev Cancels the game before the game starts
      */
     function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
-        require(gameManagerDB.getGameState(gameId) == GAME_STATE_CREATED ||
-                gameManagerDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
+        require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_CREATED ||
+                gameManagerGetterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
 
-        gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED);
+        gameManagerSetterDB.updateGameState(gameId, GAME_STATE_CANCELLED);
     }
 
     

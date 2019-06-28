@@ -13,7 +13,7 @@
 pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
-import "../databases/GameManagerDB.sol";
+import "../databases/GameManagerGetterDB.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
@@ -28,7 +28,7 @@ import "../../interfaces/ERC721.sol";
 contract Forfeiter is Proxied {
 
   GameManager public gameManager;
-  GameManagerDB public gameManagerDB;
+  GameManagerGetterDB public gameManagerGetterDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
 
@@ -38,7 +38,7 @@ contract Forfeiter is Proxied {
    */
   function updateContracts() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
-    gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
+    gameManagerGetterDB = GameManagerGetterDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
   }
@@ -55,16 +55,16 @@ contract Forfeiter is Proxied {
   {
     
     (address playerBlack, address playerRed, uint256 kittyBlack,
-      uint256 kittyRed, ,) = gameManagerDB.getGame(gameId);
+      uint256 kittyRed, ,) = gameManagerGetterDB.getGame(gameId);
 
     //GameManagerDB values
     //TODO: Optimize calls
-    uint256 gameStartTime = gameManagerDB.getStartTime(gameId);
-    uint256 gamePreStartTime = gameManagerDB.getPrestartTime(gameId);
-    uint supportersBlack = gameManagerDB.getSupporters(gameId, playerBlack);
-    uint supportersRed = gameManagerDB.getSupporters(gameId, playerRed);
-    bool blackStarted = gameManagerDB.didPlayerStart(gameId, playerBlack);
-    bool redStarted = gameManagerDB.didPlayerStart(gameId, playerRed);
+    uint256 gameStartTime = gameManagerGetterDB.getStartTime(gameId);
+    uint256 gamePreStartTime = gameManagerGetterDB.getPrestartTime(gameId);
+    uint supportersBlack = gameManagerGetterDB.getSupporters(gameId, playerBlack);
+    uint supportersRed = gameManagerGetterDB.getSupporters(gameId, playerRed);
+    bool blackStarted = gameManagerGetterDB.didPlayerStart(gameId, playerBlack);
+    bool redStarted = gameManagerGetterDB.didPlayerStart(gameId, playerRed);
 
 
     bool conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
