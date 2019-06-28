@@ -85,7 +85,13 @@ contract Distribution is Proxied {
         // uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId); //Or where is the total jackpot stored?
         uint256 totalEthFunds = 1000;
 
-        if (winningCategory < 4) return (totalEthFunds.mul(rates[winningCategory])).div(100);
+        if (winningCategory < 4) {
+            if (winningCategory == 3){
+                //get other supporters count
+                //return ((totalEthFunds.mul(rates[winningCategory])).div(100)).div(otherBettorsCount);
+            }
+            return (totalEthFunds.mul(rates[winningCategory])).div(100);
+        }
         return 0;
     }
 
@@ -97,7 +103,7 @@ contract Distribution is Proxied {
         // if (gameManagerDB.getSecondTopBettor(gameId) == winner) return 2;
 
         //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, winner);
-        // if (winningSide, supportedPlayer) return 3;
+        // if (winningSide == supportedPlayer) return 3;
         return 100;
     }
 
