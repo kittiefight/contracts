@@ -58,7 +58,6 @@ contract Scheduler is Proxied {
     }
 
     /**
-    * @dev what modifier to add? onlyValidPlayer
     * @param _kittyId kitty id
     * @param _player is the address of the player
     */
@@ -89,7 +88,6 @@ contract Scheduler is Proxied {
         for(uint256 i = 0; i < playerRed.length; i++){
             playerRed[i] = kittyListSuffled[i];
         }
-
         for(uint256 i = 0; i < playerBlack.length; i++){
             playerBlack[i] = kittyListSuffled[i + playerRed.length];
         }
@@ -97,7 +95,6 @@ contract Scheduler is Proxied {
         uint256 gameCreationTime;
         uint256 gameTimeSeperation = gameVarAndFee.getGameTimes(); //OR getRequiredTimeDistance() ?
 
-        //generate match pairs
         for(uint256 i = 0; i < gameCount; i++){
             gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
             gameManager.createFight(playerRed[i].player, playerBlack[i].player,  playerRed[i].kittyId, playerBlack[i].kittyId, gameCreationTime);
@@ -140,12 +137,10 @@ contract Scheduler is Proxied {
 
     /**
     * @dev Checkes if kitty is listed for matching in future games
-    * under testing
     */
     function isKittyListedForMatching(uint256 _kittyId) public view returns (bool) {
-        uint256[] memory unListed = getUnMatchedKitties();
-        for(uint256 i = 0; i < unListed.length ; i++){
-            if (_kittyId == unListed[i]){
+        for(uint256 i = 0; i < kittyList.length ; i++){
+            if (_kittyId == kittyList[i].kittyId){
                 return true;
             }
         }
@@ -153,11 +148,10 @@ contract Scheduler is Proxied {
     }
 
     /**
-     * @return uint256[] Returns only ids of currently un mathced kitties
-     * under testing     
+     * @dev uint256[] Returns only ids of currently un mathced kitties
      */
     function getUnMatchedKitties() public view returns (uint256[] memory){
-        uint256[] memory unMatchedKitties;
+        uint256[] memory unMatchedKitties = new uint256[](kittyList.length);
         for (uint256 i = 0; i < kittyList.length; i++){
             unMatchedKitties[i] = kittyList[i].kittyId;
         }
@@ -165,19 +159,19 @@ contract Scheduler is Proxied {
     }
 
     /**
-     * @return address[] Returns addresses  of currently un mathced players
-     * under testing     
+     * @dev address[] Returns addresses  of currently un mathced players
      */
     function getUnMatchedPlayers() public view returns (address[] memory){
-        address[] memory unMatchedPlayers;
+        address[] memory unMatchedPlayers = new address[](kittyList.length);
         for (uint256 i = 0; i < kittyList.length; i++){
             unMatchedPlayers[i] = kittyList[i].player;
         }
         return unMatchedPlayers;
     }
 
+
     /**
-     * @return requiredNumber of listed kitties required before the next nbatches of fights is setup
+     * @dev requiredNumber of listed kitties required before the next nbatches of fights is setup
      */
     function getRequiredMatchingNumber(uint256 nbatch) external view returns(uint256){
         uint256[] memory currentUnMatchedKitties = getUnMatchedKitties();
