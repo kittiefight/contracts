@@ -13,14 +13,13 @@
 
 pragma solidity ^0.5.5;
 
-import "../proxy/Proxied.sol";
 import "./GameManagerDB.sol";
 
 /**
  * @dev Setters for game instances
  * @author @psychoplasma
  */
-contract GameManagerSetterDB is Proxied, GameManagerDB {
+contract GameManagerSetterDB is GameManagerDB {
 
   constructor(GenericDB _genericDB)
           GameManagerDB(_genericDB) public {

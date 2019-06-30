@@ -51,7 +51,7 @@ contract GameManager is Proxied {
     Distribution public distribution;
     ERC20Standard public kittieFightToken;
     Forfeiter public forfeiter;
-    DateTimeAPI public timeContract;
+    DateTime public timeContract;
     Scheduler public scheduler;
     Betting public betting;
     HitsResolve public hitsResolve;
@@ -88,18 +88,18 @@ contract GameManager is Proxied {
         //TODO: Check what other contracts do we need
         gameManagerSetterDB = GameManagerSetterDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_SETTER_DB));
         gameManagerGetterDB = GameManagerGetterDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_GETTER_DB));
-        endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
-        distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
+        // endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
+        // distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
-        timeContract = DateTimeAPI(proxy.getContract(CONTRACT_NAME_TIMECONTRACT));
+        timeContract = DateTime(proxy.getContract(CONTRACT_NAME_TIMECONTRACT));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
-        betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
-        hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-        rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
-        kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
+        // betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
+        // hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
+        // rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
+        // kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         register = Register(proxy.getContract(CONTRACT_NAME_REGISTER));
-        kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        // kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
 
@@ -114,9 +114,9 @@ contract GameManager is Proxied {
         onlyProxy
         onlyKittyOwner(player, kittieId)
     {
-        require(kittieFightToken.transferFrom(player, address(endowmentFund),
-                        gameVarAndFee.getListingFee()),
-                        "Error sending funds to endownment");
+        // require(kittieFightToken.transferFrom(player, address(endowmentFund),
+        //                 gameVarAndFee.getListingFee()),
+        //                 "Error sending funds to endownment");
 
         scheduler.addKittyToList(kittieId, player);
     }

@@ -13,7 +13,6 @@
 
 pragma solidity ^0.5.5;
 
-import "../proxy/Proxied.sol";
 import "./GameManagerDB.sol";
 import "./GenericDB.sol";
 
@@ -21,7 +20,7 @@ import "./GenericDB.sol";
  * @dev Getters for game instances
  * @author @psychoplasma
  */
-contract GameManagerGetterDB is Proxied, GameManagerDB {
+contract GameManagerGetterDB is GameManagerDB {
 
   constructor(GenericDB _genericDB)
           GameManagerDB(_genericDB) public {
