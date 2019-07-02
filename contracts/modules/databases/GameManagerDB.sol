@@ -47,6 +47,6 @@ contract GameManagerDB is Proxied {
   }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
-    return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);
+    return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, TABLE_KEY_GAME, gameId);
   }
 }

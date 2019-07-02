@@ -34,14 +34,14 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (bool)
   {
-    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "startTime")));
+    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "startTime")));
   }
 
   function getHoneypotId(uint256 gameId)
     public view
     onlyExistentGame(gameId)
   {
-    genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+    genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
   }
 
   /**
@@ -52,7 +52,7 @@ contract GameManagerGetterDB is GameManagerDB {
     returns (uint)
   {
     return genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, player, "supporters"))
     );
   }
@@ -66,11 +66,11 @@ contract GameManagerGetterDB is GameManagerDB {
     returns (uint256 betAmount, address supportedPlayer)
   {
     betAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
     );
     supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
     );
   }
@@ -84,15 +84,15 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBet, uint256 startTime)
   {
-    playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
-    playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-    kittyBlack = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")));
-    kittyRed = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")));
+    playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+    playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+    kittyBlack = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")));
+    kittyRed = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")));
     totalBet = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, "totalBetAmount"))
     );
-    startTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    startTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
   }
 
  /**
@@ -103,7 +103,7 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (uint gameState)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
   }
 
   /**
@@ -114,7 +114,7 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (uint)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
   }
 
   /**
@@ -125,7 +125,7 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (uint)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
   }
 
   /**
@@ -136,7 +136,7 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (uint)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
   }
 
   /**
@@ -147,19 +147,19 @@ contract GameManagerGetterDB is GameManagerDB {
     onlyExistentGame(gameId)
     returns (uint)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
   }
   
   /**
    * @dev Checks whether the given player is playing in the given game.
    */
   function isPlayer(uint256 gameId, address player) public view returns (bool) {
-    address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+    address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
     if (player == playerRed) {
       return true;
     }
 
-    address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+    address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
     if (player == playerBlack) {
       return true;
     }
@@ -167,5 +167,10 @@ contract GameManagerGetterDB is GameManagerDB {
     return false;
   }
 
-
+  function getGames() public view returns (uint256[] memory) {
+    return genericDB.getAll(
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+      TABLE_KEY_GAME
+    );
+  }
 }

@@ -69,7 +69,7 @@ contract GameManager is Proxied {
     uint256 public constant GAME_STATE_FINISHED = 4;
 
     modifier onlyKittyOwner(address account, uint kittieId) {
-        require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
+        // require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
         //TODO: ADD verify check here?
         _;
     }

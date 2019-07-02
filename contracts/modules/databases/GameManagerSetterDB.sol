@@ -42,27 +42,27 @@ contract GameManagerSetterDB is GameManagerDB {
     // Get the lastest item in the linkedlist.
     // Note that 0 means the HEAD of the list always and direction(false)
     //  indicates that we are going to the end of the list.
-    (,uint256 prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, 0, false);
+    (,uint256 prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, TABLE_KEY_GAME, 0, false);
     // And create new item with an incremental id.
     // Note that we don't need to check any existance here, because
     // exsistance of the previous item in the list already self-verifies.
     gameId = prevGameId.add(1);
-    genericDB.pushNodeToLinkedList(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);
+    genericDB.pushNodeToLinkedList(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, TABLE_KEY_GAME, gameId);
 
     // Save players for the created game
-    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")), playerRed);
-    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")), playerBlack);
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")), playerRed);
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")), playerBlack);
 
     // Set kitties for the given players
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")), kittyRed);
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")), kittyBlack);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")), kittyRed);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")), kittyBlack);
 
     // solium-disable-next-line security/no-block-members
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")), gameStartTime);
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")), gameStartTime);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
 
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
   }
 
   /**
@@ -75,12 +75,12 @@ contract GameManagerSetterDB is GameManagerDB {
     onlyExistentGame(gameId)
   {
     // If bettor does not exist in the game given, add her to the game.
-    if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
+    if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
       // Add the bettor to the bettor table.
-      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor);
+      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor);
       // Save the supported player for this bettor
       genericDB.setAddressStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
         keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer")),
         supportedPlayer
       );
@@ -90,7 +90,7 @@ contract GameManagerSetterDB is GameManagerDB {
 
     // Get the supported player for this bettor
     address _supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
     );
 
@@ -112,11 +112,11 @@ contract GameManagerSetterDB is GameManagerDB {
    */
   function updateBet(uint256 gameId, address bettor, uint256 amount) internal {
     uint256 prevAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
     );
     genericDB.setUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "betAmount")),
       prevAmount.add(amount)
     );
@@ -127,12 +127,12 @@ contract GameManagerSetterDB is GameManagerDB {
    */
   function updateTotalBet(uint256 gameId, uint256 amount) internal {
     uint256 prevAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, "totalBetAmount"))
     );
 
     genericDB.setUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, "totalBetAmount")),
       prevAmount.add(amount)
     );
@@ -146,7 +146,7 @@ contract GameManagerSetterDB is GameManagerDB {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), state);
   }
 
   /**
@@ -158,10 +158,10 @@ contract GameManagerSetterDB is GameManagerDB {
     onlyExistentGame(gameId)
   {
     //Pressed start button
-    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
+    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
 
     //Defense Level
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
 
   }
 
@@ -173,7 +173,7 @@ contract GameManagerSetterDB is GameManagerDB {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
   }
 
     /**
@@ -182,11 +182,11 @@ contract GameManagerSetterDB is GameManagerDB {
   function incrementSupporters(uint256 gameId, address player) internal {
     // Increment number of supporters by one
     uint256 supporters = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, player, "supporters"))
     );
     genericDB.setUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
       keccak256(abi.encodePacked(gameId, player, "supporters")),
       supporters.add(1)
     );

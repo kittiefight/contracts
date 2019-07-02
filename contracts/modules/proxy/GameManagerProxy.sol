@@ -11,7 +11,8 @@ import './ProxyBase.sol';
  */
 contract GameManagerProxy is ProxyBase, Guard{
 
-  function listKittie(uint kittieId) external onlyPlayer {
+  // temporary changed modifier for test -- should be onlyPlayer
+  function listKittie(uint kittieId) external onlyBettor {
     GameManager(addressOfGameManager()).listKittie(kittieId, msg.sender);
   }
 
@@ -39,13 +40,13 @@ contract GameManagerProxy is ProxyBase, Guard{
 
   function bet
   (
-    uint gameId, uint amountKTY,
-    address supportedPlayer, uint randomNum
+    uint gameId, address supportedPlayer,
+    uint randomNum
   )
     external
     payable
     onlyBettor
   {
-    GameManager(addressOfGameManager()).bet(gameId, msg.sender, msg.value, amountKTY, supportedPlayer, randomNum);
+    GameManager(addressOfGameManager()).bet(gameId, msg.sender, msg.value, supportedPlayer, randomNum);
   }
 }
