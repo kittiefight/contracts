@@ -114,9 +114,9 @@ contract GameManager is Proxied {
         onlyProxy
         onlyKittyOwner(player, kittieId)
     {
-        // require(kittieFightToken.transferFrom(player, address(endowmentFund),
-        //                 gameVarAndFee.getListingFee()),
-        //                 "Error sending funds to endownment");
+        // TODO: call endowment function to send tokens, not using transfer
+        // contributeKTY expects gameId? I think they need to change that function
+        //endowment.contributeKFT(gameId, player, gameVarAndFee.getListingFee());
 
         scheduler.addKittyToList(kittieId, player);
     }
@@ -135,7 +135,7 @@ contract GameManager is Proxied {
         onlyKittyOwner(playerRed, kittyRed)
         onlyKittyOwner(playerBlack, kittyBlack)
     {
-
+        // TODO: Check if kitties are not already listed
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
@@ -159,9 +159,9 @@ contract GameManager is Proxied {
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
         // uint honeyPotId = endowmentFund.generateHoneyPot();
-        // gameManagerDB.addHoneyPot(gameId, honeyPotId); not yet implemented
+        // gameManagerDB.setHoneypotId(gameId, honeyPotId);
         // endowmentFund.updateHoneyPotState(scheduled); not yet implemented
-        gameManagerSetterDB.updateGameState(gameId, GAME_STATE_CREATED);
+        
         return gameId;
     }
 
@@ -199,10 +199,8 @@ contract GameManager is Proxied {
         require(gameManagerGetterDB.getGameState(gameId) != GAME_STATE_CANCELLED &&
                 gameManagerGetterDB.getGameState(gameId) != GAME_STATE_FINISHED, "Unable to join game");
 
-        uint ticketFee = gameVarAndFee.getTicketFee();
-
         //pay ticket fee
-        require(kittieFightToken.transferFrom(supporter, address(endowmentFund), ticketFee), "Error sending funds to endownment");
+        // endowmentFund.contributeKFT(gameId, supporter, gameVarAndFee.getTicketFee());
         gameManagerSetterDB.addBettor(gameId, supporter, 0, playerToSupport);
 
         forfeiter.checkGameStatus(gameId);
@@ -218,7 +216,7 @@ contract GameManager is Proxied {
     function startGame
     (
         uint gameId, address player,
-        uint randNum
+        uint randomNum
     )
         external
         onlyProxy
@@ -227,16 +225,24 @@ contract GameManager is Proxied {
     {
         require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Game state is not Prestart");
 
-        gameManagerSetterDB.setHitStart(gameId, player);
-
         if(true //forfeiter.checkGameStatus(gameId)
             ) {
-            // TODO: rarityCalculator.getDefenseLevel()
-            gameManagerSetterDB.updateGameState(gameId, GAME_STATE_STARTED);
+            // TODO: get defense level for player with given kittieId
+            //uint defenseLevel = rarityCalculator.getDefenseLevel(gameManagerGetterDB.getKittieInGame(gameId, player));            
+
+            //If both players hit start, do the following:
+            //gameManagerSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
+            // TODO: store fight map from betting algo
+            // TODO: create a setter for this random number in DB
+            // betting.startGame(randomRed, randomBlack);
+
+            // Grouping calls, set hitStart and defense level (TODO: set fight map too here)
+            // gameManagerSetterDB.startGameVars(gameId, player, defenseLevel);
+
         }
 
-        // uint256 kittieId = gameManagerDB.getFightingKitty(gameId, player); not yet implemented
-        // kittieHELL.acquireKitty(kittieId, player);
+        uint256 kittieId = gameManagerGetterDB.getKittieInGame(gameId, player);
+        kittieHELL.acquireKitty(kittieId, player);
     }
 
     /**
@@ -254,11 +260,11 @@ contract GameManager is Proxied {
      */
     function bet
     (
-        uint gameId, address account, uint amountEth, 
-        uint amountKTY, address supportedPlayer, uint randomNum
-    ) 
+        uint gameId, address account, uint amountEth,
+        address supportedPlayer, uint randomNum
+    )
         external
-        onlyProxy 
+        onlyProxy
     {
 
         require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game has not started yet");
@@ -266,19 +272,28 @@ contract GameManager is Proxied {
         forfeiter.checkGameStatus(gameId);
 
         // if underperformed then call extendTime();
-        //  endowmentFund.contributeETH(gameId)
+        //  endowmentFund.contributeETH(gameId);
 
+        // hits resolver
+        // hitsResolve.calculateCurrentRandom(gameId, randomNum);
+
+        // transfer bettingFee to endowmentFund
+        // endowmentFund.contributeKFT(gameId, account, gameVarAndFee.getBettingFee());
+
+        // (bytes4 attackHash, uint attackType) = betting.bet(gameId, amountEth);
+
+        // TODO: store other variables in bet (attack hash, type)
+        //store bet info in DB
         gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
 
-        // transfer amountKTY to endowmentFund (endowmentFund.contributeKFT(gameId, account,amountKTY )?)
-        //or
-        //require(kittieFightToken.transferFrom(account, address(endowmentFund), amountKTY));
-
-        //hitResolve
-        //hitsResolve.caluclateCurrentRandom(randomNum)
+        // TODO: update game variables
+        // lastBet, topBettor, secondTopBettor, etc...
 
         // check underperforming game
         // extendTime(gameId);
+
+        //Check if game has ended
+        gameEND(gameId);
     }
 
     /**
@@ -302,8 +317,20 @@ contract GameManager is Proxied {
     /**
      * @dev Determine winner of game based on  **HitResolver **
      */
-    function finalize(uint gameId) external {
-        //hitsResolve.finalizeGame()  store returned 7 values
+    function finalize(uint gameId, uint randomNum) external {
+        require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_FINISHED, "Game has not finished yet");
+
+        // (uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch,
+        // uint256 hardKick, uint256 hardThunder, uint256 slash) =
+        // hitsResolve.finalizeHitTypeValues(gameId, randomNum);
+
+        // TODO: loop through each corners betting list, and add-multiply bet attack
+        // with attackvalue retrieved from hitsResolver
+
+        // TODO: store winner, and points of damage done by each player.
+
+        // TODO: upda
+
     }
     
 

@@ -150,14 +150,19 @@ contract GameManagerSetterDB is GameManagerDB {
   }
 
   /**
-   * @dev set true when player hit start button
+   * @dev ?
    */
-  function setHitStart(uint256 gameId, address player)
+  function startGameVars(uint256 gameId, address player, uint defenseLevel)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
+    //Pressed start button
     genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
+
+    //Defense Level
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
+
   }
 
   /**
