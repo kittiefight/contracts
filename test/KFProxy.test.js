@@ -33,21 +33,39 @@ contract('KFProxy', ([owner, addr1, unauthorizedAddr, randomAddr]) => {
         ProxiedTest.abi.find((f)=>{return f.name == 'testFunction';}),
         [randomPayload]
       );
-      await this.proxy.execute(PROXIED_TEST_CONTRACT_NAME, message);
+      let result = await this.proxy.execute(PROXIED_TEST_CONTRACT_NAME, message);
       let resultPayload = await this.proxiedTest.lastPayload();
-
       assert.equal(randomPayload, resultPayload, 'Payload not matched');
     });
+
+    it('forwards msg.sender to target', async () => {
+      let randomPayload = web3.utils.randomHex(10);
+      let message = web3.eth.abi.encodeFunctionCall(
+        ProxiedTest.abi.find((f)=>{return f.name == 'testFunction';}),
+        [randomPayload]
+      );
+      let result = await this.proxy.execute(PROXIED_TEST_CONTRACT_NAME, message);
+      
+      let proxiedEvents = await this.proxiedTest.getPastEvents("allEvents", {fromBlock: 0, toBlock: "latest"});
+      let recordedSender = proxiedEvents[0].args.sender;
+      assert.equal(recordedSender, owner, 'Sender received by target contract does not match to original sender');
+
+      let resultPayload = await this.proxiedTest.lastPayload();
+      assert.equal(randomPayload, resultPayload, 'Payload not matched');
+    });
+
     it('forwards ether to target', async () => {
       let randomPayload = web3.utils.randomHex(10);
       let message = web3.eth.abi.encodeFunctionCall(
         ProxiedTest.abi.find((f)=>{return f.name == 'testFunction';}),
         [randomPayload]
       );
-      let randomAmount = web3.utils.toWei(String(Math.random()*10), 'ether');
-      await this.proxy.execute(PROXIED_TEST_CONTRACT_NAME, message, {'value': randomAmount});
+      let randomAmount = web3.utils.toWei(String(Math.round(Math.random()*100)), 'kwei');
+      let result = await this.proxy.execute(PROXIED_TEST_CONTRACT_NAME, message, {'value': randomAmount});
+
       let resultPayload = await this.proxiedTest.lastPayload();
       assert.equal(randomPayload, resultPayload, 'Payload not matched');
+
       let proxyBalance = await web3.eth.getBalance(this.proxy.address);
       assert.equal('0', proxyBalance, 'Proxy balance should be zero');
       let proxiedBalance = await web3.eth.getBalance(this.proxiedTest.address);

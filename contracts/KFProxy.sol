@@ -34,7 +34,19 @@ contract KFProxy is
     function execute(string calldata contractName, bytes calldata payload) external payable returns (bytes memory){
         address payable target = address(uint160(getContract(contractName)));
         //assert(target != address payable(0), 'Target contract is not registered'); //This check is already done in ContractManager
-        (bool success, bytes memory result) = target.call.value(msg.value)(payload);
+
+        bytes20 sender = bytes20(msg.sender);
+        uint256 len = payload.length;
+        bytes memory payloadExtra = new bytes(len+20);
+        uint256 i;
+        for(i = 0; i < len; i++){
+            payloadExtra[i] = payload[i];
+        }
+        for(i = 0; i < 20; i++){
+            payloadExtra[len+i] = sender[i];
+        }
+
+        (bool success, bytes memory result) = target.call.value(msg.value)(payloadExtra);
         require(success, 'Call failed');
         return result;
     }

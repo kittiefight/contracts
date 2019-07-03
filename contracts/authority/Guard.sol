@@ -2,10 +2,10 @@ pragma solidity ^0.5.5;
 
 import "./SystemRoles.sol";
 import "../modules/databases/RoleDB.sol";
-import "../modules/proxy/ProxyBase.sol";
+import "../modules/proxy/Proxied.sol";
 
 
-contract Guard is ProxyBase, SystemRoles {
+contract Guard is Proxied, SystemRoles {
   
   modifier onlySuperAdmin() {
     assert(msg.sender != address(0));
@@ -32,6 +32,19 @@ contract Guard is ProxyBase, SystemRoles {
   }
 
   function checkRole(string memory role) internal view returns (bool) {
-    return RoleDB(addressOfRoleDB()).hasRole(role, msg.sender);
+    return RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).hasRole(role, getOriginalSender());
   }
+
+  function getOriginalSender() view internal returns(address){
+    if(msg.sender != address(proxy)) return msg.sender;
+    //Find out actual sender    
+    uint160 sender = 0;
+    for(uint256 pos = msg.data.length - 20; pos < msg.data.length; pos++){
+      sender *= 256;
+      sender += uint8(msg.data[pos]);
+    }
+    assert(sender != 0);
+    return address(sender);
+  }
+
 }
