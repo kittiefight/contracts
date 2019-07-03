@@ -217,7 +217,8 @@ contract GameManager is Proxied {
 
         //pay ticket fee
         // endowmentFund.contributeKFT(gameId, supporter, gameVarAndFee.getTicketFee());
-        gameManagerSetterDB.addBettor(gameId, supporter, 0, playerToSupport);
+        // TODO: implement different function in DB for this, as the current one needs more data
+        //gameManagerSetterDB.addBettor(gameId, supporter, 0, playerToSupport);
 
         forfeiter.checkGameStatus(gameId);
 
@@ -249,11 +250,10 @@ contract GameManager is Proxied {
             //If both players hit start, do the following:
             //gameManagerSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
             // TODO: store fight map from betting algo
-            // TODO: create a setter for this random number in DB
             // betting.startGame(randomRed, randomBlack);
 
             // Grouping calls, set hitStart and defense level (TODO: set fight map too here)
-            // gameManagerSetterDB.startGameVars(gameId, player, defenseLevel);
+            // gameManagerSetterDB.startGameVars(gameId, player, defenseLevel, randomNum);
 
         }
 
@@ -308,11 +308,11 @@ contract GameManager is Proxied {
         // https://gitlab.com/kittiefight/alpha/issues/6#note_184274144
         // so addBettor() should also set the corner if not set. it should return corner
 
-        gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
+        //gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer, attackHash, attackType);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
-        bytes32 corner = "Red"; // "Black"  = gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
+        bytes32 corner = "Red"; // "Black"  = gameManagerSetterDB.addBettor();
         calculateBettorStats(gameId, account, amountEth, corner);
 
         // check underperforming game
@@ -331,6 +331,7 @@ contract GameManager is Proxied {
     ) private {
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
+        gameManagerSetterDB.setLastBet(_gameId, _amountEth, now);
 
         if (keccak256(abi.encodePacked(_corner)) == keccak256(abi.encodePacked("Red"))) {
             // initialize

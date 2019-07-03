@@ -149,6 +149,16 @@ contract GameManagerGetterDB is GameManagerDB {
   {
     return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
   }
+
+   /**
+   * @dev Update kittie state
+   */
+  function getKittieState(uint256 kittieId)
+    public view
+    returns (bool)
+  {
+    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(kittieId, "inGame")));
+  }
   
   /**
    * @dev Checks whether the given player is playing in the given game.

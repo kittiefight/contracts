@@ -29,6 +29,7 @@ contract GameManagerDB is Proxied {
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
+  string internal constant TABLE_NAME_KITTIES = "KittieTable";
   string internal constant ERROR_DOES_NOT_EXIST = "Game does not exist";
   string internal constant ERROR_CANNOT_SUPPORT_BOTH = "Cannot support both players";
   string internal constant ERROR_INVALID_CURRENCY = "Invalid currency for bet";
