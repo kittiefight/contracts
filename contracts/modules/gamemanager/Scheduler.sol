@@ -25,6 +25,7 @@ import '../proxy/Proxied.sol';
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "./GameManager.sol";
+import "../../interfaces/ERC721.sol";
 
 
 /**
@@ -39,6 +40,7 @@ contract Scheduler is Proxied {
     //Contract Variables
     GameManager public gameManager;
     GameVarAndFee public gameVarAndFee;
+    ERC721 public cryptoKitties;
 
     struct Kitty {
         uint256 kittyId;
@@ -47,7 +49,7 @@ contract Scheduler is Proxied {
 
     uint256 randomNonce;
     Kitty[] kittyList;
-    Kitty[] kittyListSuffled;
+    Kitty[] kittyListShuffled;
 
     /**
      * @dev Can be called only by the owner of this contract
@@ -55,6 +57,7 @@ contract Scheduler is Proxied {
     function initialize() public onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+        cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
     /**
@@ -62,8 +65,8 @@ contract Scheduler is Proxied {
     * @param _player is the address of the player
     */
     function addKittyToList(uint256 _kittyId, address _player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
-
-        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed for upcomming games");
+        // a kitty may play only one game at a time
+        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed. A kitty can take part in only one game at a time");
 
         Kitty memory newKitty = Kitty(_kittyId, _player);
         kittyList.push(newKitty);
@@ -76,39 +79,81 @@ contract Scheduler is Proxied {
     }
 
     /**
+    * @param _kittyId kitty id
+    * @param _player is the address of the player
+    */
+    function addKittyToListAgain(uint256 _kittyId, address _player) private {
+        // a kitty or player may play only one game at a time
+        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed. A kitty can take part in only one game at a time");
+
+        Kitty memory newKitty = Kitty(_kittyId, _player);
+        kittyList.push(newKitty);
+
+        // if ((gameVarAndFee.getRequiredNumberMatches() * 2) == kittyList.length) {
+        // temporary hardcoded for test, unable to setVarAndFee from test due to proxy issue (out of gas)
+        if (4 == kittyList.length) {
+            matchKitties();
+        }
+    }
+
+
+    /**
      * @dev Create red and black corner players
      */
     function matchKitties() private {
         require(((kittyList.length % 2) == 0), "Number of Kitties should be even number");
 
-        suffleKittyList();
-        uint256 gameCount = kittyListSuffled.length / 2;
+        shuffleKittyList();
+        uint256 gameCount = kittyListShuffled.length / 2;
 
         Kitty[] memory playerRed = new Kitty[](gameCount);
         Kitty[] memory playerBlack = new Kitty[](gameCount);
 
         for(uint256 i = 0; i < playerRed.length; i++){
-            playerRed[i] = kittyListSuffled[i];
+            playerRed[i] = kittyListShuffled[i];
         }
         for(uint256 i = 0; i < playerBlack.length; i++){
-            playerBlack[i] = kittyListSuffled[i + playerRed.length];
+            playerBlack[i] = kittyListShuffled[i + playerRed.length];
         }
 
         uint256 gameCreationTime;
         uint256 gameTimeSeperation = gameVarAndFee.getGameTimes(); //OR getRequiredTimeDistance() ?
 
         for(uint256 i = 0; i < gameCount; i++){
-            gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
-            gameManager.createFight(playerRed[i].player, playerBlack[i].player,  playerRed[i].kittyId, playerBlack[i].kittyId, gameCreationTime);
+            //gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
+            gameCreationTime = block.timestamp.add(gameTimeSeperation.mul(1 seconds));
+
+            // check owners
+            if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
+               (cryptoKitties.ownerOf(playerBlack[i].kittyId) != playerBlack[i].player)){
+
+                   addKittyToListAgain(playerRed[i].kittyId, playerRed[i].player);
+
+            } else if ((cryptoKitties.ownerOf(playerRed[i].kittyId) != playerRed[i].player) &&
+               (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
+
+                   addKittyToListAgain(playerBlack[i].kittyId, playerBlack[i].player);
+
+            } else if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
+               (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
+
+                gameManager.createFight(
+                    playerRed[i].player,
+                    playerBlack[i].player,
+                    playerRed[i].kittyId,
+                    playerBlack[i].kittyId,
+                    gameCreationTime
+                    );
+            }
         }
 
-        delete kittyListSuffled; // reset
+        delete kittyListShuffled; // reset
     }
 
     /**
-     * Suffle Kitty List
+     * Shuffle Kitty List
      */
-    function suffleKittyList() public {
+    function shuffleKittyList() public {
 
         Kitty[] memory kittyListCopy = new Kitty[](kittyList.length);
         kittyListCopy = kittyList;
@@ -124,7 +169,7 @@ contract Scheduler is Proxied {
         }
 
         for(uint i = 0; i < kittyListCopy.length; i++){
-            kittyListSuffled.push(kittyListCopy[i]);
+            kittyListShuffled.push(kittyListCopy[i]);
         }
     }
 
@@ -177,16 +222,9 @@ contract Scheduler is Proxied {
      */
     function getRequiredMatchingNumber(uint256 nbatch) external view returns(uint256){
         uint256[] memory currentUnMatchedKitties = getUnMatchedKitties();
-        return  (nbatch * 2) - currentUnMatchedKitties.length;
+        //return  (nbatch * 2) - currentUnMatchedKitties.length;
+        return nbatch.mul(2).sub(currentUnMatchedKitties.length);
     }
-
-    /**
-     * @dev internal getter to return requiredtime distance between all fights
-     * Is it required?
-     * /
-    function getRequiredTimeDistance() external view returns(uint256){
-        return gameVarAndFee.getGameTimes();
-    }*/
 
 
 }
