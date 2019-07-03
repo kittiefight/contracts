@@ -201,7 +201,8 @@ contract GameManager is Proxied {
 
         //pay ticket fee
         // endowmentFund.contributeKFT(gameId, supporter, gameVarAndFee.getTicketFee());
-        gameManagerSetterDB.addBettor(gameId, supporter, 0, playerToSupport);
+        // TODO: implement different function in DB for this, as the current one needs more data
+        //gameManagerSetterDB.addBettor(gameId, supporter, 0, playerToSupport);
 
         forfeiter.checkGameStatus(gameId);
 
@@ -233,11 +234,10 @@ contract GameManager is Proxied {
             //If both players hit start, do the following:
             //gameManagerSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
             // TODO: store fight map from betting algo
-            // TODO: create a setter for this random number in DB
             // betting.startGame(randomRed, randomBlack);
 
             // Grouping calls, set hitStart and defense level (TODO: set fight map too here)
-            // gameManagerSetterDB.startGameVars(gameId, player, defenseLevel);
+            // gameManagerSetterDB.startGameVars(gameId, player, defenseLevel, randomNum);
 
         }
 
@@ -284,7 +284,7 @@ contract GameManager is Proxied {
 
         // TODO: store other variables in bet (attack hash, type)
         //store bet info in DB
-        gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
+        //gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer, attackHash, attackType);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
