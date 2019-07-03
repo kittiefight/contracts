@@ -79,6 +79,20 @@ contract GameManager is Proxied {
         _;
     }
 
+    // only when there is a change it is stored in DB
+    struct HigestBettors {
+        address topBettorRed;
+        uint256 topBettorEthRed;
+        address secondTopBettorRed;
+        uint256 secondTopBettorEthRed;
+        address topBettorBlack;
+        uint256 topBettorEthBlack;
+        address secondTopBettorBlack;
+        uint256 secondTopBettorEthBlack;
+    }
+    mapping(uint256 => HigestBettors) gameBettors;
+
+
     /**
     * @dev Sets related contracts
     * @dev Can be called only by the owner of this contract
@@ -117,6 +131,8 @@ contract GameManager is Proxied {
         // TODO: call endowment function to send tokens, not using transfer
         // contributeKTY expects gameId? I think they need to change that function
         //endowment.contributeKFT(gameId, player, gameVarAndFee.getListingFee());
+
+        // require((GameManagerGetterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
 
         scheduler.addKittyToList(kittieId, player);
     }
@@ -255,17 +271,19 @@ contract GameManager is Proxied {
         }
     }
 
+
+
+
     /**
      * @dev KTY tokens are sent to endowment balance, Eth gets added to ongoing game honeypot
+     * @author Felipe
+     * @author Karl
+     * @author Vikrammandal
      */
-    function bet
-    (
+    function bet (
         uint gameId, address account, uint amountEth,
         address supportedPlayer, uint randomNum
-    )
-        external
-        onlyProxy
-    {
+    ) external onlyProxy {
 
         require(gameManagerGetterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game has not started yet");
         
@@ -284,10 +302,18 @@ contract GameManager is Proxied {
 
         // TODO: store other variables in bet (attack hash, type)
         //store bet info in DB
+
+        // "A bettor pays the KTY token to join a fight and at the same time select the side(Black or Red corner)"
+        // "bet method checks if a bettor has paid the required KTY token to join a fight"
+        // https://gitlab.com/kittiefight/alpha/issues/6#note_184274144
+        // so addBettor() should also set the corner if not set. it should return corner
+
         gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
+        bytes32 corner = "Red"; // "Black"  = gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer);
+        calculateBettorStats(gameId, account, amountEth, corner);
 
         // check underperforming game
         // extendTime(gameId);
@@ -295,6 +321,68 @@ contract GameManager is Proxied {
         //Check if game has ended
         gameEND(gameId);
     }
+
+    /**
+    * set topBettor, secondTopBettor
+    * @author vikrammandal
+    */
+    function calculateBettorStats(
+        uint256 _gameId, address _account, uint256 _amountEth, bytes32 _corner
+    ) private {
+        // TODO: update game variables
+        // lastBet, topBettor, secondTopBettor, etc...
+
+        if (keccak256(abi.encodePacked(_corner)) == keccak256(abi.encodePacked("Red"))) {
+            // initialize
+            if (gameBettors[_gameId].topBettorRed == address(0x0)){
+                gameBettors[_gameId].topBettorRed = _account;
+                gameBettors[_gameId].topBettorEthRed = _amountEth;
+                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth); // update DB
+            }
+            if (gameBettors[_gameId].secondTopBettorRed == address(0x0)){
+                gameBettors[_gameId].secondTopBettorRed = _account;
+                gameBettors[_gameId].secondTopBettorEthRed = _amountEth;
+                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
+            }
+            // compare
+            if (_amountEth > gameBettors[_gameId].topBettorEthRed){
+                gameBettors[_gameId].topBettorRed = _account;
+                gameBettors[_gameId].topBettorEthRed = _amountEth;
+                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
+            }else if (gameBettors[_gameId].secondTopBettorEthBlack > _amountEth) {
+                gameBettors[_gameId].secondTopBettorBlack = _account;
+                gameBettors[_gameId].secondTopBettorEthBlack = _amountEth;
+                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
+            }
+
+        }else{ // "Black" corner
+            // initialize
+            if (gameBettors[_gameId].topBettorBlack == address(0x0)){
+                gameBettors[_gameId].topBettorBlack = _account;
+                gameBettors[_gameId].topBettorEthBlack = _amountEth;
+                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
+            }
+            if (gameBettors[_gameId].secondTopBettorBlack == address(0x0)){
+                gameBettors[_gameId].secondTopBettorBlack = _account;
+                gameBettors[_gameId].secondTopBettorEthBlack = _amountEth;
+                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
+            }
+
+            // compare
+            if (_amountEth > gameBettors[_gameId].topBettorEthBlack){
+                gameBettors[_gameId].topBettorBlack = _account;
+                gameBettors[_gameId].topBettorEthBlack = _amountEth;
+                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
+            }else if (gameBettors[_gameId].secondTopBettorEthBlack > _amountEth) {
+                gameBettors[_gameId].secondTopBettorBlack = _account;
+                gameBettors[_gameId].secondTopBettorEthBlack = _amountEth;
+                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
+            }
+
+        }
+
+    }
+
 
     /**
      * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
@@ -312,6 +400,10 @@ contract GameManager is Proxied {
 
         if (gameManagerGetterDB.getEndTime(gameId) >= now)
             gameManagerSetterDB.updateGameState(gameId, GAME_STATE_FINISHED);
+
+
+        // delete local var
+        // gameBettors[_gameId]
     }
 
     /**

@@ -139,6 +139,28 @@ contract GameManagerSetterDB is GameManagerDB {
   }
 
   /**
+   * @dev set topBettor
+   */
+  function setTopBettor(uint256 _gameId, address _bettor, bytes32 corner, uint256 _amountEth)
+    public
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(_gameId) {
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettor")), _bettor);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettor")), _amountEth);
+  }
+
+  /**
+   * @dev set secondTopBettor
+   */
+  function setSecondTopBettor(uint256 _gameId, address _bettor, bytes32 corner, uint256 _amountEth)
+    public
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(_gameId) {
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettor")), _bettor);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettor")), _amountEth);
+  }
+
+  /**
    * @dev Update game to one of 5 states
    */
   function updateGameState(uint256 gameId, uint256 state)
