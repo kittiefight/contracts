@@ -73,7 +73,11 @@ contract GameManagerSetterDB is GameManagerDB {
    * @dev Adds a bettor to the given game iff the game exists.
    * If the bettor already exists in the game, updates her bet.
    */
-  function addBettor(uint256 gameId, address bettor, uint256 betAmount, address supportedPlayer, bytes calldata attackHash, uint attackType)
+  function addBettor
+  (
+    uint256 gameId, address bettor, uint256 betAmount, 
+    address supportedPlayer, bytes calldata attackHash, uint attackType
+  )
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
@@ -101,28 +105,27 @@ contract GameManagerSetterDB is GameManagerDB {
     // Check if the supported player is same in case of additional bet
     require(_supportedPlayer != supportedPlayer, ERROR_CANNOT_SUPPORT_BOTH);
 
-
-    // Set attack hash and type for every bet
-    genericDB.setBytesStorage(
-      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, "attackHash")),
-      attackHash
-    );
-
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, "attackType")),
-      attackType
-    );
-
-    //When registering supporters before game start
     if (betAmount > 0) {
+      // Set attack hash and type for every bet
+      genericDB.setBytesStorage(
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "attackHash")),
+        attackHash
+      );
+
+      genericDB.setUintStorage(
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "attackType")),
+        attackType
+      );
+
       // Update bettor's total bet amount
       updateBet(gameId, bettor, betAmount);
 
       // Update total bet amount in the game
       updateTotalBet(gameId, betAmount);
-    }
+      
+    }    
   }
 
   /**

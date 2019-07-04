@@ -48,31 +48,37 @@ contract Forfeiter is Proxied {
    * @dev function called only by the Game Manager contract
    * @param gameId uint256 game or fight id
    */
-  function checkGameStatus(uint256 gameId)
+  function checkGameStatus(uint256 gameId, uint gameState)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    returns (bool)
+    returns (bool conditions)
   {
-    
     (address playerBlack, address playerRed, uint256 kittyBlack,
       uint256 kittyRed, ,) = gameManagerGetterDB.getGame(gameId);
 
-    //GameManagerDB values
-    //TODO: Optimize calls
-    uint256 gameStartTime = gameManagerGetterDB.getStartTime(gameId);
-    uint256 gamePreStartTime = gameManagerGetterDB.getPrestartTime(gameId);
-    uint supportersBlack = gameManagerGetterDB.getSupporters(gameId, playerBlack);
-    uint supportersRed = gameManagerGetterDB.getSupporters(gameId, playerRed);
-    bool blackStarted = gameManagerGetterDB.didPlayerStart(gameId, playerBlack);
-    bool redStarted = gameManagerGetterDB.didPlayerStart(gameId, playerRed);
+    // GAME_CREATED
+    if (gameState == 0) {
+      uint256 gamePreStartTime = gameManagerGetterDB.getPrestartTime(gameId);
+      uint supportersBlack = gameManagerGetterDB.getSupporters(gameId, playerBlack);
+      uint supportersRed = gameManagerGetterDB.getSupporters(gameId, playerRed);
 
+      conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
+        checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime);
+    }
 
-    bool conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
-      checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime) &&
-      didPlayersStartGame(blackStarted, redStarted, gameStartTime);
+    // GAME_PRESTART
+    if (gameState == 1) {
+      uint256 gameStartTime = gameManagerGetterDB.getStartTime(gameId);
+      bool blackStarted = gameManagerGetterDB.didPlayerStart(gameId, playerBlack);
+      bool redStarted = gameManagerGetterDB.didPlayerStart(gameId, playerRed);
+
+      conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
+        didPlayersStartGame(blackStarted, redStarted, gameStartTime);
+    }
+    
 
     //If any condition is false, call forfeitGame
-    if (!(conditions)) forfeitGame(gameId);
+    if (!conditions) forfeitGame(gameId);
 
     return conditions;
   }
