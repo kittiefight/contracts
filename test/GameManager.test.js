@@ -9,8 +9,8 @@ const KFProxy = artifacts.require('KFProxy')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB')
 const RoleDB = artifacts.require('RoleDB')
-const GameManagerSetterDB = artifacts.require('GameManagerSetterDB')
-const GameManagerGetterDB = artifacts.require('GameManagerGetterDB')
+const GameManagerDB = artifacts.require('GameManagerDB')
+const GetterDB = artifacts.require('GetterDB')
 const GameManager = artifacts.require('GameManager')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
 const Distribution = artifacts.require('Distribution')
@@ -46,8 +46,8 @@ let scheduler
 // hitsResolve
 // rarityCalculator
 // kittieHELL
-let gameManagerGetter
-let gameManagerSetter
+let getterDB
+let gameManagerDB
 let gameManager
 
 let errorMessage
@@ -91,8 +91,8 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
       // hitsResolve = await HitsResolve.new()
       // rarityCalculator = await RarityCalculator.new()
       // kittieHELL = await KittieHELL.new(contractManager.address)
-      gameManagerGetter = await GameManagerGetterDB.new(genericDB.address)
-      gameManagerSetter = await GameManagerSetterDB.new(genericDB.address)
+      getterDB = await GetterDB.new(genericDB.address)
+      gameManagerDB = await GameManagerDB.new(genericDB.address)
       gameManager = await GameManager.new()
 
       await proxy.addContract('TimeContract', dateTime.address)
@@ -112,16 +112,16 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
       // await proxy.addContract('HitsResolve', hitsResolve.address)
       // await proxy.addContract('RarityCalculator', rarityCalculator.address)
       // await proxy.addContract('KittieHELL', kittieHELL.address)
-      await proxy.addContract('GameManagerSetterDB', gameManagerSetter.address)
-      await proxy.addContract('GameManagerGetterDB', gameManagerGetter.address)
+      await proxy.addContract('GameManagerDB', gameManagerDB.address)
+      await proxy.addContract('GetterDB', getterDB.address)
       await proxy.addContract('GameManager', gameManager.address)
 
 
       await genericDB.setProxy(proxy.address)
       await profileDB.setProxy(proxy.address);
       await roleDB.setProxy(proxy.address);
-      await gameManagerSetter.setProxy(proxy.address)
-      await gameManagerGetter.setProxy(proxy.address)
+      await gameManagerDB.setProxy(proxy.address)
+      await getterDB.setProxy(proxy.address)
       // await endowmentFund.setProxy(proxy.address)
       await gameVarAndFee.setProxy(proxy.address)
       // await distribution.setProxy(proxy.address)
@@ -224,7 +224,7 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
       })
 
       it('should be a able to make a match from 4 listing', async () => {
-        let currentGamesCount = await gameManagerGetter.getGames()
+        let currentGamesCount = await getterDB.getGames()
 
         // TODO should not allow to have a match with fighter of same owner
         await proxy.listKittie(kittie1, {from: user1})
@@ -232,15 +232,15 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
         await proxy.listKittie(kittie4, {from: user1})
         await proxy.listKittie(kittie5, {from: user2})
 
-        let newGamesCount = await gameManagerGetter.getGames()
+        let newGamesCount = await getterDB.getGames()
 
         assert.equal(currentGamesCount.length + 2, newGamesCount.length)
       })
 
       it('should be able to make a manual match', async () => {
-        let currentGamesCount = await gameManagerGetter.getGames()
+        let currentGamesCount = await getterDB.getGames()
         await proxy.manualMatchKitties(user1, user2, kittie1, kittie2, 123123)
-        let newGamesCount = await gameManagerGetter.getGames()
+        let newGamesCount = await getterDB.getGames()
  
         assert.equal(currentGamesCount.length + 1, newGamesCount.length)
       })

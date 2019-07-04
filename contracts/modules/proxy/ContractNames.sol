@@ -31,6 +31,5 @@ contract ContractNames {
     string constant CONTRACT_NAME_HITSRESOLVE       = "HitsResolve";
     string constant CONTRACT_NAME_RARITYCALCULATOR  = "RarityCalculator";
     string constant CONTRACT_NAME_CRYPTOKITTIES     = "CryptoKitties";
-    string constant CONTRACT_NAME_GAMEMANAGER_GETTER_DB    = "GameManagerGetterDB";
-    string constant CONTRACT_NAME_GAMEMANAGER_SETTER_DB    = "GameManagerSetterDB";
+    string constant CONTRACT_NAME_GETTER_DB         = "GetterDB";
 }

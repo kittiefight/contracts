@@ -13,7 +13,7 @@
 pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
-import "../databases/GameManagerGetterDB.sol";
+import "../databases/GetterDB.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
@@ -28,7 +28,7 @@ import "../../interfaces/ERC721.sol";
 contract Forfeiter is Proxied {
 
   GameManager public gameManager;
-  GameManagerGetterDB public gameManagerGetterDB;
+  GetterDB public getterDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
 
@@ -38,7 +38,7 @@ contract Forfeiter is Proxied {
    */
   function updateContracts() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
-    gameManagerGetterDB = GameManagerGetterDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_GETTER_DB));
+    getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
   }
@@ -54,13 +54,13 @@ contract Forfeiter is Proxied {
     returns (bool conditions)
   {
     (address playerBlack, address playerRed, uint256 kittyBlack,
-      uint256 kittyRed, ,) = gameManagerGetterDB.getGame(gameId);
+      uint256 kittyRed, ,) = getterDB.getGame(gameId);
 
     // GAME_CREATED
     if (gameState == 0) {
-      uint256 gamePreStartTime = gameManagerGetterDB.getPrestartTime(gameId);
-      uint supportersBlack = gameManagerGetterDB.getSupporters(gameId, playerBlack);
-      uint supportersRed = gameManagerGetterDB.getSupporters(gameId, playerRed);
+      uint256 gamePreStartTime = getterDB.getPrestartTime(gameId);
+      uint supportersBlack = getterDB.getSupporters(gameId, playerBlack);
+      uint supportersRed = getterDB.getSupporters(gameId, playerRed);
 
       conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
         checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime);
@@ -68,9 +68,9 @@ contract Forfeiter is Proxied {
 
     // GAME_PRESTART
     if (gameState == 1) {
-      uint256 gameStartTime = gameManagerGetterDB.getStartTime(gameId);
-      bool blackStarted = gameManagerGetterDB.didPlayerStart(gameId, playerBlack);
-      bool redStarted = gameManagerGetterDB.didPlayerStart(gameId, playerRed);
+      uint256 gameStartTime = getterDB.getStartTime(gameId);
+      bool blackStarted = getterDB.didPlayerStart(gameId, playerBlack);
+      bool redStarted = getterDB.didPlayerStart(gameId, playerRed);
 
       conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
         didPlayersStartGame(blackStarted, redStarted, gameStartTime);
