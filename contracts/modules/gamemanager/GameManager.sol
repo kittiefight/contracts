@@ -80,21 +80,6 @@ contract GameManager is Proxied {
         _;
     }
 
-    // only when there is a change it is stored in DB
-    struct HighestBettors {
-        address topBettorRed;
-        uint256 topBettorEthRed;
-        address secondTopBettorRed;
-        uint256 secondTopBettorEthRed;
-        address topBettorBlack;
-        uint256 topBettorEthBlack;
-        address secondTopBettorBlack;
-        uint256 secondTopBettorEthBlack;
-    }
-
-    mapping(uint256 => HighestBettors) gameBettors;
-
-
     /**
     * @dev Sets related contracts
     * @dev Can be called only by the owner of this contract
@@ -134,6 +119,7 @@ contract GameManager is Proxied {
         // contributeKTY expects gameId? I think they need to change that function
         //endowment.contributeKFT(gameId, player, gameVarAndFee.getListingFee());
 
+        // When creating the game, set to true, then we set it to false when game cancels or ends
         // require((GameManagerGetterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
 
         scheduler.addKittyToList(kittieId, player);
@@ -307,16 +293,11 @@ contract GameManager is Proxied {
         // TODO: store other variables in bet (attack hash, type)
         //store bet info in DB
 
-        // "A bettor pays the KTY token to join a fight and at the same time select the side(Black or Red corner)"
-        // "bet method checks if a bettor has paid the required KTY token to join a fight"
-        // https://gitlab.com/kittiefight/alpha/issues/6#note_184274144
-        // so addBettor() should also set the corner if not set. it should return corner
-
         //gameManagerSetterDB.addBettor(gameId, account, amountEth, supportedPlayer, attackHash, attackType);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
-        bytes32 corner = "Red"; // "Black"  = gameManagerSetterDB.addBettor();
+        bytes32 corner = "Red"; // "Black" sent as parameter or find it out from supportedPlayer
         calculateBettorStats(gameId, account, amountEth, corner);
 
         // check underperforming game
@@ -337,55 +318,19 @@ contract GameManager is Proxied {
         // lastBet, topBettor, secondTopBettor, etc...
         gameManagerSetterDB.setLastBet(_gameId, _amountEth, now);
 
-        if (keccak256(abi.encodePacked(_corner)) == keccak256(abi.encodePacked("Red"))) {
-            // initialize
-            if (gameBettors[_gameId].topBettorRed == address(0x0)){
-                gameBettors[_gameId].topBettorRed = _account;
-                gameBettors[_gameId].topBettorEthRed = _amountEth;
-                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth); // update DB
-            }
-            if (gameBettors[_gameId].secondTopBettorRed == address(0x0)){
-                gameBettors[_gameId].secondTopBettorRed = _account;
-                gameBettors[_gameId].secondTopBettorEthRed = _amountEth;
-                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
-            }
-            // compare
-            if (_amountEth > gameBettors[_gameId].topBettorEthRed){
-                gameBettors[_gameId].topBettorRed = _account;
-                gameBettors[_gameId].topBettorEthRed = _amountEth;
-                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
-            }else if (gameBettors[_gameId].secondTopBettorEthBlack > _amountEth) {
-                gameBettors[_gameId].secondTopBettorBlack = _account;
-                gameBettors[_gameId].secondTopBettorEthBlack = _amountEth;
-                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
-            }
+        address topBettor;
+        uint256 topBettorEth;
+        address secondTopBettor;
+        uint256 secondTopBettorEth;
 
-        }else{ // "Black" corner
-            // initialize
-            if (gameBettors[_gameId].topBettorBlack == address(0x0)){
-                gameBettors[_gameId].topBettorBlack = _account;
-                gameBettors[_gameId].topBettorEthBlack = _amountEth;
-                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
-            }
-            if (gameBettors[_gameId].secondTopBettorBlack == address(0x0)){
-                gameBettors[_gameId].secondTopBettorBlack = _account;
-                gameBettors[_gameId].secondTopBettorEthBlack = _amountEth;
-                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
-            }
+        (topBettor, topBettorEth) = gameManagerGetterDB.getTopBettor(_gameId, _corner);
+        (secondTopBettor, secondTopBettorEth) = gameManagerGetterDB.getSecondTopBettor(_gameId, _corner);
 
-            // compare
-            if (_amountEth > gameBettors[_gameId].topBettorEthBlack){
-                gameBettors[_gameId].topBettorBlack = _account;
-                gameBettors[_gameId].topBettorEthBlack = _amountEth;
-                gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
-            }else if (gameBettors[_gameId].secondTopBettorEthBlack > _amountEth) {
-                gameBettors[_gameId].secondTopBettorBlack = _account;
-                gameBettors[_gameId].secondTopBettorEthBlack = _amountEth;
-                gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
-            }
-
+        if (_amountEth > topBettorEth){
+            gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
+        }else if (_amountEth > secondTopBettorEth){
+            gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
         }
-
     }
 
 

@@ -181,7 +181,7 @@ contract GameManagerSetterDB is GameManagerDB {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId) {
     genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettor")), _bettor);
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettor")), _amountEth);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettorAmountEth")), _amountEth);
   }
 
   /**
@@ -192,7 +192,7 @@ contract GameManagerSetterDB is GameManagerDB {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId) {
     genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettor")), _bettor);
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettor")), _amountEth);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettorAmountEth")), _amountEth);
   }
 
   /**
