@@ -120,7 +120,7 @@ contract GameManager is Proxied {
         //endowment.contributeKFT(gameId, player, gameVarAndFee.getListingFee());
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
-        // require((GameManagerGetterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
+        require((gameManagerGetterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
 
         scheduler.addKittyToList(kittieId, player);
     }
@@ -316,22 +316,15 @@ contract GameManager is Proxied {
         // lastBet, topBettor, secondTopBettor, etc...
         gameManagerSetterDB.setLastBet(_gameId, _amountEth, now);
 
-        address topBettor;
-        uint256 topBettorEth;
-        address secondTopBettor;
-        uint256 secondTopBettorEth;
+        ( ,uint256 topBettorEth) = gameManagerGetterDB.getTopBettor(_gameId, _supportedPlayer);
 
-        (topBettor, topBettorEth) = gameManagerGetterDB.getTopBettor(_gameId, _supportedPlayer);
-        
         if (_amountEth > topBettorEth){
             gameManagerSetterDB.setTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
         } else {
-            (secondTopBettor, secondTopBettorEth) = gameManagerGetterDB.getSecondTopBettor(_gameId, _supportedPlayer);
+            ( ,uint256 secondTopBettorEth) = gameManagerGetterDB.getSecondTopBettor(_gameId, _supportedPlayer);
             if (_amountEth > secondTopBettorEth){
                 gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
-            }
-        }
-    }
+    }   }   }
 
 
     /**
@@ -351,9 +344,11 @@ contract GameManager is Proxied {
         if (gameManagerGetterDB.getEndTime(gameId) >= now)
             gameManagerSetterDB.updateGameState(gameId, GAME_STATE_FINISHED);
 
+        // When creating the game, set to true, then we set it to false when game cancels or ends
+        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gameManagerGetterDB.getGame(gameId);
+        gameManagerSetterDB.updateKittieState(kittyRed, false);
+        gameManagerSetterDB.updateKittieState(kittyBlack, false);
 
-        // delete local var
-        // gameBettors[_gameId]
     }
 
     /**
@@ -383,6 +378,12 @@ contract GameManager is Proxied {
                 gameManagerGetterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
 
         gameManagerSetterDB.updateGameState(gameId, GAME_STATE_CANCELLED);
+
+        // When creating the game, set to true, then we set it to false when game cancels or ends
+        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gameManagerGetterDB.getGame(gameId);
+        gameManagerSetterDB.updateKittieState(kittyRed, false);
+        gameManagerSetterDB.updateKittieState(kittyBlack, false);
+
     }
 
     
