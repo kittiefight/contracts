@@ -68,22 +68,22 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
         genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
     }  
 
-    // ----- GETTERS -------
-
-    // /// @notice Generic Getter
-    // function getVarAndFee(string memory keyName) 
-    // public view returns(uint) { 
-    //     bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, keyName));
-    //     return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key);
-    // }
+    // ----- GETTERS ------
         
-    /// @notice Gets the time in future that a game is to be played
-    function getFutureGameTime() 
+    /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
+    function getRequiredNumberMatches() 
     public view returns(uint) { 
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FUTURE_GAME_TIME);
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES);
     }
+
+    /// @notice Gets the time distance between scheduled fights (i.e. 3000)
+    function getRequiredTimeDistance() 
+    public view returns(uint) { 
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_TIME_DISTANCE);
+    }
+
     
-    /// @notice Gets 2 min alloted time whereby both players must initiate start or forfeit game.
+    /// @notice Gets countdown time for players to start game (i.e. 120).
     function getGamePrestart() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_PRESTART);
@@ -162,6 +162,12 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
         rates[3] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, OTHER_BETTORS);
         
         rates[4] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT);
+    }
+
+    /// @notice Gets fee for players to list kitties for matching in fights
+    function getListingFee() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
     }
 
     /// @notice Gets ticket fee in KTY for betting participators
