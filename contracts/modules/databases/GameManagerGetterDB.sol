@@ -201,7 +201,7 @@ contract GameManagerGetterDB is GameManagerDB {
   /**
    * @dev get secondTopBettor
    */
-  function getSecondTopBettor(uint256 _gameId, address _bettor, bytes32 corner)
+  function getSecondTopBettor(uint256 _gameId, bytes32 corner)
     public view
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId)
