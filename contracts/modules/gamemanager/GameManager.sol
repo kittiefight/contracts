@@ -139,7 +139,9 @@ contract GameManager is Proxied {
         onlyKittyOwner(playerRed, kittyRed)
         onlyKittyOwner(playerBlack, kittyBlack)
     {
-        // TODO: Check if kitties are not already listed
+        require(scheduler.isKittyListedForMatching(kittyRed), "Kitty already listed");
+        require(scheduler.isKittyListedForMatching(kittyBlack), "Kitty already listed");
+
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
