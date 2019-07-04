@@ -69,8 +69,7 @@ contract Forfeiter is Proxied {
     // GAME_PRESTART
     if (gameState == 1) {
       uint256 gameStartTime = getterDB.getStartTime(gameId);
-      bool blackStarted = getterDB.didPlayerStart(gameId, playerBlack);
-      bool redStarted = getterDB.didPlayerStart(gameId, playerRed);
+      (bool redStarted, bool blackStarted) = getterDB.getPlayerStartStatus(gameId);
 
       conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
         didPlayersStartGame(blackStarted, redStarted, gameStartTime);

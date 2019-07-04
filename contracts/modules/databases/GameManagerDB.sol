@@ -269,8 +269,6 @@ contract GameManagerDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
-    //Pressed start button
-    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
 
     //Defense Level
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
@@ -278,6 +276,16 @@ contract GameManagerDB is Proxied {
     // Set random seed send by player in startGame function
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")), randomNum);
 
+  }
+
+  /**
+   * @dev Pressed start button
+   */
+  function setHitStart(uint256 gameId, address player)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  {
+    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
   }
 
   /**

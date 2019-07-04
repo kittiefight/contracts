@@ -236,20 +236,21 @@ contract GameManager is Proxied {
 
         require(gameState == GAME_STATE_PRESTART, "Game state is not Prestart");
 
-        if(true //forfeiter.checkGameStatus(gameId, gameState)
-            ) {
-            // TODO: get defense level for player with given kittieId
-            //uint defenseLevel = rarityCalculator.getDefenseLevel(getterDB.getKittieInGame(gameId, player));            
+        gameManagerDB.setHitStart(gameId, player);
+        (bool redStarted, bool blackStarted) = getterDB.getPlayerStartStatus(gameId);
 
-            //If both players hit start, do the following:
-            //gameManagerDB.updateGameState(gameId, GAME_STATE_PRESTART);
+        if(redStarted && blackStarted){
+            uint defenseLevel = rarityCalculator.getDefenseLevel(getterDB.getKittieInGame(gameId, player));
+
             // TODO: store fight map from betting algo
             // betting.startGame(randomRed, randomBlack);
 
             // Grouping calls, set hitStart and defense level (TODO: set fight map too here)
-            // gameManagerDB.startGameVars(gameId, player, defenseLevel, randomNum);
-
+            gameManagerDB.startGameVars(gameId, player, defenseLevel, randomNum);
+            gameManagerDB.updateGameState(gameId, GAME_STATE_STARTED);
         }
+
+        forfeiter.checkGameStatus(gameId, gameState);
 
         uint256 kittieId = getterDB.getKittieInGame(gameId, player);
         kittieHELL.acquireKitty(kittieId, player);

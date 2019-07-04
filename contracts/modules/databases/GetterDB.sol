@@ -47,17 +47,6 @@ contract GetterDB is Proxied {
     genericDB = _genericDB;
   }
 
-  /**
-   * @dev Did player hit start button
-   */
-  function didPlayerStart(uint256 gameId, address player)
-    public view
-    onlyExistentGame(gameId)
-    returns (bool)
-  {
-    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "startTime")));
-  }
-
   function getHoneypotId(uint256 gameId)
     public view
     onlyExistentGame(gameId)
@@ -258,4 +247,21 @@ contract GetterDB is Proxied {
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);
   }
+
+
+  /**
+   * @dev Get both player's hitStart status
+   */
+  function getPlayerStartStatus(uint256 gameId)
+    public view
+    returns(bool redStarted, bool blackStarted){
+      address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+      address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+
+      return (
+        genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "hitStart"))),
+        genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "hitStart")))
+        );
+  }
+
 }
