@@ -187,28 +187,36 @@ contract GameManagerGetterDB is GameManagerDB {
   /**
    * @dev get topBettor
    */
-  function getTopBettor(uint256 _gameId, bytes32 corner)
+  function getTopBettor(uint256 _gameId, address _supportedPlayer)
     public view
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId)
     returns (address, uint256){
     return (
-      genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettor"))),
-      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "TopBettorAmountEth")))
+      genericDB.getAddressStorage(
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+        keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor"))),
+      genericDB.getUintStorage(
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+        keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")))
       );
   }
 
   /**
    * @dev get secondTopBettor
    */
-  function getSecondTopBettor(uint256 _gameId, bytes32 corner)
+  function getSecondTopBettor(uint256 _gameId, address _supportedPlayer)
     public view
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId)
     returns (address, uint256){
     return (
-      genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettor"))),
-      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_SETTER_DB, keccak256(abi.encodePacked(_gameId, corner, "SecondTopBettorAmountEth")))
+      genericDB.getAddressStorage(
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+        keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettor"))),
+      genericDB.getUintStorage(
+        CONTRACT_NAME_GAMEMANAGER_SETTER_DB,
+        keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")))
       );
   }
 

@@ -297,8 +297,7 @@ contract GameManager is Proxied {
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
-        bytes32 corner = "Red"; // "Black" sent as parameter or find it out from supportedPlayer
-        calculateBettorStats(gameId, account, amountEth, corner);
+        calculateBettorStats(gameId, account, amountEth, supportedPlayer);
 
         // check underperforming game
         // extendTime(gameId);
@@ -312,7 +311,7 @@ contract GameManager is Proxied {
     * @author vikrammandal
     */
     function calculateBettorStats(
-        uint256 _gameId, address _account, uint256 _amountEth, bytes32 _corner
+        uint256 _gameId, address _account, uint256 _amountEth, address _supportedPlayer
     ) private {
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
@@ -323,13 +322,13 @@ contract GameManager is Proxied {
         address secondTopBettor;
         uint256 secondTopBettorEth;
 
-        (topBettor, topBettorEth) = gameManagerGetterDB.getTopBettor(_gameId, _corner);
-        (secondTopBettor, secondTopBettorEth) = gameManagerGetterDB.getSecondTopBettor(_gameId, _corner);
+        (topBettor, topBettorEth) = gameManagerGetterDB.getTopBettor(_gameId, _supportedPlayer);
+        (secondTopBettor, secondTopBettorEth) = gameManagerGetterDB.getSecondTopBettor(_gameId, _supportedPlayer);
 
         if (_amountEth > topBettorEth){
-            gameManagerSetterDB.setTopBettor(_gameId, _account, _corner, _amountEth);
+            gameManagerSetterDB.setTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
         }else if (_amountEth > secondTopBettorEth){
-            gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _corner, _amountEth);
+            gameManagerSetterDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
         }
     }
 
