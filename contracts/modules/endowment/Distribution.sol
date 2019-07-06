@@ -18,7 +18,6 @@ pragma solidity ^0.5.5;
 import '../../GameVarAndFee.sol';
 import '../proxy/Proxied.sol';
 import '../../libs/SafeMath.sol';
-import '../../mocks/MockERC20Token.sol';
 import '../databases/GameManagerDB.sol';
 // import "../databases/EndowmentDB.sol";
 
@@ -48,62 +47,69 @@ contract Distribution is Proxied {
     }
 
     /**
-     * @notice prevent interaction if the address is not on record as one of the
-     * winning groups or prevent interaction if the address has already claimed
-     */
-    modifier preventClaims(uint gameId) {
-        //address winner = gameManagerDB.getWinner(gameId);
-        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, msg.sender);
-        //require(supportedPlayer == winner, "Not on the winning group");
-        // require(gameManagerDB.hasRedeemed(gameId, winner), 'Winnings already claimed');
-        _;
-    }
-
-    /**
-     * @notice Eth and token percentage withdrawal scheme
-     * Only able to be called when game is over, checks if game is over and them allows claim
-     * allow address to claim share and dissallow and subsequent claimes by "modifier".
-     * Triggered and calls the "sendEndowmentShare" function ONCE after the game is over.
-     */
-    function redeem(uint gameId) public preventClaims(gameId) {
-
-        //uint sharesETH = getWinnerShare(gameId, msg.sender);
-
-        //TODO: send ether to adddress?
-
-        // sendEndowmentShare(); // is it needed?
-    }
-
-    /**
      * @notice Calculates amount of Eth the winner can claim
      */
-    function getWinnerShare(uint gameId, address winner) public view returns(uint) {
+    function getWinnerShare(uint gameId, address claimer) public view returns(uint winningsETH, uint winningsKTY) {
+
+        //address winningSide = gameManagerDB.getWinner(gameId);
+        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, claimer);
+
+        // Is the winning player or part of the bettors of the winning corner
+        //require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
+
         uint256[5] memory rates = gameVarAndFee.getDistributionRates();
 
-        uint256 winningCategory = checkWinnerCategory(gameId, winner);
+        //TEMPORAL
+        address winningSide = address(0);
+        address supportedPlayer = address(0);
 
-        // uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId); //Or where is the total jackpot stored?
-        uint256 totalEthFunds = 1000;
+        uint256 winningCategory = checkWinnerCategory(gameId, claimer, winningSide, supportedPlayer);
+
+        // uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
+        // uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
+
+        uint256 totalEthFunds = 100;
+        uint256 totalKTYFunds = 25000;
 
         if (winningCategory < 4) {
             if (winningCategory == 3){
                 //get other supporters count
+
+                //get other supporters totalBets
+
+                // TODO: distribute the 20% of the jackpot according to %
+                // depending of each bettor's bet and total bets of other bettors
                 //return ((totalEthFunds.mul(rates[winningCategory])).div(100)).div(otherBettorsCount);
             }
-            return (totalEthFunds.mul(rates[winningCategory])).div(100);
+            winningsETH = (totalEthFunds.mul(rates[winningCategory])).div(100);
+            winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
         }
-        return 0;
+
+        return (0, 0);
     }
 
-    function checkWinnerCategory(uint gameId, address winner) internal pure returns(uint winningGroup) {
-        //address winningSide = gameManagerDB.getWinner(gameId);
-        // Not yet implemented in Game Manager DB
-        // if (winningSide == winner) return 0;
-        // if (gameManagerDB.getTopBettor(gameId) == winner) return 1;
-        // if (gameManagerDB.getSecondTopBettor(gameId) == winner) return 2;
+    function checkWinnerCategory
+    (
+        uint gameId, address claimer,
+        address winner,  address supportedPlayer
+    )
+        internal pure
+        returns(uint winningGroup)
+    {
+        // Winning Player
+        // if (claimer == winner) return 0;
 
-        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, winner);
-        // if (winningSide == supportedPlayer) return 3;
+        // Winning Top Bettor
+        // if (gameManagerDB.getTopBettor(gameId) == claimer) return 1;
+
+        // Winning SecondTop Bettor
+        // if (gameManagerDB.getSecondTopBettor(gameId) == claimer) return 2;
+
+        // Winning Other Bettors List
+        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, claimer);
+        // if (winner == supportedPlayer) return 3;
+
+        // Else
         return 100;
     }
 
