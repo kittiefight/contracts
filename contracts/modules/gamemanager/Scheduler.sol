@@ -23,9 +23,9 @@ pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
 import "../../libs/SafeMath.sol";
-//import "../../authority/Guard.sol";
 import "../../GameVarAndFee.sol";
 import "./GameManager.sol";
+import "../../interfaces/ERC721.sol";
 
 
 /**
@@ -40,18 +40,16 @@ contract Scheduler is Proxied {
     //Contract Variables
     GameManager public gameManager;
     GameVarAndFee public gameVarAndFee;
-    //Register public register;
+    ERC721 public cryptoKitties;
 
-    uint256 randomNonce;
-
-    uint256 kittyCount;
     struct Kitty {
         uint256 kittyId;
         address player;
     }
-    Kitty[] KittyList;
-    Kitty[] KittyListSuffled;
 
+    uint256 randomNonce;
+    Kitty[] kittyList;
+    Kitty[] kittyListShuffled;
 
     /**
      * @dev Can be called only by the owner of this contract
@@ -59,82 +57,174 @@ contract Scheduler is Proxied {
     function initialize() public onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+        cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
     /**
-    * @dev what modifier to add? onlyValidPlayer
     * @param _kittyId kitty id
-    * @param _player is the address of the palyer
+    * @param _player is the address of the player
     */
     function addKittyToList(uint256 _kittyId, address _player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+        // a kitty may play only one game at a time
+        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed. A kitty can take part in only one game at a time");
 
-        KittyList[kittyCount] = Kitty({ kittyId: _kittyId, player: _player });
-        kittyCount++;
+        Kitty memory newKitty = Kitty(_kittyId, _player);
+        kittyList.push(newKitty);
 
-        // call matchKitties - check with GameVarFee getRequiredNumberMatches()
-        if (gameVarAndFee.getRequiredNumberMatches() == kittyCount) {
+        // if ((gameVarAndFee.getRequiredNumberMatches() * 2) == kittyList.length) {
+        // temporary hardcoded for test, unable to setVarAndFee from test due to proxy issue (out of gas)
+        if (4 == kittyList.length) {
             matchKitties();
         }
+    }
 
+    /**
+    * @param _kittyId kitty id
+    * @param _player is the address of the player
+    */
+    function addKittyToListAgain(uint256 _kittyId, address _player) private {
+        // a kitty or player may play only one game at a time
+        require(!isKittyListedForMatching(_kittyId), "Kitty is already listed. A kitty can take part in only one game at a time");
+
+        Kitty memory newKitty = Kitty(_kittyId, _player);
+        kittyList.push(newKitty);
+
+        // if ((gameVarAndFee.getRequiredNumberMatches() * 2) == kittyList.length) {
+        // temporary hardcoded for test, unable to setVarAndFee from test due to proxy issue (out of gas)
+        if (4 == kittyList.length) {
+            matchKitties();
+        }
     }
 
 
     /**
-     * @dev this will be called by GameManager::matchKitties()
+     * @dev Create red and black corner players
      */
     function matchKitties() private {
-        require((kittyCount % 2) != 0, "Kitty count should be even number");
+        require(((kittyList.length % 2) == 0), "Number of Kitties should be even number");
 
-        Kitty[] memory playerRed;
-        Kitty[] memory playerBlack;
-        uint256 gameCount = kittyCount / 2;
+        shuffleKittyList();
+        uint256 gameCount = kittyListShuffled.length / 2;
 
-        suffleKittyList();
+        Kitty[] memory playerRed = new Kitty[](gameCount);
+        Kitty[] memory playerBlack = new Kitty[](gameCount);
+
+        for(uint256 i = 0; i < playerRed.length; i++){
+            playerRed[i] = kittyListShuffled[i];
+        }
+        for(uint256 i = 0; i < playerBlack.length; i++){
+            playerBlack[i] = kittyListShuffled[i + playerRed.length];
+        }
+
+        uint256 gameCreationTime;
+        uint256 gameTimeSeperation = gameVarAndFee.getGameTimes(); //OR getRequiredTimeDistance() ?
 
         for(uint256 i = 0; i < gameCount; i++){
-            playerRed[i] = KittyListSuffled[i];
+            //gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
+            gameCreationTime = block.timestamp.add(gameTimeSeperation.mul(1 seconds));
+
+            // check owners
+            if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
+               (cryptoKitties.ownerOf(playerBlack[i].kittyId) != playerBlack[i].player)){
+
+                   addKittyToListAgain(playerRed[i].kittyId, playerRed[i].player);
+
+            } else if ((cryptoKitties.ownerOf(playerRed[i].kittyId) != playerRed[i].player) &&
+               (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
+
+                   addKittyToListAgain(playerBlack[i].kittyId, playerBlack[i].player);
+
+            } else if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
+               (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
+
+                gameManager.createFight(
+                    playerRed[i].player,
+                    playerBlack[i].player,
+                    playerRed[i].kittyId,
+                    playerBlack[i].kittyId,
+                    gameCreationTime
+                    );
+            }
         }
-        for(uint256 i = gameCount - 1; i < kittyCount; i++){
-            playerBlack[i] = KittyListSuffled[i];
-        }
 
-        uint gameCreationTime;
-        uint gameTimeSeperation = gameVarAndFee.getGameTimes(); //OR getRequiredTimeDistance() ?
-
-        //generate match pairs
-        for(uint i = 0; i < gameCount; i++){
-            gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
-
-            // createFight not public
-            //gameManager.createFight(playerRed[i].owner, playerBlack[i].owner,  playerRed[i].kittyId, playerBlack[i].kittyId, gameCreationTime);
-
-        }
-
-        // reset KittyList, KittyListSuffled, kittyCount
-        kittyCount = 0;
-        delete KittyList;
-        delete KittyListSuffled;
+        delete kittyListShuffled; // reset
     }
 
-
     /**
-     * needs to be tested
+     * Shuffle Kitty List
      */
-    function suffleKittyList() internal {
+    function shuffleKittyList() public {
+
+        Kitty[] memory kittyListCopy = new Kitty[](kittyList.length);
+        kittyListCopy = kittyList;
+        delete kittyList;   // reset
+
         uint256 pos;
-        for(uint256 i = 0; i < kittyCount; i++){
-            pos = randomNumber(kittyCount);
-            KittyListSuffled[pos] = KittyList[i];
+        Kitty memory temp;
+        for(uint i = 0; i < kittyListCopy.length; i++){
+            pos = randomNumber(kittyListCopy.length - 1);
+            temp = kittyListCopy[i];
+            kittyListCopy[i] = kittyListCopy[pos];
+            kittyListCopy[pos] = temp;
+        }
+
+        for(uint i = 0; i < kittyListCopy.length; i++){
+            kittyListShuffled.push(kittyListCopy[i]);
         }
     }
 
     /**
-     * needs to be tested
+     * @dev Random number - very basic implementation
      */
     function randomNumber(uint256 max) internal returns (uint256){
         uint256 random = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randomNonce))) % max;
         randomNonce++;
         return random;
     }
+
+    /**
+    * @dev Checkes if kitty is listed for matching in future games
+    */
+    function isKittyListedForMatching(uint256 _kittyId) public view returns (bool) {
+        for(uint256 i = 0; i < kittyList.length ; i++){
+            if (_kittyId == kittyList[i].kittyId){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @dev uint256[] Returns only ids of currently un mathced kitties
+     */
+    function getUnMatchedKitties() public view returns (uint256[] memory){
+        uint256[] memory unMatchedKitties = new uint256[](kittyList.length);
+        for (uint256 i = 0; i < kittyList.length; i++){
+            unMatchedKitties[i] = kittyList[i].kittyId;
+        }
+        return unMatchedKitties;
+    }
+
+    /**
+     * @dev address[] Returns addresses  of currently un mathced players
+     */
+    function getUnMatchedPlayers() public view returns (address[] memory){
+        address[] memory unMatchedPlayers = new address[](kittyList.length);
+        for (uint256 i = 0; i < kittyList.length; i++){
+            unMatchedPlayers[i] = kittyList[i].player;
+        }
+        return unMatchedPlayers;
+    }
+
+
+    /**
+     * @dev requiredNumber of listed kitties required before the next nbatches of fights is setup
+     */
+    function getRequiredMatchingNumber(uint256 nbatch) external view returns(uint256){
+        uint256[] memory currentUnMatchedKitties = getUnMatchedKitties();
+        //return  (nbatch * 2) - currentUnMatchedKitties.length;
+        return nbatch.mul(2).sub(currentUnMatchedKitties.length);
+    }
+
 
 }

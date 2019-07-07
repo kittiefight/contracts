@@ -23,12 +23,13 @@ import "../../libs/SafeMath.sol";
  * @author @psychoplasma
  */
 contract GameManagerDB is Proxied {
-  using SafeMath for uint256;
+ using SafeMath for uint256;
 
   GenericDB public genericDB;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
+  string internal constant TABLE_NAME_KITTIES = "KittieTable";
   string internal constant ERROR_DOES_NOT_EXIST = "Game does not exist";
   string internal constant ERROR_CANNOT_SUPPORT_BOTH = "Cannot support both players";
   string internal constant ERROR_INVALID_CURRENCY = "Invalid currency for bet";
@@ -37,7 +38,7 @@ contract GameManagerDB is Proxied {
     require(doesGameExist(gameId), ERROR_DOES_NOT_EXIST);
     _;
   }
-
+  
   constructor(GenericDB _genericDB) public {
     setGenericDB(_genericDB);
   }
@@ -46,7 +47,7 @@ contract GameManagerDB is Proxied {
     genericDB = _genericDB;
   }
 
-  /**
+ /**
    * @dev Creates a new game item on game table
    */
   function createGame
@@ -84,13 +85,21 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
 
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
+
+    // Set kittieIds to true, so we know that there are in a match
+    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(kittyRed, "inGame")), true);
+    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(kittyBlack, "inGame")), true);
   }
 
   /**
    * @dev Adds a bettor to the given game iff the game exists.
    * If the bettor already exists in the game, updates her bet.
    */
-  function addBettor(uint256 gameId, address bettor, uint256 betAmount, address supportedPlayer)
+  function addBettor
+  (
+    uint256 gameId, address bettor, uint256 betAmount,
+    address supportedPlayer, bytes calldata attackHash, uint attackType
+  )
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
@@ -118,14 +127,27 @@ contract GameManagerDB is Proxied {
     // Check if the supported player is same in case of additional bet
     require(_supportedPlayer != supportedPlayer, ERROR_CANNOT_SUPPORT_BOTH);
 
-    //When registering supporters before game start
     if (betAmount > 0) {
+      // Set attack hash and type for every bet
+      genericDB.setBytesStorage(
+        CONTRACT_NAME_GAMEMANAGER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "attackHash")),
+        attackHash
+      );
+
+      genericDB.setUintStorage(
+        CONTRACT_NAME_GAMEMANAGER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "attackType")),
+        attackType
+      );
+
       // Update bettor's total bet amount
       updateBet(gameId, bettor, betAmount);
 
       // Update total bet amount in the game
       updateTotalBet(gameId, betAmount);
-    }
+      
+    }    
   }
 
   /**
@@ -159,6 +181,65 @@ contract GameManagerDB is Proxied {
     );
   }
 
+   /**
+   * @dev Update different game vars for every bet function call
+   */
+  function updateGameVars(uint256 gameId, uint256 lastBet, uint lastBetTimestamp, address topBettor, address secondTopBettor)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lastBet")), lastBet);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lastBetTimestamp")), lastBetTimestamp);
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "topBettor")), topBettor);
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
+  }
+
+  /**
+   * @dev set topBettor
+   */
+  function setTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
+    public
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(_gameId) {
+    genericDB.setAddressStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor")), _bettor);
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")), _amountEth);
+  }
+
+  /**
+   * @dev set secondTopBettor
+   */
+  function setSecondTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
+    public
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(_gameId) {
+    genericDB.setAddressStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId,
+      _supportedPlayer, "SecondTopBettor")), _bettor);
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")), _amountEth);
+  }
+
+  /**
+   * @dev set last bet amount (eth)
+   */
+  function setLastBet(uint256 _gameId, uint256 _amountEth, uint256 _lastBetTimestamp, address _supportedPlayer)
+    public
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(_gameId) {
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet")), _amountEth);
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")), _lastBetTimestamp);
+  }
+
   /**
    * @dev Update game to one of 5 states
    */
@@ -171,29 +252,86 @@ contract GameManagerDB is Proxied {
   }
 
   /**
-   * @dev set true when player hit start button
+   * @dev Update kittie state
+   */
+  function updateKittieState(uint256 kittieId, bool state)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  {
+    genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(kittieId, "inGame")), state);
+  }
+
+  /**
+   * @dev ?
+   */
+  function startGameVars(uint256 gameId, address player, uint defenseLevel, uint randomNum)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+
+    //Defense Level
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
+
+    // Set random seed send by player in startGame function
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")), randomNum);
+
+  }
+
+  /**
+   * @dev Pressed start button
    */
   function setHitStart(uint256 gameId, address player)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(gameId)
   {
     genericDB.setBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
   }
 
   /**
-   * @dev Did player hit start button
+   * @dev TODO: Set the fight map sent by betting algo
    */
-  function didPlayerStart(uint256 gameId, address player)
-    public view
+  function setFightMap(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
-    returns (bool)
   {
-    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "startTime")));
+    //TODO: How to store the fight map, what input variable types
   }
 
+  /**
+   * @dev TODO: Set the attack values returned by HitResolver when game ends
+   */
+  function setAttackValues
+  (
+    uint256 gameId, uint256 lowPunch, uint256 lowKick, uint256 lowThunder,
+    uint256 hardPunch, uint256 hardKick, uint256 hardThunder, uint256 slash)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    //TODO: How to store the attack values
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowPunch")), lowPunch);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowKick")), lowKick);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowThunder")), lowThunder);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardPunch")), hardPunch);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardKick")), hardKick);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardThunder")), hardThunder);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "slash")), slash);
+  }
 
   /**
+   * @dev set HoneyPotId created by Endowment
+   */
+  function setHoneypotId(uint256 gameId, uint256 honeypotId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
+  }
+
+    /**
    * @dev Increments the number of supporters for the given player
    */
   function incrementSupporters(uint256 gameId, address player) internal {
@@ -207,118 +345,6 @@ contract GameManagerDB is Proxied {
       keccak256(abi.encodePacked(gameId, player, "supporters")),
       supporters.add(1)
     );
-  }
-
-  /**
-   * @dev get amount of supporters for given game and player
-   */
-  function getSupporters(uint256 gameId, address player)
-    public view
-    returns (uint)
-  {
-    return genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, player, "supporters"))
-    );
-  }
-
-  /**
-   * @dev Returns the total amount of bet of the given bettor
-   * and the player supported by that bettor in the game given.
-   */
-  function getBettor(uint256 gameId, address bettor)
-    public view
-    returns (uint256 betAmount, address supportedPlayer)
-  {
-    betAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
-    );
-    supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
-    );
-  }
-
-  /**
-   * @dev Returns players, fighter kitties' ids,
-   * total amount of bet and the timestamp of creation of this game.
-   */
-  function getGame(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBet, uint256 startTime)
-  {
-    playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
-    playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-    kittyBlack = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")));
-    kittyRed = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")));
-    totalBet = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, "totalBetAmount"))
-    );
-    startTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
-  }
-
-  /**
-   * @dev check game state, 0-4
-   */
-  function getGameState(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint gameState)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")));
-  }
-
-  /**
-   * @dev ?
-   */
-  function getStartTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
-  }
-
-  /**
-   * @dev ?
-   */
-  function getPrestartTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
-  }
-
-  /**
-   * @dev ?
-   */
-  function getEndTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
-  }
-  
-  /**
-   * @dev Checks whether the given player is playing in the given game.
-   */
-  function isPlayer(uint256 gameId, address player) public view returns (bool) {
-    address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-    if (player == playerRed) {
-      return true;
-    }
-
-    address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
-    if (player == playerBlack) {
-      return true;
-    }
-
-    return false;
   }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {

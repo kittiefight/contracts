@@ -68,6 +68,7 @@ module.exports = {
     }
   },
   mocha: {
+    enableTimeouts: false,
     useColors: true,
     reporter: "eth-gas-reporter",
     reporterOptions: {
