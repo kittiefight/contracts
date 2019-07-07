@@ -228,16 +228,16 @@ contract GameManagerDB is Proxied {
   /**
    * @dev set last bet amount (eth)
    */
-  function setLastBet(uint256 _gameId, uint256 _amountEth, uint256 _lastBetTimestamp)
+  function setLastBet(uint256 _gameId, uint256 _amountEth, uint256 _lastBetTimestamp, address _supportedPlayer)
     public
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId) {
     genericDB.setUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(_gameId, "lastBet")), _amountEth);
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet")), _amountEth);
     genericDB.setUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(_gameId, "lastBetTimestamp")), _lastBetTimestamp);
+      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")), _lastBetTimestamp);
   }
 
   /**

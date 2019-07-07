@@ -282,6 +282,8 @@ contract GameManager is Proxied {
         
         forfeiter.checkGameStatus(gameId, gameState);
 
+        // check supporter does not change player midway
+
         // if underperformed then call extendTime();
         //  endowmentFund.contributeETH(gameId);
 
@@ -317,7 +319,7 @@ contract GameManager is Proxied {
         uint256 _gameId, address _account, uint256 _amountEth, address _supportedPlayer
     ) private {
         // lastBet, topBettor, secondTopBettor, etc...
-        gameManagerDB.setLastBet(_gameId, _amountEth, now);
+        gameManagerDB.setLastBet(_gameId, _amountEth, now, _supportedPlayer);
 
         ( ,uint256 topBettorEth) = getterDB.getTopBettor(_gameId, _supportedPlayer);
 

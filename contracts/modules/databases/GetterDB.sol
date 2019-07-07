@@ -233,14 +233,14 @@ contract GetterDB is Proxied {
   /**
    * @dev get last bet amount (eth)
    */
-  function getLastBet(uint256 _gameId)
+  function getLastBet(uint256 _gameId, address _supportedPlayer)
     public view
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(_gameId)
     returns (uint256, uint256){
      return (
-      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId, "lastBet"))),
-      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId, "lastBetTimestamp")))
+      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet"))),
+      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")))
       );
   }
 
