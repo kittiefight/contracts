@@ -181,6 +181,18 @@ contract GameManagerDB is Proxied {
     );
   }
 
+  /**
+   * @dev Updates the total amount of bet in the given game by the given amount.
+   */
+  function extendEndTime(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    uint currentEndTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")), currentEndTime.add(60));
+  }
+
    /**
    * @dev Update different game vars for every bet function call
    */
@@ -321,14 +333,15 @@ contract GameManagerDB is Proxied {
   }
 
   /**
-   * @dev set HoneyPotId created by Endowment
+   * @dev set HoneyPotId and initial ETH in jackpot created by Endowment
    */
-  function setHoneypotId(uint256 gameId, uint256 honeypotId)
+  function setHoneypotInfo(uint256 gameId, uint256 honeypotId, uint256 initialEth)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), initialEth);
   }
 
     /**

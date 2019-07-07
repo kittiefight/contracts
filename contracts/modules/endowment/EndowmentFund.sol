@@ -48,7 +48,7 @@ contract EndowmentFund is Proxied {
     uint ethTotal;
   }
 
-  function generateHoneyPot() external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint) {
+  function generateHoneyPot() external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
     uint _ktyAllocated = gameVarAndFee.getTokensPerGame();
     require(endowmentDB.allocateKTY(_ktyAllocated));
     uint _ethAllocated = gameVarAndFee.getEthPerGame();
@@ -71,7 +71,7 @@ contract EndowmentFund is Proxied {
       _honeypot.ethTotal
     );
 
-    return _potId;
+    return (_potId, _ethAllocated);
   }
 
   struct KittieTokenTx {

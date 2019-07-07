@@ -26,6 +26,7 @@ pragma solidity ^0.5.5;
 import '../proxy/Proxied.sol';
 import "../databases/GameManagerDB.sol";
 import "../databases/GetterDB.sol";
+import "../databases/EndowmentDB.sol";
 import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
 import "../endowment/Distribution.sol";
@@ -49,6 +50,7 @@ contract GameManager is Proxied {
     GetterDB public getterDB;
     GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
+    EndowmentDB public endowmentDB;
     Distribution public distribution;
     ERC20Standard public kittieFightToken;
     Forfeiter public forfeiter;
@@ -72,8 +74,8 @@ contract GameManager is Proxied {
     //TODO: check to add more states (expired, claiming gains)
 
     modifier onlyKittyOwner(address account, uint kittieId) {
-        // require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
-        //TODO: ADD verify check here?
+        require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
+        //TODO: ADD verify civid ID check here?
         _;
     }
 
@@ -92,6 +94,7 @@ contract GameManager is Proxied {
         gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
         getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
@@ -166,10 +169,8 @@ contract GameManager is Proxied {
         uint256 gameId = gameManagerDB.createGame(
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
-        // TODO: endowment Team
-        // return also initial jackpot in ETH and KTY to store in GM DB
-        uint honeyPotId = endowmentFund.generateHoneyPot();
-        gameManagerDB.setHoneypotId(gameId, honeyPotId);
+        (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
+        gameManagerDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
 
         // TODO: endowment Team
         // endowmentFund.updateHoneyPotState(scheduled); //not yet implemented
@@ -268,9 +269,26 @@ contract GameManager is Proxied {
      */
     function extendTime(uint gameId) internal {
         // check if underperforming
-        if(!checkPerformance(gameId)){
-            // extend time
+        uint gameEndTime = getterDB.getEndTime(gameId);
+
+        //each time 1 minute before game ends
+        if(gameEndTime - now <= 60) {
+            if(!checkPerformance(gameId)){
+            gameManagerDB.extendEndTime(gameId);        }
         }
+    }
+
+    /**
+     * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
+     */
+    function checkPerformance(uint gameId) internal returns(bool) {
+        //get initial jackpot, need endowment to send this when creating honeypot
+        (,uint initialEth) = getterDB.getHoneypotInfo(gameId);
+        uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
+
+        if(currentJackpotEth < initialEth.mul(10)) return true;
+
+        return false;
     }
 
     /**
@@ -312,8 +330,8 @@ contract GameManager is Proxied {
         // lastBet, topBettor, secondTopBettor, etc...
         calculateBettorStats(gameId, account, amountEth, supportedPlayer);
 
-        // check underperforming game
-        // extendTime(gameId);
+        // check underperforming game if one minut
+        extendTime(gameId);
 
         //Check if game has ended
         gameEND(gameId);
@@ -339,14 +357,6 @@ contract GameManager is Proxied {
                 gameManagerDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
     }   }   }
 
-
-    /**
-     * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
-     */
-    function checkPerformance(uint gameId) internal returns(bool) {
-        //get initial jackpot, need endowment to send this when creating honeypot
-        //gameManagerDB.getJackpotDetails(gameId)
-    }
 
     /**
      * @dev game comes to an end at time duration,continously check game time end
