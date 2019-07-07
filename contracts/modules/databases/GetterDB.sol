@@ -264,4 +264,32 @@ contract GetterDB is Proxied {
         );
   }
 
+  /**
+   * @dev Get players current Defense Level
+   */
+  function getDefenseLevel(uint256 gameId, address player) public view returns(uint){
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")));
+  }
+
+  /**
+   * @dev Get players current Defense Level
+   */
+  function getRandomNum(uint256 gameId, address player) public view returns(uint){
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")));
+  }
+
+  function getAttackValues(uint256 gameId) public view
+    returns
+    (uint256 lowPunch, uint256 lowKick, uint256 lowThunder,
+      uint256 hardPunch, uint256 hardKick, uint256 hardThunder, uint256 slash)
+  {
+    lowPunch = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowPunch")));
+    lowKick = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowKick")));
+    lowThunder = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowThunder")));
+    hardPunch = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardPunch")));
+    hardKick = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardKick")));
+    hardThunder = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardThunder")));
+    slash = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "slash")));
+  }
+
 }
