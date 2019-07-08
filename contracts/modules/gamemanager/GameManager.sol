@@ -309,6 +309,20 @@ contract GameManager is Proxied {
 
         //Check if game has ended
         gameEND(gameId);
+
+        /*
+        if (gameEND(gameId)){
+            // to do
+        }
+        */
+
+        /*
+        return : values (
+            Bool GameOver, bool finalizeGame, bytes lastAttack, 
+            bytes lastAttackType, uint time, address attacker, string corner
+            ) .
+        */
+
     }
 
     /**
