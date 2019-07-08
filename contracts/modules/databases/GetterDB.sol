@@ -47,11 +47,12 @@ contract GetterDB is Proxied {
     genericDB = _genericDB;
   }
 
-  function getHoneypotId(uint256 gameId)
+  function getHoneypotInfo(uint256 gameId)
     public view
-    onlyExistentGame(gameId)
+    returns(uint honeypotId, uint initialEth)
   {
-    genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+    honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+    initialEth = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
   }
 
   /**

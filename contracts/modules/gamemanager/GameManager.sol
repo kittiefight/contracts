@@ -26,9 +26,10 @@ pragma solidity ^0.5.5;
 import '../proxy/Proxied.sol';
 import "../databases/GameManagerDB.sol";
 import "../databases/GetterDB.sol";
+import "../databases/EndowmentDB.sol";
 import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
-// import "../endowment/Distribution.sol";
+import "../endowment/Distribution.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Forfeiter.sol";
 import "./Scheduler.sol";
@@ -49,7 +50,8 @@ contract GameManager is Proxied {
     GetterDB public getterDB;
     GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
-    // Distribution public distribution;
+    EndowmentDB public endowmentDB;
+    Distribution public distribution;
     ERC20Standard public kittieFightToken;
     Forfeiter public forfeiter;
     DateTime public timeContract;
@@ -69,9 +71,11 @@ contract GameManager is Proxied {
     uint256 public constant GAME_STATE_CANCELLED = 3;
     uint256 public constant GAME_STATE_FINISHED = 4;
 
+    //TODO: check to add more states (expired, claiming gains)
+
     modifier onlyKittyOwner(address account, uint kittieId) {
-        // require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
-        //TODO: ADD verify check here?
+        require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
+        //TODO: ADD verify civid ID check here?
         _;
     }
 
@@ -89,8 +93,9 @@ contract GameManager is Proxied {
         //TODO: Check what other contracts do we need
         gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
         getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
-        // endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
-        // distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
+        endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+        distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         timeContract = DateTime(proxy.getContract(CONTRACT_NAME_TIMECONTRACT));
@@ -115,9 +120,9 @@ contract GameManager is Proxied {
         onlyProxy
         onlyKittyOwner(player, kittieId)
     {
-        // TODO: call endowment function to send tokens, not using transfer
+        // TODO: endowment Team
         // contributeKTY expects gameId? I think they need to change that function
-        //endowment.contributeKFT(gameId, player, gameVarAndFee.getListingFee());
+        //endowmentFund.contributeKFT(player, gameVarAndFee.getListingFee());
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
         require((getterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
@@ -164,8 +169,10 @@ contract GameManager is Proxied {
         uint256 gameId = gameManagerDB.createGame(
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
-        uint honeyPotId = endowmentFund.generateHoneyPot();
-        gameManagerDB.setHoneypotId(gameId, honeyPotId);
+        (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
+        gameManagerDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
+
+        // TODO: endowment Team
         // endowmentFund.updateHoneyPotState(scheduled); //not yet implemented
         
         return gameId;
@@ -208,7 +215,8 @@ contract GameManager is Proxied {
                 gameState != GAME_STATE_FINISHED, "Unable to join game");
 
         //pay ticket fee
-        // endowmentFund.contributeKFT(gameId, supporter, gameVarAndFee.getTicketFee());
+        // TODO: endowment Team, only needs amount and supporter sending
+        // endowmentFund.contributeKFT(supporter, gameVarAndFee.getTicketFee());
         
         gameManagerDB.addBettor(gameId, supporter, 0, playerToSupport, bytes(''), 0);
 
@@ -261,9 +269,26 @@ contract GameManager is Proxied {
      */
     function extendTime(uint gameId) internal {
         // check if underperforming
-        if(!checkPerformance(gameId)){
-            // extend time
+        uint gameEndTime = getterDB.getEndTime(gameId);
+
+        //each time 1 minute before game ends
+        if(gameEndTime - now <= 60) {
+            if(!checkPerformance(gameId)){
+            gameManagerDB.extendEndTime(gameId);        }
         }
+    }
+
+    /**
+     * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
+     */
+    function checkPerformance(uint gameId) internal returns(bool) {
+        //get initial jackpot, need endowment to send this when creating honeypot
+        (,uint initialEth) = getterDB.getHoneypotInfo(gameId);
+        uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
+
+        if(currentJackpotEth < initialEth.mul(10)) return true;
+
+        return false;
     }
 
     /**
@@ -283,15 +308,16 @@ contract GameManager is Proxied {
         forfeiter.checkGameStatus(gameId, gameState);
 
         // check supporter does not change player midway
-
+        
         // if underperformed then call extendTime();
-        //  endowmentFund.contributeETH(gameId);
+        endowmentFund.contributeETH(gameId);
 
         // hits resolver
         hitsResolve.calculateCurrentRandom(gameId, randomNum);
 
         // transfer bettingFee to endowmentFund
-        // endowmentFund.contributeKFT(gameId, account, gameVarAndFee.getBettingFee());
+        // TODO: endowment Team, only needs amount and supporter sending
+        // endowmentFund.contributeKFT(account, gameVarAndFee.getBettingFee());
 
         // (bytes4 attackHash, uint attackType) = betting.bet(gameId, amountEth);
 
@@ -304,8 +330,8 @@ contract GameManager is Proxied {
         // lastBet, topBettor, secondTopBettor, etc...
         calculateBettorStats(gameId, account, amountEth, supportedPlayer);
 
-        // check underperforming game
-        // extendTime(gameId);
+        // check underperforming game if one minut
+        extendTime(gameId);
 
         //Check if game has ended
         gameEND(gameId);
@@ -347,14 +373,6 @@ contract GameManager is Proxied {
 
 
     /**
-     * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
-     */
-    function checkPerformance(uint gameId) internal returns(bool) {
-        //get initial jackpot
-        //gameManagerDB.getJackpotDetails(gameId)
-    }
-
-    /**
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEND(uint gameId) internal {
@@ -376,8 +394,8 @@ contract GameManager is Proxied {
     function finalize(uint gameId, uint randomNum) external {
         require(getterDB.getGameState(gameId) == GAME_STATE_FINISHED, "Game has not finished yet");
 
-        // (uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch,
-        // uint256 hardKick, uint256 hardThunder, uint256 slash) = hitsResolve.finalizeHitTypeValues(gameId, randomNum);
+        (uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch,
+        uint256 hardKick, uint256 hardThunder, uint256 slash) = hitsResolve.finalizeHitTypeValues(gameId, randomNum);
 
         // TODO: loop through each corners betting list, and add-multiply bet attack
         // with attackvalue retrieved from hitsResolver
