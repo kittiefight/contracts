@@ -35,19 +35,28 @@ contract KFProxy is
         address payable target = address(uint160(getContract(contractName)));
         //assert(target != address payable(0), 'Target contract is not registered'); //This check is already done in ContractManager
 
-        bytes20 sender = bytes20(msg.sender);
         uint256 len = payload.length;
-        bytes memory payloadExtra = new bytes(len+20);
-        uint256 i;
-        for(i = 0; i < len; i++){
-            payloadExtra[i] = payload[i];
-        }
-        for(i = 0; i < 20; i++){
-            payloadExtra[len+i] = sender[i];
+        bytes memory payloadWithSender = new bytes(len+20);
+
+        assembly {
+
+            //write msg.sender to the end of array
+            let ptr := add(payloadWithSender, add(len, /*32-12*/20)) //this may rewrite frist 32 bytes with length, so we need to update them later
+            mstore(ptr, caller)
+            mstore(payloadWithSender, add(len, 20)) //write payload length, which may be damaged on previous step
+
+            // find payload
+            calldatacopy(0x20, /*4+32*/ 36, 32)     //load position of second argument to 0x20 in arguments block
+            let payloadPos := add(mload(0x20), 4)   //add offset of arguments block
+
+            // copy payload
+            ptr := add(payloadWithSender, 32)               //skip header of the array
+            calldatacopy(ptr, add(payloadPos, 32), len)
+
         }
 
-        (bool success, bytes memory result) = target.call.value(msg.value)(payloadExtra);
-        require(success, 'Call failed');
+        (bool success, bytes memory result) = target.call.value(msg.value)(payloadWithSender);
+        require(success, 'Proxied call failed');
         return result;
     }
 
