@@ -117,24 +117,13 @@ contract Scheduler is Proxied {
         }
 
         uint256 gameCreationTime;
-        uint256 gameTimeSeperation = gameVarAndFee.getGameTimes(); //OR getRequiredTimeDistance() ?
+        uint256 gameTimeSeperation = gameVarAndFee.getGameTimes();
 
         for(uint256 i = 0; i < gameCount; i++){
-            //gameCreationTime = block.timestamp + (gameTimeSeperation * 1 seconds);
             gameCreationTime = block.timestamp.add(gameTimeSeperation.mul(1 seconds));
 
-            // check owners
+            // check kitty owners
             if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
-               (cryptoKitties.ownerOf(playerBlack[i].kittyId) != playerBlack[i].player)){
-
-                   addKittyToListAgain(playerRed[i].kittyId, playerRed[i].player);
-
-            } else if ((cryptoKitties.ownerOf(playerRed[i].kittyId) != playerRed[i].player) &&
-               (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
-
-                   addKittyToListAgain(playerBlack[i].kittyId, playerBlack[i].player);
-
-            } else if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
                (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
 
                 gameManager.createFight(
@@ -144,10 +133,16 @@ contract Scheduler is Proxied {
                     playerBlack[i].kittyId,
                     gameCreationTime
                     );
-            }
-        }
+                    
+            }else { // owner has changed. add kitty who's owner has not changed back to unmatched list
+                if (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player){
+                    addKittyToListAgain(playerBlack[i].kittyId, playerBlack[i].player);
+                }
+                if (cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player){
+                    addKittyToListAgain(playerRed[i].kittyId, playerRed[i].player);
+        }   }   }
 
-        delete kittyListShuffled; // reset
+        delete kittyListShuffled;
     }
 
     /**
@@ -157,7 +152,7 @@ contract Scheduler is Proxied {
 
         Kitty[] memory kittyListCopy = new Kitty[](kittyList.length);
         kittyListCopy = kittyList;
-        delete kittyList;   // reset
+        delete kittyList;
 
         uint256 pos;
         Kitty memory temp;
