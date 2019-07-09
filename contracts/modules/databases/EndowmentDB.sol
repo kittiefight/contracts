@@ -103,6 +103,11 @@ contract EndowmentDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")));
   }
 
+  function setHoneypotState( uint gameId, uint state ) external {
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+  }
+
+
   function getHoneypotTotalETH(
     uint gameId
   )
@@ -134,18 +139,15 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "status")), status);
   }
 
+
   function contibuteFunds(
-    address account,
-    uint gameId,
-    uint ethContribution,
-    uint ktyContribution
-  )
-    external
+    address account, uint gameId, uint ethContribution, uint ktyContribution
+  ) external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     onlyExistingProfile(account)
     onlyExistingHoneypot(gameId)
-    returns (bool)
-  {
+    returns (bool) {
+
     if (ethContribution > 0) {
       // add account into list of ETH participants of honeypot
       bytes32 ethContributionKey = keccak256(abi.encodePacked(gameId, TABLE_NAME_CONTRIBUTION_ETH));
@@ -162,23 +164,25 @@ contract EndowmentDB is Proxied {
       genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethBalanceKey, ethBalance.add(ethContribution));
       return true;
     }
-    if (ktyContribution > 0) {
-      // add account into list of KTY participants of honeypot
-      bytes32 ktyContributionKey = keccak256(abi.encodePacked(gameId, TABLE_NAME_CONTRIBUTION_KTY));
-      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, ktyContributionKey, account);
 
-      // set new balance of the honeypot of endowment fund
-      bytes32 ktyTotalKey = keccak256(abi.encodePacked(gameId, "ktyTotal"));
+    // removing gameid
+    if (ktyContribution > 0) {
+      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, TABLE_NAME_CONTRIBUTION_KTY, account);
+
+      // set new balance of the KTY in the endowment fund contract
+      bytes32 ktyTotalKey = keccak256(abi.encodePacked("ktyTotal"));
       uint ktyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalKey);
       genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalKey, ktyTotal.add(ktyContribution));
 
-      // now set account's balance within a game in endowment fund
-      bytes32 ktyBalanceKey = keccak256(abi.encodePacked(gameId, account, "ktyBalance"));
+      // now set account's balance within a game in the endowment fund contract
+      bytes32 ktyBalanceKey = keccak256(abi.encodePacked(account, "ktyBalance"));
       uint ktyBalance = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyBalanceKey);
       genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyBalanceKey, ktyBalance.add(ktyContribution));
       return true;
     }
+
   }
+  
 
   modifier onlyExistingHoneypot(uint gameId) {
     require(genericDB.doesNodeExist(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT, gameId), ERROR_DOES_NOT_EXIST);
