@@ -1,3 +1,8 @@
+// Only RarityCalculator.sol is deployed. Contracts in /algorithm/RarityCalculationDBs are not deployed.
+ // All functions and variables in contracts in the folder RarityCalculationDBs are internal. They are set as public just
+ // temporarily for truffle test purpose. (Truffle test cannot carry out internal functions)
+ // onlyContract modifier is temporarilly comment out until game manager contract is more defined
+// will add safe math later
 /**
  * @title RarityCalculator
  *
@@ -21,5 +26,52 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-contract RarityCalculator {
+import "../proxy/Proxied.sol";
+import "./RarityCalculationDBs/Rarity.sol";
+import "./RarityCalculationDBs/DefenseLevel.sol";
+
+/**
+ * @title This contract is responsible to calculate the defense level of a kitty 
+ * within 2 minutes before the game starts
+ * @author @ziweidream
+ */
+
+contract RarityCalculator is Proxied, Rarity, DefenseLevel {
+
+    /**
+     * @author @ziweidream
+     * @notice calculate the defense level of a kitty
+     * @dev a kitty's defense level is an integer between 1 and 6
+     * @return the kitty's defense level 
+     */
+    function getDefenseLevel(uint kittieId) 
+      public 
+      //onlyContract(CONTRACT_NAME_GAMMANAGER) 
+      returns (uint) {
+      getDominantGeneBinary(kittieId);
+      binaryToKai(kittieId);
+      kaiToCattribute(kittieId);
+
+      uint rarity = calculateRarity(kittieId);
+
+      uint defenseLevel;
+
+      if (kittieId < 10000) {
+          defenseLevel = 6;
+      } else if (rarity < defenseLevelLimit.level5Limit) {
+          defenseLevel = 6;
+      } else if (rarity >= defenseLevelLimit.level5Limit && rarity < defenseLevelLimit.level4Limit) {
+          defenseLevel = 5;
+      } else if (rarity >= defenseLevelLimit.level4Limit && rarity < defenseLevelLimit.level3Limit) {
+          defenseLevel = 4;
+      } else if (rarity >= defenseLevelLimit.level3Limit && rarity < defenseLevelLimit.level2Limit) {
+          defenseLevel = 3;
+      } else if (rarity >= defenseLevelLimit.level2Limit && rarity < defenseLevelLimit.level1Limit) {
+          defenseLevel = 2;
+      } else if (rarity >= defenseLevelLimit.level1Limit) {
+          defenseLevel = 1;
+      }
+
+      return defenseLevel;
+    }
 }
