@@ -68,6 +68,16 @@ contract GetterDB is Proxied {
     );
   }
 
+   /**
+   * @dev Updates the total amount of bet in the given game and supported player
+   */
+  function getTotalBet(uint256 gameId, address supportedPlayer) public view returns(uint) {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
+    );
+  }
+
   /**
    * @dev Returns the total amount of bet of the given bettor
    * and the player supported by that bettor in the game given.
@@ -83,6 +93,20 @@ contract GetterDB is Proxied {
     supportedPlayer = genericDB.getAddressStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
+    );
+  }
+
+  /**
+   * @dev Returns the total amount of bet of the given bettor
+   * and the player supported by that bettor in the game given.
+   */
+  function getWinner(uint256 gameId)
+    public view
+    returns (address)
+  {
+    return genericDB.getAddressStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, "winner"))
     );
   }
 
@@ -204,6 +228,7 @@ contract GetterDB is Proxied {
       keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR))
     );
   }
+
 
   /**
    * @dev get topBettor

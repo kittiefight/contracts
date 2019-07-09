@@ -281,7 +281,7 @@ contract GameManager is Proxied {
     /**
      * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
      */
-    function checkPerformance(uint gameId) internal returns(bool) {
+    function checkPerformance(uint gameId) internal view returns(bool) {
         //get initial jackpot, need endowment to send this when creating honeypot
         (,uint initialEth) = getterDB.getHoneypotInfo(gameId);
         uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
@@ -331,7 +331,7 @@ contract GameManager is Proxied {
         // update opposite corner kittie defense level if changed
 
         //Update bettor's total bet
-        gameManagerDB.updateBettor(gameId, account, amountEth);
+        gameManagerDB.updateBettor(gameId, account, amountEth, supportedPlayer);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...

@@ -18,8 +18,8 @@ pragma solidity ^0.5.5;
 import '../../GameVarAndFee.sol';
 import '../proxy/Proxied.sol';
 import '../../libs/SafeMath.sol';
-import '../databases/GameManagerDB.sol';
-// import "../databases/EndowmentDB.sol";
+import '../databases/GetterDB.sol';
+import "../databases/EndowmentDB.sol";
 
 /**
  * @title Distribution Contract
@@ -33,8 +33,8 @@ contract Distribution is Proxied {
     using SafeMath for uint256;
 
     GameVarAndFee public gameVarAndFee;
-    GameManagerDB public gameManagerDB;
-    // EndowmentDB public endowmentDB;
+    GetterDB public getterDB;
+    EndowmentDB public endowmentDB;
 
     /**
    * @dev Initialize contracts used
@@ -42,75 +42,68 @@ contract Distribution is Proxied {
    */
     function initialize() external onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
-        // endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+        getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
     }
 
     /**
      * @notice Calculates amount of Eth the winner can claim
      */
-    function getWinnerShare(uint gameId, address claimer) public view returns(uint winningsETH, uint winningsKTY) {
+    function getWinnerShare(uint gameId, address claimer) public view returns(uint256 winningsETH, uint256 winningsKTY) {
+        //TODO: check honeypot state to see if we can allow claiming
+        //require(endowmentDB.getHoneypotState(gameId) == 'Claiming')
 
-        //address winningSide = gameManagerDB.getWinner(gameId);
-        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, claimer);
+        address winningSide = getterDB.getWinner(gameId);
+        (uint256 betAmount, address supportedPlayer) = getterDB.getBettor(gameId, claimer);
 
         // Is the winning player or part of the bettors of the winning corner
-        //require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
+        require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
 
         uint256[5] memory rates = gameVarAndFee.getDistributionRates();
+ 
+        uint8 winningCategory = checkWinnerCategory(gameId, claimer, winningSide, supportedPlayer);
 
-        //TEMPORAL
-        address winningSide = address(0);
-        address supportedPlayer = address(0);
+        uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
+        uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
+        
+        winningsETH = (totalEthFunds.mul(rates[winningCategory])).div(100);
+        winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
 
-        uint256 winningCategory = checkWinnerCategory(gameId, claimer, winningSide, supportedPlayer);
+        //Other bettors winnings
+        if (winningCategory == 3){
+            // uint amountSupporters = getterDB.getSupporters(gameId, winningSide);
 
-        // uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
-        // uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
+            //get other supporters totalBets for winning side
+            uint256 totalBets = getterDB.getTotalBet(gameId, winningSide);
 
-        uint256 totalEthFunds = 100;
-        uint256 totalKTYFunds = 25000;
-
-        if (winningCategory < 4) {
-            if (winningCategory == 3){
-                //get other supporters count
-
-                //get other supporters totalBets
-
-                // TODO: distribute the 20% of the jackpot according to %
-                // depending of each bettor's bet and total bets of other bettors
-                //return ((totalEthFunds.mul(rates[winningCategory])).div(100)).div(otherBettorsCount);
-            }
-            winningsETH = (totalEthFunds.mul(rates[winningCategory])).div(100);
-            winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
+            // Distribute the 20% of the jackpot according to amount that supporter bet in game
+            // This is to avoid a bettor for claiming winings if he/she did not bet
+            winningsETH = winningsETH.mul(betAmount).div(totalBets);
+            winningsKTY = winningsKTY.mul(betAmount).div(totalBets);
         }
-
-        return (0, 0);
     }
 
     function checkWinnerCategory
     (
         uint gameId, address claimer,
-        address winner,  address supportedPlayer
+        address winner, address supportedPlayer
     )
-        internal pure
-        returns(uint winningGroup)
+        public view
+        returns(uint8 winningGroup)
     {
         // Winning Player
-        // if (claimer == winner) return 0;
+        if (winner == claimer) return 0;
 
         // Winning Top Bettor
-        // if (gameManagerDB.getTopBettor(gameId) == claimer) return 1;
+        (address topBettor,) = getterDB.getTopBettor(gameId, supportedPlayer);
+        if (topBettor == claimer) return 1;
 
         // Winning SecondTop Bettor
-        // if (gameManagerDB.getSecondTopBettor(gameId) == claimer) return 2;
+        (address secondTopBettor,) = getterDB.getSecondTopBettor(gameId, supportedPlayer);
+        if (secondTopBettor == claimer) return 2;
 
         // Winning Other Bettors List
-        //(,address supportedPlayer) = gameManagerDB.getBettor(gameId, claimer);
-        // if (winner == supportedPlayer) return 3;
-
-        // Else
-        return 100;
+        if (winner == supportedPlayer) return 3;
     }
 
 

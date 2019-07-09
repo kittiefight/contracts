@@ -103,9 +103,9 @@ contract GameManagerDB is Proxied {
     // TODO: check if bettor is the same as one of the players
 
     // If bettor does not exist in the game given, add her to the game.
-    if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
+    if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, supportedPlayer, TABLE_NAME_BETTOR)), bettor)) {
       // Add the bettor to the bettor table.
-      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor);
+      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, supportedPlayer, TABLE_NAME_BETTOR)), bettor);
       // Save the supported player for this bettor
       genericDB.setAddressStorage(
         CONTRACT_NAME_GAMEMANAGER_DB,
@@ -136,7 +136,7 @@ contract GameManagerDB is Proxied {
   /**
    * @dev *
    */
-  function updateBettor(uint256 gameId, address bettor, uint256 betAmount)
+  function updateBettor(uint256 gameId, address bettor, uint256 betAmount, address supportedPlayer)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
@@ -147,10 +147,12 @@ contract GameManagerDB is Proxied {
     require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor));
 
     // Get the supported player for this bettor
-    address supportedPlayer = genericDB.getAddressStorage(
+    address _supportedPlayer = genericDB.getAddressStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
     );
+
+    require(_supportedPlayer == supportedPlayer, "You cannot bet for the opposite player");
 
     if (betAmount > 0) {
       // Update bettor's total bet amount
@@ -300,7 +302,7 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")), randomNum);
 
   }
-  
+
   /**
    * @dev ?
    */
