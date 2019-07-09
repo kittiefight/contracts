@@ -62,7 +62,7 @@ contract Betting is Proxied {
     uint256[] blockedAttacksScoredRedCorner;
     uint256[] directAttacksScoredRedCorner;
 
-    // LastBet is stored in GameManagerDB already, so the four variables below are necessary any more.
+    // LastBet is stored in GameManagerDB already, so the four variables below are not necessary any more.
     // uint256 lastEthBetAmountBlackCorner;
     //uint256 lastAttackTimeBlackCorner;
     //uint256 lastEthBetAmountRedCorner;
@@ -133,7 +133,7 @@ contract Betting is Proxied {
         uint256 prevBetAmount = getterDB.getLastBet(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (lastBetAmount <= prevBetAmount) {
-            uint256 diceLowValues = randomGen(_seed);
+            uint256 diceLowValues = randomGen(_randomNum);
             if (diceLowValues <= 33) {
                 attackType = lowAttacksColumn[0];
             } else if (diceLowValues <= 66 && diceLowValues > 33) {
@@ -143,7 +143,7 @@ contract Betting is Proxied {
             }
         } else if (lastBetAmount > prevBetAmount) { 
              // higher ether than previous bet? one attack is chosen randomly from highAttacksColumn
-            uint256 diceHardValues = randomGen(_seed);
+            uint256 diceHardValues = randomGen(_randomNum);
             if (diceHardValues <= 25) {
                 attackType = hardAttacksColumn[0];
             } else if (diceHardValues > 25 && diceHardValues <= 50) {
