@@ -218,7 +218,7 @@ contract GameManager is Proxied {
         // TODO: endowment Team, only needs amount and supporter sending
         // endowmentFund.contributeKFT(supporter, gameVarAndFee.getTicketFee());
         
-        gameManagerDB.addBettor(gameId, supporter, 0, playerToSupport, bytes(''), 0);
+        gameManagerDB.addBettor(gameId, supporter, playerToSupport);
 
         if (gameState == 1) require(forfeiter.checkGameStatus(gameId, gameState));
 
@@ -297,10 +297,14 @@ contract GameManager is Proxied {
      * @author Karl
      * @author Vikrammandal
      */
-    function bet (
+    function bet
+    (
         uint gameId, address account, uint amountEth,
         address supportedPlayer, uint randomNum
-    ) external onlyProxy {
+    )
+        external
+        onlyProxy
+    {
         uint gameState = getterDB.getGameState(gameId);
         
         require(gameState == GAME_STATE_STARTED, "Game has not started yet");
@@ -309,7 +313,7 @@ contract GameManager is Proxied {
 
         // check supporter does not change player midway
         
-        // if underperformed then call extendTime();
+        //Send bet to endowment
         endowmentFund.contributeETH(gameId);
 
         // hits resolver
@@ -319,12 +323,15 @@ contract GameManager is Proxied {
         // TODO: endowment Team, only needs amount and supporter sending
         // endowmentFund.contributeKFT(account, gameVarAndFee.getBettingFee());
 
-        // (bytes4 attackHash, uint attackType) = betting.bet(gameId, amountEth);
+        // (uint defenseLevel) = betting.bet(gameId, amountEth, supportedPlayer);
 
-        // TODO: store other variables in bet (attack hash, type)
-        //store bet info in DB
+        // if (getterDB.getDefenseLevel(gameId, supportedPlayer) != defenseLevel)
+        //     gameManagerDB.updateDefenseLevel(gameId, supportedPlayer, defenseLevel);
 
-        //gameManagerDB.addBettor(gameId, account, amountEth, supportedPlayer, attackHash, attackType);
+        // update opposite corner kittie defense level if changed
+
+        //Update bettor's total bet
+        gameManagerDB.updateBettor(gameId, account, amountEth);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
@@ -335,12 +342,6 @@ contract GameManager is Proxied {
 
         //Check if game has ended
         gameEND(gameId);
-
-        /*
-        if (gameEND(gameId)){
-            // to do
-        }
-        */
 
         /*
         return : values (

@@ -95,15 +95,13 @@ contract GameManagerDB is Proxied {
    * @dev Adds a bettor to the given game iff the game exists.
    * If the bettor already exists in the game, updates her bet.
    */
-  function addBettor
-  (
-    uint256 gameId, address bettor, uint256 betAmount,
-    address supportedPlayer, bytes calldata attackHash, uint attackType
-  )
+  function addBettor(uint256 gameId, address bettor, address supportedPlayer)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
+    // TODO: check if bettor is the same as one of the players
+
     // If bettor does not exist in the game given, add her to the game.
     if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
       // Add the bettor to the bettor table.
@@ -117,37 +115,50 @@ contract GameManagerDB is Proxied {
       // And increase the number of supporters for that player
       incrementSupporters(gameId, supportedPlayer);
     }
+  }
+
+  /**
+   * @dev Increments the number of supporters for the given player
+   */
+  function incrementSupporters(uint256 gameId, address player) internal {
+    // Increment number of supporters by one
+    uint256 supporters = genericDB.getUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, player, "supporters"))
+    );
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, player, "supporters")),
+      supporters.add(1)
+    );
+  }
+
+  /**
+   * @dev *
+   */
+  function updateBettor(uint256 gameId, address bettor, uint256 betAmount)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    // TODO: check if bettor is the same as one of the players
+
+    // Check if bettor does not exist in the game given, add her to the game.
+    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor));
 
     // Get the supported player for this bettor
-    address _supportedPlayer = genericDB.getAddressStorage(
+    address supportedPlayer = genericDB.getAddressStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
     );
 
-    // Check if the supported player is same in case of additional bet
-    require(_supportedPlayer != supportedPlayer, ERROR_CANNOT_SUPPORT_BOTH);
-
     if (betAmount > 0) {
-      // Set attack hash and type for every bet
-      genericDB.setBytesStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
-        keccak256(abi.encodePacked(gameId, bettor, "attackHash")),
-        attackHash
-      );
-
-      genericDB.setUintStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
-        keccak256(abi.encodePacked(gameId, bettor, "attackType")),
-        attackType
-      );
-
       // Update bettor's total bet amount
       updateBet(gameId, bettor, betAmount);
 
-      // Update total bet amount in the game
-      updateTotalBet(gameId, betAmount);
-      
-    }    
+      // Update total bet amount in the game for a given corner
+      updateTotalBet(gameId, betAmount, supportedPlayer);
+    }
   }
 
   /**
@@ -166,23 +177,23 @@ contract GameManagerDB is Proxied {
   }
 
   /**
-   * @dev Updates the total amount of bet in the given game by the given amount.
+   * @dev Updates the total amount of bet in the given game and supported player
    */
-  function updateTotalBet(uint256 gameId, uint256 amount) internal {
+  function updateTotalBet(uint256 gameId, uint256 amount, address supportedPlayer) internal {
     uint256 prevAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, "totalBetAmount"))
+      keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
     );
 
     genericDB.setUintStorage(
       CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, "totalBetAmount")),
+      keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount")),
       prevAmount.add(amount)
     );
   }
 
   /**
-   * @dev Updates the total amount of bet in the given game by the given amount.
+   * @dev Adds 1 minute to the game end time
    */
   function extendEndTime(uint256 gameId)
     external
@@ -289,6 +300,18 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")), randomNum);
 
   }
+  
+  /**
+   * @dev ?
+   */
+  function updateDefenseLevel(uint256 gameId, address player, uint defenseLevel)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
+
+  }
 
   /**
    * @dev Pressed start button
@@ -344,21 +367,7 @@ contract GameManagerDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), initialEth);
   }
 
-    /**
-   * @dev Increments the number of supporters for the given player
-   */
-  function incrementSupporters(uint256 gameId, address player) internal {
-    // Increment number of supporters by one
-    uint256 supporters = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, player, "supporters"))
-    );
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
-      keccak256(abi.encodePacked(gameId, player, "supporters")),
-      supporters.add(1)
-    );
-  }
+  
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);

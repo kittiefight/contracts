@@ -196,6 +196,16 @@ contract GetterDB is Proxied {
   }
 
   /**
+   * @dev get all bettors for a given game id
+   */
+  function getBettors(uint gameId) public view returns (address[] memory) {
+    return genericDB.getAllAddr(
+      CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR))
+    );
+  }
+
+  /**
    * @dev get topBettor
    */
   function getTopBettor(uint256 _gameId, address _supportedPlayer)
