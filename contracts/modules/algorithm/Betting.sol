@@ -108,7 +108,7 @@ contract Betting is Proxied {
         fightMap[hashSlash] = "slash";
     }
 
-    function startGame(uint256 _randomRed, uint256 _randomBlack) public returns (uint gameStarted) {
+    function startGame(uint256 _randomRed, uint256 _randomBlack) public {
         // simple random number combination, hashed with Fight moves string names
         // sequentially generate and then return list of 7 fight moves in key-value hash map
         setFightMap(_randomRed, _randomBlack);
