@@ -103,9 +103,9 @@ contract GameManagerDB is Proxied {
     // TODO: check if bettor is the same as one of the players
 
     // If bettor does not exist in the game given, add her to the game.
-    if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, supportedPlayer, TABLE_NAME_BETTOR)), bettor)) {
+    if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
       // Add the bettor to the bettor table.
-      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, supportedPlayer, TABLE_NAME_BETTOR)), bettor);
+      genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor);
       // Save the supported player for this bettor
       genericDB.setAddressStorage(
         CONTRACT_NAME_GAMEMANAGER_DB,
@@ -144,7 +144,9 @@ contract GameManagerDB is Proxied {
     // TODO: check if bettor is the same as one of the players
 
     // Check if bettor does not exist in the game given, add her to the game.
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor));
+    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GAMEMANAGER_DB,
+      keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor),
+      "Bettor does not exist. Call participate first");
 
     // Get the supported player for this bettor
     address _supportedPlayer = genericDB.getAddressStorage(
@@ -197,13 +199,12 @@ contract GameManagerDB is Proxied {
   /**
    * @dev Adds 1 minute to the game end time
    */
-  function extendEndTime(uint256 gameId)
+  function updateEndTime(uint256 gameId, uint newTime)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
-    uint currentEndTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
-    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")), currentEndTime.add(60));
+    genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")), newTime);
   }
 
    /**
@@ -367,9 +368,7 @@ contract GameManagerDB is Proxied {
   {
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
     genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), initialEth);
-  }
-
-  
+  }  
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);

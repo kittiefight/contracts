@@ -273,20 +273,20 @@ contract GameManager is Proxied {
 
         //each time 1 minute before game ends
         if(gameEndTime - now <= 60) {
-            if(!checkPerformance(gameId)){
-            gameManagerDB.extendEndTime(gameId);        }
+            if(!checkPerformance(gameId)) gameManagerDB.updateEndTime(gameId, gameEndTime.add(60));
         }
     }
 
     /**
-     * @dev checks to see if current jackpot is at least 10 times (10x) the amount of funds originally placed in jackpot
+     * @dev checks to see if current jackpot is at least 10 times (10x)
+     *  the amount of funds originally placed in jackpot
      */
     function checkPerformance(uint gameId) internal view returns(bool) {
         //get initial jackpot, need endowment to send this when creating honeypot
         (,uint initialEth) = getterDB.getHoneypotInfo(gameId);
         uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
-        if(currentJackpotEth < initialEth.mul(10)) return true;
+        if(currentJackpotEth > initialEth.mul(10)) return true;
 
         return false;
     }
