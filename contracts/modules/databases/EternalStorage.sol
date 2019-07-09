@@ -13,6 +13,7 @@
 pragma solidity ^0.5.5;
 
 import "../../libs/LinkedListLib.sol";
+import "../../libs/LinkedListAddrLib.sol";
 
 /**
  * @title EternalStorage
@@ -26,4 +27,5 @@ contract EternalStorage {
   mapping(bytes32 => bool) internal boolStorage;
   mapping(bytes32 => int256) internal intStorage;
   mapping(bytes32 => LinkedListLib.LinkedList) internal linkedListStorage;
+  mapping(bytes32 => LinkedListAddrLib.LinkedList) internal linkedListAddrStorage;
 }

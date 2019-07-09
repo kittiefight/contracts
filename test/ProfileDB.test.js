@@ -1,19 +1,21 @@
-const GenericDB = artifacts.require('GenericDB');
-const ProfileDB = artifacts.require('ProfileDB');
-const Proxy = artifacts.require('KFProxy');
 const BigNumber = require('bignumber.js');
-const CONTRACT_NAME = 'ProfileDB';
-const DB_TABLE_NAME = 'ProfileTable';
-
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
   .should();
 
+const GenericDB = artifacts.require('GenericDB');
+const ProfileDB = artifacts.require('ProfileDB');
+const Proxy = artifacts.require('KFProxy');
+
+const CONTRACT_NAME = 'ProfileDB';
+const TABLE_NAME_PROFILE = 'ProfileTable';
+const TABLE_NAME_KITTIE = 'KittieTable';
+
   
 contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress]) => {
-  let userId = 12324353;
+  let userId = user1;
 
   beforeEach(async () => {
     this.genericDB = await GenericDB.new();
@@ -25,6 +27,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     await this.proxy.addContract('Register', creator);
     await this.genericDB.setProxy(this.proxy.address);
     await this.profileDB.setProxy(this.proxy.address);
+    await this.profileDB.setGenericDB(this.genericDB.address);
   });
 
   describe('ProfileDB::Authority', () => {
@@ -45,49 +48,36 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     });
 
     it('does not allow unauthorized address to access attribute setter functions', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+
       await this.profileDB.create(userId, {from: unauthorizedUser}).should.be.rejected;
 
       // Create a user with authorized address to test authorization for setter functions
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
-      (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
 
-      await this.profileDB.setLoginStatus(userId, true, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setAccountAttributes(userId, user1, web3.utils.utf8ToHex('asadad'), web3.utils.utf8ToHex('asdad'), {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, {from: unauthorizedUser}).should.be.rejected;
       await this.profileDB.setFeeAttributes(userId, 1, 2, 3, false, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setTokenEconomyAttributes(userId, 1, 2, true, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setKittieAttributes(userId, 1, 2, 3, 'test', 'dead', {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setSuperDAOTokens(userId, 2, true, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setKittieFightTokens(userId, 1, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.addKittie(userId, 1, 2, 'dead', {from: unauthorizedUser}).should.be.rejected;
+
+      // First add a kittie to test update and remove functions
+      await this.profileDB.addKittie(userId, 1, 2, 'dead').should.be.fulfilled;
+      await this.profileDB.removeKittie(userId, 1, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setKittieAttributes(userId, 1, 2, 'dead', {from: unauthorizedUser}).should.be.rejected;
     });
   });
 
   describe('ProfileDB::Attributes', () => {
     it('creates a profile', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
-      (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
-    });
-
-    it('sets/gets account attributes', async () => {
-      let genes = web3.utils.utf8ToHex('0x0101110110100101101011010');
-      let description = web3.utils.utf8ToHex('%$*_&random description which does not make sense at all...');
-      // First create a user in DB
-      await this.profileDB.create(userId).should.be.fulfilled;
-      // Set account attributes
-      await this.profileDB.setAccountAttributes(
-        userId,
-        user1,
-        genes,
-        description
-      ).should.be.fulfilled;
-      // Get attributes back for the given user and compare them with the actual values
-      let attrOwner = await this.genericDB.getAddressStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'ownerAddress'));
-      let attrGenes = await this.genericDB.getBytesStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'genes'));
-      let attrDescription = await this.genericDB.getBytesStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'description'));
-      attrOwner.should.be.equal(user1);
-      attrGenes.should.be.equal(genes);
-      attrDescription.should.be.equal(description);
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
     });
 
     it('sets/gets gaming attributes', async () => {
@@ -179,110 +169,81 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
       attrIsPaid.should.be.equal(isPaid);
     });
 
-    it('sets/gets token economy attributes', async () => {
-      let kittieFightTokens = 1000;
+    it('sets/gets DAO tokens', async () => {
       let superDAOTokens = 5000;
       let isStakingSuperDAO = true;
       // First create a user in DB
       await this.profileDB.create(userId).should.be.fulfilled;
       // Set token economy attributes
-      await this.profileDB.setTokenEconomyAttributes(
+      await this.profileDB.setSuperDAOTokens(
         userId,
-        kittieFightTokens,
         superDAOTokens,
         isStakingSuperDAO
       ).should.be.fulfilled;
       
-      let attrKittieFightTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieFightTokens'));
       let attrSuperDAOTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'superDAOTokens'));
       let attrIsStakingSuperDAO = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isStakingSuperDAO'));
 
-      attrKittieFightTokens.toNumber().should.be.equal(kittieFightTokens);
       attrSuperDAOTokens.toNumber().should.be.equal(superDAOTokens);
       attrIsStakingSuperDAO.should.be.equal(isStakingSuperDAO);
     });
 
-    it('sets/gets kittie attributes', async () => {
+    it('sets/gets Kittie Fight tokens', async () => {
+      let kittieFightTokens = 1000;
+      // First create a user in DB
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Set token economy attributes
+      await this.profileDB.setKittieFightTokens(
+        userId,
+        kittieFightTokens
+      ).should.be.fulfilled;
+      
+      let attrKittieFightTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieFightTokens'));
+      attrKittieFightTokens.toNumber().should.be.equal(kittieFightTokens);
+    });
+
+    it('adds/updates/removes kittie and attributes', async () => {
       let kittieId = 1000;
-      let kittieHash = 5000;
       let deadAt = 1134567945;
-      let kittieReferalHash = 'asdasdkjifhfamdbv';
       let kittieStatus = 'dead';
       // First create a user in DB
       await this.profileDB.create(userId).should.be.fulfilled;
-      // Set kittie attributes
-      await this.profileDB.setKittieAttributes(
-        userId,
-        kittieId,
-        kittieHash,
-        deadAt,
-        kittieReferalHash,
-        kittieStatus
-      ).should.be.fulfilled;
-      
-      let attrKittieId = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieId'));
-      let attrKittieHash = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieHash'));
-      let attrDeadAt = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'deadAt'));
-      let attrKittieReferalHash = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieReferalHash'));
-      let attrKittieStatus = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieStatus'));
 
-      attrKittieId.toNumber().should.be.equal(kittieId);
-      attrKittieHash.toNumber().should.be.equal(kittieHash);
+      // Add a kittie under this account
+      await this.profileDB.addKittie(userId, kittieId, deadAt, kittieStatus).should.be.fulfilled;
+      // Check if the kittie is added and its attributes\
+      let doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, web3.utils.soliditySha3(userId, TABLE_NAME_KITTIE), kittieId);
+      let attrDeadAt = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, kittieId, 'deadAt'));
+      let attrKittieStatus = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, kittieId, 'kittieStatus'));
+      doesExist.should.be.true;
       attrDeadAt.toNumber().should.be.equal(deadAt);
-      attrKittieReferalHash.should.be.equal(kittieReferalHash);
       attrKittieStatus.should.be.equal(kittieStatus);
-    });
 
-    it('sets/gets login status', async () => {
-      let isLoggedIn = true;
-      // First create a user in DB
-      await this.profileDB.create(userId).should.be.fulfilled;
       // Set kittie attributes
-      await this.profileDB.setLoginStatus(userId, isLoggedIn).should.be.fulfilled;
-      // Get login status back
-      let attrIsLoggedIn = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isLoggedIn'));
+      await this.profileDB.setKittieAttributes(userId, kittieId, deadAt = 1134567995, kittieStatus = 'alive').should.be.fulfilled;
+      // Check the attributes
+      attrDeadAt = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, kittieId, 'deadAt'));
+      attrKittieStatus = await this.genericDB.getStringStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, kittieId, 'kittieStatus'));
+      attrDeadAt.toNumber().should.be.equal(deadAt);
+      attrKittieStatus.should.be.equal(kittieStatus);
 
-      attrIsLoggedIn.should.be.equal(isLoggedIn);
-    });
-
-    it('can iterate all profiles', async () => {
-      let userIds = [1234, 45667, 34456, 342452, 123178];
-
-      // First create some profiles in DB
-      for (let i = 0; i < userIds.length; i++) {
-        await this.profileDB.create(userIds[i]).should.be.fulfilled;
-      }
-
-      let totalUsers = (await this.genericDB.getLinkedListSize(CONTRACT_NAME, DB_TABLE_NAME)).toNumber();
-      totalUsers.should.be.equal(userIds.length);
-
-      let profile = 0; // Start from the HEAD. HEAD is always 0.
-      let index = totalUsers - 1;
-      do {
-        let ret = await this.genericDB.getAdjacent(CONTRACT_NAME, DB_TABLE_NAME, profile, true);
-        // ret value includes direction and node id. Ex => {'0': true, '1': 1234}
-        profile = ret['1'].toNumber();
-
-        // Means that we reach the end of the list
-        if (!profile) break;
-        // The first item in TRUE direction is the last item pushed => LIFO (stack)
-        profile.should.be.equal(userIds[index]);
-        index--;
-      } while (profile)
+      // Remove kittie
+      await this.profileDB.removeKittie(userId, kittieId).should.be.fulfilled;
+      // Check if the kittie is removed and the number of kitties decremented by one
+      doesExist = await this.genericDB.doesNodeExist(CONTRACT_NAME, web3.utils.soliditySha3(userId, TABLE_NAME_KITTIE), kittieId);
+      doesExist.should.be.false;
     });
   });
 
   describe('ProfileDB::Attributes::Negatives', () => {
     it('does not allow to create duplicate profiles', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
-      (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
 
       await this.profileDB.create(userId).should.be.rejected;
-    });
-
-    it('does not allow to set an attribute for a non-existent profile', async () => {
-      await this.profileDB.setLoginStatus(userId, true).should.be.rejected;
     });
   });
 });
