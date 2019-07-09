@@ -19,7 +19,6 @@
 
 pragma solidity ^0.5.5;
 
-//import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "../databases/EndowmentDB.sol";
 import "../../GameVarAndFee.sol";
@@ -28,10 +27,9 @@ import "../../interfaces/ERC20Standard.sol";
 /**
  * @title EndowmentFund
  * @dev Responsible for : manage funds
- * @author @vikrammndal @wafflemakr)
+ * @author @vikrammndal @wafflemakr
  */
 
-//contract EndowmentFund is Proxied {
 contract EndowmentFund is Guard {
     using SafeMath for uint256;
 
@@ -76,13 +74,6 @@ contract EndowmentFund is Guard {
         uint ethTotal;
     }
 
-    /**
-    * @dev updateHoneyPotState called from?
-    */
-    function updateHoneyPotState(uint256 potId, uint state) private {
-        //
-    }
-
     function generateHoneyPot() external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
         require(endowmentDB.allocateKTY(ktyAllocated));
@@ -109,6 +100,15 @@ contract EndowmentFund is Guard {
     return (potId, ethAllocated);
     }
 
+    /**
+    * @dev updateHoneyPotState called from?
+    */
+    function updateHoneyPotState(uint256 _potId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
+        endowmentDB.setHoneypotState(_potId, _state);
+    }
+
+
+
 
     struct KittieTokenTx {
         address sender;
@@ -121,8 +121,9 @@ contract EndowmentFund is Guard {
      * @dev msg.sender = Guard Contract -> getOriginalSender()
      *
      */
-    function contributeKFT(address _sender, uint _value) private onlyBettor() {
-        require(endowmentDB.contibuteFunds(_sender, 0, 0, _value));
+    function contributeKFT() external payable {
+        address sender = getOriginalSender();
+        require(endowmentDB.contibuteFunds(sender, 0, 0, msg.value));
     }
 
     /**
@@ -131,7 +132,8 @@ contract EndowmentFund is Guard {
      */
     function contributeETH(uint _gameId) external payable {
         // (address account, uint gameId, uint ethContribution, uint ktyContribution)
-        require(endowmentDB.contibuteFunds(msg.sender, _gameId, msg.value, 0));
+        address sender = getOriginalSender();
+        require(endowmentDB.contibuteFunds(sender, _gameId, msg.value, 0));
     }
 
     /** @notice  Returns a fresh unique identifier.
@@ -152,7 +154,9 @@ contract EndowmentFund is Guard {
         ));
     }
 
-/*
+    /*
+    // find out the purpose ?
+
     function tokenFallback(address _from, uint _value, bytes calldata _data) external {
         /* tokenTx variable is analogue of msg variable of Ether transaction:
         *  tokenTx.sender is person who initiated this token transaction   (analogue of msg.sender)
