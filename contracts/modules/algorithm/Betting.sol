@@ -181,7 +181,6 @@ contract Betting is Proxied {
       lastBet5 = bets[_gameId][_supportedPlayer][arrLength - 1];
   }
 
-
     function startGame(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack) public {
         // simple random number combination, hashed with Fight moves string names
         // sequentially generate and then return list of 7 fight moves in key-value hash map
@@ -189,22 +188,17 @@ contract Betting is Proxied {
 
     }
 
-    function storeRandomSeed(uint256 _gameID, uint256 _playerBet) internal returns (uint256 currentRandom) {
-        // calls CalculateCurrentRandom() in hitResolver to store and calculate currentRandom
-        hitsResolve.calculateCurrentRandom(_gameID, _playerBet);
-    }
-
     function getAttackType(
         uint256 _gameId, 
         address _supportedPlayer, 
+        uint256 _lastBetAmount,
         uint256 _randomNum) 
         public
-        payable 
         returns (
             string memory attackType,
             uint256 index
         ){
-        uint256 lastBetAmount = msg.value;
+        uint256 lastBetAmount = _lastBetAmount;
         (uint256 prevBetAmount,) = getterDB.getLastBet(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (lastBetAmount <= prevBetAmount) {
@@ -259,7 +253,6 @@ contract Betting is Proxied {
         address _opponentPlayer
         ) 
         public
-        payable 
         returns (uint)
         {
         uint256 defenseLevel = getterDB.getDefenseLevel(_gameId, _opponentPlayer);
@@ -274,11 +267,11 @@ contract Betting is Proxied {
 
     function Bet(
         uint256 _gameId, 
+        uint256 _lastBetAmount,
         address _supportedPlayer, 
         address _opponentPlayer,
         uint256 _randomNum) 
         public 
-        payable 
         returns (
             string memory attackType,
             uint256 index,
@@ -286,8 +279,8 @@ contract Betting is Proxied {
             uint256 defenseLevelOpponent
         )
     {   
-        fillBets(_gameId, _supportedPlayer, msg.value);
-        (attackType, index) = getAttackType(_gameId, _supportedPlayer, _randomNum);
+        fillBets(_gameId, _supportedPlayer, _lastBetAmount);
+        (attackType, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
         attackHash =  hashes[index];
         defenseLevelOpponent = reduceDefenseLevel(_gameId, _supportedPlayer, _opponentPlayer);
 
