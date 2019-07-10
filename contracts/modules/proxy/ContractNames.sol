@@ -20,4 +20,5 @@ contract ContractNames {
     string constant CONTRACT_NAME_CRONJOB           = "CronJob";
     string constant CONTRACT_NAME_ROLE_DB           = "RoleDB";
     string constant CONTRACT_NAME_HITSRESOLVE       = "HitsResolve";
+    string constant CONTRACT_NAME_GETTER_DB         = "GetterDB";
 }

@@ -282,12 +282,12 @@ contract Betting is Proxied {
         payable 
         returns (
             string memory attackType,
+            uint256 index,
             bytes32 attackHash,
             uint256 defenseLevelOpponent
         )
     {
-        
-        (string attackType, uint256 index) = getAttackType(_gameId, _supportedPlayer, _randomNum);
+        (attackType, index) = getAttackType(_gameId, _supportedPlayer, _randomNum);
         attackHash =  hashes[index];
         defenseLevelOpponent = reduceDefenseLevel(_gameId, _supportedPlayer, _opponentPlayer);
 
@@ -301,7 +301,7 @@ contract Betting is Proxied {
     }
 
 
-     function funcitonToFinalizeGame(uint256 _gameId, uint256 _randomNum) public returns(uint256 finalPoints) {
+     function calculateFinalPoints(uint256 _gameId, address _supportedPlayer, uint256 _randomNum) public returns(uint256 finalPoints) {
         // finalizeGame() returns 7 values
         (uint256 lowPunch, 
         uint256 lowKick, 
