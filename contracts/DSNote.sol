@@ -17,7 +17,7 @@ pragma solidity ^0.5.5;
 
 contract DSNote {
     event LogNote(
-        bytes4   indexed  sig,
+        bytes4   indexed  sig
         address  indexed  guy,
         bytes32  indexed  foo,
         bytes32  indexed  bar,
