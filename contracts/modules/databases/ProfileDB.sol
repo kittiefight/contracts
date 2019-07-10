@@ -52,6 +52,23 @@ contract ProfileDB is Proxied {
     require(genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_ALREADY_EXIST);
   }
 
+  function setCivicId(address account, uint256 civicId)
+    external
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
+  {
+    // Check if the provided civic id is registered under another account
+    require(
+      genericDB.getAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked("civicIdTable", civicId))) == address(0),
+      "Civic id already in use"
+    );
+    // Save the civic id with the given account in a table
+    genericDB.setAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked("civicIdTable", civicId)), account);
+    // Save the civic id under the given account as well
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "civicId")), civicId);
+  }
+
+  // FIXME: Stale function
   function setKittieAttributes(
     address account,
     uint256 kittieId,
@@ -68,6 +85,7 @@ contract ProfileDB is Proxied {
     genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
   }
 
+  // FIXME: Stale function
   function addKittie(
     address account,
     uint256 kittieId,
@@ -86,6 +104,7 @@ contract ProfileDB is Proxied {
     genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
   }
 
+  // FIXME: Stale function
   function removeKittie(
     address account,
     uint256 kittieId
@@ -99,6 +118,7 @@ contract ProfileDB is Proxied {
     require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
   }
 
+  // FIXME: Stale function
   function setGamingAttributes(
     address account,
     uint256 totalWins,
@@ -120,6 +140,7 @@ contract ProfileDB is Proxied {
     genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isFreeToPlay")), isFreeToPlay);
   }
 
+  // FIXME: Stale function
   function setFightingAttributes(
     address account,
     uint256 totalFights,
@@ -137,6 +158,7 @@ contract ProfileDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "listingEnd")), listingEnd);
   }
 
+  // FIXME: Stale function
   function setFeeAttributes(
     address account,
     uint256 feeType,
@@ -178,6 +200,13 @@ contract ProfileDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "kittieFightTokens")), kittieFightTokens);
   }
 
+  function getCivicId(address account)
+    public view
+    returns (uint256)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "civicId")));
+  }
+
   function getKittieFightTokens(address account)
     public
     onlyExistentProfile(account)
@@ -190,12 +219,12 @@ contract ProfileDB is Proxied {
     return genericDB.doesNodeAddrExist(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account);
   }
 
-  function getKitties(address account) public view returns (uint256[] memory) {
-    return genericDB.getAll(
-      CONTRACT_NAME_PROFILE_DB,
-      keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
-    );
-  }
+  // function getKitties(address account) public view returns (uint256[] memory) {
+  //   return genericDB.getAll(
+  //     CONTRACT_NAME_PROFILE_DB,
+  //     keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
+  //   );
+  // }
 
   function getKittieCount(address account) public view returns (uint256) {
     return genericDB.getLinkedListSize(
