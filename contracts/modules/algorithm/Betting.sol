@@ -134,7 +134,7 @@ contract Betting is Proxied {
           uint256 index
           ) 
           public {
-            directAttacksScored[_gameId][_supportedPlayer][index] += _numAttack;
+            blockedAttacksScored[_gameId][_supportedPlayer][index] += _numAttack;
           }
       
       // get the total number of direct attacks of each hitType of the given corner in a game
