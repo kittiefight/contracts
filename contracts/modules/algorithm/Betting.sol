@@ -118,23 +118,21 @@ contract Betting is Proxied {
      // set the total number of direct attacks of each hitType of the given corner in a game
     function setDirectAttacksScored(
           uint256 _gameId, 
-          address _supportedPlayer, 
-          uint256 _numAttack,
+          address _supportedPlayer,
           uint256 index
           ) 
           public {
-            directAttacksScored[_gameId][_supportedPlayer][index] += _numAttack;
+            directAttacksScored[_gameId][_supportedPlayer][index] += 1;
           }
 
       // set the total number of blocked attacks of each hitType of the given corner in a game
     function setBlockedAttacksScored(
           uint256 _gameId, 
           address _supportedPlayer, 
-          uint256 _numAttack,
           uint256 index
           ) 
           public {
-            blockedAttacksScored[_gameId][_supportedPlayer][index] += _numAttack;
+            blockedAttacksScored[_gameId][_supportedPlayer][index] += 1;
           }
       
       // get the total number of direct attacks of each hitType of the given corner in a game
@@ -294,11 +292,11 @@ contract Betting is Proxied {
         defenseLevelOpponent = reduceDefenseLevel(_gameId, _supportedPlayer, _opponentPlayer);
 
         if (defenseLevelOpponent = 0) {
-            setDirectAttacksScored(_gameId, _supportedPlayer, attackType, index);
+            setDirectAttacksScored(_gameId, _supportedPlayer, index);
         } else if(defenseLevelOpponent > 0 && isAttackBlocked(_gameId, _opponentPlayer)) {
-            setBlockedAttacksScored(_gameId, _supportedPlayer, attackType, index);
+            setBlockedAttacksScored(_gameId, _supportedPlayer, index);
         } else {
-            setDirectAttacksScored(_gameId, _supportedPlayer, attackType, index);
+            setDirectAttacksScored(_gameId, _supportedPlayer, index);
         }
     }
 
