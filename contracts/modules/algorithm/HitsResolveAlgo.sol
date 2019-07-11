@@ -21,6 +21,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 import "../../libs/SafeMath.sol";
+import "../proxy/Proxied.sol";
+import "./Betting.sol";
 
 /**
  * @title This contract is responsible to generate the final random number for use in 
@@ -30,10 +32,17 @@ import "../../libs/SafeMath.sol";
  * @author @ziweidream
  */
 
-contract HitsResolve {
+contract HitsResolve is Proxied {
     using SafeMath for uint256;
+
+    Betting public betting;
+
     // maintains a list of Game ID to random seed input combination
     mapping(uint256 => uint256) public currentRandom;
+
+    function initialize() external onlyOwner {
+        betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
+    }
 
     /**
      * @author @ziweidream
@@ -83,10 +92,19 @@ contract HitsResolve {
      */
     function finalizeHitTypeValues(uint256 _gameID, uint256 _seed) 
     public view
-    returns (uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch, uint256 hardKick, uint256 hardThunder, uint256 slash) {
-            (lowPunch, lowKick, lowThunder) = assignLowValues(_gameID, _seed);
-            (hardPunch, hardKick, hardThunder) = assignHighValues(_gameID, _seed);
-            slash = assignSlashValue(_gameID, _seed);
+    returns (uint256[7] memory hitTypeVals) //uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch, uint256 hardKick, uint256 hardThunder, uint256 slash) 
+        {
+            (uint256 lowPunch, uint256 lowKick, uint256 lowThunder) = assignLowValues(_gameID, _seed);
+            (uint256 hardPunch, uint256 hardKick, uint256 hardThunder) = assignHighValues(_gameID, _seed);
+            uint256 slash = assignSlashValue(_gameID, _seed);
+
+            hitTypeVals[0] = lowPunch;
+            hitTypeVals[1] = lowKick;
+            hitTypeVals[2] = lowThunder;
+            hitTypeVals[3] = hardPunch;
+            hitTypeVals[4] = hardKick;
+            hitTypeVals[5] = hardThunder;
+            hitTypeVals[6] = slash;
         }
 
     /**
@@ -134,4 +152,88 @@ contract HitsResolve {
           slash = randomGen(seed);
       }
     }
+
+    
+    function calculateFinalDirectAttacksPointsLowValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+        public 
+        returns(uint256 finalDirectAttacksPointsLowValue)
+    {
+        // finalizeGame() returns 7 values
+        uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
+
+        // get the number of the direct attacks of each attack types of the given corner
+        uint256[7] memory directAttacks = betting.getDirectAttacksScored(_gameId, _supportedPlayer);
+
+        finalDirectAttacksPointsLowValue = hitTypesVals[0].mul(directAttacks[0]).mul(100)
+                       .add(hitTypesVals[1].mul(directAttacks[1]).mul(100))
+                       .add(hitTypesVals[2].mul(directAttacks[2]).mul(100));
+    }
+
+    function calculateFinalDirectAttacksPointsHighValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+        public 
+        returns(uint256 finalDirectAttacksPointsHighValue)
+    {
+        // finalizeGame() returns 7 values
+   
+        uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
+
+        // get the number of the direct attacks of each attack types of the given corner
+        uint256[7] memory directAttacks = betting.getDirectAttacksScored(_gameId, _supportedPlayer);
+
+          finalDirectAttacksPointsHighValue = hitTypesVals[3].mul(directAttacks[3]).mul(100)
+                       .add(hitTypesVals[4].mul(directAttacks[4]).mul(100))
+                       .add(hitTypesVals[5].mul(directAttacks[5]).mul(100))
+                       .add(hitTypesVals[6].mul(directAttacks[6]).mul(100));
+
+
+    }
+
+    function calculateFinalBlockedAttacksPointsLowValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+        public 
+        returns(uint256 finalBlockedAttacksPointsLowValue)
+    {
+         // finalizeGame() returns 7 values
+        uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
+
+        // get the number of the blocked attacks of each attack types of the given corner in a game
+
+        uint256[7] memory blockedAttacks = betting.getBlockedAttacksScored(_gameId, _supportedPlayer);
+
+         // calculate the final points for the given corner in a game
+         finalBlockedAttacksPointsLowValue = (hitTypesVals[0].mul(blockedAttacks[0]).mul(25))
+                       .add(hitTypesVals[1].mul(blockedAttacks[1]).mul(25))
+                       .add(hitTypesVals[2].mul(blockedAttacks[2]).mul(25));
+    }
+
+    function calculateFinalBlockedAttacksPointsHighValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+        public 
+        returns(uint256 finalBlockedAttacksPointsHighValue)
+    {
+         // finalizeGame() returns 7 values
+        uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
+
+        // get the number of the blocked attacks of each attack types of the given corner in a game
+        uint256[7] memory blockedAttacks = betting.getBlockedAttacksScored(_gameId, _supportedPlayer);
+
+         // calculate the final points for the given corner in a game
+         finalBlockedAttacksPointsHighValue = hitTypesVals[3].mul(blockedAttacks[3]).mul(25)
+                       .add(hitTypesVals[4].mul(blockedAttacks[4]).mul(25))
+                       .add(hitTypesVals[5].mul(blockedAttacks[5]).mul(25))
+                       .add(hitTypesVals[6].mul(blockedAttacks[6]).mul(25));
+
+    }
+
+    function calculateFinalPoints(uint256 _gameId, address _supportedPlayer, uint256 _randomNum) 
+        public 
+        returns(uint256 finalPoints) 
+    {
+         // calculate the final points for the given corner in a game
+         uint256 directAttacksLowValue = calculateFinalDirectAttacksPointsLowValue(_gameId, _supportedPlayer, _randomNum);
+         uint256 directAttacksHighValue = calculateFinalDirectAttacksPointsHighValue(_gameId, _supportedPlayer, _randomNum);
+         uint256 blockedAttacksLowValue = calculateFinalBlockedAttacksPointsLowValue(_gameId, _supportedPlayer, _randomNum);
+         uint256 blockedAttacksHighValue = calculateFinalBlockedAttacksPointsHighValue(_gameId, _supportedPlayer, _randomNum);
+
+         finalPoints = directAttacksLowValue + directAttacksHighValue + blockedAttacksLowValue + blockedAttacksHighValue;
+    }
+
 }
