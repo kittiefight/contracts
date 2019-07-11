@@ -92,8 +92,8 @@ contract KittieHELL is ERC223Receiver, BasicControls {
         return true;
     }
 
-    function tokenFallback(address _from, uint _value, bytes memory _data)
-    public
+    function tokenFallback() //address _from, uint _value, bytes memory _data)
+    public view
     {
         require(msg.sender == IContractManager(contractManager).getContract("KittieFIGHTToken"));
     }
@@ -106,7 +106,7 @@ contract KittieHELL is ERC223Receiver, BasicControls {
      * @return true/false if the kitty ID is resurrected or not
      */
     function payForResurrection(uint256 _kittyID)
-    public
+    public view
     onlyOwnedKitty(_kittyID)
     onlyNotGhostKitty(_kittyID)
     returns (bool) {
