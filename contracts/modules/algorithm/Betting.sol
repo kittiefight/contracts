@@ -23,14 +23,14 @@ pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
-import "../databases/GameManagerDB.sol";
-import "../databases/GetterDB.sol";
+import "../databases/GMSetterDB.sol";
+import "../databases/GMGetterDB.sol";
 
 contract Betting is Proxied {
     using SafeMath for uint256;
 
-    GameManagerDB public gameManagerDB;
-    GetterDB public getterDB;
+    GMSetterDB public gmSetterDB;
+    GMGetterDB public gmGetterDB;
 
     string[] attacksColumn;
     bytes32[] public hashes;
@@ -47,8 +47,8 @@ contract Betting is Proxied {
     mapping(uint256 => mapping(address => uint256[])) public bets;
 
     function initialize() external onlyOwner {
-        gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
-        getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
+        gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
+        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         //hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
     }
 
@@ -207,7 +207,7 @@ contract Betting is Proxied {
             uint256 index
         ){
         uint256 lastBetAmount = _lastBetAmount;
-        (uint256 prevBetAmount,) = getterDB.getLastBet(_gameId, _supportedPlayer);
+        (uint256 prevBetAmount,) = gmGetterDB.getLastBet(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (lastBetAmount <= prevBetAmount) {
             uint256 diceLowValues = randomGen(_randomNum);
@@ -244,7 +244,7 @@ contract Betting is Proxied {
     // determine whether the attack type is blocked or direct 
     function isAttackBlocked(uint256 _gameId, address _opponentPlayer) public returns(bool isBlocked) {
         // get the last bet timestamp of the given corner
-        (,uint256 lastBetTimestamp) = getterDB.getLastBet(_gameId, _opponentPlayer);
+        (,uint256 lastBetTimestamp) = gmGetterDB.getLastBet(_gameId, _opponentPlayer);
         if (lastBetTimestamp < now.sub(5)) {
             isBlocked = true;
         } else if(lastBetTimestamp >= now.sub(5)) {
@@ -263,8 +263,8 @@ contract Betting is Proxied {
         public
         returns (uint)
         {
-        uint256 defenseLevel = getterDB.getDefenseLevel(_gameId, _opponentPlayer);
-        // getLast5Bets() is yet to be implemented in getterDB. 
+        uint256 defenseLevel = gmGetterDB.getDefenseLevel(_gameId, _opponentPlayer);
+        // getLast5Bets() is yet to be implemented in gmGetterDB. 
         // Will make modifications in function name if necessary once it is implemented.
         (uint256 lastBet5, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
         if (lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4 && lastBet4 > lastBet5) {

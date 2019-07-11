@@ -13,7 +13,7 @@
 pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
-import "../databases/GetterDB.sol";
+import "../databases/GMGetterDB.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
@@ -28,7 +28,7 @@ import "../../interfaces/ERC721.sol";
 contract Forfeiter is Proxied {
 
   GameManager public gameManager;
-  GetterDB public getterDB;
+  GMGetterDB public gmGetterDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
 
@@ -38,7 +38,7 @@ contract Forfeiter is Proxied {
    */
   function updateContracts() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
-    getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
+    gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
   }
@@ -54,13 +54,13 @@ contract Forfeiter is Proxied {
     returns (bool conditions)
   {
     (address playerBlack, address playerRed, uint256 kittyBlack,
-      uint256 kittyRed, ,) = getterDB.getGame(gameId);
+      uint256 kittyRed, ,) = gmGetterDB.getGame(gameId);
 
     // GAME_CREATED
     if (gameState == 0) {
-      uint256 gamePreStartTime = getterDB.getPrestartTime(gameId);
-      uint supportersBlack = getterDB.getSupporters(gameId, playerBlack);
-      uint supportersRed = getterDB.getSupporters(gameId, playerRed);
+      uint256 gamePreStartTime = gmGetterDB.getPrestartTime(gameId);
+      uint supportersBlack = gmGetterDB.getSupporters(gameId, playerBlack);
+      uint supportersRed = gmGetterDB.getSupporters(gameId, playerRed);
 
       conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
         checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime);
@@ -68,8 +68,8 @@ contract Forfeiter is Proxied {
 
     // GAME_PRESTART
     if (gameState == 1) {
-      uint256 gameStartTime = getterDB.getStartTime(gameId);
-      (bool redStarted, bool blackStarted) = getterDB.getPlayerStartStatus(gameId);
+      uint256 gameStartTime = gmGetterDB.getStartTime(gameId);
+      (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
 
       conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
         didPlayersStartGame(blackStarted, redStarted, gameStartTime);

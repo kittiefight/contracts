@@ -18,7 +18,7 @@ pragma solidity ^0.5.5;
 import '../../GameVarAndFee.sol';
 import '../proxy/Proxied.sol';
 import '../../libs/SafeMath.sol';
-import '../databases/GetterDB.sol';
+import '../databases/GMGetterDB.sol';
 import "../databases/EndowmentDB.sol";
 
 /**
@@ -33,7 +33,7 @@ contract Distribution is Proxied {
     using SafeMath for uint256;
 
     GameVarAndFee public gameVarAndFee;
-    GetterDB public getterDB;
+    GMGetterDB public gmGetterDB;
     EndowmentDB public endowmentDB;
 
     /**
@@ -42,7 +42,7 @@ contract Distribution is Proxied {
    */
     function initialize() external onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
+        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
     }
 
@@ -53,8 +53,8 @@ contract Distribution is Proxied {
         //TODO: check honeypot state to see if we can allow claiming
         //require(endowmentDB.getHoneypotState(gameId) == 'Claiming')
 
-        address winningSide = getterDB.getWinner(gameId);
-        (uint256 betAmount, address supportedPlayer) = getterDB.getBettor(gameId, claimer);
+        address winningSide = gmGetterDB.getWinner(gameId);
+        (uint256 betAmount, address supportedPlayer) = gmGetterDB.getBettor(gameId, claimer);
 
         // Is the winning player or part of the bettors of the winning corner
         require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
@@ -71,10 +71,10 @@ contract Distribution is Proxied {
 
         //Other bettors winnings
         if (winningCategory == 3){
-            // uint amountSupporters = getterDB.getSupporters(gameId, winningSide);
+            // uint amountSupporters = gmGetterDB.getSupporters(gameId, winningSide);
 
             //get other supporters totalBets for winning side
-            uint256 totalBets = getterDB.getTotalBet(gameId, winningSide);
+            uint256 totalBets = gmGetterDB.getTotalBet(gameId, winningSide);
 
             // Distribute the 20% of the jackpot according to amount that supporter bet in game
             // This is to avoid a bettor for claiming winings if he/she did not bet
@@ -95,11 +95,11 @@ contract Distribution is Proxied {
         if (winner == claimer) return 0;
 
         // Winning Top Bettor
-        (address topBettor,) = getterDB.getTopBettor(gameId, supportedPlayer);
+        (address topBettor,) = gmGetterDB.getTopBettor(gameId, supportedPlayer);
         if (topBettor == claimer) return 1;
 
         // Winning SecondTop Bettor
-        (address secondTopBettor,) = getterDB.getSecondTopBettor(gameId, supportedPlayer);
+        (address secondTopBettor,) = gmGetterDB.getSecondTopBettor(gameId, supportedPlayer);
         if (secondTopBettor == claimer) return 2;
 
         // Winning Other Bettors List

@@ -24,8 +24,8 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
-import "../databases/GameManagerDB.sol";
-import "../databases/GetterDB.sol";
+import "../databases/GMSetterDB.sol";
+import "../databases/GMGetterDB.sol";
 import "../databases/EndowmentDB.sol";
 import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
@@ -48,8 +48,8 @@ contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
 
     //Contract Variables
-    GameManagerDB public gameManagerDB;
-    GetterDB public getterDB;
+    GMSetterDB public gmSetterDB;
+    GMGetterDB public gmGetterDB;
     GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
     EndowmentDB public endowmentDB;
@@ -84,7 +84,7 @@ contract GameManager is Proxied, Guard {
     modifier onlyGamePlayer(uint gameId, address player) {
         // TODO: Is this the check?
         require(profileDB.getCivicId(player) > 0, "Invalid Civic ID");
-        require(getterDB.isPlayer(gameId, player), "Invalid player");
+        require(gmGetterDB.isPlayer(gameId, player), "Invalid player");
         _;
     }
 
@@ -95,8 +95,8 @@ contract GameManager is Proxied, Guard {
     function initialize() external onlyOwner {
 
         //TODO: Check what other contracts do we need
-        gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
-        getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
+        gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
+        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT));
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
@@ -130,7 +130,7 @@ contract GameManager is Proxied, Guard {
         //endowmentFund.contributeKFT(player, gameVarAndFee.getListingFee());
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
-        require((getterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
+        require((gmGetterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
 
         scheduler.addKittyToList(kittieId, getOriginalSender());
     }
@@ -171,11 +171,11 @@ contract GameManager is Proxied, Guard {
         uint256 preStartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
         uint256 endTime = gameStartTime.add(gameVarAndFee.getGameDuration());
 
-        uint256 gameId = gameManagerDB.createGame(
+        uint256 gameId = gmSetterDB.createGame(
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
 
         (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
-        gameManagerDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
+        gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
 
         // TODO: endowment Team
         // endowmentFund.updateHoneyPotState(scheduled); //not yet implemented
@@ -214,7 +214,7 @@ contract GameManager is Proxied, Guard {
         onlyProxy onlyBettor
         onlyGamePlayer(gameId, playerToSupport)
     {
-        uint gameState = getterDB.getGameState(gameId);
+        uint gameState = gmGetterDB.getGameState(gameId);
 
         require(gameState != GAME_STATE_CANCELLED &&
                 gameState != GAME_STATE_FINISHED, "Unable to join game");
@@ -223,13 +223,13 @@ contract GameManager is Proxied, Guard {
         // TODO: endowment Team, only needs amount and supporter sending
         // endowmentFund.contributeKFT(supporter, gameVarAndFee.getTicketFee());
         
-        gameManagerDB.addBettor(gameId, getOriginalSender(), playerToSupport);
+        gmSetterDB.addBettor(gameId, getOriginalSender(), playerToSupport);
 
         if (gameState == 1) require(forfeiter.checkGameStatus(gameId, gameState));
 
         //Update state if reached prestart time
-        if (getterDB.getPrestartTime(gameId) >= now)
-            gameManagerDB.updateGameState(gameId, GAME_STATE_PRESTART);
+        if (gmGetterDB.getPrestartTime(gameId) >= now)
+            gmSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
     }
 
     /**
@@ -245,29 +245,29 @@ contract GameManager is Proxied, Guard {
         onlyGamePlayer(gameId, getOriginalSender())
         returns(bool)
     {
-        uint gameState = getterDB.getGameState(gameId);
+        uint gameState = gmGetterDB.getGameState(gameId);
 
         require(gameState == GAME_STATE_PRESTART, "Game state is not Prestart");
 
         address player = getOriginalSender();
 
-        gameManagerDB.setHitStart(gameId, player);
-        (bool redStarted, bool blackStarted) = getterDB.getPlayerStartStatus(gameId);
+        gmSetterDB.setHitStart(gameId, player);
+        (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
 
         if(redStarted && blackStarted){
-            uint defenseLevel = rarityCalculator.getDefenseLevel(getterDB.getKittieInGame(gameId, player));
+            uint defenseLevel = rarityCalculator.getDefenseLevel(gmGetterDB.getKittieInGame(gameId, player));
 
             // TODO: store fight map from betting algo
             // betting.startGame(randomRed, randomBlack);
 
             // Grouping calls, set hitStart and defense level (TODO: set fight map too here)
-            gameManagerDB.startGameVars(gameId, player, defenseLevel, randomNum);
-            gameManagerDB.updateGameState(gameId, GAME_STATE_STARTED);
+            gmSetterDB.startGameVars(gameId, player, defenseLevel, randomNum);
+            gmSetterDB.updateGameState(gameId, GAME_STATE_STARTED);
         }
 
         forfeiter.checkGameStatus(gameId, gameState);
 
-        uint256 kittieId = getterDB.getKittieInGame(gameId, player);
+        uint256 kittieId = gmGetterDB.getKittieInGame(gameId, player);
         kittieHELL.acquireKitty(kittieId, player);
     }
 
@@ -276,11 +276,11 @@ contract GameManager is Proxied, Guard {
      */
     function extendTime(uint gameId) internal {
         // check if underperforming
-        uint gameEndTime = getterDB.getEndTime(gameId);
+        uint gameEndTime = gmGetterDB.getEndTime(gameId);
 
         //each time 1 minute before game ends
         if(gameEndTime - now <= 60) {
-            if(!checkPerformance(gameId)) gameManagerDB.updateEndTime(gameId, gameEndTime.add(60));
+            if(!checkPerformance(gameId)) gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
         }
     }
 
@@ -290,7 +290,7 @@ contract GameManager is Proxied, Guard {
      */
     function checkPerformance(uint gameId) internal view returns(bool) {
         //get initial jackpot, need endowment to send this when creating honeypot
-        (,uint initialEth) = getterDB.getHoneypotInfo(gameId);
+        (,uint initialEth) = gmGetterDB.getHoneypotInfo(gameId);
         uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
         if(currentJackpotEth > initialEth.mul(10)) return true;
@@ -312,7 +312,7 @@ contract GameManager is Proxied, Guard {
         external payable
         onlyProxy onlyBettor
     {
-        uint gameState = getterDB.getGameState(gameId);
+        uint gameState = gmGetterDB.getGameState(gameId);
         
         require(gameState == GAME_STATE_STARTED, "Game has not started yet");
         
@@ -334,13 +334,13 @@ contract GameManager is Proxied, Guard {
         
         // (uint defenseLevel) = betting.bet(gameId, amountEth, supportedPlayer);
 
-        // if (getterDB.getDefenseLevel(gameId, supportedPlayer) != defenseLevel)
-        //     gameManagerDB.updateDefenseLevel(gameId, supportedPlayer, defenseLevel);
+        // if (gmGetterDB.getDefenseLevel(gameId, supportedPlayer) != defenseLevel)
+        //     gmSetterDB.updateDefenseLevel(gameId, supportedPlayer, defenseLevel);
 
         // update opposite corner kittie defense level if changed
 
         //Update bettor's total bet
-        gameManagerDB.updateBettor(gameId, account, amountEth, supportedPlayer);
+        gmSetterDB.updateBettor(gameId, account, amountEth, supportedPlayer);
 
         // TODO: update game variables
         // lastBet, topBettor, secondTopBettor, etc...
@@ -369,16 +369,16 @@ contract GameManager is Proxied, Guard {
         uint256 _gameId, address _account, uint256 _amountEth, address _supportedPlayer
     ) private {
         // lastBet, topBettor, secondTopBettor, etc...
-        gameManagerDB.setLastBet(_gameId, _amountEth, now, _supportedPlayer);
+        gmSetterDB.setLastBet(_gameId, _amountEth, now, _supportedPlayer);
 
-        ( ,uint256 topBettorEth) = getterDB.getTopBettor(_gameId, _supportedPlayer);
+        ( ,uint256 topBettorEth) = gmGetterDB.getTopBettor(_gameId, _supportedPlayer);
 
         if (_amountEth > topBettorEth){
-            gameManagerDB.setTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
+            gmSetterDB.setTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
         } else {
-            ( ,uint256 secondTopBettorEth) = getterDB.getSecondTopBettor(_gameId, _supportedPlayer);
+            ( ,uint256 secondTopBettorEth) = gmGetterDB.getSecondTopBettor(_gameId, _supportedPlayer);
             if (_amountEth > secondTopBettorEth){
-                gameManagerDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
+                gmSetterDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
     }   }   }
 
 
@@ -386,15 +386,15 @@ contract GameManager is Proxied, Guard {
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEND(uint gameId) internal {
-        require(getterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started");
+        require(gmGetterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started");
 
-        if (getterDB.getEndTime(gameId) >= now)
-            gameManagerDB.updateGameState(gameId, GAME_STATE_FINISHED);
+        if (gmGetterDB.getEndTime(gameId) >= now)
+            gmSetterDB.updateGameState(gameId, GAME_STATE_FINISHED);
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
-        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = getterDB.getGame(gameId);
-        gameManagerDB.updateKittieState(kittyRed, false);
-        gameManagerDB.updateKittieState(kittyBlack, false);
+        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gmGetterDB.getGame(gameId);
+        gmSetterDB.updateKittieState(kittyRed, false);
+        gmSetterDB.updateKittieState(kittyBlack, false);
 
     }
 
@@ -402,15 +402,15 @@ contract GameManager is Proxied, Guard {
      * @dev Determine winner of game based on  **HitResolver **
      */
     function finalize(uint gameId, uint randomNum) external {
-        require(getterDB.getGameState(gameId) == GAME_STATE_FINISHED, "Game has not finished yet");
+        require(gmGetterDB.getGameState(gameId) == GAME_STATE_FINISHED, "Game has not finished yet");
 
-        (address playerBlack, address playerRed, , , ,) = getterDB.getGame(gameId);
+        (address playerBlack, address playerRed, , , ,) = gmGetterDB.getGame(gameId);
 
         uint256 playerBlackPoints = hitsResolve.calculateFinalPoints(gameId, playerBlack, randomNum);
         uint256 playerRedPoints = hitsResolve.calculateFinalPoints(gameId, playerRed, randomNum);
 
         address winner = playerBlackPoints > playerRedPoints ? playerBlack : playerRed;
-        gameManagerDB.setWinner(gameId, winner);
+        gmSetterDB.setWinner(gameId, winner);
     }
     
 
@@ -418,15 +418,15 @@ contract GameManager is Proxied, Guard {
      * @dev Cancels the game before the game starts
      */
     function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
-        require(getterDB.getGameState(gameId) == GAME_STATE_CREATED ||
-                getterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
+        require(gmGetterDB.getGameState(gameId) == GAME_STATE_CREATED ||
+                gmGetterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
 
-        gameManagerDB.updateGameState(gameId, GAME_STATE_CANCELLED);
+        gmSetterDB.updateGameState(gameId, GAME_STATE_CANCELLED);
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
-        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = getterDB.getGame(gameId);
-        gameManagerDB.updateKittieState(kittyRed, false);
-        gameManagerDB.updateKittieState(kittyBlack, false);
+        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gmGetterDB.getGame(gameId);
+        gmSetterDB.updateKittieState(kittyRed, false);
+        gmSetterDB.updateKittieState(kittyBlack, false);
 
     }
 
