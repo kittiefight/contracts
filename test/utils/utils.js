@@ -28,8 +28,45 @@ const isUnableToAccEther = async (contract, account, amount) => {
   assert.eventually.notEqual(balanceOf(contract.web3, inst.address), new BigNumber(amount));
 };
 
+function Reverter() {
+  let snapshotId;
+
+  this.revert = () => {
+    return new Promise((resolve, reject) => {
+      web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_revert',
+        id: new Date().getTime(),
+        params: [snapshotId],
+      }, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(this.snapshot());
+      });
+    });
+  };
+
+  this.snapshot = () => {
+    return new Promise((resolve, reject) => {
+      web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_snapshot',
+        id: new Date().getTime(),
+      }, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        snapshotId = web3.utils.hexToNumber(result.result);
+        return resolve();
+      });
+    });
+  };
+}
+
 Object.assign(exports, {
   balanceOf,
   promFuncCall,
-  isUnableToAccEther
+  isUnableToAccEther,
+  Reverter
 });
