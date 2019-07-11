@@ -32,5 +32,4 @@ contract ContractNames {
     string constant CONTRACT_NAME_RARITYCALCULATOR  = "RarityCalculator";
     string constant CONTRACT_NAME_CRYPTOKITTIES     = "CryptoKitties";
     string constant CONTRACT_NAME_GETTER_DB         = "GetterDB";
-    string constant CONTRACT_NAME_BETTING           = "Betting";
 }

@@ -395,8 +395,8 @@ contract GameManager is Proxied {
     function finalize(uint gameId, uint randomNum) external {
         require(getterDB.getGameState(gameId) == GAME_STATE_FINISHED, "Game has not finished yet");
 
-        (uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch,
-        uint256 hardKick, uint256 hardThunder, uint256 slash) = hitsResolve.finalizeHitTypeValues(gameId, randomNum);
+        // (uint256 lowPunch, uint256 lowKick, uint256 lowThunder, uint256 hardPunch,
+        // uint256 hardKick, uint256 hardThunder, uint256 slash) = hitsResolve.finalizeHitTypeValues(gameId, randomNum);
 
         // TODO: loop through each corners betting list, and add-multiply bet attack
         // with attackvalue retrieved from hitsResolver
