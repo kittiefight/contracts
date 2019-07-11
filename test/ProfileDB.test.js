@@ -80,6 +80,19 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
       (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
     });
 
+    it('sets a civic id', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+      let _civicId = 12345;
+
+      await this.profileDB.create(userId).should.be.fulfilled;
+      // Check whether the node with the given user id is added to profile linked list
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
+
+      await this.profileDB.setCivicId(userId, _civicId).should.be.fulfilled;
+      let civicId = await this.profileDB.getCivicId(userId);
+      civicId.toNumber().should.be.equal(_civicId);
+    });
+
     it('sets/gets gaming attributes', async () => {
       let totalWins = 20;
       let totalLosses = 34;
@@ -244,6 +257,20 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
       (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
 
       await this.profileDB.create(userId).should.be.rejected;
+    });
+
+    it('does not allow to set an existent civic id with a different account', async () => {
+      let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
+      let _civicId = 12345;
+
+      await this.profileDB.create(user1).should.be.fulfilled;
+      await this.profileDB.create(user2).should.be.fulfilled;
+      // Check whether the node with the given user id is added to profile linked list
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, user1)).should.be.true;
+      (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, user2)).should.be.true;
+
+      await this.profileDB.setCivicId(user1, _civicId).should.be.fulfilled;
+      await this.profileDB.setCivicId(user2, _civicId).should.be.rejected;
     });
   });
 });
