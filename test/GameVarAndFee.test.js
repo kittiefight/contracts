@@ -10,8 +10,10 @@ const GameVarAndFee = artifacts.require("GameVarAndFee");
 const Proxy = artifacts.require("KFProxy");
 const RoleDB = artifacts.require("RoleDB");
 
-contract("GameVarAndFee", ([creator, randomAddress]) => {
-  let futureGameTime = 12324353;
+const CONTRACT_NAME_GAMEVARANDFEE = 'GameVarAndFee';
+
+contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
+  let requiredNumberMatches = 10;
 
   beforeEach(async () => {
     //Deploy contracts needed for testing GameVarAndFee
@@ -35,9 +37,9 @@ contract("GameVarAndFee", ([creator, randomAddress]) => {
 
   describe("GameVarAndFee::Authority", () => {
     it("sets new proxy", async () => {
-      await this.gameVarAndFee.setProxy(creator).should.be.fulfilled;
+      await this.gameVarAndFee.setProxy(newProxy).should.be.fulfilled;
       let proxy = await this.gameVarAndFee.proxy();
-      proxy.should.be.equal(creator);
+      proxy.should.be.equal(newProxy);
     });
 
     it("is correct GenericDB Address", async () => {
@@ -46,24 +48,34 @@ contract("GameVarAndFee", ([creator, randomAddress]) => {
     });
 
     it("does not allow set vars without using proxy", async () => {
-      await this.gameVarAndFee.setVarAndFee("futureGameTime", futureGameTime, {
+      await this.gameVarAndFee.setVarAndFee(requiredNumberMatches, {
         from: randomAddress
       }).should.be.rejected;
+
     });
 
     it("only super admin can set variables", async () => {
-      await this.proxy.setFutureGameTime(futureGameTime, {
+      let message = web3.eth.abi.encodeFunctionCall(
+        GameVarAndFee.abi.find((f) => { return f.name == 'setVarAndFee'; }),
+        ['requiredNumberMatches', requiredNumberMatches]
+      );
+      await this.proxy.execute(CONTRACT_NAME_GAMEVARANDFEE, message, {
         from: randomAddress
       }).should.be.rejected;
     });
-  });
 
-  describe("GameVarAndFee::Storage", () => {
-    it("sets variable in DB from proxy", async () => {
-      await this.proxy.setFutureGameTime(futureGameTime).should.be.fulfilled;
-      let getVar = await this.gameVarAndFee.getFutureGameTime();
+    it("correctly sets variable in DB from proxy", async () => {
+      let message = web3.eth.abi.encodeFunctionCall(
+        GameVarAndFee.abi.find((f) => { return f.name == 'setVarAndFee'; }),
+        ['requiredNumberMatches', requiredNumberMatches]
+      );
+      await this.proxy.execute(CONTRACT_NAME_GAMEVARANDFEE, message, {
+        from: creator
+      }).should.be.fulfilled;
 
-      getVar.toNumber().should.be.equal(futureGameTime);
+      let getVar = await this.gameVarAndFee.getRequiredNumberMatches();
+
+      getVar.toNumber().should.be.equal(requiredNumberMatches);
     });
   });
 });
