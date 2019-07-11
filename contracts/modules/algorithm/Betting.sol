@@ -23,16 +23,15 @@ pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
-import "../databases/GameManagerDB.sol";
 import "../databases/GetterDB.sol";
+
 
 contract Betting is Proxied {
     using SafeMath for uint256;
 
-    GameManagerDB public gameManagerDB;
     GetterDB public getterDB;
 
-    string[] attacksColumn;
+    string[] public attacksColumn;
     bytes32[] public hashes;
 
     //fight map for a game with a specific gameId
@@ -41,28 +40,26 @@ contract Betting is Proxied {
     // total number of direct attacks of each hitType of the given corner in a game
      mapping(uint256 => mapping(address => uint256[7])) public directAttacksScored;
      // total number of blocked attacks of each hitType of the given corner in a game
-     mapping(uint256 => mapping(address => uint256[7])) public blockedAttacksScored;
-
+    mapping(uint256 => mapping(address => uint256[7])) public blockedAttacksScored;
 
     mapping(uint256 => mapping(address => uint256[])) public bets;
 
+    mapping(uint256 => mapping(address => uint256)) public lastBetTimestamp;
+
     function initialize() external onlyOwner {
-        gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
         getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
-        //hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
     }
 
     function setAttacksColumn() public {
-        attacksColumn[0] = "lowPunch";
-        attacksColumn[1] = "lowKick";
-        attacksColumn[2] = "lowThunder";
-        attacksColumn[3] = "hardPunch";
-        attacksColumn[4] = "hardKick";
-        attacksColumn[5] = "hardThunder";
-        attacksColumn[6] = "slash";
+        attacksColumn.push("lowPunch");
+        attacksColumn.push("lowKick");
+        attacksColumn.push("lowThunder");
+        attacksColumn.push("hardPunch");
+        attacksColumn.push("hardKick");
+        attacksColumn.push("hardThunder");
+        attacksColumn.push("slash");
     }
 
-   
     function setFightMap(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack) public {
         uint randomNum = _randomRed + _randomBlack;
         bytes32 hashLowPunch = keccak256(abi.encodePacked(randomNum, "lowPunch"));
@@ -95,7 +92,7 @@ contract Betting is Proxied {
           uint256 index
           ) 
           public {
-            directAttacksScored[_gameId][_supportedPlayer][index] += 1;
+            directAttacksScored[_gameId][_supportedPlayer][index] = directAttacksScored[_gameId][_supportedPlayer][index].add(1);
           }
 
       // set the total number of blocked attacks of each hitType of the given corner in a game
@@ -105,7 +102,7 @@ contract Betting is Proxied {
           uint256 index
           ) 
           public {
-            blockedAttacksScored[_gameId][_supportedPlayer][index] += 1;
+            blockedAttacksScored[_gameId][_supportedPlayer][index] = blockedAttacksScored[_gameId][_supportedPlayer][index].add(1);
           }
       
       // get the total number of direct attacks of each hitType of the given corner in a game
@@ -113,13 +110,6 @@ contract Betting is Proxied {
         public 
         view 
         returns(
-            //uint256 totalLowPunch,
-            //uint256 totalLowKick,
-            //uint256 totalLowThunder,
-            //uint256 totalHardPunch,
-            //uint256 totalHardKick,
-            //uint256 totalHardThunder,
-            //uint256 totalSlash
             uint256[7] memory directAttacks
             ) 
         {
@@ -137,7 +127,6 @@ contract Betting is Proxied {
             directAttacks[4] = totalHardKick;
             directAttacks[5] = totalHardThunder;
             directAttacks[6] = totalSlash;
-
           }
 
       // get the total number of blocked attacks of each hitType of the given corner in a game
@@ -145,13 +134,6 @@ contract Betting is Proxied {
           public 
           view 
           returns(
-              //uint256 totalLowPunch,
-              //uint256 totalLowKick,
-              //uint256 totalLowThunder,
-              //uint256 totalHardPunch,
-              //uint256 totalHardKick,
-              //uint256 totalHardThunder,
-              //uint256 totalSlash
               uint256[7] memory blockedAttacks
               ) 
           {
@@ -171,6 +153,7 @@ contract Betting is Proxied {
               blockedAttacks[6] = totalSlash;
           }
 
+    // record the bet amount of each individual bet of the given corner of a game with a specific gameId
     function fillBets(uint256 _gameId, address _supportedPlayer, uint256 _betAmount) public {
       bets[_gameId][_supportedPlayer].push(_betAmount);
     }
@@ -189,6 +172,11 @@ contract Betting is Proxied {
       lastBet5 = bets[_gameId][_supportedPlayer][arrLength - 1];
   }
 
+    
+    function setLastBetTimestamp(uint256 _gameId, address _supportedPlayer, uint256 _lastBetTimestamp) public {
+        lastBetTimestamp[_gameId][_supportedPlayer] = _lastBetTimestamp;
+    }
+
     function startGame(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack) public {
         // simple random number combination, hashed with Fight moves string names
         // sequentially generate and then return list of 7 fight moves in key-value hash map
@@ -196,6 +184,7 @@ contract Betting is Proxied {
 
     }
 
+    // randomly select attack types from low values column or high values column depending on the bet ether amount
     function getAttackType(
         uint256 _gameId, 
         address _supportedPlayer, 
@@ -206,10 +195,9 @@ contract Betting is Proxied {
             string memory attackType,
             uint256 index
         ){
-        uint256 lastBetAmount = _lastBetAmount;
-        (uint256 prevBetAmount,) = getterDB.getLastBet(_gameId, _supportedPlayer);
+        (,,,,uint256 prevBetAmount) = getLastFiveBets(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
-        if (lastBetAmount <= prevBetAmount) {
+        if (_lastBetAmount <= prevBetAmount) {
             uint256 diceLowValues = randomGen(_randomNum);
             if (diceLowValues <= 33) {
                 attackType = attacksColumn[0];
@@ -221,7 +209,7 @@ contract Betting is Proxied {
                 attackType = attacksColumn[2];
                 index = 2;
             }
-        } else if (lastBetAmount > prevBetAmount) { 
+        } else if (_lastBetAmount > prevBetAmount) { 
              // higher ether than previous bet? one attack is chosen randomly from highAttacksColumn
             uint256 diceHardValues = randomGen(_randomNum);
             if (diceHardValues <= 25) {
@@ -238,17 +226,17 @@ contract Betting is Proxied {
                 index = 6;
             }
         }
-
+        return (attackType, index);
     }
 
     // determine whether the attack type is blocked or direct 
-    function isAttackBlocked(uint256 _gameId, address _opponentPlayer) public returns(bool isBlocked) {
+    function isAttackBlocked(uint256 _gameId, address _opponentPlayer) public view returns(bool isBlocked) {
         // get the last bet timestamp of the given corner
-        (,uint256 lastBetTimestamp) = getterDB.getLastBet(_gameId, _opponentPlayer);
-        if (lastBetTimestamp < now.sub(5)) {
-            isBlocked = true;
-        } else if(lastBetTimestamp >= now.sub(5)) {
+        uint256 _lastBetTimestamp = lastBetTimestamp[_gameId][_opponentPlayer];
+        if (_lastBetTimestamp < now.sub(5)) {
             isBlocked = false;
+        } else if(_lastBetTimestamp >= now.sub(5)) {
+            isBlocked = true;
         }
     }
 
@@ -264,8 +252,6 @@ contract Betting is Proxied {
         returns (uint)
         {
         uint256 defenseLevel = getterDB.getDefenseLevel(_gameId, _opponentPlayer);
-        // getLast5Bets() is yet to be implemented in getterDB. 
-        // Will make modifications in function name if necessary once it is implemented.
         (uint256 lastBet5, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
         if (lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4 && lastBet4 > lastBet5) {
             defenseLevel.sub(1);
@@ -288,6 +274,7 @@ contract Betting is Proxied {
         )
     {
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
+        setLastBetTimestamp(_gameId, _supportedPlayer, now);
         (attackType, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
         attackHash = hashes[index];
         defenseLevelOpponent = reduceDefenseLevel(_gameId, _supportedPlayer, _opponentPlayer);
