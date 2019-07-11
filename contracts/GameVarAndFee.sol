@@ -28,6 +28,11 @@ import "./modules/proxy/Proxied.sol";
 import "./authority/Guard.sol";
 import './misc/VarAndFeeNames.sol';
 
+/// @dev MakerDao eth-usd price medianizer
+contract Medianizer {
+    function read() external view returns (bytes32);
+}
+
 /**
  * @title Contract that moderates the various fees, timing limits, expiry date/time,
  * schedules, eth allocation per game, token allocation per game, kittiehell
@@ -41,11 +46,19 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     // Declare DB type variable
     GenericDB public genericDB;
+    Medianizer medianizer;
 
     /// @notice Function called when deployed
     /// @param _genericDB Address of deployed GeneriDB contract
-    constructor (GenericDB _genericDB) public {
+    constructor (GenericDB _genericDB, Medianizer _medianizer) public {
         setGenericDB(_genericDB);
+        setMedianizer(_medianizer);
+    }
+
+    // kovanMedianizer = 0xA944bd4b25C9F186A846fd5668941AA3d3B8425F
+    // mainnetMedianizer = 0x729D19f657BD0614b4985Cf1D82531c67569197B
+    function setMedianizer(Medianizer _medianizer) public onlyOwner{
+       medianizer = Medianizer(_medianizer);
     }
 
     /// @notice Set genericDB variable to store data in contract
@@ -220,6 +233,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     // }
 
     // ----- GETTERS ------
+
+    /// @notice get eth/usd current price
+    function getEthUsdPrice() public view returns(uint){
+        return uint256(medianizer.read());
+    }
         
     /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
     function getRequiredNumberMatches() 
