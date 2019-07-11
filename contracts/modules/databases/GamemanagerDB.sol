@@ -373,4 +373,15 @@ contract GameManagerDB is Proxied {
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);
   }
+
+  /**
+   * @dev set winner for each game
+   */
+  function setWinner(uint256 gameId, address winner)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    genericDB.setAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "winner")), winner);
+  }
 }
