@@ -38,6 +38,7 @@ import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../registration/Register.sol";
+import "../databases/ProfileDB.sol";
 import "../../libs/SafeMath.sol";
 import '../kittieHELL/KittieHELL.sol';
 import '../../authority/Guard.sol';
@@ -61,6 +62,7 @@ contract GameManager is Proxied, Guard {
     HitsResolve public hitsResolve;
     RarityCalculator public rarityCalculator;
     Register public register;
+    ProfileDB public profileDB;
     KittieHELL public kittieHELL;
 
 
@@ -76,11 +78,12 @@ contract GameManager is Proxied, Guard {
 
     modifier onlyKittyOwner(address account, uint kittieId) {
         require(register.doesKittieBelong(account, kittieId), "Not owner of kittie");
-        //TODO: ADD verify civid ID check here?
         _;
     }
 
     modifier onlyGamePlayer(uint gameId, address player) {
+        // TODO: Is this the check?
+        require(profileDB.getCivicId(player) > 0, "Invalid Civic ID");
         require(getterDB.isPlayer(gameId, player), "Invalid player");
         _;
     }
@@ -106,6 +109,7 @@ contract GameManager is Proxied, Guard {
         rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         // kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         register = Register(proxy.getContract(CONTRACT_NAME_REGISTER));
+        profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
         // kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
@@ -305,7 +309,7 @@ contract GameManager is Proxied, Guard {
         uint gameId, uint amountEth,
         address supportedPlayer, uint randomNum
     )
-        external
+        external payable
         onlyProxy onlyBettor
     {
         uint gameState = getterDB.getGameState(gameId);
@@ -327,7 +331,7 @@ contract GameManager is Proxied, Guard {
         // transfer bettingFee to endowmentFund
         // TODO: endowment Team, only needs amount and supporter sending
         // endowmentFund.contributeKFT(account, gameVarAndFee.getBettingFee());
-
+        
         // (uint defenseLevel) = betting.bet(gameId, amountEth, supportedPlayer);
 
         // if (getterDB.getDefenseLevel(gameId, supportedPlayer) != defenseLevel)
