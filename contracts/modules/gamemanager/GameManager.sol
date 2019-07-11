@@ -40,9 +40,10 @@ import "../algorithm/RarityCalculator.sol";
 import "../registration/Register.sol";
 import "../../libs/SafeMath.sol";
 import '../kittieHELL/KittieHELL.sol';
+import '../../authority/Guard.sol';
 
 
-contract GameManager is Proxied {
+contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
 
     //Contract Variables
@@ -114,11 +115,11 @@ contract GameManager is Proxied {
      */
     function listKittie
     (
-        uint kittieId, address player
+        uint kittieId
     )
         external
-        onlyProxy
-        onlyKittyOwner(player, kittieId)
+        onlyProxy onlyPlayer
+        onlyKittyOwner(getOriginalSender(), kittieId)
     {
         // TODO: endowment Team
         // contributeKTY expects gameId? I think they need to change that function
@@ -127,7 +128,7 @@ contract GameManager is Proxied {
         // When creating the game, set to true, then we set it to false when game cancels or ends
         require((getterDB.getKittieState(kittieId) == false), "Kitty can play only one game at a time");
 
-        scheduler.addKittyToList(kittieId, player);
+        scheduler.addKittyToList(kittieId, getOriginalSender());
     }
 
     /**
@@ -140,7 +141,7 @@ contract GameManager is Proxied {
         uint gameStartTime
     )
         external
-        onlyProxy
+        onlyProxy onlySuperAdmin
         onlyKittyOwner(playerRed, kittyRed)
         onlyKittyOwner(playerBlack, kittyBlack)
     {
@@ -202,11 +203,11 @@ contract GameManager is Proxied {
      */
     function participate
     (
-        uint gameId, address supporter,
+        uint gameId,
         address playerToSupport
     )
         external
-        onlyProxy
+        onlyProxy onlyBettor
         onlyGamePlayer(gameId, playerToSupport)
     {
         uint gameState = getterDB.getGameState(gameId);
@@ -218,7 +219,7 @@ contract GameManager is Proxied {
         // TODO: endowment Team, only needs amount and supporter sending
         // endowmentFund.contributeKFT(supporter, gameVarAndFee.getTicketFee());
         
-        gameManagerDB.addBettor(gameId, supporter, playerToSupport);
+        gameManagerDB.addBettor(gameId, getOriginalSender(), playerToSupport);
 
         if (gameState == 1) require(forfeiter.checkGameStatus(gameId, gameState));
 
@@ -232,17 +233,19 @@ contract GameManager is Proxied {
      */
     function startGame
     (
-        uint gameId, address player,
+        uint gameId,
         uint randomNum
     )
         external
-        onlyProxy
-        onlyGamePlayer(gameId, player)
+        onlyProxy onlyPlayer
+        onlyGamePlayer(gameId, getOriginalSender())
         returns(bool)
     {
         uint gameState = getterDB.getGameState(gameId);
 
         require(gameState == GAME_STATE_PRESTART, "Game state is not Prestart");
+
+        address player = getOriginalSender();
 
         gameManagerDB.setHitStart(gameId, player);
         (bool redStarted, bool blackStarted) = getterDB.getPlayerStartStatus(gameId);
@@ -299,15 +302,17 @@ contract GameManager is Proxied {
      */
     function bet
     (
-        uint gameId, address account, uint amountEth,
+        uint gameId, uint amountEth,
         address supportedPlayer, uint randomNum
     )
         external
-        onlyProxy
+        onlyProxy onlyBettor
     {
         uint gameState = getterDB.getGameState(gameId);
         
         require(gameState == GAME_STATE_STARTED, "Game has not started yet");
+        
+        address account = getOriginalSender();
         
         forfeiter.checkGameStatus(gameId, gameState);
 
