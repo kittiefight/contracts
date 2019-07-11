@@ -25,24 +25,15 @@ import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
 import "../databases/GameManagerDB.sol";
 import "../databases/GetterDB.sol";
-import "./HitsResolveAlgo.sol";
 
 contract Betting is Proxied {
     using SafeMath for uint256;
 
     GameManagerDB public gameManagerDB;
     GetterDB public getterDB;
-    HitsResolve public hitsResolve;
 
     string[] attacksColumn;
     bytes32[] public hashes;
-
-    // LastBet is stored in GameManagerDB already, so the four variables below are not necessary any more.
-    // uint256 lastEthBetAmountBlackCorner;
-    //uint256 lastAttackTimeBlackCorner;
-    //uint256 lastEthBetAmountRedCorner;
-    //uint256 lastAttackTimeRedCorner;
-
 
     //fight map for a game with a specific gameId
     mapping(uint256 => mapping(bytes32 => string)) public fightMap;
@@ -58,7 +49,7 @@ contract Betting is Proxied {
     function initialize() external onlyOwner {
         gameManagerDB = GameManagerDB(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_DB));
         getterDB = GetterDB(proxy.getContract(CONTRACT_NAME_GETTER_DB));
-        hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
+        //hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
     }
 
     function setAttacksColumn() public {
@@ -122,22 +113,31 @@ contract Betting is Proxied {
         public 
         view 
         returns(
-            uint256 totalLowPunch,
-            uint256 totalLowKick,
-            uint256 totalLowThunder,
-            uint256 totalHardPunch,
-            uint256 totalHardKick,
-            uint256 totalHardThunder,
-            uint256 totalSlash
+            //uint256 totalLowPunch,
+            //uint256 totalLowKick,
+            //uint256 totalLowThunder,
+            //uint256 totalHardPunch,
+            //uint256 totalHardKick,
+            //uint256 totalHardThunder,
+            //uint256 totalSlash
+            uint256[7] memory directAttacks
             ) 
         {
-            totalLowPunch = directAttacksScored[_gameId][_supportedPlayer][0];
-            totalLowKick = directAttacksScored[_gameId][_supportedPlayer][1];
-            totalLowThunder = directAttacksScored[_gameId][_supportedPlayer][2];
-            totalHardPunch = directAttacksScored[_gameId][_supportedPlayer][3];
-            totalHardKick = directAttacksScored[_gameId][_supportedPlayer][4];
-            totalHardThunder = directAttacksScored[_gameId][_supportedPlayer][5];
-            totalSlash = directAttacksScored[_gameId][_supportedPlayer][6];
+            uint256 totalLowPunch = directAttacksScored[_gameId][_supportedPlayer][0];
+            uint256 totalLowKick = directAttacksScored[_gameId][_supportedPlayer][1];
+            uint256 totalLowThunder = directAttacksScored[_gameId][_supportedPlayer][2];
+            uint256 totalHardPunch = directAttacksScored[_gameId][_supportedPlayer][3];
+            uint256 totalHardKick = directAttacksScored[_gameId][_supportedPlayer][4];
+            uint256 totalHardThunder = directAttacksScored[_gameId][_supportedPlayer][5];
+            uint256 totalSlash = directAttacksScored[_gameId][_supportedPlayer][6];
+            directAttacks[0] = totalLowPunch;
+            directAttacks[1] = totalLowKick;
+            directAttacks[2] = totalLowThunder;
+            directAttacks[3] = totalHardPunch;
+            directAttacks[4] = totalHardKick;
+            directAttacks[5] = totalHardThunder;
+            directAttacks[6] = totalSlash;
+
           }
 
       // get the total number of blocked attacks of each hitType of the given corner in a game
@@ -145,22 +145,30 @@ contract Betting is Proxied {
           public 
           view 
           returns(
-              uint256 totalLowPunch,
-              uint256 totalLowKick,
-              uint256 totalLowThunder,
-              uint256 totalHardPunch,
-              uint256 totalHardKick,
-              uint256 totalHardThunder,
-              uint256 totalSlash
+              //uint256 totalLowPunch,
+              //uint256 totalLowKick,
+              //uint256 totalLowThunder,
+              //uint256 totalHardPunch,
+              //uint256 totalHardKick,
+              //uint256 totalHardThunder,
+              //uint256 totalSlash
+              uint256[7] memory blockedAttacks
               ) 
           {
-              totalLowPunch = blockedAttacksScored[_gameId][_supportedPlayer][0];
-              totalLowKick = blockedAttacksScored[_gameId][_supportedPlayer][1];
-              totalLowThunder = blockedAttacksScored[_gameId][_supportedPlayer][2];
-              totalHardPunch = blockedAttacksScored[_gameId][_supportedPlayer][3];
-              totalHardKick = blockedAttacksScored[_gameId][_supportedPlayer][4];
-              totalHardThunder = blockedAttacksScored[_gameId][_supportedPlayer][5];
-              totalSlash = blockedAttacksScored[_gameId][_supportedPlayer][6];
+              uint256 totalLowPunch = blockedAttacksScored[_gameId][_supportedPlayer][0];
+              uint256 totalLowKick = blockedAttacksScored[_gameId][_supportedPlayer][1];
+              uint256 totalLowThunder = blockedAttacksScored[_gameId][_supportedPlayer][2];
+              uint256 totalHardPunch = blockedAttacksScored[_gameId][_supportedPlayer][3];
+              uint256 totalHardKick = blockedAttacksScored[_gameId][_supportedPlayer][4];
+              uint256 totalHardThunder = blockedAttacksScored[_gameId][_supportedPlayer][5];
+              uint256 totalSlash = blockedAttacksScored[_gameId][_supportedPlayer][6];
+              blockedAttacks[0] = totalLowPunch;
+              blockedAttacks[1] = totalLowKick;
+              blockedAttacks[2] = totalLowThunder;
+              blockedAttacks[3] = totalHardPunch;
+              blockedAttacks[4] = totalHardKick;
+              blockedAttacks[5] = totalHardThunder;
+              blockedAttacks[6] = totalSlash;
           }
 
     function fillBets(uint256 _gameId, address _supportedPlayer, uint256 _betAmount) public {
@@ -266,22 +274,22 @@ contract Betting is Proxied {
     }
 
     function Bet(
-        uint256 _gameId, 
+        uint256 _gameId,
         uint256 _lastBetAmount,
-        address _supportedPlayer, 
+        address _supportedPlayer,
         address _opponentPlayer,
-        uint256 _randomNum) 
-        public 
+        uint256 _randomNum)
+        public
         returns (
             string memory attackType,
             uint256 index,
             bytes32 attackHash,
             uint256 defenseLevelOpponent
         )
-    {   
+    {
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
         (attackType, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
-        attackHash =  hashes[index];
+        attackHash = hashes[index];
         defenseLevelOpponent = reduceDefenseLevel(_gameId, _supportedPlayer, _opponentPlayer);
 
         if (defenseLevelOpponent == 0) {
@@ -294,53 +302,7 @@ contract Betting is Proxied {
     }
 
 
-     function calculateFinalPoints(uint256 _gameId, address _supportedPlayer, uint256 _randomNum) public returns(uint256 finalPoints) {
-        // finalizeGame() returns 7 values
-        (uint256 lowPunch, 
-        uint256 lowKick, 
-        uint256 lowThunder, 
-        uint256 hardPunch,
-        uint256 hardKick, 
-        uint256 hardThunder, 
-        uint256 slash) = hitsResolve.finalizeHitTypeValues(_gameId, _randomNum);
-
-
-        // get the number of the direct attacks of each attack types of the given corner
-        (uint256 numDirectLowPunch, 
-         uint256 numDirectLowKick, 
-         uint256 numDirectLowThunder, 
-         uint256 numDirectHarPunch,
-         uint256 numDirectHardKick,
-         uint256 numDirectHardThunder,
-         uint256 numDirectSlash) = getDirectAttacksScored(_gameId, _supportedPlayer);
-
-
-         // get the number of the blocked attacks of each attack types of the given corner in a game
-        (uint256 numBlockedLowPunch, 
-         uint256 numBlockedLowKick, 
-         uint256 numBlockedLowThunder, 
-         uint256 numBlockedHarPunch,
-         uint256 numBlockedHardKick,
-         uint256 numBlockedHardThunder,
-         uint256 numBlockedSlash) = getBlockedAttacksScored(_gameId, _supportedPlayer);
-
-         // calculate the final points for the given corner in a game
-         finalPoints = lowPunch.mul(numDirectLowPunch).mul(100)
-                       .add(lowKick.mul(numDirectLowKick).mul(100))
-                       .add(lowThunder.mul(numDirectLowThunder).mul(100))
-                       .add(hardPunch.mul(numDirectHarPunch).mul(100))
-                       .add(hardKick.mul(numDirectHardKick).mul(100))
-                       .add(hardThunder.mul(numDirectHardThunder).mul(100))
-                       .add(slash.mul(numDirectSlash).mul(100))
-                       .add(lowPunch.mul(numBlockedLowPunch).mul(25))
-                       .add(lowKick.mul(numBlockedLowKick).mul(25))
-                       .add(lowThunder.mul(numBlockedLowThunder).mul(25))
-                       .add(hardPunch.mul(numBlockedHarPunch).mul(25))
-                       .add(hardKick.mul(numBlockedHardKick).mul(25))
-                       .add(hardThunder.mul(numBlockedHardThunder).mul(25))
-                       .add(slash.mul(numBlockedSlash).mul(25));
-    }
-
+     
 
     /**
      * @author @ziweidream
