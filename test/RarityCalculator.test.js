@@ -1,7 +1,5 @@
 
-
 const RarityCalculator = artifacts.require('RarityCalculator');
-
 
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');

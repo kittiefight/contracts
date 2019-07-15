@@ -1,27 +1,31 @@
 
-const Betting = artifacts.require('Betting')
-//const Proxy = artifacts.require('KFProxy')
-//const GenericDB = artifacts.require('GenericDB')
-//const GetterDB = artifacts.require('GetterDB')
-
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const assert = chai.assert
 chai.use(chaiAsPromised)
 
-//let ProxyInst
+const Proxy = artifacts.require('KFProxy')
+const Betting = artifacts.require('Betting')
+
+let ProxyInst
 let BettingInst
-//let GetterDBInst
-//let GenericDBInst
+
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 before(async () => {
+    ProxyInst = await Proxy.new()
+  
     BettingInst = await Betting.new()
+
+    await ProxyInst.addContract("Betting", BettingInst.address)
+
+    await BettingInst.setProxy(ProxyInst.address)
+    
 })
 
 contract('Betting', (accounts) => {
-    it('is able to set all values in the array attacksColumn', async () => {
+  /*  it('is able to set all values in the array attacksColumn', async () => {
         await BettingInst.setAttacksColumn()
         const res0 = await BettingInst.attacksColumn.call(0)
         const res1 = await BettingInst.attacksColumn.call(1)
@@ -38,30 +42,25 @@ contract('Betting', (accounts) => {
         assert.equal(res5, 'hardThunder')
         assert.equal(res6, 'slash') 
     })
-
+*/
     it('is able to set fight map for a game with a specific gameId', async () => {
         await BettingInst.setFightMap(123, 34, 89)
-        const hash0 = await BettingInst.hashes.call(0)
-        const hash1 = await BettingInst.hashes.call(1)
-        const hash2 = await BettingInst.hashes.call(2)
-        const hash3 = await BettingInst.hashes.call(3)
-        const hash4 = await BettingInst.hashes.call(4)
-        const hash5 = await BettingInst.hashes.call(5)
-        const hash6 = await BettingInst.hashes.call(6)
-        const res0 = await BettingInst.fightMap.call(123, hash0)
-        const res1 = await BettingInst.fightMap.call(123, hash1)
-        const res2 = await BettingInst.fightMap.call(123, hash2)
-        const res3 = await BettingInst.fightMap.call(123, hash3)
-        const res4 = await BettingInst.fightMap.call(123, hash4)
-        const res5 = await BettingInst.fightMap.call(123, hash5)
-        const res6 = await BettingInst.fightMap.call(123, hash6)
-        assert.equal(res0, 'lowPunch')
-        assert.equal(res1, 'lowKick')
-        assert.equal(res2, 'lowThunder')
-        assert.equal(res3, 'hardPunch')
-        assert.equal(res4, 'hardKick')
-        assert.equal(res5, 'hardThunder')
-        assert.equal(res6, 'slash')
+        
+        const res0 = await BettingInst.fightMap.call(123, 0)
+        const res1 = await BettingInst.fightMap.call(123, 1)
+        const res2 = await BettingInst.fightMap.call(123, 2)
+        const res3 = await BettingInst.fightMap.call(123, 3)
+        const res4 = await BettingInst.fightMap.call(123, 4)
+        const res5 = await BettingInst.fightMap.call(123, 5)
+        const res6 = await BettingInst.fightMap.call(123, 6)
+      
+        assert.equal(res0.attack, 'lowPunch')
+        assert.equal(res1.attack, 'lowKick')
+        assert.equal(res2.attack, 'lowThunder')
+        assert.equal(res3.attack, 'hardPunch')
+        assert.equal(res4.attack, 'hardKick')
+        assert.equal(res5.attack, 'hardThunder')
+        assert.equal(res6.attack, 'slash')
     })
 
     it('is able to record the total number of direct attacks of each hitType of the given corner in a game with sepcific gameId', async () => {
@@ -191,7 +190,7 @@ contract('Betting', (accounts) => {
     })
 
     it('randomly selects attack types from low values column bet ether amount is lower than previous bet', async () => {
-        const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
+        //const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
         const {attackType, index} = await BettingInst.getAttackType.call(123, accounts[0], 1, 308)
         const indexLowVal = index.toNumber()
         assert.oneOf(attackType, ['lowPunch', 'lowKick', 'lowThunder'])
@@ -199,7 +198,7 @@ contract('Betting', (accounts) => {
     })
 
     it('randomly selects attack types from high values column if the bet ether amount is higher than previous bet', async () => {
-        const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
+        //const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
         const {attackType, index} = await BettingInst.getAttackType.call(123, accounts[0], 9, 888)
         const indexHardVal = index.toNumber()
         assert.oneOf(attackType, ['hardPunch', 'hardKick', 'hardThunder', 'slash'])
@@ -212,6 +211,58 @@ contract('Betting', (accounts) => {
         await sleep(2000);
         const isBlocked = await BettingInst.isAttackBlocked.call(123, accounts[1])
         assert.isTrue(isBlocked)
+    })
+
+    it('is able to set and store the current defense level of the given corner in a game', async () => {
+        await BettingInst.setDefenseLevel(123, accounts[0], 3)
+        const defenseLevel = await BettingInst.defenseLevel.call(123, accounts[0])
+        assert.equal(defenseLevel, 3)
+    })
+
+    it('is able to reduce the defense level of the opponent if each of the last 5 bets from the attacker was consecutively bigger than the previous one', async () => {
+        await BettingInst.setDefenseLevel(123, accounts[1], 2)
+        await BettingInst.fillBets(123, accounts[0], 10)
+        await BettingInst.fillBets(123, accounts[0], 11)
+        await BettingInst.fillBets(123, accounts[0], 12)
+        await BettingInst.fillBets(123, accounts[0], 13)
+        await BettingInst.fillBets(123, accounts[0], 14)
+        await BettingInst.reduceDefenseLevel(123, accounts[0], accounts[1])
+        const defenseLevelOppoent = await BettingInst.defenseLevel.call(123, accounts[1])
+        assert.equal(defenseLevelOppoent, 1)
+    })
+
+    it('is able to generate a fight map for a game via the function startGame()', async () => {
+        await BettingInst.startGame(22, 78,99)
+
+        const res0 = await BettingInst.fightMap.call(22, 0)
+        const res1 = await BettingInst.fightMap.call(22, 1)
+        const res2 = await BettingInst.fightMap.call(22, 2)
+        const res3 = await BettingInst.fightMap.call(22, 3)
+        const res4 = await BettingInst.fightMap.call(22, 4)
+        const res5 = await BettingInst.fightMap.call(22, 5)
+        const res6 = await BettingInst.fightMap.call(22, 6)
+      
+        assert.equal(res0.attack, 'lowPunch')
+        assert.equal(res1.attack, 'lowKick')
+        assert.equal(res2.attack, 'lowThunder')
+        assert.equal(res3.attack, 'hardPunch')
+        assert.equal(res4.attack, 'hardKick')
+        assert.equal(res5.attack, 'hardThunder')
+        assert.equal(res6.attack, 'slash')
+    })
+
+    it('calculates and returns attack type, attackHash, and current opponent defense level due to each bet placed by the given corner in a game', 
+       async () => {
+        const resBet = await BettingInst.bet.call(
+            123, //gameId
+            18, //bet amount
+            accounts[0], //supporting player
+            accounts[1], //opponent player
+            92 //random number generated by front end
+        )
+        currentDefenseLevelOpponent = resBet.defenseLevelOpponent.toNumber()
+        assert.oneOf(resBet.attackType, ['hardPunch', 'hardKick', 'hardThunder', 'slash'])
+        assert.equal(currentDefenseLevelOpponent, 0)
     })
 
     it('is able to generate a random number between 0 and 100', async () => {

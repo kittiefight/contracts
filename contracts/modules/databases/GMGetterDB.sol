@@ -21,7 +21,7 @@ import "../../libs/SafeMath.sol";
  * @dev Getters for game instances
  * @author @psychoplasma
  */
-contract GetterDB is Proxied {
+contract GMGetterDB is Proxied {
 
  using SafeMath for uint256;
 

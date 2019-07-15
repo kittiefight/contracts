@@ -155,7 +155,7 @@ contract HitsResolve is Proxied {
 
     
     function calculateFinalDirectAttacksPointsLowValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
-        public 
+        public view
         returns(uint256 finalDirectAttacksPointsLowValue)
     {
         // finalizeGame() returns 7 values
@@ -170,7 +170,7 @@ contract HitsResolve is Proxied {
     }
 
     function calculateFinalDirectAttacksPointsHighValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
-        public 
+        public view
         returns(uint256 finalDirectAttacksPointsHighValue)
     {
         // finalizeGame() returns 7 values
@@ -189,7 +189,7 @@ contract HitsResolve is Proxied {
     }
 
     function calculateFinalBlockedAttacksPointsLowValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
-        public 
+        public view
         returns(uint256 finalBlockedAttacksPointsLowValue)
     {
          // finalizeGame() returns 7 values
@@ -206,7 +206,7 @@ contract HitsResolve is Proxied {
     }
 
     function calculateFinalBlockedAttacksPointsHighValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
-        public 
+        public view
         returns(uint256 finalBlockedAttacksPointsHighValue)
     {
          // finalizeGame() returns 7 values
@@ -224,7 +224,7 @@ contract HitsResolve is Proxied {
     }
 
     function calculateFinalPoints(uint256 _gameId, address _supportedPlayer, uint256 _randomNum) 
-        public 
+        public view
         returns(uint256 finalPoints) 
     {
          // calculate the final points for the given corner in a game

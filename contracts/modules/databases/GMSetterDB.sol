@@ -22,7 +22,7 @@ import "../../libs/SafeMath.sol";
  * @dev Stores game instances
  * @author @psychoplasma
  */
-contract GameManagerDB is Proxied {
+contract GMSetterDB is Proxied {
  using SafeMath for uint256;
 
   GenericDB public genericDB;
