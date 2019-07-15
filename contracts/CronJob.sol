@@ -24,15 +24,21 @@ pragma solidity ^0.5.5;
 import "./modules/proxy/Proxied.sol";
 import "./authority/Guard.sol";
 import "./modules/kittieHELL/KittieHELL.sol";
+import "./modules/databases/KittieHellDB.sol";
 
 
 contract CronJob is Proxied, Guard {
 
     // mock variables and functions for testing purpose
     KittieHELL public kittieHell;
+    KittieHellDB public kittieHellDB;
 
     function setKittieHell(KittieHELL _kittieHell) public onlyOwner {
         kittieHell = KittieHELL(_kittieHell);
+    }
+
+    function setKittieHellDB(KittieHellDB _kittieHellDB) public onlyOwner {
+        kittieHellDB = KittieHellDB(_kittieHellDB);
     }
 
     function killKitty(uint256 _kittyID)
@@ -52,5 +58,11 @@ contract CronJob is Proxied, Guard {
     returns (bool) {
         return kittieHell.becomeGhost(_kittyID);
 
+    }
+
+    function removeGhostFromHell(uint256 _id)
+        public
+    returns (bool) {
+        return kittieHellDB.removeGhostFromHell(_id);
     }
 }
