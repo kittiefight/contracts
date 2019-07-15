@@ -1,25 +1,29 @@
-pragma solidity >=0.5.0 <0.6.0;
+pragma solidity ^0.5.5;
 
 import "../../libs/SafeMath.sol";
 import "../../misc/BasicControls.sol";
+import "../proxy/Proxied.sol";
+import "../../authority/Guard.sol";
 import "../../interfaces/ERC721.sol";
-import "../../interfaces/ERC223Receiver.sol";
-
-import "../../interfaces/IContractManager.sol";
+import "../../interfaces/ERC20Standard.sol";
+import "../../GameVarAndFee.sol";
+import "../../CronJob.sol";
 
 
 /**
  * @title This contract is responsible to acquire ownership of participating kitties,
  * keep the mortality status and permanent lock them if needed.
- * @author @panos, @ugwu, @dev-l33
+ * @author @panos, @ugwu, @ziweidream
  * @notice This contract is able to lock kitties forever caution is advised
  */
-contract KittieHELL is ERC223Receiver, BasicControls {
+contract KittieHELL is BasicControls, Proxied, Guard {
 
     using SafeMath for uint256;
 
-    /* Contract manager address */
-    address contractManager;
+    ERC721 public cryptoKitties;
+    ERC20Standard public kittieFightToken;
+    GameVarAndFee public gameVarAndFee;
+    CronJob public cronJob;
 
     struct KittyStatus {
         address owner;  // This is the owner before the kitty got transferred to us
@@ -32,38 +36,38 @@ contract KittieHELL is ERC223Receiver, BasicControls {
     /* This is all the kitties owned and managed by the game */
     mapping(uint256 => KittyStatus) public kitties;
 
-    uint public constant TOKENS_PER_SEC_FOR_RESURRECTION = 1e8;
-
-    /**
-     * @author @panos
-     * @notice creating kitty hell contract using `_contractManager` as contract manager address
-     * @param _contractManager the contract manager used by the game
-     */
-    constructor(address _contractManager) public {
-        contractManager = _contractManager;
+    function initialize() external onlyOwner {
+        cryptoKitties = ERC721(proxy.getContract('CryptoKitties'));
+        kittieFightToken = ERC20Standard(proxy.getContract('KittieFightToken'));
+        gameVarAndFee = GameVarAndFee(proxy.getContract('GameVarAndFee'));
+        cronJob = CronJob(proxy.getContract('CronJob'));
     }
 
+    // onlyContract(CONTRACT_NAME_GAMEMANAGER) is temporarily commented out until GameManager.sol is further developed
+    // currently GameManager.sol has some problems and cannot be deployed in truffle test
     /**
-     * @author @ugwu
+     * @author @ugwu @ziweidream
      * @notice transfer the ownership of a kittie to this contract
      * @dev The last owner must be stored as a returned reference
+     * @dev This function can only be carried out via proxy
      * @param _kittyID the kittie to acquire
      * @return true if the acquisition was successful
      */
     function acquireKitty(uint256 _kittyID, address owner)
-    public
-    onlyNotOwnedKitty(_kittyID)
-    returns (bool) {
-        ERC721 ckc = ERC721(IContractManager(contractManager).getContract("CryptoKittiesCore"));
-        ckc.transferFrom(owner, address(this), _kittyID);
-        require(ckc.ownerOf(_kittyID) == address(this));
+        public
+        onlyNotOwnedKitty(_kittyID)
+        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        returns (bool)
+    {
+        cryptoKitties.transferFrom(owner, address(this), _kittyID);
+        require(cryptoKitties.ownerOf(_kittyID) == address(this));
         kitties[_kittyID].owner = owner;
         emit KittyAcquired(_kittyID);
         return true;
     }
 
     /**
-     * @author @dev-l33
+     * @author @ziweidream
      * @notice Getting kitty `_kittyID` mortality status
      * @param _kittyID The kitty to get status
      * @return true/false if the kitty ID is dead or not
@@ -77,14 +81,16 @@ contract KittieHELL is ERC223Receiver, BasicControls {
     }
 
     /**
-     * @author @dev-l33
+     * @author @ziweidream
      * @notice Killing kitty `_kittyID`
+     * @dev This function can only be carried out via CronJOb
      * @param _kittyID The kitty to kill
      * @return true/false if the kitty ID is killed or not
      */
     function killKitty(uint256 _kittyID)
     public
     onlyOwnedKitty(_kittyID)
+    onlyContract(CONTRACT_NAME_CRONJOB)
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;
@@ -92,48 +98,112 @@ contract KittieHELL is ERC223Receiver, BasicControls {
         return true;
     }
 
-    function tokenFallback(address _from, uint _value, bytes memory _data)
-    public
-    {
-        require(msg.sender == IContractManager(contractManager).getContract("KittieFIGHTToken"));
+    /**
+     * @author @ziweidream
+     * @notice Getting kitty `_kittyID` death time
+     * @param _kittyID The kitty whose death time is requested
+     * @return the kitty's death time
+     */
+    function kittyDeathTime(uint256 _kittyID) public view returns(uint) {
+        return kitties[_kittyID].deadAt;
     }
 
     /**
-     * @author @dev-l33
+     * @author @ziweidream
+     * @notice Getting kitty `_kittyID` resurrection cost
+     * @dev The resurrection cost per sec is a constant determined by GameVarAndFee contract
+     * @param _kittyID The kitty for whom the resurrection cost is requested
+     * @return the kitty's resurrection cost
+     */
+    function getResurrectionCost(uint256 _kittyID)
+    public
+    view
+    onlyOwnedKitty(_kittyID)
+    onlyNotGhostKitty(_kittyID)
+    returns(uint) {
+        // kittieRedemptionFee is temporarily hardcoded until GameVarAndFee.sol is further developed to
+        // be able to return a valid number instead of 0
+        uint256 kittieRedemptionFee = 1e8; //gameVarAndFee.getKittieRedemptionFee();
+	    return block.timestamp.sub(kitties[_kittyID].deadAt).mul(kittieRedemptionFee);
+	}
+
+     /**
+     * @author @ziweidream
      * @notice Resurrecting kitty `_kittyID`
      * @param _kittyID The kitty to resurrect
      * @dev The kitty must not be permanent dead
+     * @dev This function can only be carried out via proxy
+     * @dev The ressurection payment is in KTY tokens and sent to EndowmentFund contract
      * @return true/false if the kitty ID is resurrected or not
      */
-    function payForResurrection(uint256 _kittyID)
-    public
-    onlyOwnedKitty(_kittyID)
-    onlyNotGhostKitty(_kittyID)
-    returns (bool) {
-        uint256 tokenAmount = block.timestamp.sub(kitties[_kittyID].deadAt).mul(TOKENS_PER_SEC_FOR_RESURRECTION);
-        require(tokenAmount > 0);
 
-        //KittieFIGHTToken kittieToken = KittieFIGHTToken(tokenAddress);
-        //kittieToken.transferFrom(kitties[_kittyID].owner, this, tokenAmount);
-        //releaseKitty(_kittyID);
-        //KittyResurrected(_kittyID);
+    function payForResurrection(uint256 _kittyID)
+        public
+        payable
+        onlyOwnedKitty(_kittyID)
+        onlyNotGhostKitty(_kittyID)
+        onlyProxy
+    returns (bool) {
+        uint256 tokenAmount = getResurrectionCost(_kittyID);
+        require(tokenAmount > 0);
+        kittieFightToken.transferFrom(kitties[_kittyID].owner, proxy.getContract('EndowmentFund'), tokenAmount);
+        cronJob.releaseKitty(_kittyID);
+        emit KittyResurrected(_kittyID);
         return true;
     }
 
     /**
-     * @author @ugwu
+     * @author @ugwu @ziweidream
      * @notice transfer the ownership of a kittie back to its previous owner
-     * @dev The kitty must not be dead and not participating in a game
+     * @dev The kitty must be owned by the game
+     * @dev This function can only be carried out via proxy
      * @param _kittyID The kittie to release
      * @return true if the release was successful
      */
-    function releaseKitty(uint256 _kittyID) internal
-    onlyOwnedKitty(_kittyID)
+    function releaseKitty(uint256 _kittyID)
+        public
+        onlyOwnedKitty(_kittyID)
+        onlyContract(CONTRACT_NAME_CRONJOB)
     returns (bool) {
-        ERC721 ckc = ERC721(IContractManager(contractManager).getContract("CryptoKittiesCore"));
-        ckc.transfer(kitties[_kittyID].owner, _kittyID);
+        cryptoKitties.transfer(kitties[_kittyID].owner, _kittyID);
         kitties[_kittyID].owner = address(0);
+        emit KittyReleased(_kittyID);
         return true;
+    }
+
+    /**
+     * @author @ziweidream
+     * @dev The kitty must be owned by the game
+     * @dev This function can only be carried out via CronJob
+     * @dev This function will make a kitty permanently dead
+     * @param _kittyID The kittie to become ghost
+     * @return true if the kittie became a ghost and transferred to KittieHellDB
+     */
+    function becomeGhost(uint256 _kittyID)
+        public
+        onlyOwnedKitty(_kittyID)
+        onlyContract(CONTRACT_NAME_CRONJOB)
+        returns (bool)
+    {
+        uint kittieExpiry = gameVarAndFee.getKittieExpiry();
+	    require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
+        kitties[_kittyID].ghost = true;
+        cryptoKitties.transfer(proxy.getContract("KittieHellDB"), _kittyID);
+        emit KittyPermanentDeath(_kittyID);
+        return true;
+    }
+
+    /**
+     * @author @ziweidream      
+     * @param _kittyID The kittie to release
+     * @return the previous kitty owner, the kitty dead status, the kitty playing status, the kitty ghost status, and the kitty death time   
+     */
+    function getKittyStatus(uint256 _kittyID) public view returns (address _owner, bool _dead, bool _playing, bool _ghost, uint _deadAt) {
+        _owner = kitties[_kittyID].owner;
+        _dead = kitties[_kittyID].dead;
+        _playing = kitties[_kittyID].playing;
+        _ghost = kitties[_kittyID].ghost;
+        _deadAt = kitties[_kittyID].deadAt;
     }
 
     /*
@@ -182,3 +252,4 @@ contract KittieHELL is ERC223Receiver, BasicControls {
 
     event KittyPermanentDeath(uint256 _kittyID);
 }
+

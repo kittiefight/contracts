@@ -21,5 +21,36 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-contract CronJob {
+import "./modules/proxy/Proxied.sol";
+import "./authority/Guard.sol";
+import "./modules/kittieHELL/KittieHELL.sol";
+
+
+contract CronJob is Proxied, Guard {
+
+    // mock variables and functions for testing purpose
+    KittieHELL public kittieHell;
+
+    function setKittieHell(KittieHELL _kittieHell) public onlyOwner {
+        kittieHell = KittieHELL(_kittieHell);
+    }
+
+    function killKitty(uint256 _kittyID)
+    public
+    returns (bool) {
+        return kittieHell.killKitty(_kittyID);
+    }
+
+    function releaseKitty(uint256 _kittyID)
+        public
+    returns (bool) {
+        return kittieHell.releaseKitty(_kittyID);
+    }
+
+    function becomeGhost(uint256 _kittyID)
+        public
+    returns (bool) {
+        return kittieHell.becomeGhost(_kittyID);
+
+    }
 }
