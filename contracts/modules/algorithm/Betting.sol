@@ -48,7 +48,7 @@ contract Betting is Proxied, Guard {
 
     // setFightMap() is internal. Temporarily set as public for truffle test purpose.
     function setFightMap(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack) public {
-        uint randomNum = _randomRed + _randomBlack;
+        uint randomNum = _randomRed.add(_randomBlack);
         bytes32 hashLowPunch = keccak256(abi.encodePacked(randomNum, "lowPunch"));
         bytes32 hashLowKick = keccak256(abi.encodePacked(randomNum, "lowKick"));
         bytes32 hashLowThunder = keccak256(abi.encodePacked(randomNum, "lowThunder"));
@@ -145,14 +145,14 @@ contract Betting is Proxied, Guard {
     function getLastFiveBets(uint256 _gameId, address _supportedPlayer)
         public
         view
-        returns(uint lastBet1, uint lastBet2, uint lastBet3, uint lastBet4, uint lastBet5)
+        returns(uint lastBet5, uint lastBet4, uint lastBet3, uint lastBet2, uint lastBet1)
     {
       uint256 arrLength = bets[_gameId][_supportedPlayer].length;
-      lastBet1 = bets[_gameId][_supportedPlayer][arrLength - 5];
-      lastBet2 = bets[_gameId][_supportedPlayer][arrLength - 4];
-      lastBet3 = bets[_gameId][_supportedPlayer][arrLength - 3];
-      lastBet4 = bets[_gameId][_supportedPlayer][arrLength - 2];
-      lastBet5 = bets[_gameId][_supportedPlayer][arrLength - 1];
+      lastBet5 = bets[_gameId][_supportedPlayer][arrLength.sub(5)];
+      lastBet4 = bets[_gameId][_supportedPlayer][arrLength.sub(4)];
+      lastBet3 = bets[_gameId][_supportedPlayer][arrLength.sub(3)];
+      lastBet2 = bets[_gameId][_supportedPlayer][arrLength.sub(2)];
+      lastBet1 = bets[_gameId][_supportedPlayer][arrLength.sub(1)];
   }
 
     // setLastBetTimestamp() is internal. Temporarily set as public for truffle test purpose.
@@ -186,11 +186,11 @@ contract Betting is Proxied, Guard {
                 attackHash = fightMap[_gameId][0].hash;
                 index = 0;
             } else if (diceLowValues <= 66 && diceLowValues > 33) {
-                attackType = fightMap[_gameId][1].attack;//attacksColumn[1];
+                attackType = fightMap[_gameId][1].attack;
                 attackHash = fightMap[_gameId][1].hash;
                 index = 1;
             } else if (diceLowValues > 66) {
-                attackType = fightMap[_gameId][2].attack;//attacksColumn[2];
+                attackType = fightMap[_gameId][2].attack;
                 attackHash = fightMap[_gameId][2].hash;
                 index = 2;
             }
@@ -198,19 +198,19 @@ contract Betting is Proxied, Guard {
              // higher ether than previous bet? one attack is chosen randomly from highAttacksColumn
             uint256 diceHardValues = randomGen(_randomNum);
             if (diceHardValues <= 25) {
-                attackType = fightMap[_gameId][3].attack;//attacksColumn[3];
+                attackType = fightMap[_gameId][3].attack;
                 attackHash = fightMap[_gameId][3].hash;
                 index = 3;
             } else if (diceHardValues > 25 && diceHardValues <= 50) {
-                attackType = fightMap[_gameId][4].attack;//attacksColumn[4];
+                attackType = fightMap[_gameId][4].attack;
                 attackHash = fightMap[_gameId][4].hash;
                 index = 4;
             } else if (diceHardValues > 50 && diceHardValues <= 75) {
-                attackType = fightMap[_gameId][5].attack;//attacksColumn[5];
+                attackType = fightMap[_gameId][5].attack;
                 attackHash = fightMap[_gameId][5].hash;
                 index = 5;
             } else if (diceHardValues > 75) {
-                attackType = fightMap[_gameId][6].attack;//attacksColumn[6];
+                attackType = fightMap[_gameId][6].attack;
                 attackHash = fightMap[_gameId][6].hash;
                 index = 6;
             }
@@ -259,8 +259,8 @@ contract Betting is Proxied, Guard {
      * @return The random number generated
      */
     function randomGen(uint256 seed) public view returns (uint256 randomNumber) {
-        seed++;
-        randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number-1), block.timestamp, block.difficulty, seed)))%100;
+        seed = seed.add(1);
+        randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(1)), block.timestamp, block.difficulty, seed)))%100;
     }
 
      // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed

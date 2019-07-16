@@ -25,24 +25,6 @@ before(async () => {
 })
 
 contract('Betting', (accounts) => {
-  /*  it('is able to set all values in the array attacksColumn', async () => {
-        await BettingInst.setAttacksColumn()
-        const res0 = await BettingInst.attacksColumn.call(0)
-        const res1 = await BettingInst.attacksColumn.call(1)
-        const res2 = await BettingInst.attacksColumn.call(2)
-        const res3 = await BettingInst.attacksColumn.call(3)
-        const res4 = await BettingInst.attacksColumn.call(4)
-        const res5 = await BettingInst.attacksColumn.call(5)
-        const res6 = await BettingInst.attacksColumn.call(6)
-        assert.equal(res0, 'lowPunch')
-        assert.equal(res1, 'lowKick')
-        assert.equal(res2, 'lowThunder')
-        assert.equal(res3, 'hardPunch')
-        assert.equal(res4, 'hardKick')
-        assert.equal(res5, 'hardThunder')
-        assert.equal(res6, 'slash') 
-    })
-*/
     it('is able to set fight map for a game with a specific gameId', async () => {
         await BettingInst.setFightMap(123, 34, 89)
         
@@ -173,12 +155,12 @@ contract('Betting', (accounts) => {
         await BettingInst.fillBets(123, accounts[0], 5)
         await BettingInst.fillBets(123, accounts[0], 6)
         await BettingInst.fillBets(123, accounts[0], 7)
-        const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
-        assert.equal(lastBet1.toNumber(), 3)
-        assert.equal(lastBet2.toNumber(), 4)
+        const {lastBet5, lastBet4, lastBet3, lastBet2, lastBet1} = await BettingInst.getLastFiveBets(123, accounts[0])
+        assert.equal(lastBet5.toNumber(), 3)
+        assert.equal(lastBet4.toNumber(), 4)
         assert.equal(lastBet3.toNumber(), 5)
-        assert.equal(lastBet4.toNumber(), 6)
-        assert.equal(lastBet5.toNumber(), 7)
+        assert.equal(lastBet2.toNumber(), 6)
+        assert.equal(lastBet1.toNumber(), 7)
     })
 
     it('is able to record the last bet timestamp for the given corner in a game with a specific gameId', async () => {

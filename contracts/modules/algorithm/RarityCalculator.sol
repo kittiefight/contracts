@@ -27,6 +27,8 @@
 pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
+import "../../authority/Guard.sol";
+import "../../libs/SafeMath.sol";
 import "./RarityCalculationDBs/Rarity.sol";
 import "./RarityCalculationDBs/DefenseLevel.sol";
 
@@ -36,7 +38,8 @@ import "./RarityCalculationDBs/DefenseLevel.sol";
  * @author @ziweidream
  */
 
-contract RarityCalculator is Proxied, Rarity, DefenseLevel {
+contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
+    using SafeMath for uint256;
 
     /**
      * @author @ziweidream
