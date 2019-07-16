@@ -1,19 +1,21 @@
 pragma solidity ^0.5.5;
 
 import "../../../authority/Owned.sol";
+import "../../../libs/SafeMath.sol";
 
 /**
  * @title This contract is responsible to set lower and upper limit of each defense level
  * @author @ziweidream
  */
 contract DefenseLevel is Owned {
-    
+    using SafeMath for uint256;
+  
     struct DefenseLevelLimit {
-        uint level1Limit;
-        uint level2Limit;
-        uint level3Limit;
-        uint level4Limit;
-        uint level5Limit;
+        uint256 level1Limit;
+        uint256 level2Limit;
+        uint256 level3Limit;
+        uint256 level4Limit;
+        uint256 level5Limit;
     }
 
     DefenseLevelLimit internal defenseLevelLimit;
@@ -37,11 +39,11 @@ contract DefenseLevel is Owned {
          coloreyes	158208	740
                sum 	1832353	9175
      */
-    function setDefenseLevelLimit (uint max, uint min, uint totalKitties) public onlyOwner {
-      defenseLevelLimit.level5Limit = (max - min) * 10000000 / totalKitties;
-      defenseLevelLimit.level4Limit = (max - min) * 20000000 / totalKitties;
-      defenseLevelLimit.level3Limit = (max - min) * 40000000 / totalKitties;
-      defenseLevelLimit.level2Limit = (max - min) * 60000000 / totalKitties;
-      defenseLevelLimit.level1Limit = (max - min) * 80000000 / totalKitties;
+    function setDefenseLevelLimit (uint256 max, uint256 min, uint256 totalKitties) public onlyOwner {
+      defenseLevelLimit.level5Limit = (max.sub(min)).mul(10000000).div(totalKitties);
+      defenseLevelLimit.level4Limit = (max.sub(min)).mul(20000000).div(totalKitties);
+      defenseLevelLimit.level3Limit = (max.sub(min)).mul(40000000).div(totalKitties);
+      defenseLevelLimit.level2Limit = (max.sub(min)).mul(60000000).div(totalKitties);
+      defenseLevelLimit.level1Limit = (max.sub(min)).mul(80000000).div(totalKitties);
     }
 }

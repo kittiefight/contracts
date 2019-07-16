@@ -1,5 +1,6 @@
 pragma solidity ^0.5.5;
 
+import "../../../libs/SafeMath.sol";
 import "../../proxy/Proxied.sol";
 import "./KaiToCattributesDB.sol";
 import "./KaiValueDB.sol";
@@ -13,19 +14,20 @@ import "../../../interfaces/IContractManager.sol";
  */
 
 contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
+    using SafeMath for uint256;
     
     string[] public dominantGeneBinary;
-    mapping(uint => string[]) kittiesDominantGeneBinary;
+    mapping(uint256 => string[]) kittiesDominantGeneBinary;
     string[] public dominantGeneKai;
-    mapping(uint => string[]) kittiesDominantGeneKai;
+    mapping(uint256 => string[]) kittiesDominantGeneKai;
     string[] public dominantCattributes;
-    mapping(uint => string[]) kittiesDominantCattributes;
+    mapping(uint256 => string[]) kittiesDominantCattributes;
 
     /**
      * @author @ziweidream
      * @notice converts kai notation to its corresponding cattribute
      */
-    function kaiToCattribute(uint kittieId) 
+    function kaiToCattribute(uint256 kittieId) 
       public  
       //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
     {
@@ -48,7 +50,7 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
      * @notice converts binary to its corresponding kai notation
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
-   function binaryToKai(uint kittieId) 
+   function binaryToKai(uint256 kittieId) 
      public
      //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
      {
@@ -73,11 +75,11 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
      * @param n the integer to be converted
      * @return the binary
      */
-   function toBinaryString(uint n) public pure returns (string memory) {
+   function toBinaryString(uint256 n) internal pure returns (string memory) {
 
         bytes memory output = new bytes(240);
 
-        for (uint i = 0; i < 240; i++) {
+        for (uint256 i = 0; i < 240; i++) {
             output[239 - i] = (n % 2 == 1) ? byte("1") : byte("0");
             n /= 2;
         }
@@ -90,7 +92,7 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
      * @notice converts the gene in uint of a kitty to binary. 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
-    function getDominantGeneBinary(uint kittieId) 
+    function getDominantGeneBinary(uint256 kittieId) 
       public
       //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
      {
@@ -100,7 +102,7 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
         // gene will be updated to a variable after ProfileDB incorporates gene 
         // to functions addKittie() and setKittieAttributes, and possibly
         // a new function getGene()
-        uint gene = 512955438081049600613224346938352058409509756310147795204209859701881294;
+        uint256 gene = 512955438081049600613224346938352058409509756310147795204209859701881294;
 
         string memory geneBinary = toBinaryString(gene);
         dominantGeneBinary.push(getSlice(236, 240, geneBinary));
@@ -123,9 +125,9 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
      */
     function getSlice(uint256 begin, uint256 end, string memory text) public pure returns (string memory) {
         bytes memory a = new bytes(end-begin+1);
-        for(uint i=0;i<=end-begin;i++){
-            a[i] = bytes(text)[i+begin-1];
+        for(uint256 i=0; i<=end.sub(begin); i++){
+            a[i] = bytes(text)[i.add(begin).sub(1)];
         }
-        return string(a);    
+        return string(a);
     }
 }

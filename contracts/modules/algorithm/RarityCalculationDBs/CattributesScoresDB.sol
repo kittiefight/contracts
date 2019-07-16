@@ -7,7 +7,14 @@ import "../../../authority/Owned.sol";
  * @author @ziweidream
  */
 contract CattributesScoresDB is Owned {
+    /* This is the totoal number of all the kitties on CryptoKitties */
+    uint256 totalKitties;
+
     mapping(string => uint) public CattributesScores;
+
+    function updateTotalKitties(uint256 _totalKitties) public onlyOwner {
+        totalKitties = _totalKitties;
+    }
 
     /**
      * @author @ziweidream
