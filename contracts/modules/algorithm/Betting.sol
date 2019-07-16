@@ -24,24 +24,10 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "../../libs/SafeMath.sol";
-<<<<<<< HEAD
-=======
-import "../databases/GMSetterDB.sol";
-import "../databases/GMGetterDB.sol";
->>>>>>> feature/gameManager
 
 contract Betting is Proxied, Guard {
     using SafeMath for uint256;
 
-<<<<<<< HEAD
-=======
-    GMSetterDB public gmSetterDB;
-    GMGetterDB public gmGetterDB;
-
-    string[] attacksColumn;
-    bytes32[] public hashes;
-
->>>>>>> feature/gameManager
     //fight map for a game with a specific gameId
      struct HitType {
         bytes32 hash;
@@ -60,27 +46,7 @@ contract Betting is Proxied, Guard {
     // current defense level of the given corner in a game
     mapping(uint256 => mapping(address => uint256)) public defenseLevel;
 
-<<<<<<< HEAD
     // setFightMap() is internal. Temporarily set as public for truffle test purpose.
-=======
-    function initialize() external onlyOwner {
-        gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
-        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
-        //hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-    }
-
-    function setAttacksColumn() public {
-        attacksColumn[0] = "lowPunch";
-        attacksColumn[1] = "lowKick";
-        attacksColumn[2] = "lowThunder";
-        attacksColumn[3] = "hardPunch";
-        attacksColumn[4] = "hardKick";
-        attacksColumn[5] = "hardThunder";
-        attacksColumn[6] = "slash";
-    }
-
-   
->>>>>>> feature/gameManager
     function setFightMap(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack) public {
         uint randomNum = _randomRed.add(_randomBlack);
         bytes32 hashLowPunch = keccak256(abi.encodePacked(randomNum, "lowPunch"));
@@ -211,12 +177,7 @@ contract Betting is Proxied, Guard {
             bytes32 attackHash,
             uint256 index
         ){
-<<<<<<< HEAD
         (,,,,uint256 prevBetAmount) = getLastFiveBets(_gameId, _supportedPlayer);
-=======
-        uint256 lastBetAmount = _lastBetAmount;
-        (uint256 prevBetAmount,) = gmGetterDB.getLastBet(_gameId, _supportedPlayer);
->>>>>>> feature/gameManager
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (_lastBetAmount <= prevBetAmount) {
             uint256 diceLowValues = randomGen(_randomNum);
@@ -262,17 +223,9 @@ contract Betting is Proxied, Guard {
     // if opponent has been inactive for more than 5 seconds since last bet, attack is direct. Otherwise the attack is blocked.
     function isAttackBlocked(uint256 _gameId, address _opponentPlayer) public view returns(bool) {
         // get the last bet timestamp of the given corner
-<<<<<<< HEAD
         uint256 _lastBetTimestamp = lastBetTimestamp[_gameId][_opponentPlayer];
         if(_lastBetTimestamp >= now.sub(5)) {
             return true;
-=======
-        (,uint256 lastBetTimestamp) = gmGetterDB.getLastBet(_gameId, _opponentPlayer);
-        if (lastBetTimestamp < now.sub(5)) {
-            isBlocked = true;
-        } else if(lastBetTimestamp >= now.sub(5)) {
-            isBlocked = false;
->>>>>>> feature/gameManager
         }
         return false;
     }
@@ -291,13 +244,7 @@ contract Betting is Proxied, Guard {
           uint256 defenseLevelOpponent
         )
         {
-<<<<<<< HEAD
         require(defenseLevel[_gameId][_opponentPlayer] > 0, "Defense level is already zero");
-=======
-        uint256 defenseLevel = gmGetterDB.getDefenseLevel(_gameId, _opponentPlayer);
-        // getLast5Bets() is yet to be implemented in gmGetterDB. 
-        // Will make modifications in function name if necessary once it is implemented.
->>>>>>> feature/gameManager
         (uint256 lastBet5, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
         if (lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4 && lastBet4 > lastBet5) {
             defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer].sub(1);
