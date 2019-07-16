@@ -6,6 +6,8 @@ require('chai')
   .should();
 const { ZERO_ADDRESS } = require('./utils/constants');
 const Proxy = artifacts.require('KFProxy');
+const GenericDB = artifacts.require('GenericDB');
+const CronJob = artifacts.require('CronJob');
 const ProxiedTest = artifacts.require('ProxiedTest');
 const PROXIED_TEST_CONTRACT_NAME = 'ProxiedTest';
  
@@ -14,9 +16,11 @@ contract('KFProxy', ([owner, addr1, unauthorizedAddr, randomAddr]) => {
 
   beforeEach(async () => {
     this.proxy = await Proxy.new();
+    this.genericDB = await GenericDB.new();
+    this.cronJob = await CronJob.new(this.genericDB.address);
     this.proxiedTest = await ProxiedTest.new();
+    await this.proxy.addContract('CronJob', this.cronJob.address);
 
-    // Add owner as if it is a client contract to be able to make calls to RoleDB contract for test purpose
     await this.proxy.addContract(PROXIED_TEST_CONTRACT_NAME, this.proxiedTest.address);
     await this.proxiedTest.setProxy(this.proxy.address);
   });

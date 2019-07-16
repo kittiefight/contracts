@@ -1,8 +1,9 @@
-const Proxy = artifacts.require('ProxyMock');
+const Proxy = artifacts.require('KFProxy');
 const GenericDB = artifacts.require('GenericDB');
 const CronJob = artifacts.require('CronJob');
 const CronJobTarget = artifacts.require('CronJobTarget');
 const BigNumber = require('bignumber.js');
+const evm = require('./utils/evm.js');
 
 require('chai')
     .use(require('chai-shallow-deep-equal'))
@@ -25,14 +26,13 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
         await this.cronJob.setProxy(this.proxy.address);
         await this.cronJobTarget.setProxy(this.proxy.address);
     });
-
     describe('CronJob::Authority', () => {
         it('sets proxy and db', async () => {
             await this.cronJob.setProxy(randomAddress).should.be.fulfilled;
             await this.cronJob.setGenericDB(randomAddress).should.be.fulfilled;
 
-            let proxy = await this.profileDB.proxy();
-            let genericDB = await this.profileDB.genericDB();
+            let proxy = await this.cronJob.proxy();
+            let genericDB = await this.cronJob.genericDB();
 
             proxy.should.be.equal(randomAddress);
             genericDB.should.be.equal(randomAddress);
@@ -43,33 +43,64 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             await this.cronJob.setGenericDB(this.genericDB.address, {from: unauthorizedUser}).should.be.rejected;
         });
 
-        /*
-        it('does not allow unauthorized address to access add job', async () => {
-            await this.profileDB.create(userId, {from: unauthorizedUser}).should.be.rejected;
-
-            // Create a user with authorized address to test authorization for setter functions
-            await this.profileDB.create(userId).should.be.fulfilled;
-            // Check whether the node with the given user id is added to profile linked list
-            (await this.genericDB.doesNodeExist(CONTRACT_NAME, DB_TABLE_NAME, userId)).should.be.true;
-
-            await this.profileDB.setLoginStatus(userId, true, {from: unauthorizedUser}).should.be.rejected;
-            await this.profileDB.setAccountAttributes(userId, user1, web3.utils.utf8ToHex('asadad'), web3.utils.utf8ToHex('asdad'), {from: unauthorizedUser}).should.be.rejected;
-            await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, {from: unauthorizedUser}).should.be.rejected;
-            await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, {from: unauthorizedUser}).should.be.rejected;
-            await this.profileDB.setFeeAttributes(userId, 1, 2, 3, false, {from: unauthorizedUser}).should.be.rejected;
-            await this.profileDB.setTokenEconomyAttributes(userId, 1, 2, true, {from: unauthorizedUser}).should.be.rejected;
-            await this.profileDB.setKittieAttributes(userId, 1, 2, 3, 'test', 'dead', {from: unauthorizedUser}).should.be.rejected;
-        });
-        */
     });
-
     describe('CronJob::JobList', () => {
-        it('should add job to list', async () => {
-            let testJobData = web3.eth.abi.encodeFunctionCall(
-                CronJobTarget.abi.find((el)=>{return  el.name=='setNonZeroValue'}),
-                
+        it('should add job to list manually', async () => {
+            let delay = 10;
+            let randomVal = 1+Math.round(Math.random()*99);
+            let now = (await web3.eth.getBlock(web3.eth.blockNumber)).timestamp;
+            let scheduledTime = now + delay;
+            //Create Job
+            let receipt = await this.cronJob.addCronJobManually(
+                'CronJobTarget',
+                scheduledTime,
+                web3.eth.abi.encodeFunctionCall({
+                    name: 'setNonZeroValue',
+                    type: 'function',
+                    inputs: [{type: 'uint256',name: '_value'}]
+                }, [randomVal]),
+                0
             );
-            await this.proxy.scheduleJob(this.cronJobTarget.address, ).should.be.fulfilled;
+            //Check Job created
+            let jobId = receipt.logs[0].args.jobId;
+            let job = await this.cronJob.getJob(jobId);
+            assert.equal(job[0].toNumber(), scheduledTime, 'Scheduled time for Job does not match');
+        });
+        it('should add job to list via target contract', async () => {
+            let delay = 10;
+            let randomVal = 1+Math.round(Math.random()*99);
+            //Create Job
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(randomVal, delay).should.be.fulfilled;
+            let jobId = receipt.logs[0].args.scheduledJob;
+            let scheduledTime = receipt.logs[0].args.time;
+            //Check Job created
+            let job = await this.cronJob.getJob(jobId);
+            assert.equal(job[0].toString(), scheduledTime.toString(), 'Scheduled time for Job does not match');
+        });
+    });
+    describe('CronJob::ExecuteViaProxy', () => {
+        it('should execute added job', async () => {
+            let delay = 10;
+            let randomVal = 1+Math.round(Math.random()*99);
+            //Create Job
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(randomVal, delay).should.be.fulfilled;
+            let jobId = receipt.logs[0].args.scheduledJob;
+            let scheduledTime = receipt.logs[0].args.time;
+            //Check Job created
+            let job = await this.cronJob.getJob(jobId);
+            assert.equal(job[0].toString(), scheduledTime.toString(), 'Scheduled time for Job does not match');
+            let value = await this.cronJobTarget.value();
+            assert.equal(value, 0, 'Value should not be set yet');
+            // console.log('Before increase time: ', (await web3.eth.getBlock(web3.eth.blockNumber)).timestamp);
+            // console.log('Current value:', (await this.cronJobTarget.value()).toString());
+            //Fast-forward time & execute
+            evm.increaseTime(web3, delay+1);
+            receipt = await this.proxy.executeScheduledJobs();
+            //Check job is done
+            // console.log('After increase time: ', (await web3.eth.getBlock(web3.eth.blockNumber)).timestamp);
+            // console.log('Current value:', (await this.cronJobTarget.value()).toString());
+            value = await this.cronJobTarget.value();
+            assert.equal(value, randomVal, 'Value should aready be set');
         });
 
 

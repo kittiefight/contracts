@@ -5,6 +5,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should();
 
+const CronJob = artifacts.require('CronJob');
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB');
 const RoleDB = artifacts.require('RoleDB');
@@ -23,12 +24,14 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     this.profileDB = await ProfileDB.new(this.genericDB.address);
     this.roleDB = await RoleDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
+    this.cronJob = await CronJob.new(this.genericDB.address);
     this.register = await Register.new();
     this.superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
     this.kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
     this.cryptoKitties = await CryptoKitties.new();
 
     // Add the system contracts to the proxy
+    await this.proxy.addContract('CronJob', this.cronJob.address);
     await this.proxy.addContract('CryptoKitties', this.cryptoKitties.address);
     await this.proxy.addContract('SuperDAOToken', this.superDaoToken.address);
     await this.proxy.addContract('KittieFightToken', this.kittieFightToken.address);

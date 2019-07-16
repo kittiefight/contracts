@@ -8,6 +8,7 @@ require('chai')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB');
 const Proxy = artifacts.require('KFProxy');
+const CronJob = artifacts.require('CronJob');
 
 const CONTRACT_NAME = 'ProfileDB';
 const TABLE_NAME_PROFILE = 'ProfileTable';
@@ -21,6 +22,8 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     this.genericDB = await GenericDB.new();
     this.profileDB = await ProfileDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
+    this.cronJob = await CronJob.new(this.genericDB.address);
+    await this.proxy.addContract('CronJob', this.cronJob.address);
 
     await this.proxy.addContract('ProfileDB', this.profileDB.address);
     // Set the primary address as if it is Register Contract to call ProfileDB for testing purpose

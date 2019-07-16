@@ -7,6 +7,7 @@ require('chai')
 const { ZERO_ADDRESS } = require('./utils/constants');
 const GenericDB = artifacts.require('GenericDB');
 const Proxy = artifacts.require('KFProxy');
+const CronJob = artifacts.require('CronJob');
 const RoleDB = artifacts.require('RoleDB');
 const GuardImplementor = artifacts.require('GuardImplementor');
 const ROLEDB_CONTRACT_NAME = 'RoleDB';
@@ -28,7 +29,9 @@ contract('RoleDB & Guard', ([owner, addr1, addr2, addr3, addr4, unauthorizedAddr
     this.genericDB = await GenericDB.new();
     this.roleDB = await RoleDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
+    this.cronJob = await CronJob.new(this.genericDB.address);
     this.guardImplementor = await GuardImplementor.new(this.roleDB.address);
+    await this.proxy.addContract('CronJob', this.cronJob.address);
 
     // Add owner as if it is a client contract to be able to make calls to RoleDB contract for test purpose
     await this.proxy.addContract(GUARD_IMPL_CONTRACT_NAME, owner);
