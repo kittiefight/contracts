@@ -22,7 +22,7 @@ pragma solidity ^0.5.5;
 
 import "../../GameVarAndFee.sol";
 import "../proxy/Proxied.sol";
-import "./BokkyPooBahsDateTimeLibrary.sol";
+// import "./BokkyPooBahsDateTimeLibrary.sol";
 
 
 /**
@@ -33,7 +33,10 @@ import "./BokkyPooBahsDateTimeLibrary.sol";
  */
 contract DateTime is Proxied {
 
-    using BokkyPooBahsDateTimeLibrary for uint;
+    uint constant SECONDS_PER_DAY = 24 * 60 * 60;
+    uint constant SECONDS_PER_HOUR = 60 * 60;
+    uint constant SECONDS_PER_MINUTE = 60;
+    int constant OFFSET19700101 = 2440588;
 
     GameVarAndFee public gameVarAndFee;
 
@@ -42,6 +45,10 @@ contract DateTime is Proxied {
     */
     function initialize() external onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+    }
+
+    function getBlockchainTime() public view returns(uint){
+        return now;
     }
 
     /**
@@ -53,68 +60,96 @@ contract DateTime is Proxied {
         uint _year, uint _month, uint _day, uint _hour,
         uint _minute, uint second)
     {
-        (_year, _month, _day, _hour, _minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(timeStamp);
+        (_year, _month, _day, _hour, _minute, second) = timestampToDateTime(timeStamp);
     }
 
     
-    /**
-    * @notice Uses the variable "gameDuration" to compare against current time and
-    * determine the "Time" when game should end .
-    * @return Time in hour, minutes and seconds
-    */
-    function runGameDurationTime()
-        public view
-        returns(
-        uint _year, uint _month, uint _day, uint _hour,
-        uint _minute, uint second)
-    {
-        uint _gameDuration = gameVarAndFee.getGameDuration();
-        (_year, _month, _day, _hour, _minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(now + _gameDuration);
+    // /**
+    // * @notice Uses the variable "gameDuration" to compare against current time and
+    // * determine the "Time" when game should end .
+    // * @return Time in hour, minutes and seconds
+    // */
+    // function runGameDurationTime()
+    //     public view
+    //     returns(
+    //     uint _year, uint _month, uint _day, uint _hour,
+    //     uint _minute, uint second)
+    // {
+    //     uint _gameDuration = gameVarAndFee.getGameDuration();
+    //     (_year, _month, _day, _hour, _minute, second) = timestampToDateTime(now + _gameDuration);
 
+    // }
+
+    // /**
+    // * @notice Uses the variable "kittieHellExpiration" to compare against gameEndtime and
+    // * determine  the "Time" when a CAT in kittiehell is lost forever
+    // * @return Time in hour, minutes and seconds
+    // */
+    // function runKittieHellExpirationTime(uint _gameEndTime)
+    // public view
+    //     returns(
+    //     uint _year, uint _month, uint _day, uint _hour,
+    //     uint _minute, uint second)
+    // {
+    //     uint _kittieHellExpiration = gameVarAndFee.getKittieHellExpiration();
+    //     (_year, _month, _day, _hour, _minute, second) = timestampToDateTime(_gameEndTime + _kittieHellExpiration);
+    // }
+
+    // /**
+    // * @notice Uses the variable "honeypotExpiration" to compare against gameEndtime and
+    // * determine  the "Time" when honeypot should expire and be dissolved
+    // * @return Time in hour, minutes and seconds
+    // */
+    // function runhoneypotExpirationTime(uint _gameEndTime)
+    // public view
+    // returns(
+    //     uint _year, uint _month, uint _day, uint _hour,
+    //     uint _minute, uint second)
+    // {
+    //     uint _honeypotExpiration = gameVarAndFee.getHoneypotExpiration();
+    //     (_year, _month, _day, _hour, _minute, second) = timestampToDateTime(_gameEndTime + _honeypotExpiration);
+    // }
+
+    // /**
+    // * @notice Uses the variable "futureGameTime" to compare against current time "now"
+    // * and determine a future start date and or time for a game
+    // * @return Date and Time
+    // */
+    // function runfutureGameTime()
+    //     public view
+    //     returns(
+    //     uint _year, uint _month, uint _day, uint _hour,
+    //     uint _minute, uint second)
+    // {
+    //     uint _futureGameTime = gameVarAndFee.getFutureGameTime();
+    //     (_year, _month, _day, _hour, _minute, second) = timestampToDateTime(now + _futureGameTime);
+    // }
+
+    function timestampToDateTime(uint timestamp) internal pure returns (uint year, uint month, uint day, uint hour, uint minute, uint second) {
+        (year, month, day) = _daysToDate(timestamp / SECONDS_PER_DAY);
+        uint secs = timestamp % SECONDS_PER_DAY;
+        hour = secs / SECONDS_PER_HOUR;
+        secs = secs % SECONDS_PER_HOUR;
+        minute = secs / SECONDS_PER_MINUTE;
+        second = secs % SECONDS_PER_MINUTE;
     }
 
-    /**
-    * @notice Uses the variable "kittieHellExpiration" to compare against gameEndtime and
-    * determine  the "Time" when a CAT in kittiehell is lost forever
-    * @return Time in hour, minutes and seconds
-    */
-    function runKittieHellExpirationTime(uint _gameEndTime)
-    public view
-        returns(
-        uint _year, uint _month, uint _day, uint _hour,
-        uint _minute, uint second)
-    {
-        uint _kittieHellExpiration = gameVarAndFee.getKittieHellExpiration();
-        (_year, _month, _day, _hour, _minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(_gameEndTime + _kittieHellExpiration);
-    }
+    function _daysToDate(uint _days) internal pure returns (uint year, uint month, uint day) {
+        int __days = int(_days);
 
-    /**
-    * @notice Uses the variable "honeypotExpiration" to compare against gameEndtime and
-    * determine  the "Time" when honeypot should expire and be dissolved
-    * @return Time in hour, minutes and seconds
-    */
-    function runhoneypotExpirationTime(uint _gameEndTime)
-    public view
-    returns(
-        uint _year, uint _month, uint _day, uint _hour,
-        uint _minute, uint second)
-    {
-        uint _honeypotExpiration = gameVarAndFee.getHoneypotExpiration();
-        (_year, _month, _day, _hour, _minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(_gameEndTime + _honeypotExpiration);
-    }
+        int L = __days + 68569 + OFFSET19700101;
+        int N = 4 * L / 146097;
+        L = L - (146097 * N + 3) / 4;
+        int _year = 4000 * (L + 1) / 1461001;
+        L = L - 1461 * _year / 4 + 31;
+        int _month = 80 * L / 2447;
+        int _day = L - 2447 * _month / 80;
+        L = _month / 11;
+        _month = _month + 2 - 12 * L;
+        _year = 100 * (N - 49) + _year + L;
 
-    /**
-    * @notice Uses the variable "futureGameTime" to compare against current time "now"
-    * and determine a future start date and or time for a game
-    * @return Date and Time
-    */
-    function runfutureGameTime()
-        public view
-        returns(
-        uint _year, uint _month, uint _day, uint _hour,
-        uint _minute, uint second)
-    {
-        uint _futureGameTime = gameVarAndFee.getFutureGameTime();
-        (_year, _month, _day, _hour, _minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(now + _futureGameTime);
+        year = uint(_year);
+        month = uint(_month);
+        day = uint(_day);
     }
 }
