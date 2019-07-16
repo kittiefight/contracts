@@ -155,35 +155,37 @@ contract GMGetterDB is Proxied {
   /**
    * @dev ?
    */
-  function getStartTime(uint256 gameId)
+  function getGameTimes(uint256 gameId)
     public view
     onlyExistentGame(gameId)
-    returns (uint)
+    returns (uint startTime, uint preStartTime, uint endTime)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    startTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    preStartTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
+    endTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
   }
 
-  /**
-   * @dev ?
-   */
-  function getPrestartTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
-  }
+  // /**
+  //  * @dev ?
+  //  */
+  // function getPrestartTime(uint256 gameId)
+  //   public view
+  //   onlyExistentGame(gameId)
+  //   returns (uint)
+  // {
+  //   return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
+  // }
 
-  /**
-   * @dev ?
-   */
-  function getEndTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
-  }
+  // /**
+  //  * @dev ?
+  //  */
+  // function getEndTime(uint256 gameId)
+  //   public view
+  //   onlyExistentGame(gameId)
+  //   returns (uint)
+  // {
+  //   return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
+  // }
 
    /**
    * @dev Update kittie state
@@ -308,7 +310,7 @@ contract GMGetterDB is Proxied {
   }
 
   /**
-   * @dev Get players current Defense Level
+   * @dev Get players current random number (start button)
    */
   function getRandomNum(uint256 gameId, address player) public view returns(uint){
     return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")));

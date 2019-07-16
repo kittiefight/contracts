@@ -227,8 +227,9 @@ contract GameManager is Proxied, Guard {
 
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
+        (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);        
         //Update state if reached prestart time
-        if (gmGetterDB.getPrestartTime(gameId) >= now)
+        if (preStartTime >= now)
             gmSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
     }
 
@@ -276,7 +277,7 @@ contract GameManager is Proxied, Guard {
      */
     function extendTime(uint gameId) internal {
         // check if underperforming
-        uint gameEndTime = gmGetterDB.getEndTime(gameId);
+        (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
 
         //each time 1 minute before game ends
         if(gameEndTime - now <= 60) {
@@ -388,7 +389,9 @@ contract GameManager is Proxied, Guard {
     function gameEND(uint gameId) internal {
         require(gmGetterDB.getGameState(gameId) == GAME_STATE_STARTED, "Game not started");
 
-        if (gmGetterDB.getEndTime(gameId) >= now)
+        (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
+
+        if ( endTime >= now)
             gmSetterDB.updateGameState(gameId, GAME_STATE_FINISHED);
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
