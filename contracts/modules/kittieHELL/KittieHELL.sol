@@ -147,7 +147,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         uint256 tokenAmount = getResurrectionCost(_kittyID);
         require(tokenAmount > 0);
         kittieFightToken.transferFrom(kitties[_kittyID].owner, proxy.getContract('EndowmentFund'), tokenAmount);
-        cronJob.releaseKitty(_kittyID);
+        releaseKitty(_kittyID);
         emit KittyResurrected(_kittyID);
         return true;
     }
@@ -161,14 +161,20 @@ contract KittieHELL is BasicControls, Proxied, Guard {
      * @return true if the release was successful
      */
     function releaseKitty(uint256 _kittyID)
-        public
+        internal
         onlyOwnedKitty(_kittyID)
-        onlyContract(CONTRACT_NAME_CRONJOB)
     returns (bool) {
         cryptoKitties.transfer(kitties[_kittyID].owner, _kittyID);
         kitties[_kittyID].owner = address(0);
         emit KittyReleased(_kittyID);
         return true;
+    }
+
+    function releaseKittyForfeiter(uint256 _kittyID)
+        public
+        onlyContract(CONTRACT_NAME_FORFEITER)
+    returns (bool) {
+        releaseKitty(_kittyID);
     }
 
     /**
