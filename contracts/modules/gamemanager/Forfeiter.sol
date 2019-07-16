@@ -32,6 +32,10 @@ contract Forfeiter is Proxied {
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
 
+  uint256 public constant UNDERSUPPORTED = 0;
+  uint256 public constant KITTIE_LEFT = 1;
+  uint256 public constant NOT_HIT_START = 2;
+
   /**
    * @notice Owner can call this function to update the needed contracts for checking conditions
    * @dev contract addresses are stored in proxy
@@ -51,7 +55,6 @@ contract Forfeiter is Proxied {
   function checkGameStatus(uint256 gameId, uint gameState)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    returns (bool conditions)
   {
     (address playerBlack, address playerRed, uint256 kittyBlack,
       uint256 kittyRed, ,) = gmGetterDB.getGame(gameId);
@@ -62,8 +65,8 @@ contract Forfeiter is Proxied {
       uint supportersBlack = gmGetterDB.getSupporters(gameId, playerBlack);
       uint supportersRed = gmGetterDB.getSupporters(gameId, playerRed);
 
-      conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
-        checkAmountSupporters(supportersBlack, supportersRed, gamePreStartTime);
+      checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed);
+      checkAmountSupporters(gameId, supportersBlack, supportersRed, gamePreStartTime);
     }
 
     // GAME_PRESTART
@@ -71,15 +74,9 @@ contract Forfeiter is Proxied {
       uint256 gameStartTime = gmGetterDB.getStartTime(gameId);
       (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
 
-      conditions = checkPlayersKitties(kittyBlack, kittyRed, playerBlack, playerRed) &&
-        didPlayersStartGame(blackStarted, redStarted, gameStartTime);
+      checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed);
+      didPlayersStartGame(gameId, blackStarted, redStarted, gameStartTime);
     }
-    
-
-    //If any condition is false, call forfeitGame
-    if (!conditions) forfeitGame(gameId);
-
-    return conditions;
   }
 
   /**
@@ -88,8 +85,8 @@ contract Forfeiter is Proxied {
    *  (Not called in case of underPerformed returning true )
    * @param gameId uint256
    */
-  function forfeitGame(uint256 gameId) internal {
-    gameManager.cancelGame(gameId);
+  function forfeitGame(uint256 gameId, string memory reason) internal {
+    gameManager.cancelGame(gameId, reason);
   }
 
   /**
@@ -101,15 +98,15 @@ contract Forfeiter is Proxied {
    */
   function checkPlayersKitties
   (
-    uint kittieIdBlack, uint kittieIdRed,
+    uint gameId, uint kittieIdBlack, uint kittieIdRed,
     address playerBlack, address playerRed
   )
-    internal view returns (bool)
+    internal
   {
     bool checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
     bool checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
 
-    return (checkBlack && checkRed);
+    if (!(checkBlack && checkRed)) forfeitGame(gameId, 'Kittie Left');
   }
 
   /**
@@ -118,15 +115,14 @@ contract Forfeiter is Proxied {
    * @param supportersRed uint256 amount of supporters in red corner
    * @param gamePreStartTime uint256 time when game starts 2 min countdown
    */
-  function checkAmountSupporters(uint supportersBlack, uint supportersRed, uint gamePreStartTime)
-    internal view returns (bool)
+  function checkAmountSupporters(uint gameId, uint supportersBlack, uint supportersRed, uint gamePreStartTime)
+    internal
   { 
     if (gamePreStartTime <= now) {
       uint minSupporters = gameVarAndFee.getMinimumContributors();
-      return (supportersBlack > minSupporters) && (supportersRed > minSupporters);
+      if(!(supportersBlack > minSupporters) && (supportersRed > minSupporters))
+        forfeitGame(gameId, "Undersupported");
     }
-    
-    return true;
   }
 
   /**
@@ -135,10 +131,12 @@ contract Forfeiter is Proxied {
    * @param redStarted bool if red player hit start
    * @param gameStartTime uint256 time when 2 min countdown ends
    */
-  function didPlayersStartGame(bool blackStarted, bool redStarted, uint gameStartTime)
-    internal view returns (bool)
+  function didPlayersStartGame(uint gameId, bool blackStarted, bool redStarted, uint gameStartTime)
+    internal
   {
-    if (gameStartTime <= now) return blackStarted && redStarted;
-    return true;
+    if (gameStartTime <= now){
+      if(blackStarted && redStarted)
+        forfeitGame(gameId, "Did not hit start");
+    }
   }
 }

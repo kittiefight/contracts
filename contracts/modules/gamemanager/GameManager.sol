@@ -225,7 +225,7 @@ contract GameManager is Proxied, Guard {
         
         gmSetterDB.addBettor(gameId, getOriginalSender(), playerToSupport);
 
-        if (gameState == 1) require(forfeiter.checkGameStatus(gameId, gameState));
+        if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
         //Update state if reached prestart time
         if (gmGetterDB.getPrestartTime(gameId) >= now)
@@ -417,7 +417,7 @@ contract GameManager is Proxied, Guard {
     /**
      * @dev Cancels the game before the game starts
      */
-    function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
+    function cancelGame(uint gameId, string calldata reason) external onlyContract(CONTRACT_NAME_FORFEITER) {
         require(gmGetterDB.getGameState(gameId) == GAME_STATE_CREATED ||
                 gmGetterDB.getGameState(gameId) == GAME_STATE_PRESTART, "Unable to cancel game");
 
