@@ -18,9 +18,11 @@ import "../../libs/LinkedListLib.sol";
 import "../../libs/LinkedListAddrLib.sol";
 
 
+
 /**
- * @title EternalStorage
+ * @title Generic Eternal Storage Unit which can only be accessed through the proxied contracts
  * @dev This contract holds all the necessary state variables to carry out the storage of any contract.
+ * @author @psychoplasma
  */
 contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
@@ -31,7 +33,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     int256 value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     intStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -50,7 +52,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     uint256 value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     uintStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -69,7 +71,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     string calldata value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     stringStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -88,7 +90,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     address value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     addressStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -107,7 +109,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     bytes calldata value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     bytesStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -126,7 +128,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     bool value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     boolStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -252,7 +254,7 @@ contract GenericDB is EternalStorage, Proxied {
     if (!linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId)) {
       return false;
     }
-    
+  
     linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].remove(nodeId);
     return true;
   }

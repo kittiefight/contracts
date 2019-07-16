@@ -51,8 +51,8 @@ contract GMGetterDB is Proxied {
     public view
     returns(uint honeypotId, uint initialEth)
   {
-    honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
-    initialEth = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
+    honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+    initialEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
   }
 
   /**
@@ -63,7 +63,7 @@ contract GMGetterDB is Proxied {
     returns (uint)
   {
     return genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, player, "supporters"))
     );
   }
@@ -73,7 +73,7 @@ contract GMGetterDB is Proxied {
    */
   function getTotalBet(uint256 gameId, address supportedPlayer) public view returns(uint) {
     return genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
     );
   }
@@ -87,11 +87,11 @@ contract GMGetterDB is Proxied {
     returns (uint256 betAmount, address supportedPlayer)
   {
     betAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
     );
     supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
     );
   }
@@ -105,7 +105,7 @@ contract GMGetterDB is Proxied {
     returns (address)
   {
     return genericDB.getAddressStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, "winner"))
     );
   }
@@ -119,15 +119,15 @@ contract GMGetterDB is Proxied {
     onlyExistentGame(gameId)
     returns (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed, uint256 totalBet, uint256 startTime)
   {
-    playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
-    playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-    kittyBlack = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")));
-    kittyRed = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")));
+    playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+    playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+    kittyBlack = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerRed, "kitty")));
+    kittyRed = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")));
     totalBet = genericDB.getUintStorage(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, "totalBetAmount"))
     );
-    startTime = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    startTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
   }
 
  /**
@@ -138,7 +138,7 @@ contract GMGetterDB is Proxied {
     onlyExistentGame(gameId)
     returns (uint gameState)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "state")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
   }
 
   /**
@@ -149,41 +149,43 @@ contract GMGetterDB is Proxied {
     onlyExistentGame(gameId)
     returns (uint)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
   }
 
   /**
    * @dev ?
    */
-  function getStartTime(uint256 gameId)
+  function getGameTimes(uint256 gameId)
     public view
     onlyExistentGame(gameId)
-    returns (uint)
+    returns (uint startTime, uint preStartTime, uint endTime)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    startTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")));
+    preStartTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
+    endTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
   }
 
-  /**
-   * @dev ?
-   */
-  function getPrestartTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
-  }
+  // /**
+  //  * @dev ?
+  //  */
+  // function getPrestartTime(uint256 gameId)
+  //   public view
+  //   onlyExistentGame(gameId)
+  //   returns (uint)
+  // {
+  //   return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
+  // }
 
-  /**
-   * @dev ?
-   */
-  function getEndTime(uint256 gameId)
-    public view
-    onlyExistentGame(gameId)
-    returns (uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
-  }
+  // /**
+  //  * @dev ?
+  //  */
+  // function getEndTime(uint256 gameId)
+  //   public view
+  //   onlyExistentGame(gameId)
+  //   returns (uint)
+  // {
+  //   return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
+  // }
 
    /**
    * @dev Update kittie state
@@ -192,19 +194,19 @@ contract GMGetterDB is Proxied {
     public view
     returns (bool)
   {
-    return genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(kittieId, "inGame")));
+    return genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "inGame")));
   }
   
   /**
    * @dev Checks whether the given player is playing in the given game.
    */
   function isPlayer(uint256 gameId, address player) public view returns (bool) {
-    address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+    address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
     if (player == playerRed) {
       return true;
     }
 
-    address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+    address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
     if (player == playerBlack) {
       return true;
     }
@@ -214,7 +216,7 @@ contract GMGetterDB is Proxied {
 
   function getGames() public view returns (uint256[] memory) {
     return genericDB.getAll(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       TABLE_KEY_GAME
     );
   }
@@ -224,7 +226,7 @@ contract GMGetterDB is Proxied {
    */
   function getBettors(uint gameId) public view returns (address[] memory) {
     return genericDB.getAllAddr(
-      CONTRACT_NAME_GAMEMANAGER_DB,
+      CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR))
     );
   }
@@ -240,10 +242,10 @@ contract GMGetterDB is Proxied {
     returns (address, uint256){
     return (
       genericDB.getAddressStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
+        CONTRACT_NAME_GM_SETTER_DB,
         keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor"))),
       genericDB.getUintStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
+        CONTRACT_NAME_GM_SETTER_DB,
         keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")))
       );
   }
@@ -258,10 +260,10 @@ contract GMGetterDB is Proxied {
     returns (address, uint256){
     return (
       genericDB.getAddressStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
+        CONTRACT_NAME_GM_SETTER_DB,
         keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettor"))),
       genericDB.getUintStorage(
-        CONTRACT_NAME_GAMEMANAGER_DB,
+        CONTRACT_NAME_GM_SETTER_DB,
         keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")))
       );
   }
@@ -275,13 +277,13 @@ contract GMGetterDB is Proxied {
     onlyExistentGame(_gameId)
     returns (uint256, uint256){
      return (
-      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet"))),
-      genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")))
+      genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet"))),
+      genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")))
       );
   }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
-    return genericDB.doesNodeExist(CONTRACT_NAME_GAMEMANAGER_DB, TABLE_KEY_GAME, gameId);
+    return genericDB.doesNodeExist(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
   }
 
 
@@ -291,12 +293,12 @@ contract GMGetterDB is Proxied {
   function getPlayerStartStatus(uint256 gameId)
     public view
     returns(bool redStarted, bool blackStarted){
-      address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-      address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+      address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+      address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
 
       return (
-        genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerRed, "hitStart"))),
-        genericDB.getBoolStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "hitStart")))
+        genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerRed, "hitStart"))),
+        genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "hitStart")))
         );
   }
 
@@ -304,14 +306,14 @@ contract GMGetterDB is Proxied {
    * @dev Get players current Defense Level
    */
   function getDefenseLevel(uint256 gameId, address player) public view returns(uint){
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")));
   }
 
   /**
-   * @dev Get players current Defense Level
+   * @dev Get players current random number (start button)
    */
   function getRandomNum(uint256 gameId, address player) public view returns(uint){
-    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")));
   }
 
   function getAttackValues(uint256 gameId) public view
@@ -319,13 +321,13 @@ contract GMGetterDB is Proxied {
     (uint256 lowPunch, uint256 lowKick, uint256 lowThunder,
       uint256 hardPunch, uint256 hardKick, uint256 hardThunder, uint256 slash)
   {
-    lowPunch = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowPunch")));
-    lowKick = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowKick")));
-    lowThunder = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "lowThunder")));
-    hardPunch = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardPunch")));
-    hardKick = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardKick")));
-    hardThunder = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "hardThunder")));
-    slash = genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_DB, keccak256(abi.encodePacked(gameId, "slash")));
+    lowPunch = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lowPunch")));
+    lowKick = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lowKick")));
+    lowThunder = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lowThunder")));
+    hardPunch = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "hardPunch")));
+    hardKick = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "hardKick")));
+    hardThunder = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "hardThunder")));
+    slash = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "slash")));
   }
 
 }
