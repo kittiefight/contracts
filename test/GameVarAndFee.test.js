@@ -11,6 +11,7 @@ const Proxy = artifacts.require("KFProxy");
 const RoleDB = artifacts.require("RoleDB");
 
 const CONTRACT_NAME_GAMEVARANDFEE = 'GameVarAndFee';
+const kovanMedianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F'
 
 contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
   let requiredNumberMatches = 10;
@@ -19,7 +20,7 @@ contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
     //Deploy contracts needed for testing GameVarAndFee
     this.proxy = await Proxy.new();
     this.genericDB = await GenericDB.new();
-    this.gameVarAndFee = await GameVarAndFee.new(this.genericDB.address);
+    this.gameVarAndFee = await GameVarAndFee.new(this.genericDB.address, kovanMedianizer);
     this.roleDB = await RoleDB.new(this.genericDB.address);
 
     // Add contracts to Contract Manager mapping variable
@@ -54,7 +55,7 @@ contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
 
     });
 
-    it("only super admin can set variables", async () => {
+    it("only super admin can set a var or fee", async () => {
       let message = web3.eth.abi.encodeFunctionCall(
         GameVarAndFee.abi.find((f) => { return f.name == 'setVarAndFee'; }),
         ['requiredNumberMatches', requiredNumberMatches]
@@ -64,7 +65,7 @@ contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
       }).should.be.rejected;
     });
 
-    it("correctly sets variable in DB from proxy", async () => {
+    it("correctly sets variable in DB using proxy", async () => {
       let message = web3.eth.abi.encodeFunctionCall(
         GameVarAndFee.abi.find((f) => { return f.name == 'setVarAndFee'; }),
         ['requiredNumberMatches', requiredNumberMatches]
@@ -77,5 +78,20 @@ contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
 
       getVar.toNumber().should.be.equal(requiredNumberMatches);
     });
+
+    // it("correctly sets multiple variable in DB using proxy", async () => {
+    //   let message = web3.eth.abi.encodeFunctionCall(
+    //     GameVarAndFee.abi.find((f) => { return f.name == 'setMultipleValues'; }),
+    //     [[20, 180, 0, 0, 0, 0, 0, 0, 0, 0]]
+    //   );
+    //   await this.proxy.execute(CONTRACT_NAME_GAMEVARANDFEE, message, {
+    //     from: creator
+    //   }).should.be.fulfilled;
+
+    //   let getVar = await this.gameVarAndFee.getGamePrestart();
+    //   console.log(getVar);
+
+    //   getVar.toNumber().should.be.equal(180);
+    // });
   });
 });

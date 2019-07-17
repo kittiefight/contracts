@@ -82,155 +82,30 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
     }
 
-    // function setRequiredNumberMatches(uint value)
+    //TODO: check how to minimize gas, as it runs out of gas
+    // function setMultipleValues(uint[] calldata values)
     //     external onlyProxy onlySuperAdmin
     // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES, value);
+    //     if(values[0] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES, values[0]);
+    //     if(values[1] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_PRESTART, values[1]);
+    //     if(values[2] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_DURATION, values[2]);
+    //     if(values[3] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_HELL_EXPIRATION, values[3]);
+    //     if(values[4] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_EXPIRATION, values[4]);
+    //     if(values[5] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOKENS_PER_GAME, values[5]);
+    //     if(values[6] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ETH_PER_GAME, values[6]);
+        // if(values[7] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_TIMES, values[7]);
+        // if(values[8] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, WINNING_KITTIE, values[8]);
+        // if(values[9] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOP_BETTOR, values[9]);
+        // if(values[10] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SECOND_RUNNER_UP, values[10]);
+        // if(values[11] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, OTHER_BETTORS, values[11]);
+        // if(values[12] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT, values[12]);
+        // if(values[13] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE, values[13]);
+        // if(values[14] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE, values[14]);
+        // if(values[15] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE, values[15]);
+        // if(values[16] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE, values[16]);
+        // if(values[17] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS, values[17]);
     // }
 
-    // function setRequiredTimeDistance(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_TIME_DISTANCE, value);
-    // }
-
-    // function setGamePrestart(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_PRESTART, value);
-    // }
-
-    // function setGameDuration(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_DURATION, value);
-    // }
-
-    // function setKittieHellExpiration(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_HELL_EXPIRATION, value);
-    // }
-
-    // function setHonyPotExpiration(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_EXPIRATION, value);
-    // }
-
-    // function setScheduleTimeLimits(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SCHEDULE_TIME_LIMITS, value);
-    // }
-
-    // function setTokenPerGame(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOKENS_PER_GAME, value);
-    // }
-
-    // function setEtherPerGame(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ETH_PER_GAME, value);
-    // }
-
-    // function setDailyGameAvailAbility(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, DAILY_GAME_AVAILABILITY, value);
-    // }
-
-    // function setGameTimes(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_TIMES, value);
-    // }
-
-    // function setGameLimit(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_LIMIT, value);
-    // }
-
-    // function setGamesRateLimitFee(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAMES_RATE_LIMIT_FEE, value);
-    // }
-
-    // function setWinningKittie(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, WINNING_KITTIE, value);
-    // }
-
-    // function setTopBettor(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOP_BETTOR, value);
-    // }
-
-    // function setSecondRunnerUp(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SECOND_RUNNER_UP, value);
-    // }
-
-    // function setOtherBettor(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, OTHER_BETTORS, value);
-    // }
-      
-    // function setEndowment(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT, value);
-    // }
-
-    // function setListingFee(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE, value);
-    // }
-
-    // function setTicketFee(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE, value);
-    // }
-
-    // function setBettingFee(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE, value);
-    // }
-
-    // function setKittieRedemptionFee(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE, value);
-    // }
-
-    // function setKittieExpiry(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY, value);
-    // }
-
-    // function setHonyPotDuration(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_DURATION, value);
-    // }
-
-    // function setMinimumContributors(uint value)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS, value);
-    // }
 
     // ----- GETTERS ------
 
@@ -244,13 +119,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     public view returns(uint) { 
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES);
     }
-
-    /// @notice Gets the time distance between scheduled fights (i.e. 3000)
-    function getRequiredTimeDistance() 
-    public view returns(uint) { 
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_TIME_DISTANCE);
-    }
-
     
     /// @notice Gets countdown time for players to start game (i.e. 120).
     function getGamePrestart() 
@@ -276,12 +144,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(TABLE_NAME, HONEY_POT_EXPIRATION);
     }
     
-    /// @notice Gets the farthest time in futre when a game can be schedule
-    function getScheduleTimeLimits() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SCHEDULE_TIME_LIMITS);
-    }
-    
     /// @notice Gets mount of initial KTY Tokens allowed to be drawn from EndowmentFund to be allocated to game
     function getTokensPerGame() 
     public view returns(uint) {
@@ -294,28 +156,10 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ETH_PER_GAME);
     }
     
-    /// @notice Gets Amount of games allowed per day 
-    function getDailyGameAvailability() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, DAILY_GAME_AVAILABILITY);
-    }
-    
     /// @notice Gets Times duration between each game per day
     function getGameTimes() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_TIMES);
-    }
-    
-    /// @notice Gets Games per day allowed per address "Games rate limit"
-    function getGameLimit() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_LIMIT);
-    }
-    
-    /// @notice Gets fee paid to lift the limit of the number of games allowed per day, per address
-    function getGamesRateLimitFee() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAMES_RATE_LIMIT_FEE);
     }
     
     /// @notice Gets Distribution Rates
@@ -355,18 +199,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     function getKittieRedemptionFee() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
-    }
-
-    /// @notice Gets Kittie expiry time in kittieHELL 
-    function getKittieExpiry() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY);
-    }
-
-    /// @notice Gets honeyPot duration/expiry after game end 
-    function getHoneyPotDuration() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_DURATION);
     }
 
     /// @notice Gets minimum contributors needed for the game to continue
