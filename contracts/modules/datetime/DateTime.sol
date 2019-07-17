@@ -19,29 +19,18 @@
 
 pragma solidity ^0.5.5;
 
-import "../../GameVarAndFee.sol";
-import "../proxy/Proxied.sol";
-
 /**
  * @title Contract to track minutes, hour, daily, the weekly and monthly schedule
  * for scheduling activities within the platform. Used by contract to for time tracking,
  * accurately scheduling game events within the kittiefight sytem .
  */
-contract DateTime is Proxied {
+contract DateTime {
 
     uint constant SECONDS_PER_DAY = 24 * 60 * 60;
     uint constant SECONDS_PER_HOUR = 60 * 60;
     uint constant SECONDS_PER_MINUTE = 60;
     int constant OFFSET19700101 = 2440588;
 
-    GameVarAndFee public gameVarAndFee;
-
-    /**
-    * @notice initialize the gameVarAndFee contract
-    */
-    function initialize() external onlyOwner {
-        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-    }
 
     function getBlockchainTime()
         public view
