@@ -113,7 +113,7 @@ contract GameManager is Proxied, Guard {
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         timeContract = DateTime(proxy.getContract(CONTRACT_NAME_TIMECONTRACT));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
-        // betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
+        betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
         rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         // kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
@@ -236,7 +236,7 @@ contract GameManager is Proxied, Guard {
 
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
-        (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);        
+        (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
         //Update state if reached prestart time
         if (preStartTime >= now)
             gmSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
@@ -315,58 +315,61 @@ contract GameManager is Proxied, Guard {
         return false;
     }
 
-    /**
-     * @dev KTY tokens are sent to endowment balance, Eth gets added to ongoing game honeypot
-     * @author Felipe
-     * @author Karl
-     * @author Vikrammandal
-     */
-    function bet
-    (
-        uint gameId, uint amountKTY, uint randomNum
-    )
-        external payable
-        onlyProxy onlyBettor
-    {
-        require(msg.value > 0);
+    // /**
+    //  * @dev KTY tokens are sent to endowment balance, Eth gets added to ongoing game honeypot
+    //  * @author Felipe
+    //  * @author Karl
+    //  * @author Vikrammandal
+    //  */
+    // function bet
+    // (
+    //     uint gameId, uint amountKTY, uint randomNum
+    // )
+    //     external payable
+    //     onlyProxy onlyBettor
+    // {
 
-        uint gameState = gmGetterDB.getGameState(gameId);
+    //     // TODO: check if bettor already payed ticket feee
+
+    //     require(msg.value > 0);
+
+    //     uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == GAME_STATE_STARTED, "Game has not started yet");
+    //     require(gameState == GAME_STATE_STARTED, "Game has not started yet");
         
-        address sender = getOriginalSender();        
+    //     address sender = getOriginalSender();
         
-        //Send bet to endowment
-        endowmentFund.contributeETH.value(msg.value)(gameId);
+    //     //Send bet to endowment
+    //     endowmentFund.contributeETH.value(msg.value)(gameId);
 
-        // hits resolver
-        hitsResolve.calculateCurrentRandom(gameId, randomNum);
+    //     // hits resolver
+    //     hitsResolve.calculateCurrentRandom(gameId, randomNum);
         
-        (, address supportedPlayer) = gmGetterDB.getBettor(gameId, sender);
+    //     (, address supportedPlayer) = gmGetterDB.getBettor(gameId, sender);
 
-        address opponentPlayer = getOpponent(gameId, supportedPlayer);
+    //     address opponentPlayer = getOpponent(gameId, supportedPlayer);
 
-        // transfer bettingFee to endowmentFund
-        // endowmentFund.contributeKFT(account, gameVarAndFee.getBettingFee());
+    //     // transfer bettingFee to endowmentFund
+    //     // endowmentFund.contributeKFT(account, gameVarAndFee.getBettingFee());
         
-        (string memory attackType, bytes32 attackHash, uint256 defenseLevel) = betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
+    //     (string memory attackType, bytes32 attackHash, uint256 defenseLevel) = betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
-        // update opposite corner kittie defense level if changed
-        if (players[opponentPlayer][gameId].defenseLevel != defenseLevel)
-            players[opponentPlayer][gameId].defenseLevel = defenseLevel;
+    //     // update opposite corner kittie defense level if changed
+    //     if (players[opponentPlayer][gameId].defenseLevel != defenseLevel)
+    //         players[opponentPlayer][gameId].defenseLevel = defenseLevel;
 
-        //Update bettor's total bet
-        gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
+    //     //Update bettor's total bet
+    //     gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
 
-        // update game variables
-        calculateBettorStats(gameId, sender, msg.value, supportedPlayer);
+    //     // update game variables
+    //     calculateBettorStats(gameId, sender, msg.value, supportedPlayer);
 
-        // check underperforming game if one minut
-        extendTime(gameId);
+    //     // check underperforming game if one minut
+    //     extendTime(gameId);
 
-        //Check if game has ended
-        gameEND(gameId);
-    }
+    //     //Check if game has ended
+    //     gameEND(gameId);
+    // }
 
     /**
     * set lastBet, topBettor, secondTopBettor
@@ -401,11 +404,7 @@ contract GameManager is Proxied, Guard {
         if ( endTime >= now)
             gmSetterDB.updateGameState(gameId, GAME_STATE_FINISHED);
 
-        // When creating the game, set to true, then we set it to false when game cancels or ends
-        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gmGetterDB.getGame(gameId);
-        gmSetterDB.updateKittieState(kittyRed, false);
-        gmSetterDB.updateKittieState(kittyBlack, false);
-
+        updateKitties(gameId);
     }
 
     /**
@@ -433,31 +432,35 @@ contract GameManager is Proxied, Guard {
 
         gmSetterDB.updateGameState(gameId, GAME_STATE_CANCELLED);
 
+        updateKitties(gameId);
+
+    }
+
+    function updateKitties(uint gameId) internal {
         // When creating the game, set to true, then we set it to false when game cancels or ends
         ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gmGetterDB.getGame(gameId);
         gmSetterDB.updateKittieState(kittyRed, false);
         gmSetterDB.updateKittieState(kittyBlack, false);
-
     }
 
-    /**
-     * @dev ?
-     */
-    function claim(uint kittieId) external {
+    // /**
+    //  * @dev ?
+    //  */
+    // function claim(uint kittieId) external {
 
-    }
+    // }
 
-    /**
-     * @dev ?
-     */
-    function winnersClaim() external {
+    // /**
+    //  * @dev ?
+    //  */
+    // function winnersClaim() external {
 
-    }
+    // }
 
-    /**
-     * @dev ?
-     */
-    function winnersGroupClaim() external {
+    // /**
+    //  * @dev ?
+    //  */
+    // function winnersGroupClaim() external {
 
-    }
+    // }
 }

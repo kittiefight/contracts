@@ -22,33 +22,18 @@ const HitsResolve = artifacts.require('HitsResolve')
 const RarityCalculator = artifacts.require('RarityCalculator')
 const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
+const EndowmentDB = artifacts.require('EndowmentDB')
 const KittieHELL = artifacts.require('KittieHELL')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 
-let proxy
-let dateTime
-let genericDB
-let profileDB
-let roleDB
-let superDaoToken
-let kittieFightToken
-let cryptoKitties
-let register
-let gameVarAndFee
-// endowmentFund
-// distribution
-let forfeiter
-let scheduler
-// betting
-// hitsResolve
-// rarityCalculator
-// kittieHELL
-let getterDB
-let gameManagerDB
-let gameManager
+//Contract instances
+let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
+  kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
+  endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
+  rarityCalculator, kittieHELL, getterDB, setterDB, gameManager
 
 let errorMessage
 let ERROR = {
@@ -67,33 +52,50 @@ const kittie4 = 44444
 const kittie5 = 55555
 const kittie6 = 6666
 
+function setMessage(contract, funcName, argArray) {
+  return web3.eth.abi.encodeFunctionCall(
+    contract.abi.find((f) => { return f.name == funcName; }),
+    argArray
+  );
+}
+
 contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress]) => {
 
   beforeEach(async function () {
     this.timeout(10000);
     errorMessage = ''
 
+    // PROXY
     proxy = await KFProxy.new()
-    dateTime = await DateTime.new()
+
+    // DATABASES
     genericDB = await GenericDB.new()
     profileDB = await ProfileDB.new(genericDB.address);
     roleDB = await RoleDB.new(genericDB.address);
+    endowmentDB = await EndowmentDB.new(genericDB.address)
+    getterDB = await GMGetterDB.new(genericDB.address)
+    setterDB = await GMSetterDB.new(genericDB.address)
+
+    // TOKENS
     superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
     kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
     cryptoKitties = await CryptoKitties.new();
+
+    // MODULES
+    gameManager = await GameManager.new()
     register = await Register.new()
+    dateTime = await DateTime.new()
     gameVarAndFee = await GameVarAndFee.new(genericDB.address, randomAddress)
-    // endowmentFund = await EndowmentFund.new()
-    // distribution = await Distribution.new()
+    distribution = await Distribution.new()
     forfeiter = await Forfeiter.new()
     scheduler = await Scheduler.new()
-    // betting = await Betting.new()
-    // hitsResolve = await HitsResolve.new()
-    // rarityCalculator = await RarityCalculator.new()
+    betting = await Betting.new()
+    hitsResolve = await HitsResolve.new()
+    rarityCalculator = await RarityCalculator.new()
+    endowmentFund = await EndowmentFund.new()
     // kittieHELL = await KittieHELL.new(contractManager.address)
-    getterDB = await GMGetterDB.new(genericDB.address)
-    gameManagerDB = await GMSetterDB.new(genericDB.address)
-    gameManager = await GameManager.new()
+
+
 
     await proxy.addContract('TimeContract', dateTime.address)
     await proxy.addContract('GenericDB', genericDB.address)
@@ -104,43 +106,50 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
     await proxy.addContract('RoleDB', roleDB.address);
     await proxy.addContract('Register', register.address)
     await proxy.addContract('GameVarAndFee', gameVarAndFee.address)
-    // await proxy.addContract('EndowmentFund', endowmentFund.address)
-    // await proxy.addContract('Distribution', distribution.address)
+    await proxy.addContract('EndowmentFund', endowmentFund.address)
+    await proxy.addContract('EndowmentDB', endowmentDB.address)
+    await proxy.addContract('Distribution', distribution.address)
     await proxy.addContract('Forfeiter', forfeiter.address)
     await proxy.addContract('Scheduler', scheduler.address)
-    // await proxy.addContract('Betting', betting.address)
-    // await proxy.addContract('HitsResolve', hitsResolve.address)
-    // await proxy.addContract('RarityCalculator', rarityCalculator.address)
-    // await proxy.addContract('KittieHELL', kittieHELL.address)
-    await proxy.addContract('GameManagerDB', gameManagerDB.address)
-    await proxy.addContract('GetterDB', getterDB.address)
+    await proxy.addContract('Betting', betting.address)
+    await proxy.addContract('HitsResolve', hitsResolve.address)
+    await proxy.addContract('RarityCalculator', rarityCalculator.address)
+    await proxy.addContract('GMSetterDB', setterDB.address)
+    await proxy.addContract('GMGetterDB', getterDB.address)
     await proxy.addContract('GameManager', gameManager.address)
+    // await proxy.addContract('KittieHELL', kittieHELL.address)
+
+    //Because of constructor
+    // endowmentFund = await EndowmentFund.new()
+    // await proxy.addContract('EndowmentFund', endowmentFund.address)
 
 
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);
     await roleDB.setProxy(proxy.address);
-    await gameManagerDB.setProxy(proxy.address)
+    await setterDB.setProxy(proxy.address)
     await getterDB.setProxy(proxy.address)
-    // await endowmentFund.setProxy(proxy.address)
+    await endowmentFund.setProxy(proxy.address)
+    await endowmentDB.setProxy(proxy.address)
     await gameVarAndFee.setProxy(proxy.address)
-    // await distribution.setProxy(proxy.address)
+    await distribution.setProxy(proxy.address)
     await forfeiter.setProxy(proxy.address)
     await dateTime.setProxy(proxy.address)
     await scheduler.setProxy(proxy.address)
-    // await betting.setProxy(proxy.address)
-    // await hitsResolve.setProxy(proxy.address)
-    // await rarityCalculator.setProxy(proxy.address)
+    await betting.setProxy(proxy.address)
+    await hitsResolve.setProxy(proxy.address)
+    await rarityCalculator.setProxy(proxy.address)
     await register.setProxy(proxy.address)
-    // await kittieHELL.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
+    // await kittieHELL.setProxy(proxy.address)
 
     await dateTime.initialize()
     await gameVarAndFee.initialize()
-    await forfeiter.updateContracts()
+    await forfeiter.initialize()
     await scheduler.initialize()
     await register.initialize()
     await gameManager.initialize()
+    await endowmentFund.updateContracts()
 
     // Mint some kitties for the test addresses
     await cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
@@ -171,23 +180,27 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
     await kittieFightToken.approve(register.address, 100000, { from: user2 }).should.be.fulfilled;
 
     // registers user to the system
-    await proxy.register({ from: user1 }).should.be.fulfilled;
-    await proxy.register({ from: user2 }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'register', [user1]), {
+      from: user1
+    }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'register', [user2]), {
+      from: user2
+    }).should.be.fulfilled;
   })
 
 
   describe('GameManager::Authority', () => {
 
-    it('is not able to list kittie without proxy', async () => {
+    it.only('is not able to list kittie without proxy', async () => {
       try {
-        await gameManager.listKittie(123, user1)
+        await gameManager.listKittie(123, { from: user1 })
       } catch (err) {
         errorMessage = err.toString()
       }
       assert.include(errorMessage, ERROR.NO_PROXY)
     })
 
-    it('is not able to manual match without proxy', async () => {
+    it.only('is not able to manual match without proxy', async () => {
       try {
         await gameManager.manualMatchKitties(user1, user2, kittie1, kittie2, 123123)
       } catch (err) {
@@ -196,13 +209,16 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
       assert.include(errorMessage, ERROR.NO_PROXY)
     })
 
-    it('is not able to make a manual match without super admin role', async () => {
-      try {
-        await proxy.manualMatchKitties(user1, user2, kittie1, kittie2, 123123, { from: user1 })
-      } catch (err) {
-        errorMessage = err.toString()
-      }
-      assert.include(errorMessage, ERROR.ONLY_SUPER_ADMIN)
+    it.only('is not able to make a manual match without super admin role', async () => {
+      await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
+        [user1, user2, kittie1, kittie2, 123123]), { from: user1 }).should.be.rejected;
+      // try {
+      //   await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
+      //     [user1, user2, kittie1, kittie2, 123123]), { from: user1 })
+      // } catch (err) {
+      //   errorMessage = err.toString()
+      // }
+      // assert.include(errorMessage, ERROR.ONLY_SUPER_ADMIN)
     })
 
     // it('is not able to list kittie without a player role', async () => {

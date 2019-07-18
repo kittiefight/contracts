@@ -40,7 +40,7 @@ contract Forfeiter is Proxied {
    * @notice Owner can call this function to update the needed contracts for checking conditions
    * @dev contract addresses are stored in proxy
    */
-  function updateContracts() external onlyOwner {
+  function initialize() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
