@@ -55,6 +55,7 @@ contract ProfileDB is Proxied {
     address account,
     uint256 kittieId,
     uint256 deadAt,
+    uint256 gene,
     string calldata kittieStatus
   )
     external
@@ -63,6 +64,7 @@ contract ProfileDB is Proxied {
   {
     // Check if kittie exists under this account
     require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")), gene);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
     genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
   }
@@ -71,6 +73,7 @@ contract ProfileDB is Proxied {
     address account,
     uint256 kittieId,
     uint256 deadAt,
+    uint256 gene,
     string calldata kittieStatus
   )
     external
@@ -81,6 +84,7 @@ contract ProfileDB is Proxied {
     // If it does not, add it to kittie table under this account
     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
     // Set that kittie's attributes
+    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")), gene);
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
     genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
   }
@@ -176,6 +180,19 @@ contract ProfileDB is Proxied {
   {
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "kittieFightTokens")), kittieFightTokens);
   }
+
+  function getKittieAttributes(address account, uint256 kittieId)
+    public view
+    onlyContract(CONTRACT_NAME_REGISTER)
+    onlyExistentProfile(account)
+    returns (uint256 gene, uint256 deadAt, string memory status)
+  {
+    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
+    gene = genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")));
+    deadAt = genericDB.getUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")));
+    status = genericDB.getStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")));
+  }
+
 
   function getKittieFightTokens(address account)
     public

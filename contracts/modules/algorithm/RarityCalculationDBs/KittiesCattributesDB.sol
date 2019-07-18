@@ -2,6 +2,7 @@ pragma solidity ^0.5.5;
 
 import "../../../libs/SafeMath.sol";
 import "../../proxy/Proxied.sol";
+import "../../../authority/Guard.sol";
 import "./KaiToCattributesDB.sol";
 import "./KaiValueDB.sol";
 import "../../databases/ProfileDB.sol";
@@ -13,7 +14,7 @@ import "../../../interfaces/IContractManager.sol";
  * @author @ziweidream
  */
 
-contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
+contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB {
     using SafeMath for uint256;
     
     string[] public dominantGeneBinary;
@@ -81,7 +82,7 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
 
         for (uint256 i = 0; i < 240; i++) {
             output[239 - i] = (n % 2 == 1) ? byte("1") : byte("0");
-            n /= 2;
+            n = n.div(2);
         }
 
         return string(output);
@@ -92,18 +93,10 @@ contract KittiesCattributesDB is Proxied, KaiToCattributesDB, KaiValueDB {
      * @notice converts the gene in uint of a kitty to binary. 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
-    function getDominantGeneBinary(uint256 kittieId) 
+    function getDominantGeneBinary(uint256 kittieId, uint256 gene) 
       public
       //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
      {
-
-        // gene is temporarily hard-coded for kitty 1001, which is used in Truffle test. 
-        // gene will be obtained from ProfileDB.
-        // gene will be updated to a variable after ProfileDB incorporates gene 
-        // to functions addKittie() and setKittieAttributes, and possibly
-        // a new function getGene()
-        uint256 gene = 512955438081049600613224346938352058409509756310147795204209859701881294;
-
         string memory geneBinary = toBinaryString(gene);
         dominantGeneBinary.push(getSlice(236, 240, geneBinary));
         dominantGeneBinary.push(getSlice(216, 220, geneBinary));

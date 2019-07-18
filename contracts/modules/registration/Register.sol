@@ -83,7 +83,8 @@ contract Register is Proxied, SystemRoles {
    */
   function lockKittie(
     address account,
-    uint256 kittieId
+    uint256 kittieId,
+    uint256 gene
   )
     external
     onlyProxy
@@ -92,7 +93,7 @@ contract Register is Proxied, SystemRoles {
     require(cryptoKitties.ownerOf(kittieId) == account);
     // TODO: Change the owner address to the address of kittie custody contract later
     cryptoKitties.transferFrom(account, address(this), kittieId);
-    profileDB.addKittie(account, kittieId, 0, KITTIE_STATUS_IDLE);
+    profileDB.addKittie(account, kittieId, 0, gene, KITTIE_STATUS_IDLE);
     _registerRole(account, PLAYER_ROLE);
     return true;
   }
@@ -138,6 +139,7 @@ contract Register is Proxied, SystemRoles {
     address account,
     uint256 kittieId,
     uint256 deadAt,
+    uint256 gene,
     string calldata kittieStatus
   )
     external
@@ -146,7 +148,7 @@ contract Register is Proxied, SystemRoles {
   {
     // TODO: Change the owner address to the address of kittie custody contract later
     require(cryptoKitties.ownerOf(kittieId) == address(this));
-    profileDB.setKittieAttributes(account, kittieId, deadAt, kittieStatus);
+    profileDB.setKittieAttributes(account, kittieId, deadAt, gene, kittieStatus);
     return true;
   }
 

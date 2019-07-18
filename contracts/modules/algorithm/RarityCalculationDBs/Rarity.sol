@@ -27,6 +27,6 @@ contract Rarity is Owned, KittiesCattributesDB, CattributesScoresDB {
                 + CattributesScores[kittiesDominantCattributes[kittieId][4]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][5]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][6]]
-                + CattributesScores[kittiesDominantCattributes[kittieId][8]]).mul(100000000) / totalKitties;
+                + CattributesScores[kittiesDominantCattributes[kittieId][8]]).mul(100000000).div(totalKitties);
     }
 }
