@@ -195,6 +195,12 @@ contract('Betting', (accounts) => {
         assert.isTrue(isBlocked)
     })
 
+    it('is able to set and store the original defense level of the given corner in a game', async () => {
+        await BettingInst.setOriginalDefenseLevel(123, accounts[0], 6)
+        const originalDefenseLevel = await BettingInst.defenseLevel.call(123, accounts[0])
+        assert.equal(originalDefenseLevel, 6)
+    })
+
     it('is able to set and store the current defense level of the given corner in a game', async () => {
         await BettingInst.setDefenseLevel(123, accounts[0], 3)
         const defenseLevel = await BettingInst.defenseLevel.call(123, accounts[0])

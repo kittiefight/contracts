@@ -235,6 +235,23 @@ contract Betting is Proxied, Guard {
         defenseLevel[_gameId][_player] = _defenseLevel;
     }
 
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
+   /**
+    * @author @ziweidream
+    * @notice record the original defense level of the given corner in a game with a specific gameId
+    * @dev this function is only called by GameManager contract
+    * @param _gameId the gameID of the game
+    * @param _player the address of the given corner in this game for whom the defense level is recorded
+    * @param _originalDefenseLevel the original defense level of the given corner, which is calculated in
+    * the function startGame() in GameManager
+    */
+    function setOriginalDefenseLevel(uint256 _gameId, address _player, uint256 _originalDefenseLevel)
+        public
+        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        setDefenseLevel(_gameId, _player, _originalDefenseLevel);
+    }
+
    /**
     * @author @ziweidream
     * @notice randomly select attack types from low values column or high values column depending on
@@ -318,8 +335,8 @@ contract Betting is Proxied, Guard {
         return false;
     }
 
-     // the defense level of an oppoent is reduced each time 
-     // a bet is received from attacker and the last five bets are compared on the condition to see 
+     // the defense level of an oppoent is reduced each time
+     // a bet is received from attacker and the last five bets are compared on the condition to see
      // if each bet was bigger than the previous bet in progression.
      // reduceDefenseLevel() is internal. Temporarily set as public for truffle test purpose.
    /**
