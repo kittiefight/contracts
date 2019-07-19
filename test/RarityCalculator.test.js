@@ -148,7 +148,6 @@ it('is able to calculate the rarity of the cattributes of a kittie', async () =>
   await RarityCalculatorInst.kaiToCattribute(1001)
   await RarityCalculatorInst.updateTotalKitties(1600000)
   const rarity = await RarityCalculatorInst.calculateRarity(1001)
-  console.log(rarity.toNumber())
   assert.isNumber(rarity.toNumber())
 })
 

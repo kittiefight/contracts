@@ -107,12 +107,13 @@ contract HitsResolve is Proxied {
             hitTypeVals[6] = slash;
         }
 
+    // the commented out function assignLowValues() is the old version before update comment in issue#18
     /**
      * @author @ziweidream
      * @notice randomly assign values to Low Punch[1-100], Low Kick[101-200], and Low Thunder[201-300] hit types
      * @return set of random values assigned to low value hit types
      */
-    function assignLowValues(uint256 _gameID, uint256 _seed) public view returns (uint256 lowPunch, uint256 lowKick, uint256 lowThunder) {
+    /*function assignLowValues(uint256 _gameID, uint256 _seed) public view returns (uint256 lowPunch, uint256 lowKick, uint256 lowThunder) {
       uint256 nonce = currentRandom[_gameID];
       uint256 seed1 = _seed.add(nonce).add(1);
       uint256 seed2 = _seed.add(nonce).add(2);
@@ -120,14 +121,50 @@ contract HitsResolve is Proxied {
       lowPunch = randomGen(seed1).add(1);
       lowKick = randomGen(seed2).add(101);
       lowThunder = randomGen(seed3).add(201);
+    }*/
+    function assignLowValues(uint256 _gameID, uint256 _seed) public view returns (uint256 lowPunch, uint256 lowKick, uint256 lowThunder) {
+      uint256 nonce = currentRandom[_gameID];
+      uint256 seed1 = _seed.add(nonce).add(1);
+      uint256 seed2 = _seed.add(nonce).add(2);
+      uint256 seed3 = _seed.add(nonce).add(3);
+      uint256 diceLowValues1 = randomGen(seed1);
+      uint256 diceLowValues2 = randomGen(seed2);
+      uint256 diceLowValues3 = randomGen(seed3);
+
+      if (diceLowValues1 <= 33) {
+          lowPunch = randomGen(seed1).add(1);
+      } else if (diceLowValues1 <= 66 && diceLowValues1 > 33) {
+          lowPunch = randomGen(seed1).add(101);
+      } else if (diceLowValues1 > 66) {
+          lowPunch = randomGen(seed1).add(201);
+      }
+
+      if (diceLowValues2 <= 33) {
+          lowKick = randomGen(seed2).add(1);
+      } else if (diceLowValues2 <= 66 && diceLowValues2 > 33) {
+          lowKick = randomGen(seed2).add(101);
+      } else if (diceLowValues2 > 66) {
+          lowKick = randomGen(seed2).add(201);
+      }
+
+      if (diceLowValues3 <= 33) {
+          lowThunder = randomGen(seed3).add(1);
+      } else if (diceLowValues3 <= 66 && diceLowValues3 > 33) {
+          lowThunder = randomGen(seed3).add(101);
+      } else if (diceLowValues3 > 66) {
+          lowThunder = randomGen(seed3).add(201);
+      }
+
+      return (lowPunch, lowKick, lowThunder);
     }
 
+     // the commented out function assignHighValues() is the old version before update comment in issue#18
      /**
      * @author @ziweidream
      * @notice randomly assign values to Hard Punch[301-400], Hard Kick[401-500], and Hard Thunder[501-600] hit types
      * @return set of random values assigned to high value hit types
      */
-    function assignHighValues(uint256 _gameID, uint256 _seed) public view returns (uint256 hardPunch, uint256 hardKick, uint256 hardThunder) {
+    /*function assignHighValues(uint256 _gameID, uint256 _seed) public view returns (uint256 hardPunch, uint256 hardKick, uint256 hardThunder) {
       uint256 nonce = currentRandom[_gameID];
       uint256 seed1 = _seed.add(nonce).add(1);
       uint256 seed2 = _seed.add(nonce).add(2);
@@ -135,6 +172,42 @@ contract HitsResolve is Proxied {
       hardPunch = randomGen(seed1).add(301);
       hardKick = randomGen(seed2).add(401);
       hardThunder = randomGen(seed3).add(501);
+    }*/
+
+    function assignHighValues(uint256 _gameID, uint256 _seed) public view returns (uint256 hardPunch, uint256 hardKick, uint256 hardThunder) {
+      uint256 nonce = currentRandom[_gameID];
+      uint256 seed1 = _seed.add(nonce).add(1);
+      uint256 seed2 = _seed.add(nonce).add(2);
+      uint256 seed3 = _seed.add(nonce).add(3);
+      uint256 diceHighValues1 = randomGen(seed1);
+      uint256 diceHighValues2 = randomGen(seed2);
+      uint256 diceHighValues3 = randomGen(seed3);
+
+      if (diceHighValues1 <= 33) {
+          hardPunch = randomGen(seed1).add(301);
+      } else if (diceHighValues1 <= 66 && diceHighValues1 > 33) {
+          hardPunch = randomGen(seed1).add(401);
+      } else if (diceHighValues1 > 66) {
+          hardPunch = randomGen(seed1).add(501);
+      }
+
+      if (diceHighValues2 <= 33) {
+          hardKick = randomGen(seed2).add(301);
+      } else if (diceHighValues2 <= 66 && diceHighValues2 > 33) {
+          hardKick = randomGen(seed2).add(401);
+      } else if (diceHighValues2 > 66) {
+          hardKick = randomGen(seed2).add(501);
+      }
+
+      if (diceHighValues3 <= 33) {
+          hardThunder = randomGen(seed3).add(301);
+      } else if (diceHighValues3 <= 66 && diceHighValues3 > 33) {
+          hardThunder = randomGen(seed3).add(401);
+      } else if (diceHighValues3 > 66) {
+          hardThunder = randomGen(seed3).add(501);
+      }
+
+      return (hardPunch, hardKick, hardThunder);
     }
 
     /**
