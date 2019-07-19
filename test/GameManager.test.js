@@ -219,7 +219,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
 
   describe('GameManager::Authority', () => {
 
-    it('is not able to list kittie without proxy', async () => {
+    it.only('is not able to list kittie without proxy', async () => {
       try {
         await gameManager.listKittie(123, { from: user1 })
       } catch (err) {

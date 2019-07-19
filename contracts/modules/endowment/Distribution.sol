@@ -54,7 +54,7 @@ contract Distribution is Proxied {
         //require(endowmentDB.getHoneypotState(gameId) == 'Claiming')
 
         address winningSide = gmGetterDB.getWinner(gameId);
-        (uint256 betAmount, address supportedPlayer) = gmGetterDB.getBettor(gameId, claimer);
+        (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getBettor(gameId, claimer);
 
         // Is the winning player or part of the bettors of the winning corner
         require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");

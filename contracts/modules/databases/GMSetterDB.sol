@@ -17,7 +17,6 @@ import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 
-
 /**
  * @dev Stores game instances
  * @author @psychoplasma
@@ -93,6 +92,7 @@ contract GMSetterDB is Proxied {
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "inGame")), true);
 
     emit NewGame(gameId, playerRed, kittyRed, playerBlack, kittyBlack, gameStartTime);
+    return gameId;
   }
 
   /**
@@ -104,8 +104,6 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
-    // TODO: check if bettor is the same as one of the players
-
     // If bettor does not exist in the game given, add bettor to the game.
     if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
       // Add the bettor to the bettor table.
@@ -118,13 +116,10 @@ contract GMSetterDB is Proxied {
       );
 
       //Set payed fee to true
-      genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")), true);
+      genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")), true);
       
       // And increase the number of supporters for that player
       incrementSupporters(gameId, supportedPlayer);
-    }
-    else{
-
     }
   }
 

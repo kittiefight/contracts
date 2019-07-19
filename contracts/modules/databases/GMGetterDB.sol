@@ -16,6 +16,7 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
+import "../../GameVarAndFee.sol";
 
 /**
  * @dev Getters for game instances
@@ -26,16 +27,13 @@ contract GMGetterDB is Proxied {
  using SafeMath for uint256;
 
   GenericDB public genericDB;
+  GameVarAndFee public gameVarAndFee;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
-  string internal constant TABLE_NAME_KITTIES = "KittieTable";
-  string internal constant ERROR_DOES_NOT_EXIST = "Game does not exist";
-  string internal constant ERROR_CANNOT_SUPPORT_BOTH = "Cannot support both players";
-  string internal constant ERROR_INVALID_CURRENCY = "Invalid currency for bet";
 
   modifier onlyExistentGame(uint256 gameId) {
-    require(doesGameExist(gameId), ERROR_DOES_NOT_EXIST);
+    require(doesGameExist(gameId));
     _;
   }
   
@@ -45,6 +43,10 @@ contract GMGetterDB is Proxied {
 
   function setGenericDB(GenericDB _genericDB) public onlyOwner {
     genericDB = _genericDB;
+  }
+
+  function initialize() external onlyOwner {
+    gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
   }
 
   function getHoneypotInfo(uint256 gameId)
@@ -84,7 +86,7 @@ contract GMGetterDB is Proxied {
    */
   function getBettor(uint256 gameId, address bettor)
     public view
-    returns (uint256 betAmount, address supportedPlayer)
+    returns (uint256 betAmount, address supportedPlayer, bool ticketFeePaid)
   {
     betAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GM_SETTER_DB,
@@ -94,6 +96,8 @@ contract GMGetterDB is Proxied {
       CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
     );
+
+    ticketFeePaid = genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")));
   }
 
   /**
