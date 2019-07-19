@@ -20,6 +20,8 @@ import '../proxy/Proxied.sol';
 import '../../libs/SafeMath.sol';
 import '../databases/GMGetterDB.sol';
 import "../databases/EndowmentDB.sol";
+import "../../interfaces/ERC20Standard.sol";
+import "./Escrow.sol";
 
 /**
  * @title Distribution Contract
@@ -35,15 +37,19 @@ contract Distribution is Proxied {
     GameVarAndFee public gameVarAndFee;
     GMGetterDB public gmGetterDB;
     EndowmentDB public endowmentDB;
+    ERC20Standard public kittieFightToken;
+    Escrow public escrow;
 
     /**
-   * @dev Initialize contracts used
-   * @dev Can be called only by the owner of this contract
-   */
+    * @dev Sets related contracts
+    * @dev Can be called only by the owner of this contract
+    */
     function initialize() external onlyOwner {
-        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+        //kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
+        kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
+        escrow = Escrow(proxy.getContract(CONTRACT_NAME_ESCROW));
     }
 
     /**

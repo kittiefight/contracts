@@ -272,19 +272,19 @@ contract GMGetterDB is Proxied {
       );
   }
 
-  /**
-   * @dev get last bet amount (eth)
-   */
-  function getLastBet(uint256 _gameId, address _supportedPlayer)
-    public view
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(_gameId)
-    returns (uint256, uint256){
-     return (
-      genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet"))),
-      genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")))
-      );
-  }
+  // /**
+  //  * @dev get last bet amount (eth)
+  //  */
+  // function getLastBet(uint256 _gameId, address _supportedPlayer)
+  //   public view
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(_gameId)
+  //   returns (uint256, uint256){
+  //    return (
+  //     genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet"))),
+  //     genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")))
+  //     );
+  // }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);

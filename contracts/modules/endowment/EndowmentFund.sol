@@ -20,11 +20,6 @@
 pragma solidity ^0.5.5;
 
 import "./Distribution.sol";
-import "../proxy/Proxied.sol";
-import "../databases/EndowmentDB.sol";
-import "../../GameVarAndFee.sol";
-import "../../interfaces/ERC20Standard.sol";
-import "./Escrow.sol";
 
 /**
  * @title EndowmentFund
@@ -32,29 +27,11 @@ import "./Escrow.sol";
  * @author @vikrammndal @wafflemakr
  */
 
-contract EndowmentFund is Proxied, Distribution {
+contract EndowmentFund is Distribution {
     using SafeMath for uint256;
-
-    GameVarAndFee public gameVarAndFee;
-    EndowmentDB public endowmentDB;
-    ERC20Standard public kittieFightToken;
-    Escrow public escrow;
 
     /// @notice  the count of all invocations of `generatePotId`.
     uint256 public potRequestCount;
-
-    /**
-    * @dev Sets related contracts
-    * @dev Can be called only by the owner of this contract
-    */
-    function initialize() external onlyOwner {
-
-        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
-        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        //kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
-        kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTTOKEN));
-        escrow = Escrow(proxy.getContract(CONTRACT_NAME_ESCROW));
-    }
 
     enum HoneypotState {
         created,
@@ -106,7 +83,7 @@ contract EndowmentFund is Proxied, Distribution {
     * @dev updateHoneyPotState
     */
     function updateHoneyPotState(uint256 _potId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
-        endowmentDB.setHoneypotState(_potId, _state);
+        endowmentDB.setHoneypotState(_potId,_state);
     }
 
 
@@ -137,7 +114,7 @@ contract EndowmentFund is Proxied, Distribution {
      * @dev called by GameMangar
      *
      */
-    function contributeETH(uint _gameId) external returns(bool) {
+    function contributeETH(uint _gameId) external payable returns(bool) {
 
         // transfer ETH to Escrow
 

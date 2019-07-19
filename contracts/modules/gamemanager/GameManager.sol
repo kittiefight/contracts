@@ -59,7 +59,15 @@ contract GameManager is Proxied, Guard {
     IKittyCore public cryptoKitties;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, KITTIE_HELL, WITHDREW_EARNINGS, CANCELLED}
-    // eGameState  state;
+
+    enum HoneypotState {
+        created,
+        assigned,
+        gameScheduled,
+        gameStarted,
+        forefeited,
+        claimed
+    }
 
     struct Player{
         uint random;
@@ -122,14 +130,16 @@ contract GameManager is Proxied, Guard {
         onlyProxy onlyPlayer
         onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
     {
-        // TODO: endowment Team
-        // contributeKTY expects gameId? I think they need to change that function
-        //endowmentFund.contributeKFT(player, gameVarAndFee.getListingFee());
+        address player = getOriginalSender();
+
+        //Pay Listing Fee
+        // endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
+        require(endowmentFund.contributeKTY(player, 100));
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
         require((gmGetterDB.getKittieState(kittieId) == false));
 
-        scheduler.addKittyToList(kittieId, getOriginalSender());
+        scheduler.addKittyToList(kittieId, player);
     }
 
     /**
@@ -173,8 +183,6 @@ contract GameManager is Proxied, Guard {
         (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
         gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
 
-        // TODO: endowment Team
-        // endowmentFund.updateHoneyPotState(scheduled); //not yet implemented
     }
 
     /**
@@ -210,15 +218,16 @@ contract GameManager is Proxied, Guard {
     {
         uint gameState = gmGetterDB.getGameState(gameId);
 
+        address supporter = getOriginalSender();
+
         require(gameState == uint(eGameState.MAIN_GAME) ||
                 gameState == uint(eGameState.PRE_GAME));
 
         //pay ticket fee
-        // TODO: endowment Team, only needs amount and supporter sending
-        // endowmentFund.contributeKFT(supporter, gameVarAndFee.getTicketFee());
+        endowmentFund.contributeKTY(supporter, gameVarAndFee.getTicketFee());
         
         //Add a check to see if ticket fee went through
-        gmSetterDB.addBettor(gameId, getOriginalSender(), playerToSupport);
+        gmSetterDB.addBettor(gameId, supporter, playerToSupport);
 
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
@@ -262,6 +271,9 @@ contract GameManager is Proxied, Guard {
             betting.startGame(gameId, players[opponentPlayer][gameId].random, randomNum);
             players[opponentPlayer][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
+            (uint honeyPotId,) = gmGetterDB.getHoneypotInfo(gameId);
+            endowmentFund.updateHoneyPotState(honeyPotId, uint(HoneypotState.gameStarted));
+
         }
         //
         else{
@@ -331,16 +343,14 @@ contract GameManager is Proxied, Guard {
 
         require(payedFee); //Needs to call participate First
         
-        //Send bet to endowment
-        endowmentFund.contributeETH.value(msg.value)(gameId);
+        //Transfer Funds to endowment
+        require(endowmentFund.contributeETH.value(msg.value)(gameId));
+        require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()));
 
         //Update bettor's total bet
         gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
 
-        // transfer bettingFee to endowmentFund
-        // endowmentFund.contributeKFT(account, gameVarAndFee.getBettingFee());
-
-        // hits resolver
+        // Update Random
         hitsResolve.calculateCurrentRandom(gameId, randomNum);
         
         address opponentPlayer = getOpponent(gameId, supportedPlayer);        
@@ -351,13 +361,11 @@ contract GameManager is Proxied, Guard {
         if (players[opponentPlayer][gameId].defenseLevel != defenseLevel)
             players[opponentPlayer][gameId].defenseLevel = defenseLevel;
 
-        
-
         // update game variables
         calculateBettorStats(gameId, sender, msg.value, supportedPlayer);
 
-        // // check underperforming game if one minut
-        // extendTime(gameId);
+        // check underperforming game if one minut
+        extendTime(gameId);
 
         //Check if game has ended
         gameEnd(gameId);

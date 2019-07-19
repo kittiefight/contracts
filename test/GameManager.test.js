@@ -23,6 +23,7 @@ const RarityCalculator = artifacts.require('RarityCalculator')
 const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
+const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHELL')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
@@ -99,6 +100,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     hitsResolve = await HitsResolve.new()
     rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
+    escrow = await Escrow.new()
     // kittieHELL = await KittieHELL.new(contractManager.address)
 
     await proxy.addContract('TimeContract', dateTime.address)
@@ -112,6 +114,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await proxy.addContract('GameVarAndFee', gameVarAndFee.address)
     await proxy.addContract('EndowmentFund', endowmentFund.address)
     await proxy.addContract('EndowmentDB', endowmentDB.address)
+    await proxy.addContract('Escrow', escrow.address)
     await proxy.addContract('Distribution', distribution.address)
     await proxy.addContract('Forfeiter', forfeiter.address)
     await proxy.addContract('Scheduler', scheduler.address)
@@ -120,7 +123,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await proxy.addContract('RarityCalculator', rarityCalculator.address)
     await proxy.addContract('GMSetterDB', setterDB.address)
     await proxy.addContract('GMGetterDB', getterDB.address)
-    await proxy.addContract('GameManager', gameManager.address)
+    await proxy.addContract('GameManager', gameManager.address)//21
     // await proxy.addContract('KittieHELL', kittieHELL.address)
 
 
@@ -140,7 +143,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await hitsResolve.setProxy(proxy.address)
     await rarityCalculator.setProxy(proxy.address)
     await register.setProxy(proxy.address)
-    await gameManager.setProxy(proxy.address)
+    await gameManager.setProxy(proxy.address) //17
     // await kittieHELL.setProxy(proxy.address)
 
     await dateTime.initialize()
@@ -149,7 +152,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await scheduler.initialize()
     await register.initialize()
     await gameManager.initialize()
-    await endowmentFund.updateContracts()
+    await endowmentFund.initialize() //7
 
     // Mint some kitties for the test addresses
     await cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
@@ -219,7 +222,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
 
   describe('GameManager::Authority', () => {
 
-    it.only('is not able to list kittie without proxy', async () => {
+    it('is not able to list kittie without proxy', async () => {
       try {
         await gameManager.listKittie(123, { from: user1 })
       } catch (err) {
@@ -263,7 +266,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
 
   describe('GameManager::Listing and matching', () => {
 
-    it('should be able to list kittie', async () => {
+    it.only('should be able to list kittie', async () => {
       await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
         [kittie1]), { from: user1 }).should.be.fulfilled;
       let isListed = await scheduler.isKittyListedForMatching(kittie1)
