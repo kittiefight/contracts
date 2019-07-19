@@ -126,7 +126,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await proxy.addContract('GameManager', gameManager.address)//21
     // await proxy.addContract('KittieHELL', kittieHELL.address)
 
-
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);
     await roleDB.setProxy(proxy.address);
@@ -152,6 +151,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await scheduler.initialize()
     await register.initialize()
     await gameManager.initialize()
+    await getterDB.initialize()
     await endowmentFund.initialize() //7
 
     // Mint some kitties for the test addresses
@@ -171,56 +171,40 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await cryptoKitties.approve(register.address, kittie6, { from: user2 }).should.be.fulfilled;
 
     // Send some SuperDAO and KitttieFight tokens to users
-    await superDaoToken.transfer(user1, 100000).should.be.fulfilled;
-    await superDaoToken.transfer(user2, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user1, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user2, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user3, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user4, 100000).should.be.fulfilled;
 
     // Approve erc20 token transfer operation for the system
-    await superDaoToken.approve(register.address, 100000, { from: user1 }).should.be.fulfilled;
-    await superDaoToken.approve(register.address, 100000, { from: user2 }).should.be.fulfilled;
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: user1 }).should.be.fulfilled;
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: user2 }).should.be.fulfilled;
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: user3 }).should.be.fulfilled;
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: user4 }).should.be.fulfilled;
 
-    // registers user to the system
-    await proxy.execute('Register', setMessage(register, 'register', [user1]), {
-      from: user1
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user2]), {
-      from: user2
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user3]), {
-      from: user3
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user4]), {
-      from: user4
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user5]), {
-      from: user5
-    }).should.be.fulfilled;
-
-    //verify users civid Id, gfives player role
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
-      from: user1
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user2, cividId2]), {
-      from: user2
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user3, cividId3]), {
-      from: user3
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user4, cividId4]), {
-      from: user4
-    }).should.be.fulfilled;
-
   })
 
 
   describe('GameManager::Authority', () => {
+
+    beforeEach(async function () {
+      await proxy.execute('Register', setMessage(register, 'register', [user1]), {
+        from: user1
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user2]), {
+        from: user2
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user5]), {
+        from: user5
+      }).should.be.fulfilled;
+
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
+        from: user1
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user2, cividId2]), {
+        from: user2
+      }).should.be.fulfilled;
+    })
 
     it('is not able to list kittie without proxy', async () => {
       try {
@@ -266,7 +250,47 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
 
   describe('GameManager::Listing and matching', () => {
 
-    it.only('should be able to list kittie', async () => {
+    beforeEach(async function () {
+
+      //Set Listing Fee
+      await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['listingFee', 1000]), {
+        from: creator
+      }).should.be.fulfilled;
+
+      // registers user to the system
+      await proxy.execute('Register', setMessage(register, 'register', [user1]), {
+        from: user1
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user2]), {
+        from: user2
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user3]), {
+        from: user3
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user4]), {
+        from: user4
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user5]), {
+        from: user5
+      }).should.be.fulfilled;
+
+      //verify users civid Id, gfives player role
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
+        from: user1
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user2, cividId2]), {
+        from: user2
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user3, cividId3]), {
+        from: user3
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user4, cividId4]), {
+        from: user4
+      }).should.be.fulfilled;
+
+    })
+
+    it('should be able to list kittie', async () => {
       await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
         [kittie1]), { from: user1 }).should.be.fulfilled;
       let isListed = await scheduler.isKittyListedForMatching(kittie1)
@@ -274,8 +298,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     })
 
     it('should be a able to make a match from 4 listing', async () => {
-      let currentGames = await getterDB.getGames()
-
       // List Kitties
       await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
         [kittie1]), { from: user1 }).should.be.fulfilled;
@@ -289,36 +311,121 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
       await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
         [kittie4]), { from: user4 }).should.be.fulfilled;
 
+      // Get NewGame events
+      let events = await setterDB.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+      assert.equal(events.length, 2);
 
-      let newGames = await getterDB.getGames()
+      console.log('\nGames Created: \n');
+      events.map(e => {
+        console.log('-GameId ', e.returnValues.gameId)
+        console.log('KittiRed ', e.returnValues.kittieRed)
+        console.log('KittiBlack ', e.returnValues.kittieBlack)
+        console.log('---')
+      })
 
-      assert.equal(currentGames.length + 2, newGames.length)
     })
 
     // super admin role added in GameVarAndFee to creator!
     it('super admin should be able to make a manual match', async () => {
-      let currentGamesCount = await getterDB.getGames()
 
       await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
         [user1, user2, kittie1, kittie2, 123123]), { from: creator }).should.be.fulfilled;
 
-      let newGamesCount = await getterDB.getGames()
+      let events = await setterDB.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
 
-      assert.equal(currentGamesCount.length + 1, newGamesCount.length)
+      assert.equal(events.length, 1)
     })
 
   })
+
 
   describe('GameManager::Participating', () => {
-    // participate()
-    it('should be able to participate with all valid pre-checks via proxy', async () => {
+
+    beforeEach(async function () {
+      //Set var and fees
+      await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['listingFee', 1000]), {
+        from: creator
+      }).should.be.fulfilled;
+      await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['ticketFee', 100]), {
+        from: creator
+      }).should.be.fulfilled;
+      await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gamePrestart', 120]), {
+        from: creator
+      }).should.be.fulfilled;
+      await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gameDuration', 300]), {
+        from: creator
+      }).should.be.fulfilled;
+
+      // registers user to the system
+      await proxy.execute('Register', setMessage(register, 'register', [user1]), {
+        from: user1
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user2]), {
+        from: user2
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user3]), {
+        from: user3
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user4]), {
+        from: user4
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'register', [user5]), {
+        from: user5
+      }).should.be.fulfilled;
+
+      //verify users civid Id, gfives player role
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
+        from: user1
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user2, cividId2]), {
+        from: user2
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user3, cividId3]), {
+        from: user3
+      }).should.be.fulfilled;
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [user4, cividId4]), {
+        from: user4
+      }).should.be.fulfilled;
+
+      //List Kitties
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie1]), { from: user1 }).should.be.fulfilled;
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie2]), { from: user2 }).should.be.fulfilled;
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie3]), { from: user3 }).should.be.fulfilled;
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie4]), { from: user4 }).should.be.fulfilled;
 
     })
 
+    it.only('should be able to participate and support only one player', async () => {
+      let events = await setterDB.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+
+      //Check games that user1 is not in
+      let gameNotIn = events
+        .filter(e => ((e.returnValues.playerRed !== user1) || (e.returnValues.playerBlack !== user1)))
+
+      let { gameId, playerRed, playerBlack } = gameNotIn[0].returnValues;
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+        [gameId, playerRed]), { from: user1 }).should.be.fulfilled;
+
+      //New Supporter added
+      events = await setterDB.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+      assert.equal(events.length, 1);
+
+      //Cannot support the opponent too
+      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+        [gameId, playerBlack]), { from: user1 }).should.be.rejected;
+    })
+
+
 
   })
-
-
 
   // // participate()
   // it('should be able to participate with all valid pre-checks via proxy', async () => {

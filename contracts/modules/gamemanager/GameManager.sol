@@ -118,7 +118,6 @@ contract GameManager is Proxied, Guard {
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
-
     /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
@@ -133,8 +132,8 @@ contract GameManager is Proxied, Guard {
         address player = getOriginalSender();
 
         //Pay Listing Fee
-        // endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
-        require(endowmentFund.contributeKTY(player, 100));
+        endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
+        // require(endowmentFund.contributeKTY(player, 100));
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
         require((gmGetterDB.getKittieState(kittieId) == false));
@@ -220,14 +219,13 @@ contract GameManager is Proxied, Guard {
 
         address supporter = getOriginalSender();
 
-        require(gameState == uint(eGameState.MAIN_GAME) ||
-                gameState == uint(eGameState.PRE_GAME));
+        //Before KittieHell
+        require(gameState <= 2);
 
         //pay ticket fee
-        endowmentFund.contributeKTY(supporter, gameVarAndFee.getTicketFee());
+        require(endowmentFund.contributeKTY(supporter, gameVarAndFee.getTicketFee()));
         
-        //Add a check to see if ticket fee went through
-        gmSetterDB.addBettor(gameId, supporter, playerToSupport);
+        require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
@@ -287,7 +285,7 @@ contract GameManager is Proxied, Guard {
     }
 
     function getOpponent(uint gameId, address player) internal view returns(address){
-        (address playerBlack, address playerRed,,,,) = gmGetterDB.getGame(gameId);
+        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
         if(playerBlack == player) return playerRed;
         return playerBlack;
     }
@@ -353,7 +351,7 @@ contract GameManager is Proxied, Guard {
         // Update Random
         hitsResolve.calculateCurrentRandom(gameId, randomNum);
         
-        address opponentPlayer = getOpponent(gameId, supportedPlayer);        
+        address opponentPlayer = getOpponent(gameId, supportedPlayer);
         
         (,,uint256 defenseLevel) = betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
@@ -410,7 +408,7 @@ contract GameManager is Proxied, Guard {
     function finalize(uint gameId, uint randomNum) external {
         require(gmGetterDB.getGameState(gameId) == uint(eGameState.KITTIE_HELL));
 
-        (address playerBlack, address playerRed, , , ,) = gmGetterDB.getGame(gameId);
+        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 
         uint256 playerBlackPoints = hitsResolve.calculateFinalPoints(gameId, playerBlack, randomNum);
         uint256 playerRedPoints = hitsResolve.calculateFinalPoints(gameId, playerRed, randomNum);
@@ -435,7 +433,7 @@ contract GameManager is Proxied, Guard {
 
     function updateKitties(uint gameId) internal {
         // When creating the game, set to true, then we set it to false when game cancels or ends
-        ( , , uint256 kittyBlack, uint256 kittyRed, , ) = gmGetterDB.getGame(gameId);
+        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
         gmSetterDB.updateKittieState(kittyRed, false);
         gmSetterDB.updateKittieState(kittyBlack, false);
     }

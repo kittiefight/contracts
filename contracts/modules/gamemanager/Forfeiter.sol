@@ -57,7 +57,7 @@ contract Forfeiter is Proxied {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
   {
     (address playerBlack, address playerRed, uint256 kittyBlack,
-      uint256 kittyRed, ,) = gmGetterDB.getGame(gameId);
+      uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
 
     // GAME_CREATED
     if (gameState == 0) {

@@ -25,18 +25,16 @@ contract GMSetterDB is Proxied {
  using SafeMath for uint256;
 
   event NewGame(uint gameId, address playerRed, uint kittieRed, address playerBlack, uint kittieBlack, uint gameStartTime);
+  event NewSupporter(uint game_id, address supporter, address playerSupported);
 
   GenericDB public genericDB;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
   string internal constant TABLE_NAME_KITTIES = "KittieTable";
-  string internal constant ERROR_DOES_NOT_EXIST = "Game does not exist";
-  string internal constant ERROR_CANNOT_SUPPORT_BOTH = "Cannot support both players";
-  string internal constant ERROR_INVALID_CURRENCY = "Invalid currency for bet";
 
   modifier onlyExistentGame(uint256 gameId) {
-    require(doesGameExist(gameId), ERROR_DOES_NOT_EXIST);
+    require(doesGameExist(gameId));
     _;
   }
   
@@ -81,6 +79,7 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "kitty")), kittyBlack);
 
     // solium-disable-next-line security/no-block-members
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "createdTime")), now);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")), gameStartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
@@ -103,6 +102,7 @@ contract GMSetterDB is Proxied {
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
+    returns(bool)
   {
     // If bettor does not exist in the game given, add bettor to the game.
     if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
@@ -120,7 +120,13 @@ contract GMSetterDB is Proxied {
       
       // And increase the number of supporters for that player
       incrementSupporters(gameId, supportedPlayer);
+
+      emit NewSupporter(gameId, bettor, supportedPlayer);
+
+      return true;
     }
+
+    return false;
   }
 
   /**
