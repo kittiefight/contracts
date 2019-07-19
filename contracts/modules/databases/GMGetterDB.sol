@@ -287,20 +287,20 @@ contract GMGetterDB is Proxied {
   }
 
 
-  /**
-   * @dev Get both player's hitStart status
-   */
-  function getPlayerStartStatus(uint256 gameId)
-    public view
-    returns(bool redStarted, bool blackStarted){
-      address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-      address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+  // /**
+  //  * @dev Get both player's hitStart status
+  //  */
+  // function getPlayerStartStatus(uint256 gameId)
+  //   public view
+  //   returns(bool redStarted, bool blackStarted){
+  //     address playerRed = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+  //     address playerBlack = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
 
-      return (
-        genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerRed, "hitStart"))),
-        genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "hitStart")))
-        );
-  }
+  //     return (
+  //       genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerRed, "hitStart"))),
+  //       genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, playerBlack, "hitStart")))
+  //       );
+  // }
 
   // /**
   //  * @dev Get players current Defense Level

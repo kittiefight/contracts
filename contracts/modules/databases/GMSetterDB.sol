@@ -25,6 +25,8 @@ import "../../libs/SafeMath.sol";
 contract GMSetterDB is Proxied {
  using SafeMath for uint256;
 
+  event NewGame(uint gameId, address playerRed, uint kittieRed, address playerBlack, uint kittieBlack, uint gameStartTime);
+
   GenericDB public genericDB;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
@@ -89,6 +91,8 @@ contract GMSetterDB is Proxied {
     // Set kittieIds to true, so we know that there are in a match
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "inGame")), true);
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "inGame")), true);
+
+    emit NewGame(gameId, playerRed, kittyRed, playerBlack, kittyBlack, gameStartTime);
   }
 
   /**
@@ -102,7 +106,7 @@ contract GMSetterDB is Proxied {
   {
     // TODO: check if bettor is the same as one of the players
 
-    // If bettor does not exist in the game given, add her to the game.
+    // If bettor does not exist in the game given, add bettor to the game.
     if (!genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor)) {
       // Add the bettor to the bettor table.
       genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor);
@@ -112,8 +116,15 @@ contract GMSetterDB is Proxied {
         keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer")),
         supportedPlayer
       );
+
+      //Set payed fee to true
+      genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")), true);
+      
       // And increase the number of supporters for that player
       incrementSupporters(gameId, supportedPlayer);
+    }
+    else{
+
     }
   }
 
@@ -207,19 +218,19 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), newTime);
   }
 
-   /**
-   * @dev Update different game vars for every bet function call
-   */
-  function updateGameVars(uint256 gameId, uint256 lastBet, uint lastBetTimestamp, address topBettor, address secondTopBettor)
-    external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(gameId)
-  {
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lastBet")), lastBet);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lastBetTimestamp")), lastBetTimestamp);
-    genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "topBettor")), topBettor);
-    genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
-  }
+  //  /**
+  //  * @dev Update different game vars for every bet function call
+  //  */
+  // function updateGameVars(uint256 gameId, uint256 lastBet, uint lastBetTimestamp, address topBettor, address secondTopBettor)
+  //   external
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(gameId)
+  // {
+  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lastBet")), lastBet);
+  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lastBetTimestamp")), lastBetTimestamp);
+  //   genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "topBettor")), topBettor);
+  //   genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
+  // }
 
   /**
    * @dev set topBettor

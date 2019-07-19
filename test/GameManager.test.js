@@ -52,6 +52,12 @@ const kittie4 = 44444
 const kittie5 = 55555
 const kittie6 = 6666
 
+const cividId1 = 1;
+const cividId2 = 2;
+const cividId3 = 3;
+const cividId4 = 4;
+
+
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
     contract.abi.find((f) => { return f.name == funcName; }),
@@ -59,7 +65,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress]) => {
+contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthorizedUser, randomAddress]) => {
 
   beforeEach(async function () {
     this.timeout(10000);
@@ -94,8 +100,6 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
     rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
     // kittieHELL = await KittieHELL.new(contractManager.address)
-
-
 
     await proxy.addContract('TimeContract', dateTime.address)
     await proxy.addContract('GenericDB', genericDB.address)
@@ -154,17 +158,17 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
     // Mint some kitties for the test addresses
     await cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
     await cryptoKitties.mint(user2, kittie2).should.be.fulfilled;
-    await cryptoKitties.mint(creator, kittie3).should.be.fulfilled;
-    await cryptoKitties.mint(user1, kittie4).should.be.fulfilled;
-    await cryptoKitties.mint(user2, kittie5).should.be.fulfilled;
+    await cryptoKitties.mint(user3, kittie3).should.be.fulfilled;
+    await cryptoKitties.mint(user4, kittie4).should.be.fulfilled;
+    await cryptoKitties.mint(user5, kittie5).should.be.fulfilled;
     await cryptoKitties.mint(user2, kittie6).should.be.fulfilled;
 
     // Approve transfer operation for the system
     await cryptoKitties.approve(register.address, kittie1, { from: user1 }).should.be.fulfilled;
     await cryptoKitties.approve(register.address, kittie2, { from: user2 }).should.be.fulfilled;
-    await cryptoKitties.approve(register.address, kittie3).should.be.fulfilled;
-    await cryptoKitties.approve(register.address, kittie4, { from: user1 }).should.be.fulfilled;
-    await cryptoKitties.approve(register.address, kittie5, { from: user2 }).should.be.fulfilled;
+    await cryptoKitties.approve(register.address, kittie3, { from: user3 }).should.be.fulfilled;
+    await cryptoKitties.approve(register.address, kittie4, { from: user4 }).should.be.fulfilled;
+    await cryptoKitties.approve(register.address, kittie5, { from: user5 }).should.be.fulfilled;
     await cryptoKitties.approve(register.address, kittie6, { from: user2 }).should.be.fulfilled;
 
     // Send some SuperDAO and KitttieFight tokens to users
@@ -172,12 +176,16 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
     await superDaoToken.transfer(user2, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user1, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user2, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(user3, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(user4, 100000).should.be.fulfilled;
 
     // Approve erc20 token transfer operation for the system
     await superDaoToken.approve(register.address, 100000, { from: user1 }).should.be.fulfilled;
     await superDaoToken.approve(register.address, 100000, { from: user2 }).should.be.fulfilled;
-    await kittieFightToken.approve(register.address, 100000, { from: user1 }).should.be.fulfilled;
-    await kittieFightToken.approve(register.address, 100000, { from: user2 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user1 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user2 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user3 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user4 }).should.be.fulfilled;
 
     // registers user to the system
     await proxy.execute('Register', setMessage(register, 'register', [user1]), {
@@ -186,12 +194,36 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
     await proxy.execute('Register', setMessage(register, 'register', [user2]), {
       from: user2
     }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'register', [user3]), {
+      from: user3
+    }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'register', [user4]), {
+      from: user4
+    }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'register', [user5]), {
+      from: user5
+    }).should.be.fulfilled;
+
+    //verify users civid Id, gfives player role
+    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
+      from: user1
+    }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user2, cividId2]), {
+      from: user2
+    }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user3, cividId3]), {
+      from: user3
+    }).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user4, cividId4]), {
+      from: user4
+    }).should.be.fulfilled;
+
   })
 
 
   describe('GameManager::Authority', () => {
 
-    it.only('is not able to list kittie without proxy', async () => {
+    it('is not able to list kittie without proxy', async () => {
       try {
         await gameManager.listKittie(123, { from: user1 })
       } catch (err) {
@@ -200,7 +232,7 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
       assert.include(errorMessage, ERROR.NO_PROXY)
     })
 
-    it.only('is not able to manual match without proxy', async () => {
+    it('is not able to manual match without proxy', async () => {
       try {
         await gameManager.manualMatchKitties(user1, user2, kittie1, kittie2, 123123)
       } catch (err) {
@@ -209,73 +241,85 @@ contract('GameManager', ([creator, user1, user2, unauthorizedUser, randomAddress
       assert.include(errorMessage, ERROR.NO_PROXY)
     })
 
-    it.only('is not able to make a manual match without super admin role', async () => {
+    it('is not able to make a manual match without super admin role', async () => {
       await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
         [user1, user2, kittie1, kittie2, 123123]), { from: user1 }).should.be.rejected;
-      // try {
-      //   await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
-      //     [user1, user2, kittie1, kittie2, 123123]), { from: user1 })
-      // } catch (err) {
-      //   errorMessage = err.toString()
-      // }
-      // assert.include(errorMessage, ERROR.ONLY_SUPER_ADMIN)
     })
 
-    // it('is not able to list kittie without a player role', async () => {
-    //   try{
-    //     await proxy.listKittie(123, {from : user1})
-    //   }catch(err){
-    //     errorMessage = err.toString()
-    //   }
-    //   assert.include(errorMessage, ERROR.ONLY_PLAYER)
-    // })
+    it('is not able to list kittie without a player role', async () => {
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie5]), { from: user5 }).should.be.rejected;
+    })
+
+    it('is not able to manual match with either one invalid player', async () => {
+      //user 5 is not a player, as it has not been registered
+      await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
+        [user5, user2, kittie1, kittie2, 123123]), { from: creator }).should.be.rejected;
+    })
+
+    it('is not able to list kittie without kitty ownership', async () => {
+      //user2 not owner of kittie3
+      await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
+        [user1, user2, kittie1, kittie3, 123123]), { from: creator }).should.be.rejected;
+    })
+
   })
 
-  describe('GameManager::Features', () => {
+  describe('GameManager::Listing and matching', () => {
 
     it('should be able to list kittie', async () => {
-      await proxy.listKittie(kittie1, { from: user1 })
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie1]), { from: user1 }).should.be.fulfilled;
       let isListed = await scheduler.isKittyListedForMatching(kittie1)
       assert.isTrue(isListed)
     })
 
     it('should be a able to make a match from 4 listing', async () => {
-      let currentGamesCount = await getterDB.getGames()
+      let currentGames = await getterDB.getGames()
 
-      // TODO should not allow to have a match with fighter of same owner
-      await proxy.listKittie(kittie1, { from: user1 })
-      await proxy.listKittie(kittie2, { from: user2 })
-      await proxy.listKittie(kittie4, { from: user1 })
-      await proxy.listKittie(kittie5, { from: user2 })
+      // List Kitties
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie1]), { from: user1 }).should.be.fulfilled;
 
-      let newGamesCount = await getterDB.getGames()
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie2]), { from: user2 }).should.be.fulfilled;
 
-      assert.equal(currentGamesCount.length + 2, newGamesCount.length)
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie3]), { from: user3 }).should.be.fulfilled;
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kittie4]), { from: user4 }).should.be.fulfilled;
+
+
+      let newGames = await getterDB.getGames()
+
+      assert.equal(currentGames.length + 2, newGames.length)
     })
 
-    it('should be able to make a manual match', async () => {
+    // super admin role added in GameVarAndFee to creator!
+    it('super admin should be able to make a manual match', async () => {
       let currentGamesCount = await getterDB.getGames()
-      await proxy.manualMatchKitties(user1, user2, kittie1, kittie2, 123123)
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'manualMatchKitties',
+        [user1, user2, kittie1, kittie2, 123123]), { from: creator }).should.be.fulfilled;
+
       let newGamesCount = await getterDB.getGames()
 
       assert.equal(currentGamesCount.length + 1, newGamesCount.length)
     })
 
-    // it('is not able to manual match with either one invalid player', async () => {
-    //   try{
-    //     await proxy.manualMatchKitties(unauthorizedUser, user2, kittie1, kittie2, 123123)
-    //   }catch(err){
-    //     console.log('pasok' + err.toString())
-    //     errorMessage = err.toString()
-    //   }
-    //   assert.include(errorMessage, ERROR.INVALID_PLAYER)
-    // })
+  })
+
+  describe('GameManager::Participating', () => {
+    // participate()
+    it('should be able to participate with all valid pre-checks via proxy', async () => {
+
+    })
+
 
   })
 
-  // it('is not able to list kittie without kitty ownership', async () => {
 
-  // })
 
   // // participate()
   // it('should be able to participate with all valid pre-checks via proxy', async () => {
