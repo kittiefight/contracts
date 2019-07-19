@@ -1,15 +1,27 @@
 
-const HitsResolve = artifacts.require('HitsResolve');
-
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const assert = chai.assert;
 chai.use(chaiAsPromised);
 
+const Proxy = artifacts.require('KFProxy')
+const HitsResolve = artifacts.require('HitsResolve');
+const Betting = artifacts.require('Betting')
+
+let ProxyInst
 let HitsResolveInst;
+let BettingInst
 
 before(async () => {
+    ProxyInst = await Proxy.new()
     HitsResolveInst = await HitsResolve.new()
+    BettingInst = await Betting.new()
+    await ProxyInst.addContract("HitsResolve", HitsResolveInst.address)
+    await ProxyInst.addContract("Betting", BettingInst.address)
+
+    await BettingInst.setProxy(ProxyInst.address)
+    await HitsResolveInst.setProxy(ProxyInst.address)
+    HitsResolveInst.initialize()
 })
 
 contract('HitsResolve', (accounts) => {
@@ -102,6 +114,37 @@ it('calculates list of 7 values to determine final values of attacks in Betting 
   assert.isAtLeast(hardThunder, 501)
   assert.isAtMost(hardThunder, 600)
   assert.isNumber(slash)
+})
+
+it('calculates the final points for the given corner,', async () => {
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 1)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 2)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 3)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 4)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 5)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 6)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 0)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 5)
+  await BettingInst.setDirectAttacksScored(58, accounts[0], 3)
+
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 1)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 2)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 3)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 4)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 5)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 6)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 1)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 0)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 6)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 1)
+  await BettingInst.setBlockedAttacksScored(58, accounts[0], 2)
+
+  await HitsResolveInst.calculateCurrentRandom(58, 267)
+  await HitsResolveInst.finalizeHitTypeValues.call(58, 603) 
+  const finalPointsBN = await HitsResolveInst.calculateFinalPoints(58, accounts[0], 932)
+  const finalPoints = finalPointsBN.toNumber()
+  assert.exists(finalPoints)
+  assert.isNumber(finalPoints)
 })
 
 })

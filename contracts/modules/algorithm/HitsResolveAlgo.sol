@@ -154,7 +154,7 @@ contract HitsResolve is Proxied {
     }
 
     
-    function calculateFinalDirectAttacksPointsLowValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+    function calculateFinalDirectAttacksPointsLowValue(uint256 _gameId, address _player, uint256 _randomNum)
         public view
         returns(uint256 finalDirectAttacksPointsLowValue)
     {
@@ -162,14 +162,14 @@ contract HitsResolve is Proxied {
         uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
 
         // get the number of the direct attacks of each attack types of the given corner
-        uint256[7] memory directAttacks = betting.getDirectAttacksScored(_gameId, _supportedPlayer);
+        uint256[7] memory directAttacks = betting.getDirectAttacksScored(_gameId, _player);
 
         finalDirectAttacksPointsLowValue = hitTypesVals[0].mul(directAttacks[0]).mul(100)
                        .add(hitTypesVals[1].mul(directAttacks[1]).mul(100))
                        .add(hitTypesVals[2].mul(directAttacks[2]).mul(100));
     }
 
-    function calculateFinalDirectAttacksPointsHighValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+    function calculateFinalDirectAttacksPointsHighValue(uint256 _gameId, address _player, uint256 _randomNum)
         public view
         returns(uint256 finalDirectAttacksPointsHighValue)
     {
@@ -178,7 +178,7 @@ contract HitsResolve is Proxied {
         uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
 
         // get the number of the direct attacks of each attack types of the given corner
-        uint256[7] memory directAttacks = betting.getDirectAttacksScored(_gameId, _supportedPlayer);
+        uint256[7] memory directAttacks = betting.getDirectAttacksScored(_gameId, _player);
 
           finalDirectAttacksPointsHighValue = hitTypesVals[3].mul(directAttacks[3]).mul(100)
                        .add(hitTypesVals[4].mul(directAttacks[4]).mul(100))
@@ -188,7 +188,7 @@ contract HitsResolve is Proxied {
 
     }
 
-    function calculateFinalBlockedAttacksPointsLowValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+    function calculateFinalBlockedAttacksPointsLowValue(uint256 _gameId, address _player, uint256 _randomNum)
         public view
         returns(uint256 finalBlockedAttacksPointsLowValue)
     {
@@ -197,7 +197,7 @@ contract HitsResolve is Proxied {
 
         // get the number of the blocked attacks of each attack types of the given corner in a game
 
-        uint256[7] memory blockedAttacks = betting.getBlockedAttacksScored(_gameId, _supportedPlayer);
+        uint256[7] memory blockedAttacks = betting.getBlockedAttacksScored(_gameId, _player);
 
          // calculate the final points for the given corner in a game
          finalBlockedAttacksPointsLowValue = (hitTypesVals[0].mul(blockedAttacks[0]).mul(25))
@@ -205,7 +205,7 @@ contract HitsResolve is Proxied {
                        .add(hitTypesVals[2].mul(blockedAttacks[2]).mul(25));
     }
 
-    function calculateFinalBlockedAttacksPointsHighValue(uint256 _gameId, address _supportedPlayer, uint256 _randomNum)
+    function calculateFinalBlockedAttacksPointsHighValue(uint256 _gameId, address _player, uint256 _randomNum)
         public view
         returns(uint256 finalBlockedAttacksPointsHighValue)
     {
@@ -213,7 +213,7 @@ contract HitsResolve is Proxied {
         uint256[7] memory hitTypesVals = finalizeHitTypeValues(_gameId, _randomNum);
 
         // get the number of the blocked attacks of each attack types of the given corner in a game
-        uint256[7] memory blockedAttacks = betting.getBlockedAttacksScored(_gameId, _supportedPlayer);
+        uint256[7] memory blockedAttacks = betting.getBlockedAttacksScored(_gameId, _player);
 
          // calculate the final points for the given corner in a game
          finalBlockedAttacksPointsHighValue = hitTypesVals[3].mul(blockedAttacks[3]).mul(25)
@@ -223,17 +223,17 @@ contract HitsResolve is Proxied {
 
     }
 
-    function calculateFinalPoints(uint256 _gameId, address _supportedPlayer, uint256 _randomNum) 
+    function calculateFinalPoints(uint256 _gameId, address _player, uint256 _randomNum) 
         public view
         returns(uint256 finalPoints) 
     {
          // calculate the final points for the given corner in a game
-         uint256 directAttacksLowValue = calculateFinalDirectAttacksPointsLowValue(_gameId, _supportedPlayer, _randomNum);
-         uint256 directAttacksHighValue = calculateFinalDirectAttacksPointsHighValue(_gameId, _supportedPlayer, _randomNum);
-         uint256 blockedAttacksLowValue = calculateFinalBlockedAttacksPointsLowValue(_gameId, _supportedPlayer, _randomNum);
-         uint256 blockedAttacksHighValue = calculateFinalBlockedAttacksPointsHighValue(_gameId, _supportedPlayer, _randomNum);
+         uint256 directAttacksLowValue = calculateFinalDirectAttacksPointsLowValue(_gameId, _player, _randomNum);
+         uint256 directAttacksHighValue = calculateFinalDirectAttacksPointsHighValue(_gameId, _player, _randomNum);
+         uint256 blockedAttacksLowValue = calculateFinalBlockedAttacksPointsLowValue(_gameId, _player, _randomNum);
+         uint256 blockedAttacksHighValue = calculateFinalBlockedAttacksPointsHighValue(_gameId, _player, _randomNum);
 
-         finalPoints = directAttacksLowValue + directAttacksHighValue + blockedAttacksLowValue + blockedAttacksHighValue;
+         finalPoints = directAttacksLowValue.add(directAttacksHighValue).add(blockedAttacksLowValue).add(blockedAttacksHighValue);
     }
 
 }
