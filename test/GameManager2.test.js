@@ -211,6 +211,9 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['minimumContributors', 2]), {
       from: creator
     }).should.be.fulfilled;
+    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['requiredNumberMatches', 2]), {
+      from: creator
+    }).should.be.fulfilled;
   })
 
 
