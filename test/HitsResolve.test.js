@@ -161,6 +161,7 @@ it('calculates the final points for the given corner,', async () => {
   await HitsResolveInst.finalizeHitTypeValues.call(58, 603) 
   const finalPointsBN = await HitsResolveInst.calculateFinalPoints(58, accounts[0], 932)
   const finalPoints = finalPointsBN.toNumber()
+  console.log(finalPoints)
   assert.exists(finalPoints)
   assert.isNumber(finalPoints)
 })
