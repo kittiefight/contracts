@@ -123,10 +123,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, user5, unauthoriz
     await proxy.addContract('GameManager', gameManager.address)
     // await proxy.addContract('KittieHELL', kittieHELL.address)
 
-    //Because of constructor
-    // endowmentFund = await EndowmentFund.new()
-    // await proxy.addContract('EndowmentFund', endowmentFund.address)
-
 
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);

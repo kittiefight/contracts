@@ -70,8 +70,7 @@ contract GameManager is Proxied, Guard {
     IKittyCore public cryptoKitties;
 
 
-    uint256 public constant PLAYER_STATUS_INITIATED = 1;
-    uint256 public constant PLAYER_STATUS_PLAYING = 2;
+ 
     uint256 public constant GAME_STATE_CREATED = 0;
     uint256 public constant GAME_STATE_PRESTART = 1;
     uint256 public constant GAME_STATE_STARTED = 2;
@@ -220,9 +219,10 @@ contract GameManager is Proxied, Guard {
         uint gameId,
         address playerToSupport
     )
-        external
+        public
         onlyProxy onlyBettor
         onlyGamePlayer(gameId, playerToSupport)
+        returns(bool)
     {
         uint gameState = gmGetterDB.getGameState(gameId);
 
@@ -239,9 +239,13 @@ contract GameManager is Proxied, Guard {
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+
         //Update state if reached prestart time
-        if (preStartTime >= now)
+        //Include check game state because it can be called from the bet function
+        if (gameState == GAME_STATE_CREATED && preStartTime >= now)
             gmSetterDB.updateGameState(gameId, GAME_STATE_PRESTART);
+        
+        return true;
     }
 
     /**
@@ -335,6 +339,7 @@ contract GameManager is Proxied, Guard {
     // {
 
     //     // TODO: check if bettor already payed ticket fee
+            //participate();
 
 
     //     require(msg.value > 0);
