@@ -214,7 +214,7 @@ contract('Betting', (accounts) => {
         await BettingInst.fillBets(123, accounts[0], 12)
         await BettingInst.fillBets(123, accounts[0], 13)
         await BettingInst.fillBets(123, accounts[0], 14)
-        await BettingInst.reduceDefenseLevel(123, accounts[0], accounts[1])
+        await BettingInst.reduceDefenseLevel(123, 16, accounts[0], accounts[1])
         const defenseLevelOppoent = await BettingInst.defenseLevel.call(123, accounts[1])
         assert.equal(defenseLevelOppoent, 1)
     })

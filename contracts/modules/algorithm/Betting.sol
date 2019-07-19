@@ -352,6 +352,7 @@ contract Betting is Proxied, Guard {
     */
      function reduceDefenseLevel(
         uint256 _gameId,
+        uint256 _lastBetAmount,
         address _supportedPlayer,
         address _opponentPlayer
         )
@@ -361,8 +362,8 @@ contract Betting is Proxied, Guard {
         )
         {
         require(defenseLevel[_gameId][_opponentPlayer] > 0, "Defense level is already zero");
-        (uint256 lastBet5, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
-        if (lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4 && lastBet4 > lastBet5) {
+        (, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
+        if (_lastBetAmount > lastBet1 && lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4) {
             defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer].sub(1);
             setDefenseLevel(_gameId, _opponentPlayer, defenseLevelOpponent);
         }
@@ -430,8 +431,8 @@ contract Betting is Proxied, Guard {
     {
         uint256 index;
         (attackType, attackHash, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
-        fillBets(_gameId, _supportedPlayer, _lastBetAmount);
-        defenseLevelOpponent = reduceDefenseLevel(_gameId, _supportedPlayer, _opponentPlayer);
+    
+        defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
 
         if (defenseLevelOpponent == 0) {
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
@@ -442,7 +443,7 @@ contract Betting is Proxied, Guard {
         }
 
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
-
+        fillBets(_gameId, _supportedPlayer, _lastBetAmount);
     }
 
 }
