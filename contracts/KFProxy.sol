@@ -2,10 +2,7 @@ pragma solidity ^0.5.5;
 
 import "./libs/zos-lib/Initializable.sol";
 import "./modules/proxy/ProxyBase.sol";
-<<<<<<< HEAD
-=======
 import "./modules/proxy/CronJobProxy.sol";
->>>>>>> feature/gameManager
 
 /**
  * @title Proxy contract is a main entry point for KittyFight contract system
@@ -13,12 +10,8 @@ import "./modules/proxy/CronJobProxy.sol";
  */
 contract KFProxy is
     Initializable,          //Allows to use ZeppelinOS Proxy
-<<<<<<< HEAD
-    ProxyBase
-=======
     ProxyBase,
     CronJobProxy
->>>>>>> feature/gameManager
 {
 
     /**
