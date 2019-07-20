@@ -13,7 +13,7 @@ const CONTRACT_NAME = 'ProfileDB';
 const TABLE_NAME_PROFILE = 'ProfileTable';
 const TABLE_NAME_KITTIE = 'KittieTable';
 
-  
+
 contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress]) => {
   let userId = user1;
 
@@ -43,31 +43,31 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     });
 
     it('does not allow unauthorized address to access proxy/db setter functions', async () => {
-      await this.profileDB.setProxy(this.proxy.address, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setGenericDB(this.genericDB.address, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setProxy(this.proxy.address, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setGenericDB(this.genericDB.address, { from: unauthorizedUser }).should.be.rejected;
     });
 
     it('does not allow unauthorized address to access attribute setter functions', async () => {
       let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
 
-      await this.profileDB.create(userId, {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.create(userId, { from: unauthorizedUser }).should.be.rejected;
 
       // Create a user with authorized address to test authorization for setter functions
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
       (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
 
-      await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setFeeAttributes(userId, 1, 2, 3, false, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setSuperDAOTokens(userId, 2, true, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setKittieFightTokens(userId, 1, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.addKittie(userId, 1, 2, 'dead', {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.setGamingAttributes(userId, 1, 2, 3, 4, 5, true, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setFightingAttributes(userId, 1, 2, 3, 4, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setFeeAttributes(userId, 1, 2, 3, false, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setSuperDAOTokens(userId, 2, true, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setKittieFightTokens(userId, 1, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.addKittie(userId, 1, 2, 'dead', { from: unauthorizedUser }).should.be.rejected;
 
       // First add a kittie to test update and remove functions
       await this.profileDB.addKittie(userId, 1, 2, 'dead').should.be.fulfilled;
-      await this.profileDB.removeKittie(userId, 1, {from: unauthorizedUser}).should.be.rejected;
-      await this.profileDB.setKittieAttributes(userId, 1, 2, 'dead', {from: unauthorizedUser}).should.be.rejected;
+      await this.profileDB.removeKittie(userId, 1, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setKittieAttributes(userId, 1, 2, 'dead', { from: unauthorizedUser }).should.be.rejected;
     });
   });
 
@@ -112,7 +112,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
         feeHistory,
         isFreeToPlay
       ).should.be.fulfilled;
-      
+
       let attrWin = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'totalWins'));
       let attrLoss = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'totalLosses'));
       let attrTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'tokensWon'));
@@ -143,7 +143,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
         listingStart,
         listingEnd
       ).should.be.fulfilled;
-      
+
       let attrTotalFights = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'totalFights'));
       let attrNextFight = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'nextFight'));
       let attrListingStart = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'listingStart'));
@@ -170,7 +170,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
         expirationDate,
         isPaid
       ).should.be.fulfilled;
-      
+
       let attrFeeType = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'feeType'));
       let attrPaidDate = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'paidDate'));
       let attrExpirationDate = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'expirationDate'));
@@ -193,7 +193,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
         superDAOTokens,
         isStakingSuperDAO
       ).should.be.fulfilled;
-      
+
       let attrSuperDAOTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'superDAOTokens'));
       let attrIsStakingSuperDAO = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isStakingSuperDAO'));
 
@@ -210,7 +210,7 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
         userId,
         kittieFightTokens
       ).should.be.fulfilled;
-      
+
       let attrKittieFightTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'kittieFightTokens'));
       attrKittieFightTokens.toNumber().should.be.equal(kittieFightTokens);
     });
