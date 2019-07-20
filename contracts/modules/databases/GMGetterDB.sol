@@ -136,8 +136,8 @@ contract GMGetterDB is Proxied {
     minSupporters = gameVarAndFee.getMinimumContributors();
     supporters[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "supporters")));
     supporters[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "supporters")));
-    (,pressedStart[0],) = gameManager.players(players[0], gameId);
-    (,pressedStart[1],) = gameManager.players(players[1], gameId);
+    (,pressedStart[0]) = gameManager.players(players[0], gameId);
+    (,pressedStart[1]) = gameManager.players(players[1], gameId);
     timeCreated = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "createdTime")));
   }
 

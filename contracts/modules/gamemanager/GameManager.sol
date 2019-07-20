@@ -72,7 +72,6 @@ contract GameManager is Proxied, Guard {
     struct Player{
         uint random;
         bool hitStart;
-        uint defenseLevel;
     }
 
     // struct Bettor{
@@ -82,15 +81,12 @@ contract GameManager is Proxied, Guard {
     mapping(address => mapping(uint => Player)) public players;
     // mapping(address => mapping(uint => Bettor)) public bettors;
 
-    //TODO: check to add more states (expired, claiming gains)
-
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player);
         _;
     }
 
     modifier onlyGamePlayer(uint gameId, address player) {
-        // TODO: Is this the check?
         require(profileDB.getCivicId(player) > 0);
         require(gmGetterDB.isPlayer(gameId, player));
         _;
@@ -102,7 +98,6 @@ contract GameManager is Proxied, Guard {
     */
     function initialize() external onlyOwner {
 
-        //TODO: Check what other contracts do we need
         gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
@@ -133,7 +128,6 @@ contract GameManager is Proxied, Guard {
 
         //Pay Listing Fee
         endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
-        // require(endowmentFund.contributeKTY(player, 100));
 
         // When creating the game, set to true, then we set it to false when game cancels or ends
         require((gmGetterDB.getKittieState(kittieId) == false));
@@ -267,7 +261,11 @@ contract GameManager is Proxied, Guard {
         if (players[opponentPlayer][gameId].hitStart){
             //Call betting to set fight map
             betting.startGame(gameId, players[opponentPlayer][gameId].random, randomNum);
-            players[opponentPlayer][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
+
+            //Betting should call rarity to store defense level
+            // players[opponentPlayer][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
+
+            //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
             (uint honeyPotId,) = gmGetterDB.getHoneypotInfo(gameId);
             endowmentFund.updateHoneyPotState(honeyPotId, uint(HoneypotState.gameStarted));
@@ -278,7 +276,7 @@ contract GameManager is Proxied, Guard {
             players[player][gameId].hitStart = true;
             players[player][gameId].random = randomNum;
             
-            players[player][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
+            // players[player][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
         }
 
         require(kittieHELL.acquireKitty(kittieId, player));
@@ -298,7 +296,7 @@ contract GameManager is Proxied, Guard {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
 
         //each time 1 minute before game ends
-        if(gameEndTime - now <= 60) {
+        if(gameEndTime.sub(now) <= 60) {
             if(!checkPerformance(gameId)) gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
         }
     }
@@ -339,7 +337,7 @@ contract GameManager is Proxied, Guard {
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee) = gmGetterDB.getBettor(gameId, sender);
 
-        require(payedFee); //Needs to call participate First
+        require(payedFee); //Needs to call participate First if false
         
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value)(gameId));
@@ -353,11 +351,7 @@ contract GameManager is Proxied, Guard {
         
         address opponentPlayer = getOpponent(gameId, supportedPlayer);
         
-        (,,uint256 defenseLevel) = betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
-
-        // update opposite corner kittie defense level if changed
-        if (players[opponentPlayer][gameId].defenseLevel != defenseLevel)
-            players[opponentPlayer][gameId].defenseLevel = defenseLevel;
+        betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
         // update game variables
         calculateBettorStats(gameId, sender, msg.value, supportedPlayer);
