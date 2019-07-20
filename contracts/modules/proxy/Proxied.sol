@@ -1,7 +1,7 @@
 pragma solidity ^0.5.5;
 
 import "../../authority/Owned.sol";
-import "../../KFProxy.sol";
+import "./ProxyBase.sol";
 import './ContractNames.sol';
 
 /**
@@ -11,12 +11,12 @@ import './ContractNames.sol';
  * @author @pash7ka
  */
 contract Proxied is Owned, ContractNames {
-    KFProxy public proxy;
+    ProxyBase public proxy;
 
     /**
      * @notice Set/update address of Proxy contract
      */
-    function setProxy(KFProxy _proxy) public onlyOwner {
+    function setProxy(ProxyBase _proxy) public onlyOwner {
         proxy = _proxy;
     }
 
