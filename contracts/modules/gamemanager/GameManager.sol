@@ -254,39 +254,33 @@ contract GameManager is Proxied, Guard {
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
         // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId);
+        
+        players[player][gameId].hitStart = true;
+        players[player][gameId].random = randomNum;
+            
+        uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
+        // betting.setOriginalDefenseLevel(defenseLevel);
 
-        address opponentPlayer = getOpponent(gameId, player);
+        require(kittieHELL.acquireKitty(kittieId, player));
+
+        address opponentPlayer = gmGetterDB.getOpponent(gameId, player);
 
         //Both Players Hit start
         if (players[opponentPlayer][gameId].hitStart){
+
             //Call betting to set fight map
             betting.startGame(gameId, players[opponentPlayer][gameId].random, randomNum);
-
-            //Betting should call rarity to store defense level
-            // players[opponentPlayer][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
-
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
             (uint honeyPotId,) = gmGetterDB.getHoneypotInfo(gameId);
             endowmentFund.updateHoneyPotState(honeyPotId, uint(HoneypotState.gameStarted));
-
-        }
-        //
-        else{
-            players[player][gameId].hitStart = true;
-            players[player][gameId].random = randomNum;
-            
-            // players[player][gameId].defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
+            return true; //Game Started
         }
 
-        require(kittieHELL.acquireKitty(kittieId, player));
+        return false; //Game is not starting yet
     }
 
-    function getOpponent(uint gameId, address player) internal view returns(address){
-        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
-        if(playerBlack == player) return playerRed;
-        return playerBlack;
-    }
+    
 
     /**
      * @dev Extend time of underperforming game indefinitely, each time 1 minute before game ends, by checking at everybet
@@ -349,8 +343,10 @@ contract GameManager is Proxied, Guard {
         // Update Random
         hitsResolve.calculateCurrentRandom(gameId, randomNum);
         
-        address opponentPlayer = getOpponent(gameId, supportedPlayer);
+        address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
         
+        //Send bet to betting algo, to decide attacks
+        //TODO: event NewBet(uint game_id, address player, uint corner, uint ethAmount);
         betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
         // update game variables
@@ -431,25 +427,4 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.updateKittieState(kittyRed, false);
         gmSetterDB.updateKittieState(kittyBlack, false);
     }
-
-    // /**
-    //  * @dev ?
-    //  */
-    // function claim(uint kittieId) external {
-
-    // }
-
-    // /**
-    //  * @dev ?
-    //  */
-    // function winnersClaim() external {
-
-    // }
-
-    // /**
-    //  * @dev ?
-    //  */
-    // function winnersGroupClaim() external {
-
-    // }
 }
