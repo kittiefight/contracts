@@ -20,6 +20,7 @@
 pragma solidity ^0.5.5;
 
 import "./Distribution.sol";
+import "./Escrow.sol";
 
 /**
  * @title EndowmentFund
@@ -29,6 +30,8 @@ import "./Distribution.sol";
 
 contract EndowmentFund is Distribution {
     using SafeMath for uint256;
+
+    Escrow escrow;
 
     /// @notice  the count of all invocations of `generatePotId`.
     uint256 public potRequestCount;

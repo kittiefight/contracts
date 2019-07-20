@@ -253,13 +253,13 @@ contract GameManager is Proxied, Guard {
 
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
-        // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId);
+        (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId);
         
         players[player][gameId].hitStart = true;
         players[player][gameId].random = randomNum;
             
-        uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId);
-        // betting.setOriginalDefenseLevel(defenseLevel);
+        uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
+        betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
