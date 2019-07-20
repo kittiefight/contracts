@@ -2,6 +2,10 @@ pragma solidity ^0.5.5;
 
 import "./libs/zos-lib/Initializable.sol";
 import "./modules/proxy/ProxyBase.sol";
+<<<<<<< HEAD
+=======
+import "./modules/proxy/CronJobProxy.sol";
+>>>>>>> feature/gameManager
 
 /**
  * @title Proxy contract is a main entry point for KittyFight contract system
@@ -9,7 +13,12 @@ import "./modules/proxy/ProxyBase.sol";
  */
 contract KFProxy is
     Initializable,          //Allows to use ZeppelinOS Proxy
+<<<<<<< HEAD
     ProxyBase
+=======
+    ProxyBase,
+    CronJobProxy
+>>>>>>> feature/gameManager
 {
 
     /**
@@ -57,6 +66,9 @@ contract KFProxy is
 
         (bool success, bytes memory result) = target.call.value(msg.value)(payloadWithSender);
         require(success, 'Proxied call failed');
+
+        executeScheduledJobs();
+
         return result;
     }
 

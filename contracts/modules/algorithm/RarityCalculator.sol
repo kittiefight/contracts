@@ -1,3 +1,8 @@
+// Only RarityCalculator.sol is deployed. Contracts in /algorithm/RarityCalculationDBs are not deployed.
+ // All functions and variables in contracts in the folder RarityCalculationDBs are internal. They are set as public just
+ // temporarily for truffle test purpose. (Truffle test cannot carry out internal functions)
+ // onlyContract modifier is temporarilly comment out until game manager contract is more defined
+// a kittie's gene is stored in ProfileDB, and can be obtained via the function: getKittieAttributes()
 /**
  * @title RarityCalculator
  *
@@ -21,5 +26,57 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-contract RarityCalculator {
+import "../proxy/Proxied.sol";
+import "../../authority/Guard.sol";
+import "../../libs/SafeMath.sol";
+import "./RarityCalculationDBs/Rarity.sol";
+import "./RarityCalculationDBs/DefenseLevel.sol";
+
+/**
+ * @title This contract is responsible to calculate the defense level of a kitty
+ * within 2 minutes before the game starts
+ * @author @ziweidream
+ */
+
+contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
+    using SafeMath for uint256;
+
+    /**
+     * @author @ziweidream
+     * @notice calculate the defense level of a kitty
+     * @dev a kitty's defense level is an integer between 1 and 6
+     * @param kittieId the kittyID for whom the defense level is calculated
+     * @param gene the kitty's gene
+     * @return the kitty's defense level
+     */
+    function getDefenseLevel(uint256 kittieId, uint256 gene)
+      public
+      //onlyContract(CONTRACT_NAME_GAMMANAGER)
+      returns (uint256) {
+      getDominantGeneBinary(kittieId, gene);
+      binaryToKai(kittieId);
+      kaiToCattribute(kittieId);
+
+      uint256 rarity = calculateRarity(kittieId);
+
+      uint256 defenseLevel;
+
+      if (kittieId < 10000) {
+          defenseLevel = 6;
+      } else if (rarity < defenseLevelLimit.level5Limit) {
+          defenseLevel = 6;
+      } else if (rarity >= defenseLevelLimit.level5Limit && rarity < defenseLevelLimit.level4Limit) {
+          defenseLevel = 5;
+      } else if (rarity >= defenseLevelLimit.level4Limit && rarity < defenseLevelLimit.level3Limit) {
+          defenseLevel = 4;
+      } else if (rarity >= defenseLevelLimit.level3Limit && rarity < defenseLevelLimit.level2Limit) {
+          defenseLevel = 3;
+      } else if (rarity >= defenseLevelLimit.level2Limit && rarity < defenseLevelLimit.level1Limit) {
+          defenseLevel = 2;
+      } else if (rarity >= defenseLevelLimit.level1Limit) {
+          defenseLevel = 1;
+      }
+
+      return defenseLevel;
+    }
 }

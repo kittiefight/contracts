@@ -27,7 +27,7 @@ import "../../interfaces/ERC20Standard.sol";
  * and CryptoKitties registration/removal under existing profiles.
  * This contract keeps the registered CryptoKitties, SuperDAO Tokens
  * and KittieFight Tokens. Therefore before user creating a profile
- * or any kind of interaction with the whole system, required approvals 
+ * or any kind of interaction with the whole system, required approvals
  * for both CryptoKitties and ERC20 tokens should be given to this contarct in advance.
  * @author @psychoplasma
  */
@@ -75,114 +75,55 @@ contract Register is Proxied, SystemRoles {
   }
 
   /**
-   * @dev Locks the given CryptoKitty to this contract. Prior to this operation,
-   * the owner of the given CryptoKitty should approve this contract for trasfer operation.
+   * @dev Validates the account with the provided civic id so that
+   * the account can be eligible to list kitties.
    * @dev Can be called only through Proxy contract
-   * @param account address Address of the owner of CryptoKitty to be locked
-   * @param kittieId uint256 Id of CryptoKitty to be locked
+   * @param account address Address of the account
+   * @param civicId uint256 Civic id to validate the account
    */
-  function lockKittie(
-    address account,
-    uint256 kittieId
-  )
+  function verifyAccount(address account, uint256 civicId)
     external
     onlyProxy
     returns (bool)
   {
-    require(cryptoKitties.ownerOf(kittieId) == account);
-    // TODO: Change the owner address to the address of kittie custody contract later
-    cryptoKitties.transferFrom(account, address(this), kittieId);
-    profileDB.addKittie(account, kittieId, 0, KITTIE_STATUS_IDLE);
+    // FIXME: If there is a way to check whether the provided civic id is valid or not, do it here!
+    profileDB.setCivicId(account, civicId);
     _registerRole(account, PLAYER_ROLE);
-    return true;
   }
 
   /**
-   * @dev Transfers the given CryptoKitty from this contract to its user. The kitten's
-   * status should not be dead/ghots nor playing. Otherwise the tx will be reverted.
-   * @dev Can be called only through Proxy contract
-   * @param account address Address of the owner of CryptoKitty to be released
-   * @param kittieId uint256 Id of CryptoKitty to be released
-   */
-  function releaseKittie(
-    address account,
-    uint256 kittieId
-  )
-    external
-    onlyProxy
-    returns (bool)
-  {
-    // TODO: Change the owner address to the address of kittie custody contract later
-    require(cryptoKitties.ownerOf(kittieId) == address(this));
-    // TODO: Has to check KittyHellDB whether the Kittie is there or not
-    profileDB.removeKittie(account, kittieId);
-    // If there is no kittie left in custody, remove player status from the profile
-    if (profileDB.getKittieCount(account) == 0) {
-      _removeRole(account, PLAYER_ROLE);
-    }
-    cryptoKitties.transfer(account, kittieId);
-    return true;
-  }
-
-  /**
-   * @dev Updates the status of the given kitten.
-   * @dev Can be called through other system contracts
-   * @param contractName string Address of the owner of CryptoKitty to be updated
-   * @param account address Address of the owner of CryptoKitty to be updated
-   * @param kittieId uint256 Id of CryptoKitty to be updated
-   * @param deadAt uint256 Time of death of the kitten if its status dead
-   * @param kittieStatus string Status of the kitten in KittieFight system
-   */
-  function updateKittie(
-    string calldata contractName,
-    address account,
-    uint256 kittieId,
-    uint256 deadAt,
-    string calldata kittieStatus
-  )
-    external
-    onlyContract(contractName)
-    returns (bool)
-  {
-    // TODO: Change the owner address to the address of kittie custody contract later
-    require(cryptoKitties.ownerOf(kittieId) == address(this));
-    profileDB.setKittieAttributes(account, kittieId, deadAt, kittieStatus);
-    return true;
-  }
-
-  /**
-   * @dev ???
+   * @dev Sends tokens to another address
    * @dev Can be called only through Proxy contract
    * @param account address
    * @param to address
    * @param amount uint256
    */
-  // TODO: Implement this
+   // TODO: What is the purpose of this??? Looks like an overhead. Can be done directly interacting with the token contract. Why here?
   function sendTokensTo(address account, address to, uint256 amount)
     external
     onlyProxy
     returns (bool)
   {
+    // solium-disable-next-line error-reason
     require(kittieFightToken.transferFrom(account, to, amount));
     return true;
   }
 
   /**
-   * @dev ???
+   * @dev Exchange integration to exchange KTY for ETH
    * @dev Can be called only through Proxy contract
    * @param account address
    * @param amount uint256
    */
-  // TODO: Implement this
   function exchangeTokensForEth(address payable account, uint256 amount)
     external
     onlyProxy
     returns (bool)
   {
-    // TODO: Calculate exchange rate according to what??!
+    // TODO: Exchange rate should be fetched from game variables DB or somewhere else???
     uint256 exhangeRate = 1;
-    require(amount > 0);
-    require(kittieFightToken.transferFrom(account, address(this), amount));
+    require(amount > 0); // solium-disable-line error-reason
+    require(kittieFightToken.transferFrom(account, address(this), amount)); // solium-disable-line error-reason
     account.transfer(amount.mul(exhangeRate));
     profileDB.setKittieFightTokens(account, amount);
     return true;
@@ -195,6 +136,7 @@ contract Register is Proxied, SystemRoles {
    * @param account address Address of the user who is staking
    * @param amount uint256 Amount of SuperDAO tokens to be staked
    */
+   // FIXME: There must be also unstake function
   function stakeSuperDAO(address account, uint256 amount)
     external
     onlyProxy
@@ -205,20 +147,6 @@ contract Register is Proxied, SystemRoles {
     require(superDaoToken.transferFrom(account, address(this), amount));
     profileDB.setSuperDAOTokens(account, amount, true);
     return true;
-  }
-
-  /**
-   * @dev ???
-   * @dev Can be called only through Proxy contract
-   * @param account address
-   * @param amount uint256
-   */
-  // TODO: Implement this
-  function payFees(address account, uint256 amount)
-    external
-    onlyProxy
-    returns (bool)
-  {
   }
 
   /**
@@ -262,10 +190,6 @@ contract Register is Proxied, SystemRoles {
     return true;
   }
 
-  // TODO: Implement this
-  function getAddressAssets() public view returns (address) {
-  }
-
   /**
    * @dev Checks whether there is a profile on ProfileDB with the given address.
    * @param account address Address to be checked
@@ -276,12 +200,23 @@ contract Register is Proxied, SystemRoles {
   }
 
   /**
-   * @dev Checks whether there is a kittie registered to the system under the given account.
+   * @dev Checks whether the kittie provided is registered to the system under the given account.
+   * @param account address Account to be checked against kittie
+   * @param kittieId uint256 Kittie to be checked if it exists
+   * @return bool true if the kittie is registered to the system under the given account
+   */
+  function doesKittieBelong(address account, uint256 kittieId) public view returns (bool) {
+    return profileDB.doesKittieExist(account, kittieId);
+  }
+
+  /**
+   * @dev Checks whether there the registered account owns any cryptokitty
    * @param account address Address to be checked
-   * @return bool true if there is a kittie registered to the system under the given account
+   * @return bool true if the account owns any
    */
   function hasKitties(address account) public view returns (bool) {
-    return profileDB.getKitties(account).length > 0;
+    return cryptoKitties.balanceOf(account) > 0;
+    // return profileDB.getKitties(account).length > 0;
   }
 
   /**
@@ -302,3 +237,4 @@ contract Register is Proxied, SystemRoles {
     roleDB.removeRole(CONTRACT_NAME_REGISTER, role, account);
   }
 }
+
