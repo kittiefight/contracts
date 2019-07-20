@@ -26,28 +26,42 @@ pragma solidity >=0.5.0 <0.6.0;
 import './modules/databases/RoleDB.sol';
 import './modules/databases/GenericDB.sol';
 import "./modules/proxy/Proxied.sol";
-import "./DSNote.sol";
+import "./authority/Guard.sol";
 import './misc/VarAndFeeNames.sol';
 
+/// @dev MakerDao eth-usd price medianizer
+contract Medianizer {
+    function read() external view returns (bytes32);
+}
 
 /**
- * @title Contract that moderates the various fees, timing limits, expiry date/time, 
- * schedules, eth allocation per game, token allocation per game, kittiehell 
+ * @title Contract that moderates the various fees, timing limits, expiry date/time,
+ * schedules, eth allocation per game, token allocation per game, kittiehell
  * kittie expiration, time durations, distribution percentages e.t.c.
  * The note modifier will log event for each function call.
  * @dev One setter that is called from GameVarAndFeeProxy contract setters
  */
-contract GameVarAndFee is Proxied, VarAndFeeNames {
+contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
+
+    string constant TABLE_NAME = "GameVarAndFeeTable";
 
     // Declare DB type variable
     GenericDB public genericDB;
+    Medianizer medianizer;
 
     /// @notice Function called when deployed
     /// @param _genericDB Address of deployed GeneriDB contract
-    constructor (GenericDB _genericDB) public {
+    constructor (GenericDB _genericDB, Medianizer _medianizer) public {
         setGenericDB(_genericDB);
+        setMedianizer(_medianizer);
     }
-    
+
+    // kovanMedianizer = 0xA944bd4b25C9F186A846fd5668941AA3d3B8425F
+    // mainnetMedianizer = 0x729D19f657BD0614b4985Cf1D82531c67569197B
+    function setMedianizer(Medianizer _medianizer) public onlyOwner{
+       medianizer = Medianizer(_medianizer);
+    }
+
     /// @notice Set genericDB variable to store data in contract
     function setGenericDB(GenericDB _genericDB) public onlyOwner {
         genericDB = _genericDB;
@@ -58,33 +72,188 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
         RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).addRole(CONTRACT_NAME_GAMEVARANDFEE, "super_admin", msg.sender);
     }
 
-    // ----- SETTER ------
+    // ----- SETTERS ------
 
-    /// @notice Generic Setter for all vars and fees  
-    /// @param key hash of Table Name and keyName to store in DB
-    /// @param value value of the variable to store
-    /// @dev can only be called by Super Admin through proxy
-    function setVarAndFee(bytes32 key, uint value) 
-    external onlyProxy {
+    /// @dev we could send two arrays (one with names and other with values)
+    ///     to store more than one variable at a time in this function
+    function setVarAndFee(string calldata varName, uint value)
+        external onlyProxy onlySuperAdmin
+    {
+        bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, varName));
         genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
-    }  
-
-    // ----- GETTERS -------
-
-    // /// @notice Generic Getter
-    // function getVarAndFee(string memory keyName) 
-    // public view returns(uint) { 
-    //     bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, keyName));
-    //     return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key);
-    // }
-        
-    /// @notice Gets the time in future that a game is to be played
-    function getFutureGameTime() 
-    public view returns(uint) { 
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FUTURE_GAME_TIME);
     }
+
+    // function setRequiredNumberMatches(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES, value);
+    // }
+
+    // function setRequiredTimeDistance(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_TIME_DISTANCE, value);
+    // }
+
+    // function setGamePrestart(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_PRESTART, value);
+    // }
+
+    // function setGameDuration(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_DURATION, value);
+    // }
+
+    // function setKittieHellExpiration(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_HELL_EXPIRATION, value);
+    // }
+
+    // function setHonyPotExpiration(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_EXPIRATION, value);
+    // }
+
+    // function setScheduleTimeLimits(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SCHEDULE_TIME_LIMITS, value);
+    // }
+
+    // function setTokenPerGame(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOKENS_PER_GAME, value);
+    // }
+
+    // function setEtherPerGame(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ETH_PER_GAME, value);
+    // }
+
+    // function setDailyGameAvailAbility(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, DAILY_GAME_AVAILABILITY, value);
+    // }
+
+    // function setGameTimes(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_TIMES, value);
+    // }
+
+    // function setGameLimit(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_LIMIT, value);
+    // }
+
+    // function setGamesRateLimitFee(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAMES_RATE_LIMIT_FEE, value);
+    // }
+
+    // function setWinningKittie(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, WINNING_KITTIE, value);
+    // }
+
+    // function setTopBettor(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOP_BETTOR, value);
+    // }
+
+    // function setSecondRunnerUp(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SECOND_RUNNER_UP, value);
+    // }
+
+    // function setOtherBettor(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, OTHER_BETTORS, value);
+    // }
+      
+    // function setEndowment(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT, value);
+    // }
+
+    // function setListingFee(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE, value);
+    // }
+
+    // function setTicketFee(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE, value);
+    // }
+
+    // function setBettingFee(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE, value);
+    // }
+
+    // function setKittieRedemptionFee(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE, value);
+    // }
+
+    // function setKittieExpiry(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY, value);
+    // }
+
+    // function setHonyPotDuration(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_DURATION, value);
+    // }
+
+    // function setMinimumContributors(uint value)
+    //     external onlyProxy onlySuperAdmin
+    // {
+    //     genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS, value);
+    // }
+
+    // ----- GETTERS ------
+
+    /// @notice get eth/usd current price
+    function getEthUsdPrice() public view returns(uint){
+        return uint256(medianizer.read());
+    }
+        
+    /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
+    function getRequiredNumberMatches() 
+    public view returns(uint) { 
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES);
+    }
+
+    /// @notice Gets the time distance between scheduled fights (i.e. 3000)
+    function getRequiredTimeDistance() 
+    public view returns(uint) { 
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_TIME_DISTANCE);
+    }
+
     
-    /// @notice Gets 2 min alloted time whereby both players must initiate start or forfeit game.
+    /// @notice Gets countdown time for players to start game (i.e. 120).
     function getGamePrestart() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_PRESTART);
@@ -152,7 +321,7 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
     
     /// @notice Gets Distribution Rates
     function getDistributionRates() 
-    public view returns(uint[] memory rates) {
+    public view returns(uint[5] memory rates) {
                 
         rates[0] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, WINNING_KITTIE);
         
@@ -163,6 +332,12 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
         rates[3] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, OTHER_BETTORS);
         
         rates[4] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT);
+    }
+
+    /// @notice Gets fee for players to list kitties for matching in fights
+    function getListingFee() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
     }
 
     /// @notice Gets ticket fee in KTY for betting participators
@@ -193,6 +368,12 @@ contract GameVarAndFee is Proxied, VarAndFeeNames {
     function getHoneyPotDuration() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_DURATION);
+    }
+
+    /// @notice Gets minimum contributors needed for the game to continue
+    function getMinimumContributors() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS);
     }
 
 }
