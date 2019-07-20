@@ -79,19 +79,18 @@ contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
       getVar.toNumber().should.be.equal(requiredNumberMatches);
     });
 
-    // it("correctly sets multiple variable in DB using proxy", async () => {
-    //   let message = web3.eth.abi.encodeFunctionCall(
-    //     GameVarAndFee.abi.find((f) => { return f.name == 'setMultipleValues'; }),
-    //     [[20, 180, 0, 0, 0, 0, 0, 0, 0, 0]]
-    //   );
-    //   await this.proxy.execute(CONTRACT_NAME_GAMEVARANDFEE, message, {
-    //     from: creator
-    //   }).should.be.fulfilled;
+    it("correctly sets multiple variable in DB using proxy", async () => {
+      let message = web3.eth.abi.encodeFunctionCall(
+        GameVarAndFee.abi.find((f) => { return f.name == 'setMultipleValues'; }),
+        [['gamePrestart', 'requiredNumberMatches'], [120, 20]]
+      );
+      await this.proxy.execute(CONTRACT_NAME_GAMEVARANDFEE, message, {
+        from: creator
+      }).should.be.fulfilled;
 
-    //   let getVar = await this.gameVarAndFee.getGamePrestart();
-    //   console.log(getVar);
+      let getVar = await this.gameVarAndFee.getGamePrestart();
 
-    //   getVar.toNumber().should.be.equal(180);
-    // });
+      getVar.toNumber().should.be.equal(120);
+    });
   });
 });

@@ -21,6 +21,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pragma solidity ^0.5.5;
+pragma experimental ABIEncoderV2;
 
 import './modules/databases/RoleDB.sol';
 import './modules/databases/GenericDB.sol';
@@ -73,8 +74,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     // ----- SETTERS ------
 
-    /// @dev we could send two arrays (one with names and other with values)
-    ///     to store more than one variable at a time in this function
+    /// @dev set one variable at a time
     function setVarAndFee(string calldata varName, uint value)
         external onlyProxy onlySuperAdmin
     {
@@ -82,29 +82,17 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
     }
 
-    //TODO: check how to minimize gas, as it runs out of gas
-    // function setMultipleValues(uint[] calldata values)
-    //     external onlyProxy onlySuperAdmin
-    // {
-    //     if(values[0] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_MATCHES, values[0]);
-    //     if(values[1] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_PRESTART, values[1]);
-    //     if(values[2] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_DURATION, values[2]);
-    //     if(values[3] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_HELL_EXPIRATION, values[3]);
-    //     if(values[4] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_EXPIRATION, values[4]);
-    //     if(values[5] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOKENS_PER_GAME, values[5]);
-    //     if(values[6] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ETH_PER_GAME, values[6]);
-        // if(values[7] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, GAME_TIMES, values[7]);
-        // if(values[8] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, WINNING_KITTIE, values[8]);
-        // if(values[9] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOP_BETTOR, values[9]);
-        // if(values[10] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, SECOND_RUNNER_UP, values[10]);
-        // if(values[11] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, OTHER_BETTORS, values[11]);
-        // if(values[12] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT, values[12]);
-        // if(values[13] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE, values[13]);
-        // if(values[14] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE, values[14]);
-        // if(values[15] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE, values[15]);
-        // if(values[16] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE, values[16]);
-        // if(values[17] != 0) genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS, values[17]);
-    // }
+    /// @dev set multiple variables
+    function setMultipleValues(string[] calldata names, uint[] calldata values)
+        external onlyProxy onlySuperAdmin
+    {
+        require(names.length == values.length);
+        bytes32 key;
+        for(uint i = 0; i < names.length; i++){
+            key = keccak256(abi.encodePacked(TABLE_NAME, names[i]));
+            genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, values[i]);
+        }
+    }
 
 
     // ----- GETTERS ------
