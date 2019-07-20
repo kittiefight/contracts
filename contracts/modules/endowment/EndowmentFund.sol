@@ -113,10 +113,10 @@ contract EndowmentFund is Distribution {
     }
 
     /**
-     * @dev will be called by bet from GM
-     *
+     * @dev accepts KTY. KTY is stored in escrow
      */
     function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
+        require(address(escrow) != address(0), "escrow not initialized");
 
         // do transfer of KTY
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
@@ -134,6 +134,7 @@ contract EndowmentFund is Distribution {
      * @dev GM calls as: require( endowmentFund.contributeETH.value( msg.value )( gameId ));
      */
     function contributeETH(uint _gameId) external payable returns(bool) {
+        require(address(escrow) != address(0), "escrow not initialized");
 
         // transfer ETH to Escrow
         //address(escrow).transfer(msg.value); // with through if not successful
@@ -141,23 +142,13 @@ contract EndowmentFund is Distribution {
             return false; // since GM expects bool
         }
 
-        // to do - check transaction status
+        // check transaction status
 
         // update DB
         require(endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0),
             'Error: endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0) failed');
 
         return true;
-    }
-
-    /**
-     * Escrow is created and owned by Endowment
-     * OR Do we deply escrow and than transfer ownership to Endowment?
-     */
-    function initEscrow() external onlyOwner {
-
-        escrow = new Escrow();
-
     }
 
     /**
@@ -169,16 +160,61 @@ contract EndowmentFund is Distribution {
     }
 
     /**
-    * @dev transfer old Escrow funds to new Escrow
+    * @dev transfer Escrow ETH funds
     */
-    function transferEscrow(address payable newEscrow) external onlyOwner {
+    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public onlyOwner returns(bool){
+        require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the ETH
-        escrow.transferETH(newEscrow, address(escrow).balance);
+        return escrow.transferETH(_someAddress, _eth_amount);
+    }
+
+    /**
+    * @dev transfer Escrow KFT funds
+    */
+    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public onlyOwner returns(bool){
+        require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the KTY
-        uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
-        escrow.transferKTY(newEscrow, ktyBalance);
+        return escrow.transferKTY(_someAddress, _kty_amount);
+    }
+
+    /**
+    * @dev Initialize or Upgrade Escrow
+    * @notice BEFORE CALLING: Deploy escrow contract and set the owner as EndowmentFund contract
+    */
+    function initUpgradeEscrow(address payable _newEscrow) external onlyOwner {
+
+        require(address(_newEscrow) != address(0), "_newEscrow address not set");
+
+        // check ownership
+        Escrow tmpEscrow = Escrow(_newEscrow);
+        require((address(tmpEscrow.owner) == address(this)),
+            "Error: The new contact owner is not Endowment. Transfer ownership to Endowment before calling this function");
+
+        if (address(escrow) != address(0)){ // already initialized. Transfer if any funds
+
+            // transfer all the ETH
+            require(escrow.transferETH(_newEscrow, address(escrow).balance),
+                "Error: Transfer of ETH failed");
+
+            // transfer all the KTY
+            uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
+            require(escrow.transferKTY(_newEscrow, ktyBalance),
+                "Error: Transfer of KYT failed");
+
+        }
+
+        escrow = tmpEscrow;
+        escrow.initialize(address(kittieFightToken));
+
+    }
+
+    /**
+     * @dev check owner of escrow is still this contract
+     */
+    function isEndowmentUpgradabe() public view returns(bool){
+        return (address(escrow.owner) != address(this));
     }
 
 
