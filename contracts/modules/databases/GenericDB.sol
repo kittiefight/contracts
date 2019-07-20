@@ -18,17 +18,11 @@ import "../../libs/LinkedListLib.sol";
 import "../../libs/LinkedListAddrLib.sol";
 
 
-<<<<<<< HEAD
-/**
- * @title EternalStorage
- * @dev This contract holds all the necessary state variables to carry out the storage of any contract.
-=======
 
 /**
  * @title Generic Eternal Storage Unit which can only be accessed through the proxied contracts
  * @dev This contract holds all the necessary state variables to carry out the storage of any contract.
  * @author @psychoplasma
->>>>>>> feature/gameManager
  */
 contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
