@@ -24,6 +24,7 @@ const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
 const KittieHELL = artifacts.require('KittieHELL')
+const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
@@ -34,7 +35,7 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
   endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
-  rarityCalculator, kittieHELL, getterDB, setterDB, gameManager, cronJob
+  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager, cronJob
 
 
 const kittie1 = 1234
@@ -49,7 +50,7 @@ const cividId2 = 2;
 const cividId3 = 3;
 const cividId4 = 4;
 
-// GAME VARS
+// GAME VARS AND FEES
 const LISTING_FEE = 1000
 const TICKET_FEE = 100
 const BETTING_FEE = 100
@@ -80,6 +81,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     endowmentDB = await EndowmentDB.new(genericDB.address)
     getterDB = await GMGetterDB.new(genericDB.address)
     setterDB = await GMSetterDB.new(genericDB.address)
+    kittieHellDB = await KittieHellDB.new(genericDB.address)
 
     // CRONJOB
     cronJob = await CronJob.new(genericDB.address)
@@ -101,7 +103,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     hitsResolve = await HitsResolve.new()
     rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
-    // kittieHELL = await KittieHELL.new(contractManager.address)
+    kittieHELL = await KittieHELL.new()
 
   })
 
@@ -127,7 +129,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.addContract('GMGetterDB', getterDB.address)
     await proxy.addContract('GameManager', gameManager.address)
     await proxy.addContract('CronJob', cronJob.address)
-    // await proxy.addContract('KittieHELL', kittieHELL.address)
+    await proxy.addContract('KittieHell', kittieHELL.address)
+    await proxy.addContract('KittieHellDB', kittieHellDB.address)
   })
 
   it('sets proxy in contracts', async () => {
@@ -148,7 +151,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
     await cronJob.setProxy(proxy.address)
-    // await kittieHELL.setProxy(proxy.address)
+    await kittieHELL.setProxy(proxy.address)
+    await kittieHellDB.setProxy(proxy.address)
   })
 
   it('initializes contract variables', async () => {
@@ -158,8 +162,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await register.initialize()
     await gameManager.initialize()
     await getterDB.initialize()
-    await endowmentFund.initialize() //7
+    await endowmentFund.initialize()
     await endowmentFund.initEscrow()
+    await kittieHellDB.setKittieHELL()
+    await kittieHELL.initialize()
   })
 
   // Mint some kitties for the test addresses
