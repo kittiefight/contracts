@@ -5,7 +5,7 @@ pragma solidity ^0.5.5;
  * @dev Owns the tokens
  * Not marked with onlyProxy() because it will be called after deploying new Escrow contract
  * and proxy will point to the new one.
- * @author @vikrammandal
+ * @ author
  */
 
 //import "../proxy/Proxied.sol";
@@ -25,18 +25,20 @@ contract Escrow is Owned{
         kittieFightToken = ERC20Standard(address(ktyAddress));
     }
 
-    /**
-    * @dev upgrade Escrow contract
-    * where to place this function??
-     * /
-    function upgradeEscrow() external onlyOwner {
+    function () external payable {}
 
-        address newEscrow = proxy.getContract('Escrow');
-        newEscrow.transfer(address(this).balance);
-        uint256 ktyBalance = kittieFightToken.balance(address(this));
-        kittieFightToken.transfer(newEscrow, ktyBalance);
+    function transferETH(address payable _to, uint256 _eth_amount) public onlyOwner returns(bool){
+        _to.transfer(_eth_amount);
+        return true;
+    }
 
-    }*/
+    function transferKTY(address _to, uint256 _kty_amount) public onlyOwner returns(bool){
+        kittieFightToken.transfer(_to, _kty_amount);
+        return true;
+    }
+
+
+
 
 
 }
