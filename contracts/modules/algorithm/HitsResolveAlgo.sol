@@ -65,8 +65,8 @@ contract HitsResolve is Proxied {
     function multiBlockRandomGen(uint256 seed, uint256 size) public view returns (uint256) {
         uint256 n = 0;
         for (uint256 i = 0; i < size; i++) {
-            if (uint256(keccak256(abi.encodePacked(blockhash(block.number-i-1), seed)))%2==0) {
-                n += 2**i;
+            if (uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(i).sub(1)), seed)))%2==0) {
+                n = n.add(2**i);
             }
         }
         return n;

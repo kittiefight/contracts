@@ -16,7 +16,11 @@ contract KaiValueDB is Owned {
      * @author @ziweidream
      * @notice mapping a gene in binary with its kai notation
      */
-     function fillKaiValue() public onlyOwner {
+     function fillKaiValue()
+        public // temporarily set as public just for truffle test purpose
+        //internal
+        onlyOwner
+      {
         kaiValue['00000'] = '1';
         kaiValue['00001'] = '2';
         kaiValue['00010'] = '3';

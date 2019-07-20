@@ -19,7 +19,11 @@ contract KaiToCattributesDB is Owned {
      * @param _kai kai notation of a gene in small letters
      * @param _cattribute the corresponding cattribute of a gene in kai notation, in small letters
      */
-    function updateCattributes(string memory _type, string memory _kai, string memory _cattribute) public onlyOwner {
+    function updateCattributes(string memory _type, string memory _kai, string memory _cattribute)
+        public // temporarily set as public just for truffle test purpose
+        //internal
+        onlyOwner
+    {
         cattributes[_type][_kai] = _cattribute;
     }
 }

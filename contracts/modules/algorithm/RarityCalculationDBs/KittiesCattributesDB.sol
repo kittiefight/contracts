@@ -29,8 +29,8 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice converts kai notation to its corresponding cattribute
      */
     function kaiToCattribute(uint256 kittieId) 
-      public  
-      //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
+      public  // temporarily set as public just for truffle test purpose
+      //internal
     {
        dominantCattributes.push(cattributes['body'][kittiesDominantGeneKai[kittieId][0]]);
        dominantCattributes.push(cattributes['pattern'][kittiesDominantGeneKai[kittieId][1]]);
@@ -52,8 +52,8 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
    function binaryToKai(uint256 kittieId) 
-     public
-     //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
+     public  // temporarily set as public just for truffle test purpose
+     //internal 
      {
        dominantGeneKai.push(kaiValue[kittiesDominantGeneBinary[kittieId][0]]);
        dominantGeneKai.push(kaiValue[kittiesDominantGeneBinary[kittieId][1]]);
@@ -94,8 +94,8 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
     function getDominantGeneBinary(uint256 kittieId, uint256 gene) 
-      public
-      //onlyContract(CONTRACT_NAME_GAMEMANAGER) 
+      public  // temporarily set as public just for truffle test purpose
+      //internal 
      {
         string memory geneBinary = toBinaryString(gene);
         dominantGeneBinary.push(getSlice(236, 240, geneBinary));
@@ -116,8 +116,12 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @author @ziweidream
      * @notice gets slice of a string
      */
-    function getSlice(uint256 begin, uint256 end, string memory text) public pure returns (string memory) {
-        bytes memory a = new bytes(end-begin+1);
+    function getSlice(uint256 begin, uint256 end, string memory text) 
+        public // temporarily set as public just for truffle test purpose
+        // internal
+        pure
+        returns (string memory) {
+        bytes memory a = new bytes(end.sub(begin).add(1));
         for(uint256 i=0; i<=end.sub(begin); i++){
             a[i] = bytes(text)[i.add(begin).sub(1)];
         }

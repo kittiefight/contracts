@@ -49,9 +49,9 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
      * @param gene the kitty's gene
      * @return the kitty's defense level
      */
-    function getDefenseLevel(uint256 kittieId, uint256 gene) 
-      public 
-      //onlyContract(CONTRACT_NAME_GAMMANAGER) 
+    function getDefenseLevel(uint256 kittieId, uint256 gene)
+      public
+      //onlyContract(CONTRACT_NAME_GAMMANAGER)
       returns (uint256) {
       getDominantGeneBinary(kittieId, gene);
       binaryToKai(kittieId);
