@@ -129,7 +129,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await gameVarAndFee.setProxy(proxy.address)
     await distribution.setProxy(proxy.address)
     await forfeiter.setProxy(proxy.address)
-    await dateTime.setProxy(proxy.address)
     await scheduler.setProxy(proxy.address)
     await betting.setProxy(proxy.address)
     await hitsResolve.setProxy(proxy.address)
@@ -140,7 +139,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
   it('initializes contract variables', async () => {
-    await dateTime.initialize()
     await gameVarAndFee.initialize()
     await forfeiter.initialize()
     await scheduler.initialize()
