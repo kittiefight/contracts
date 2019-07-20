@@ -6,16 +6,14 @@ const chaiAsPromised = require('chai-as-promised');
 const assert = chai.assert;
 chai.use(chaiAsPromised);
 
-let ContractManagerInst;
-let GenericDBInst;
-let ProfileDBInst;
 let RarityCalculatorInst;
+
+// this is the gene for kittie with kittieID 1001, which is used in truffle test
+const gene = '512955438081049600613224346938352058409509756310147795204209859701881294'
 
 before(async () => {
     
     RarityCalculatorInst = await RarityCalculator.new()
-    
-    
     
     await RarityCalculatorInst.fillKaiValue()
 
@@ -67,8 +65,7 @@ before(async () => {
 contract('RarityCalculator', (accounts) => {
 
     it('is able to convert the genome of a kitty to binary', async () => {
-        //await RarityCalculatorInst.fillKaiValue()
-        await RarityCalculatorInst.getDominantGeneBinary(1001)
+        await RarityCalculatorInst.getDominantGeneBinary(1001, gene)
         const bodyGeneBinary = await RarityCalculatorInst.dominantGeneBinary.call(0)
         const patternGeneBinary = await RarityCalculatorInst.dominantGeneBinary.call(1)
         const coloreyesGeneBinary = await RarityCalculatorInst.dominantGeneBinary.call(2)
@@ -92,8 +89,7 @@ contract('RarityCalculator', (accounts) => {
     })
 
     it('is able to convert the genome in binary to kai value', async () => {
-        
-        await RarityCalculatorInst.getDominantGeneBinary(1001)
+        await RarityCalculatorInst.getDominantGeneBinary(1001, gene)
         await RarityCalculatorInst.binaryToKai(1001)
         const bodyGeneKai = await RarityCalculatorInst.dominantGeneKai.call(0)
         const patternGeneKai = await RarityCalculatorInst.dominantGeneKai.call(1)
@@ -118,8 +114,7 @@ contract('RarityCalculator', (accounts) => {
     })
 
     it('is able to convert the genome in kai to cattributes', async () => {
-        
-        await RarityCalculatorInst.getDominantGeneBinary(1001)
+        await RarityCalculatorInst.getDominantGeneBinary(1001, gene)
         await RarityCalculatorInst.binaryToKai(1001)
         await RarityCalculatorInst.kaiToCattribute(1001)
 
@@ -148,20 +143,18 @@ contract('RarityCalculator', (accounts) => {
 })
 
 it('is able to calculate the rarity of the cattributes of a kittie', async () => {
-        
-  await RarityCalculatorInst.getDominantGeneBinary(1001)
+  await RarityCalculatorInst.getDominantGeneBinary(1001, gene)
   await RarityCalculatorInst.binaryToKai(1001)
   await RarityCalculatorInst.kaiToCattribute(1001)
   await RarityCalculatorInst.updateTotalKitties(1600000)
   const rarity = await RarityCalculatorInst.calculateRarity(1001)
-  console.log(rarity.toNumber())
   assert.isNumber(rarity.toNumber())
 })
 
 it('is able to calculate the defense level of a kittie', async () => {
   await RarityCalculatorInst.updateTotalKitties(1600000)
   await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
-  const result = await RarityCalculatorInst.getDefenseLevel.call(1001)
+  const result = await RarityCalculatorInst.getDefenseLevel.call(1001, gene)
   const defenseLevel = result.toNumber()
   assert.isAtLeast(defenseLevel, 1)
   assert.isAtMost(defenseLevel, 6)

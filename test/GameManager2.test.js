@@ -23,18 +23,18 @@ const RarityCalculator = artifacts.require('RarityCalculator')
 const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
-const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHELL')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
+const CronJob = artifacts.require('CronJob');
 const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 
 //Contract instances
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
   endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
-  rarityCalculator, kittieHELL, getterDB, setterDB, gameManager
+  rarityCalculator, kittieHELL, getterDB, setterDB, gameManager, cronJob
 
 
 const kittie1 = 1234
@@ -71,6 +71,9 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     getterDB = await GMGetterDB.new(genericDB.address)
     setterDB = await GMSetterDB.new(genericDB.address)
 
+    // CRONJOB
+    cronJob = await CronJob.new(genericDB.address)
+
     // TOKENS
     superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
     kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
@@ -88,7 +91,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     hitsResolve = await HitsResolve.new()
     rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
-    escrow = await Escrow.new()
     // kittieHELL = await KittieHELL.new(contractManager.address)
 
   })
@@ -105,7 +107,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.addContract('GameVarAndFee', gameVarAndFee.address)
     await proxy.addContract('EndowmentFund', endowmentFund.address)
     await proxy.addContract('EndowmentDB', endowmentDB.address)
-    await proxy.addContract('Escrow', escrow.address)
     await proxy.addContract('Distribution', distribution.address)
     await proxy.addContract('Forfeiter', forfeiter.address)
     await proxy.addContract('Scheduler', scheduler.address)
@@ -114,7 +115,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.addContract('RarityCalculator', rarityCalculator.address)
     await proxy.addContract('GMSetterDB', setterDB.address)
     await proxy.addContract('GMGetterDB', getterDB.address)
-    await proxy.addContract('GameManager', gameManager.address)//21
+    await proxy.addContract('GameManager', gameManager.address)
+    await proxy.addContract('CronJob', cronJob.address)
     // await proxy.addContract('KittieHELL', kittieHELL.address)
   })
 
@@ -134,7 +136,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await hitsResolve.setProxy(proxy.address)
     await rarityCalculator.setProxy(proxy.address)
     await register.setProxy(proxy.address)
-    await gameManager.setProxy(proxy.address) //17
+    await gameManager.setProxy(proxy.address)
+    await cronJob.setProxy(proxy.address)
     // await kittieHELL.setProxy(proxy.address)
   })
 
@@ -146,6 +149,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await gameManager.initialize()
     await getterDB.initialize()
     await endowmentFund.initialize() //7
+    await endowmentFund.initEscrow()
   })
 
   // Mint some kitties for the test addresses
@@ -214,8 +218,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     }).should.be.fulfilled;
   })
 
-
-
   it('registers user to the system', async () => {
     await proxy.execute('Register', setMessage(register, 'register', [user1]), {
       from: user1
@@ -244,7 +246,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
 
-  it('verify users civid Id, gfives player role', async () => {
+  it('verify users civid Id', async () => {
     await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
       from: user1
     }).should.be.fulfilled;
@@ -257,6 +259,14 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.execute('Register', setMessage(register, 'verifyAccount', [user4, cividId4]), {
       from: user4
     }).should.be.fulfilled;
+  })
+
+  it('verified users have player role', async () => {
+    let hasRole = await roleDB.hasRole('player', user1);
+    hasRole.should.be.true;
+
+    hasRole = await roleDB.hasRole('player', user2);
+    hasRole.should.be.true;
   })
 
   it('list 4 kitties to the system', async () => {

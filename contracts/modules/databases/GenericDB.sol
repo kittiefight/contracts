@@ -172,6 +172,28 @@ contract GenericDB is EternalStorage, Proxied {
     return true;
   }
 
+  function insertNodeToLinkedList(
+    string calldata contractName,
+    bytes32 tableKey,
+    uint256 nodeId,
+    uint256 referenceNodeId,
+    bool direction
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].insert(referenceNodeId, nodeId, direction);
+  }
+
+  function findNextNodeInSortedLinkedList(
+    string memory contractName,
+    bytes32 tableKey,
+    uint256 value
+  )
+    public view onlyContract(contractName) returns (uint256)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].getSortedSpot(0, value, true); //0 - search from HEAD, true - NEXT direction
+  }
+
   function getAdjacent(
     string memory contractName,
     bytes32 tableKey,

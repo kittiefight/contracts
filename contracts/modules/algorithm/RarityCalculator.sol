@@ -2,7 +2,7 @@
  // All functions and variables in contracts in the folder RarityCalculationDBs are internal. They are set as public just
  // temporarily for truffle test purpose. (Truffle test cannot carry out internal functions)
  // onlyContract modifier is temporarilly comment out until game manager contract is more defined
-// will add safe math later
+// a kittie's gene is stored in ProfileDB, and can be obtained via the function: getKittieAttributes()
 /**
  * @title RarityCalculator
  *
@@ -33,7 +33,7 @@ import "./RarityCalculationDBs/Rarity.sol";
 import "./RarityCalculationDBs/DefenseLevel.sol";
 
 /**
- * @title This contract is responsible to calculate the defense level of a kitty 
+ * @title This contract is responsible to calculate the defense level of a kitty
  * within 2 minutes before the game starts
  * @author @ziweidream
  */
@@ -45,13 +45,15 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
      * @author @ziweidream
      * @notice calculate the defense level of a kitty
      * @dev a kitty's defense level is an integer between 1 and 6
-     * @return the kitty's defense level 
+     * @param kittieId the kittyID for whom the defense level is calculated
+     * @param gene the kitty's gene
+     * @return the kitty's defense level
      */
-    function getDefenseLevel(uint256 kittieId) 
-      public 
-      //onlyContract(CONTRACT_NAME_GAMMANAGER) 
+    function getDefenseLevel(uint256 kittieId, uint256 gene)
+      public
+      //onlyContract(CONTRACT_NAME_GAMMANAGER)
       returns (uint256) {
-      getDominantGeneBinary(kittieId);
+      getDominantGeneBinary(kittieId, gene);
       binaryToKai(kittieId);
       kaiToCattribute(kittieId);
 

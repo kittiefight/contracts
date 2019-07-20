@@ -19,12 +19,16 @@ contract CattributesScoresDB is Owned {
     /**
      * @author @ziweidream
      * @notice mapping a cattribute with its score
-     * @dev this db needs to beupdated periodically. 
+     * @dev this db needs to beupdated periodically.
      * @dev https://api.cryptokitties.co/cattributes
-     * @param _name the cattribute's name 
-     * @param _score the cattribute's score 
+     * @param _name the cattribute's name
+     * @param _score the cattribute's score
      */
-    function updateCattributesScores(string memory _name, uint _score) public onlyOwner {
+    function updateCattributesScores(string memory _name, uint _score)
+        public  // temporarily set as public just for truffle test purpose
+        // internal
+        onlyOwner
+    {
         CattributesScores[_name] = _score;
     }
 }

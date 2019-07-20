@@ -153,6 +153,12 @@ contract GMGetterDB is Proxied {
   
   }
 
+  function getOpponent(uint gameId, address player) public view returns(address){
+        (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
+        if(playerBlack == player) return playerRed;
+        return playerBlack;
+  }
+
  /**
    * @dev check game state, 0-4
    */

@@ -195,6 +195,12 @@ contract('Betting', (accounts) => {
         assert.isTrue(isBlocked)
     })
 
+    it('is able to set and store the original defense level of the given corner in a game', async () => {
+        await BettingInst.setOriginalDefenseLevel(123, accounts[0], 6)
+        const originalDefenseLevel = await BettingInst.defenseLevel.call(123, accounts[0])
+        assert.equal(originalDefenseLevel, 6)
+    })
+
     it('is able to set and store the current defense level of the given corner in a game', async () => {
         await BettingInst.setDefenseLevel(123, accounts[0], 3)
         const defenseLevel = await BettingInst.defenseLevel.call(123, accounts[0])
@@ -202,16 +208,35 @@ contract('Betting', (accounts) => {
     })
 
     it('is able to reduce the defense level of the opponent if each of the last 5 bets from the attacker was consecutively bigger than the previous one', async () => {
+        // if the defense level of the opponent player is higher than 0, then it is reduced if the conditions for reduction are true.
         await BettingInst.setDefenseLevel(123, accounts[1], 2)
         await BettingInst.fillBets(123, accounts[0], 10)
         await BettingInst.fillBets(123, accounts[0], 11)
         await BettingInst.fillBets(123, accounts[0], 12)
         await BettingInst.fillBets(123, accounts[0], 13)
         await BettingInst.fillBets(123, accounts[0], 14)
-        await BettingInst.reduceDefenseLevel(123, accounts[0], accounts[1])
+        await BettingInst.reduceDefenseLevel(123, 16, accounts[0], accounts[1])
         const defenseLevelOppoent = await BettingInst.defenseLevel.call(123, accounts[1])
         assert.equal(defenseLevelOppoent, 1)
     })
+
+    it('is not able to reduce the defense level of the opponent player if the defense level of the opponent player is already 0, even when the conditions for reduction are true. ', async () => {
+             // if the defense level of the opponent player is already 0, then it stays at 0, even when the conditions for reduction are true.
+             await BettingInst.setDefenseLevel(207, accounts[6], 0)
+             await BettingInst.fillBets(207, accounts[7], 10)
+             await BettingInst.fillBets(207, accounts[7], 11)
+             await BettingInst.fillBets(207, accounts[7], 12)
+             await BettingInst.fillBets(207, accounts[7], 13)
+             await BettingInst.fillBets(207, accounts[7], 14)
+             try {
+                await BettingInst.reduceDefenseLevel(207, 16, accounts[7], accounts[6])
+              } catch (error) {
+                errorMessage = error.toString()
+              }
+              assert.include(errorMessage, 'Defense level is already zero')
+        
+    })
+
 
     it('is able to generate a fight map for a game via the function startGame()', async () => {
         await BettingInst.startGame(22, 78,99)

@@ -38,7 +38,6 @@ contract Distribution is Proxied {
     GMGetterDB public gmGetterDB;
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
-    Escrow public escrow;
 
     /**
     * @dev Sets related contracts
@@ -49,7 +48,6 @@ contract Distribution is Proxied {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         //kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
-        //escrow = Escrow(proxy.getContract(CONTRACT_NAME_ESCROW));
     }
 
     /**
