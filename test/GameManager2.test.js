@@ -49,6 +49,16 @@ const cividId2 = 2;
 const cividId3 = 3;
 const cividId4 = 4;
 
+// GAME VARS
+const LISTING_FEE = 1000
+const TICKET_FEE = 100
+const BETTING_FEE = 100
+const MIN_CONTRIBUTORS = 2
+const REQ_NUM_MATCHES = 2
+const GAME_PRESTART = 120 // 2 min
+const GAME_DURATION = 300 // games last 5 min
+
+
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -197,25 +207,37 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
   //Set var and fees
-  it('Set var and fees', async () => {
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['listingFee', 1000]), {
+  it('Set game vars and fees correctly', async () => {
+    let names = ['listingFee', 'ticketFee', 'gamePrestart', 'gameDuration', 'minimumContributors', 'requiredNumberMatches'];
+    let values = [LISTING_FEE, TICKET_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS, REQ_NUM_MATCHES];
+
+    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [names, values]), {
       from: creator
     }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['ticketFee', 100]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gamePrestart', 120]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gameDuration', 300]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['minimumContributors', 2]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['requiredNumberMatches', 2]), {
-      from: creator
-    }).should.be.fulfilled;
+
+    let getVar = await gameVarAndFee.getRequiredNumberMatches();
+
+    getVar.toNumber().should.be.equal(2);
+
+
+    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['listingFee', 1000]), {
+    //   from: creator
+    // }).should.be.fulfilled;
+    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['ticketFee', 100]), {
+    //   from: creator
+    // }).should.be.fulfilled;
+    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gamePrestart', 120]), {
+    //   from: creator
+    // }).should.be.fulfilled;
+    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gameDuration', 300]), {
+    //   from: creator
+    // }).should.be.fulfilled;
+    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['minimumContributors', 2]), {
+    //   from: creator
+    // }).should.be.fulfilled;
+    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['requiredNumberMatches', 2]), {
+    //   from: creator
+    // }).should.be.fulfilled;
   })
 
   it('registers user to the system', async () => {
@@ -267,6 +289,22 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
     hasRole = await roleDB.hasRole('player', user2);
     hasRole.should.be.true;
+  })
+
+  it('unverified users cannot list kitties', async () => {
+    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+      [156]), { from: bettor1 }).should.be.rejected;
+  })
+
+  it('is not able to list kittie without kitty ownership', async () => {
+    //user2 not owner of kittie1
+    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+      [kittie2]), { from: user1 }).should.be.rejected;
+  })
+
+  it('cannot list kitties without proxy', async () => {
+    await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
+    await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
   })
 
   it('list 4 kitties to the system', async () => {
