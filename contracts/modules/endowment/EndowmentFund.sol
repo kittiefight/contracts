@@ -86,46 +86,6 @@ contract EndowmentFund is Distribution {
         endowmentDB.setHoneypotState(_potId,_state);
     }
 
-
-    struct KittieTokenTx {
-        address sender;
-        uint value;
-        bytes data;
-        bytes4 sig;
-    }
-
-    /**
-     * @dev will be called by bet from GM
-     *
-     */
-    function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
-
-        // do transfer of KTY
-        require(kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount), "kittieFightToken.transferFrom() failed");
-
-        // update DB
-        require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
-            'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');
-
-        return true;
-    }
-
-    /**
-     * @dev called by GameMangar
-     *
-     */
-    function contributeETH(uint _gameId) external payable returns(bool) {
-
-        // transfer ETH to Escrow
-
-        // update DB
-        uint _eth_amount = 0; // msg.value is availabe only in payable function
-        require(endowmentDB.contributeFunds(msg.sender, _gameId, _eth_amount, 0),
-            'Error: endowmentDB.contributeFunds(msg.sender, _gameId, _eth_amount, 0) failed');
-
-        return true;
-    }
-
     /** @notice  Returns a fresh unique identifier.
     *
     * @dev the generation scheme uses three components.
@@ -143,5 +103,84 @@ contract EndowmentFund is Distribution {
         abi.encodePacked(blockhash(block.number - 1), address(this), ++potRequestCount)
         ));
     }
+
+
+    struct KittieTokenTx {
+        address sender;
+        uint value;
+        bytes data;
+        bytes4 sig;
+    }
+
+    /**
+     * @dev will be called by bet from GM
+     *
+     */
+    function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
+
+        // do transfer of KTY
+        if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
+            return false; // since GM expects bool.
+        }
+
+        // update DB
+        require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
+            'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');
+
+        return true;
+    }
+
+    /**
+     * @dev GM calls as: require( endowmentFund.contributeETH.value( msg.value )( gameId ));
+     */
+    function contributeETH(uint _gameId) external payable returns(bool) {
+
+        // transfer ETH to Escrow
+        //address(escrow).transfer(msg.value); // with through if not successful
+        if (!address(escrow).send(msg.value)){
+            return false; // since GM expects bool
+        }
+
+        // to do - check transaction status
+
+        // update DB
+        require(endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0),
+            'Error: endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0) failed');
+
+        return true;
+    }
+
+    /**
+     * Escrow is created and owned by Endowment
+     * OR Do we deply escrow and than transfer ownership to Endowment?
+     */
+    function initEscrow() external onlyOwner {
+
+        escrow = new Escrow();
+
+    }
+
+    /**
+    * @notice MUST BE DONE BEFORE UPGRADING ENDOWMENT AS IT IS THE OWNER
+    * @dev change Escrow contract owner before UPGRADING ENDOWMENT AS IT IS THE OWNER
+    */
+    function transferEscrowOwnership(address payable _newOwner) external onlyOwner {
+        escrow.transferOwnership(_newOwner);
+    }
+
+    /**
+    * @dev transfer old Escrow funds to new Escrow
+    */
+    function transferEscrow(address payable newEscrow) external onlyOwner {
+
+        // transfer the ETH
+        escrow.transferETH(newEscrow, address(escrow).balance);
+
+        // transfer the KTY
+        uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
+        escrow.transferKTY(newEscrow, ktyBalance);
+    }
+
+
 
 }

@@ -49,7 +49,7 @@ contract Distribution is Proxied {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         //kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
-        escrow = Escrow(proxy.getContract(CONTRACT_NAME_ESCROW));
+        //escrow = Escrow(proxy.getContract(CONTRACT_NAME_ESCROW));
     }
 
     /**
