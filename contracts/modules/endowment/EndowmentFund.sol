@@ -194,8 +194,8 @@ contract EndowmentFund is Distribution {
 
         // check ownership
         Escrow tmpEscrow = Escrow(_newEscrow);
-        require((address(tmpEscrow.owner) == address(this)),
-            "Error: The new contact owner is not Endowment. Transfer ownership to Endowment before calling this function");
+        require(tmpEscrow.owner() == address(this),
+            "Error: The new contract owner is not Endowment. Transfer ownership to Endowment before calling this function");
 
         if (address(escrow) != address(0)){ // already initialized. Transfer if any funds
 
@@ -210,7 +210,7 @@ contract EndowmentFund is Distribution {
 
         }
 
-        escrow = tmpEscrow;
+        escrow = Escrow(_newEscrow);
         escrow.initialize(address(kittieFightToken));
 
     }

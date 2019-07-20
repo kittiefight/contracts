@@ -71,7 +71,7 @@ contract Scheduler is Proxied {
         Kitty memory newKitty = Kitty(_kittyId, _player);
         kittyList.push(newKitty);
 
-        if ((gameVarAndFee.getRequiredNumberMatches() * 2) == kittyList.length) {
+        if ((gameVarAndFee.getRequiredNumberMatches().mul(2)) == kittyList.length) {
             matchKitties();
         }
     }

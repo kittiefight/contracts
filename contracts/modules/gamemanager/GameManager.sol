@@ -109,7 +109,7 @@ contract GameManager is Proxied, Guard {
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
         rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
-        // kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
@@ -121,7 +121,7 @@ contract GameManager is Proxied, Guard {
         uint kittieId
     )
         external
-        onlyProxy onlyPlayer
+        // onlyProxy onlyPlayer
         onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
     {
         address player = getOriginalSender();

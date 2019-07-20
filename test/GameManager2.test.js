@@ -23,6 +23,7 @@ const RarityCalculator = artifacts.require('RarityCalculator')
 const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
+const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHELL')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
@@ -35,7 +36,8 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
   endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
-  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager, cronJob
+  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager,
+  cronJob, escrow
 
 
 const kittie1 = 1234
@@ -58,7 +60,9 @@ const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
 const GAME_PRESTART = 120 // 2 min
 const GAME_DURATION = 300 // games last 5 min
-
+const ETH_PER_GAME = 0 //How does endowment start funds?
+const TOKENS_PER_GAME = 0;
+const GAME_TIMES = 3600 //Scheduled games 1 hour apart
 
 
 function setMessage(contract, funcName, argArray) {
@@ -104,6 +108,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
     kittieHELL = await KittieHELL.new()
+
+    //ESCROW
+    escrow = await Escrow.new()
+    await escrow.transferOwnership(endowmentFund.address).should.be.fulfilled
 
   })
 
@@ -163,7 +171,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await gameManager.initialize()
     await getterDB.initialize()
     await endowmentFund.initialize()
-    await endowmentFund.initEscrow()
+    await endowmentFund.initUpgradeEscrow(escrow.address)
     await kittieHellDB.setKittieHELL()
     await kittieHELL.initialize()
   })
@@ -214,36 +222,21 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
   //Set var and fees
   it('Set game vars and fees correctly', async () => {
-    let names = ['listingFee', 'ticketFee', 'gamePrestart', 'gameDuration', 'minimumContributors', 'requiredNumberMatches'];
-    let values = [LISTING_FEE, TICKET_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS, REQ_NUM_MATCHES];
+    let names = ['listingFee', 'ticketFee', 'gamePrestart', 'gameDuration',
+      'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
+      'gameTimes'];
+    let values = [LISTING_FEE, TICKET_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+      REQ_NUM_MATCHES, ETH_PER_GAME, TOKENS_PER_GAME, GAME_TIMES];
 
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [names, values]), {
       from: creator
     }).should.be.fulfilled;
 
     let getVar = await gameVarAndFee.getRequiredNumberMatches();
+    getVar.toNumber().should.be.equal(REQ_NUM_MATCHES);
 
-    getVar.toNumber().should.be.equal(2);
-
-
-    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['listingFee', 1000]), {
-    //   from: creator
-    // }).should.be.fulfilled;
-    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['ticketFee', 100]), {
-    //   from: creator
-    // }).should.be.fulfilled;
-    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gamePrestart', 120]), {
-    //   from: creator
-    // }).should.be.fulfilled;
-    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gameDuration', 300]), {
-    //   from: creator
-    // }).should.be.fulfilled;
-    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['minimumContributors', 2]), {
-    //   from: creator
-    // }).should.be.fulfilled;
-    // await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['requiredNumberMatches', 2]), {
-    //   from: creator
-    // }).should.be.fulfilled;
+    getVar = await gameVarAndFee.getListingFee();
+    getVar.toNumber().should.be.equal(LISTING_FEE);
   })
 
   it('registers user to the system', async () => {
@@ -308,12 +301,18 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       [kittie2]), { from: user1 }).should.be.rejected;
   })
 
-  it('cannot list kitties without proxy', async () => {
-    await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
-    await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
-  })
+  // it('cannot list kitties without proxy', async () => {
+  //   await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
+  //   await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
+  // })
 
   it('list 4 kitties to the system', async () => {
+    // //For testing without proxy for getting back error
+    // await gameManager.listKittie(kittie1, { from: user1 }).should.be.fulfilled
+    // await gameManager.listKittie(kittie2, { from: user2 }).should.be.fulfilled;
+    // await gameManager.listKittie(kittie3, { from: user3 }).should.be.fulfilled;
+    // await gameManager.listKittie(kittie4, { from: user4 }).should.be.fulfilled;
+
     await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
       [kittie1]), { from: user1 }).should.be.fulfilled;
 
@@ -339,8 +338,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       console.log('---')
     })
   })
-
-
 
   //--- PARTICIPATING -----
   it('user can participate in a created game', async () => {
