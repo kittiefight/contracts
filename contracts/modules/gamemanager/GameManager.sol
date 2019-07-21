@@ -59,6 +59,14 @@ contract GameManager is Proxied, Guard {
     IKittyCore public cryptoKitties;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, KITTIE_HELL, WITHDREW_EARNINGS, CANCELLED}
+    enum eCorner {BLACK, RED}
+
+    //EVENTS
+    event NewGame(uint gameId, address playerRed, uint kittieRed, address playerBlack, uint kittieBlack, uint gameStartTime);
+    event NewSupporter(uint game_id, address supporter, address playerSupported);
+    event PressStart(uint game_id, address player);
+    event NewBet(uint game_id, address player, uint corner, uint ethAmount);
+    event GameStateChanged(uint game_id, eGameState old_state, eGameState new_state);
 
     enum HoneypotState {
         created,
@@ -69,16 +77,20 @@ contract GameManager is Proxied, Guard {
         claimed
     }
 
-    struct Player{
+    struct Game{
         uint random;
         bool hitStart;
+        address topBettor;
+        address secondTopBettor;
+        uint amountTopBettor;
+        uint amountSecondTopBettor;
     }
 
     // struct Bettor{
     //     bool payedTicketFee;
     // }
 
-    mapping(address => mapping(uint => Player)) public players;
+    mapping(uint => mapping(address => Game)) public games;
     // mapping(address => mapping(uint => Bettor)) public bettors;
 
     modifier onlyKittyOwner(address player, uint kittieId) {
@@ -121,7 +133,7 @@ contract GameManager is Proxied, Guard {
         uint kittieId
     )
         external
-        // onlyProxy onlyPlayer
+        onlyProxy onlyPlayer
         onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
     {
         address player = getOriginalSender();
@@ -152,7 +164,7 @@ contract GameManager is Proxied, Guard {
         require(!scheduler.isKittyListedForMatching(kittyRed));
         require(!scheduler.isKittyListedForMatching(kittyBlack));
 
-        generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+        generateFight(playerBlack, playerRed, kittyBlack, kittyRed, gameStartTime);
     }
 
     /**
@@ -175,6 +187,8 @@ contract GameManager is Proxied, Guard {
 
         (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
         gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
+
+        emit NewGame(gameId, playerRed, kittyRed, playerBlack, kittyBlack, gameStartTime);
 
     }
 
@@ -230,6 +244,8 @@ contract GameManager is Proxied, Guard {
         if (gameState == uint(eGameState.WAITING) && preStartTime >= now)
             gmSetterDB.updateGameState(gameId, uint(eGameState.PRE_GAME));
         
+        emit NewSupporter(gameId, supporter, playerToSupport);
+        
         return true;
     }
 
@@ -255,8 +271,8 @@ contract GameManager is Proxied, Guard {
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
         (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId);
         
-        players[player][gameId].hitStart = true;
-        players[player][gameId].random = randomNum;
+        games[gameId][player].hitStart = true;
+        games[gameId][player].random = randomNum;
             
         uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
         betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
@@ -265,11 +281,13 @@ contract GameManager is Proxied, Guard {
 
         address opponentPlayer = gmGetterDB.getOpponent(gameId, player);
 
+        emit PressStart(gameId, player);
+
         //Both Players Hit start
-        if (players[opponentPlayer][gameId].hitStart){
+        if (games[gameId][opponentPlayer].hitStart){
 
             //Call betting to set fight map
-            betting.startGame(gameId, players[opponentPlayer][gameId].random, randomNum);
+            betting.startGame(gameId, games[gameId][opponentPlayer].random, randomNum);
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
             (uint honeyPotId,) = gmGetterDB.getHoneypotInfo(gameId);
@@ -411,7 +429,7 @@ contract GameManager is Proxied, Guard {
     /**
      * @dev Cancels the game before the game starts
      */
-    function cancelGame(uint gameId, string calldata reason) external onlyContract(CONTRACT_NAME_FORFEITER) {
+    function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
         require(gmGetterDB.getGameState(gameId) == uint(eGameState.WAITING) ||
                 gmGetterDB.getGameState(gameId) == uint(eGameState.PRE_GAME));
 
