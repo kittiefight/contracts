@@ -23,7 +23,9 @@ const RarityCalculator = artifacts.require('RarityCalculator')
 const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
+const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHELL')
+const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
@@ -34,7 +36,8 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
   endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
-  rarityCalculator, kittieHELL, getterDB, setterDB, gameManager, cronJob
+  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager,
+  cronJob, escrow
 
 
 const kittie1 = 1234
@@ -48,6 +51,18 @@ const cividId1 = 1;
 const cividId2 = 2;
 const cividId3 = 3;
 const cividId4 = 4;
+
+// GAME VARS AND FEES
+const LISTING_FEE = 1000
+const TICKET_FEE = 100
+const BETTING_FEE = 100
+const MIN_CONTRIBUTORS = 2
+const REQ_NUM_MATCHES = 2
+const GAME_PRESTART = 120 // 2 min
+const GAME_DURATION = 300 // games last 5 min
+const ETH_PER_GAME = 0 //How does endowment start funds?
+const TOKENS_PER_GAME = 0;
+const GAME_TIMES = 3600 //Scheduled games 1 hour apart
 
 
 function setMessage(contract, funcName, argArray) {
@@ -70,6 +85,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     endowmentDB = await EndowmentDB.new(genericDB.address)
     getterDB = await GMGetterDB.new(genericDB.address)
     setterDB = await GMSetterDB.new(genericDB.address)
+    kittieHellDB = await KittieHellDB.new(genericDB.address)
 
     // CRONJOB
     cronJob = await CronJob.new(genericDB.address)
@@ -91,7 +107,11 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     hitsResolve = await HitsResolve.new()
     rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
-    // kittieHELL = await KittieHELL.new(contractManager.address)
+    kittieHELL = await KittieHELL.new()
+
+    //ESCROW
+    escrow = await Escrow.new()
+    await escrow.transferOwnership(endowmentFund.address).should.be.fulfilled
 
   })
 
@@ -117,7 +137,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.addContract('GMGetterDB', getterDB.address)
     await proxy.addContract('GameManager', gameManager.address)
     await proxy.addContract('CronJob', cronJob.address)
-    // await proxy.addContract('KittieHELL', kittieHELL.address)
+    await proxy.addContract('KittieHell', kittieHELL.address)
+    await proxy.addContract('KittieHellDB', kittieHellDB.address)
   })
 
   it('sets proxy in contracts', async () => {
@@ -138,7 +159,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
     await cronJob.setProxy(proxy.address)
-    // await kittieHELL.setProxy(proxy.address)
+    await kittieHELL.setProxy(proxy.address)
+    await kittieHellDB.setProxy(proxy.address)
   })
 
   it('initializes contract variables', async () => {
@@ -148,8 +170,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await register.initialize()
     await gameManager.initialize()
     await getterDB.initialize()
-    await endowmentFund.initialize() //7
-    await endowmentFund.initEscrow()
+    await endowmentFund.initialize()
+    await endowmentFund.initUpgradeEscrow(escrow.address)
+    await kittieHellDB.setKittieHELL()
+    await kittieHELL.initialize()
   })
 
   // Mint some kitties for the test addresses
@@ -197,25 +221,22 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
   //Set var and fees
-  it('Set var and fees', async () => {
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['listingFee', 1000]), {
+  it('Set game vars and fees correctly', async () => {
+    let names = ['listingFee', 'ticketFee', 'gamePrestart', 'gameDuration',
+      'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
+      'gameTimes'];
+    let values = [LISTING_FEE, TICKET_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+      REQ_NUM_MATCHES, ETH_PER_GAME, TOKENS_PER_GAME, GAME_TIMES];
+
+    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [names, values]), {
       from: creator
     }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['ticketFee', 100]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gamePrestart', 120]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['gameDuration', 300]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['minimumContributors', 2]), {
-      from: creator
-    }).should.be.fulfilled;
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setVarAndFee', ['requiredNumberMatches', 2]), {
-      from: creator
-    }).should.be.fulfilled;
+
+    let getVar = await gameVarAndFee.getRequiredNumberMatches();
+    getVar.toNumber().should.be.equal(REQ_NUM_MATCHES);
+
+    getVar = await gameVarAndFee.getListingFee();
+    getVar.toNumber().should.be.equal(LISTING_FEE);
   })
 
   it('registers user to the system', async () => {
@@ -269,7 +290,29 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     hasRole.should.be.true;
   })
 
+  it('unverified users cannot list kitties', async () => {
+    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+      [156]), { from: bettor1 }).should.be.rejected;
+  })
+
+  it('is not able to list kittie without kitty ownership', async () => {
+    //user2 not owner of kittie1
+    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+      [kittie2]), { from: user1 }).should.be.rejected;
+  })
+
+  // it('cannot list kitties without proxy', async () => {
+  //   await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
+  //   await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
+  // })
+
   it('list 4 kitties to the system', async () => {
+    // //For testing without proxy for getting back error
+    // await gameManager.listKittie(kittie1, { from: user1 }).should.be.fulfilled
+    // await gameManager.listKittie(kittie2, { from: user2 }).should.be.fulfilled;
+    // await gameManager.listKittie(kittie3, { from: user3 }).should.be.fulfilled;
+    // await gameManager.listKittie(kittie4, { from: user4 }).should.be.fulfilled;
+
     await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
       [kittie1]), { from: user1 }).should.be.fulfilled;
 
@@ -295,8 +338,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       console.log('---')
     })
   })
-
-
 
   //--- PARTICIPATING -----
   it('user can participate in a created game', async () => {
