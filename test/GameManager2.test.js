@@ -58,12 +58,20 @@ const TICKET_FEE = 100
 const BETTING_FEE = 100
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 120 // 2 min
+const GAME_PRESTART = 30 // 30 secs for quick test
 const GAME_DURATION = 300 // games last 5 min
 const ETH_PER_GAME = 0 //How does endowment start funds?
 const TOKENS_PER_GAME = 0;
-const GAME_TIMES = 3600 //Scheduled games 1 hour apart
+const GAME_TIMES = 60 //Scheduled games 1 min apart
 
+const GameState = {
+  WAITING : 0, 
+  PRE_GAME : 1,
+  MAIN_GAME : 2,
+  KITTIE_HELL : 3,
+  WITHDREW_EARNINGS : 4,
+  CANCELLED : 5
+}
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -188,15 +196,14 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
 
   // Approve transfer operation for the system
-  // Register no longer holds kittie
-  // await cryptoKitties.approve(register.address, kittie1, { from: user1 }).should.be.fulfilled;
-  // await cryptoKitties.approve(register.address, kittie2, { from: user2 }).should.be.fulfilled;
-  // await cryptoKitties.approve(register.address, kittie3, { from: user3 }).should.be.fulfilled;
-  // await cryptoKitties.approve(register.address, kittie4, { from: user4 }).should.be.fulfilled;
-  // await cryptoKitties.approve(register.address, kittie5, { from: user5 }).should.be.fulfilled;
-  // await cryptoKitties.approve(register.address, kittie6, { from: user2 }).should.be.fulfilled;
-
-
+  it('approve transfer operation', async () => {
+    await cryptoKitties.approve(kittieHELL.address, kittie1, { from: user1 }).should.be.fulfilled;
+    await cryptoKitties.approve(kittieHELL.address, kittie2, { from: user2 }).should.be.fulfilled;
+    await cryptoKitties.approve(kittieHELL.address, kittie3, { from: user3 }).should.be.fulfilled;
+    await cryptoKitties.approve(kittieHELL.address, kittie4, { from: user4 }).should.be.fulfilled;
+    await cryptoKitties.approve(kittieHELL.address, kittie6, { from: user2 }).should.be.fulfilled;
+  })
+  
   it('transfer some KTY for the test addresses', async () => {
     await kittieFightToken.transfer(user1, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user2, 100000).should.be.fulfilled;
@@ -307,12 +314,6 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
   it('list 4 kitties to the system', async () => {
-    // //For testing without proxy for getting back error
-    // await gameManager.listKittie(kittie1, { from: user1 }).should.be.fulfilled
-    // await gameManager.listKittie(kittie2, { from: user2 }).should.be.fulfilled;
-    // await gameManager.listKittie(kittie3, { from: user3 }).should.be.fulfilled;
-    // await gameManager.listKittie(kittie4, { from: user4 }).should.be.fulfilled;
-
     await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
       [kittie1]), { from: user1 }).should.be.fulfilled;
 
@@ -343,7 +344,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   it('user can participate in a created game', async () => {
 
     let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
-
+    
     //Check games that user1 is not in
     let gameNotIn = events
       .filter(e => ((e.returnValues.playerRed !== user1) || (e.returnValues.playerBlack !== user1)))
@@ -361,6 +362,55 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerBlack]), { from: user1 }).should.be.rejected;
 
+    // adds more participants
+    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [gameId, playerRed]), { from: bettor2 }).should.be.fulfilled;
+  
+    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [gameId, playerBlack]), { from: bettor3 }).should.be.fulfilled;
+  })
+
+  it('should move gameState to PRE_GAME', function(done){
+    this.timeout(180000)
+
+    setTimeout(async function (){
+      console.log('waiting for preStartTime to expire...')
+
+      let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+      let { gameId, playerRed, playerBlack } = events[0].returnValues;
+      
+      let currentState = await getterDB.getGameState(gameId)
+      currentState.toNumber().should.be.equal(GameState.WAITING)
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [gameId, playerBlack]), { from: bettor4 }).should.be.fulfilled;
+  
+      let newState = await getterDB.getGameState(gameId)
+      newState.toNumber().should.be.equal(GameState.PRE_GAME)
+      
+      done()
+    }, 31000);
+  })
+
+
+  // START GAME
+  it('should move gameState to MAIN_GAME', async () => {
+    let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    let { gameId, playerRed, playerBlack } = events[0].returnValues;
+
+    let currentState = await getterDB.getGameState(gameId)
+    currentState.toNumber().should.be.equal(GameState.PRE_GAME)
+
+    await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
+    [gameId, 99]), { from: playerRed }).should.be.fulfilled;
+
+    await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
+    [gameId, 100]), { from: playerBlack }).should.be.fulfilled;
+
+    let gameInfo = await getterDB.getGameInfo(gameId)
+    gameInfo.pressedStart[0].should.be.true
+    gameInfo.pressedStart[1].should.be.true
+    gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
 
   return;
