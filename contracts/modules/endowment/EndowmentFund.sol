@@ -115,6 +115,15 @@ contract EndowmentFund is Distribution {
         bytes4 sig;
     }
 
+    function addFundsToEscrow(uint256 _kty_amount, uint256 _eth_amount) external onlyOwner {
+        require(address(escrow) != address(0), "escrow not initialized");
+
+        require(kittieFightToken.transfer(address(escrow), _kty_amount), "Transfer of KTY to Escrow failed");
+        // update DB
+
+        address(escrow).transfer(_eth_amount);
+    }
+
     /**
      * @dev accepts KTY. KTY is stored in escrow
      */
@@ -165,7 +174,7 @@ contract EndowmentFund is Distribution {
     /**
     * @dev transfer Escrow ETH funds
     */
-    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public onlyOwner returns(bool){
+    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) external onlyOwner returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the ETH
@@ -175,7 +184,7 @@ contract EndowmentFund is Distribution {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public onlyOwner returns(bool){
+    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) external onlyOwner returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the KTY
