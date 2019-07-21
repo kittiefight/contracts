@@ -119,9 +119,7 @@ contract EndowmentFund is Distribution {
     */
 
     /**
-     * @dev for this to work endowment should be tokens! This would mean making endowment payable as well
-     * Although we can send directly send to escrow. But since we need to update DB as well.
-     * we can get the balance directly from escrow
+     * @dev for this to work endowment should be tokens!
      */
     function addFundsToEscrow(uint256 _kty_amount, uint256 _eth_amount) external onlyOwner {
         require(address(escrow) != address(0),
@@ -143,13 +141,12 @@ contract EndowmentFund is Distribution {
         require(address(escrow) != address(0), "escrow not initialized");
 
         // do transfer of KTY
-        kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount);
-        /*
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
             return false; // since GM expects bool.
         }
-        * /
 
+        /*
+        // Error: Not registered
         // update DB
         require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
             'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');
@@ -229,7 +226,7 @@ contract EndowmentFund is Distribution {
         // check ownership
         require(_newEscrow.owner() == address(this),
             "Error: The new contract owner is not Endowment. Transfer ownership to Endowment before calling this function");
-//*
+
         if (address(escrow) != address(0)){ // Transfer if any funds
 
             // transfer all the ETH
@@ -245,7 +242,6 @@ contract EndowmentFund is Distribution {
             require(escrow.getBalanceETH() > 0, "Current escrow is not empty. It has ETH");
 
         }
-//*/
         escrow = _newEscrow;
         return true;
     }
@@ -257,16 +253,7 @@ contract EndowmentFund is Distribution {
         return (address(escrow.owner) != address(this));
     }
 
-//*
-// test
-    function getEscrowAddress() public view returns(address){
-        return address(escrow);
-        //return escrow.address;
-    }
-    function getAddress() public view returns(address){
-        return address(this);
-    }
-//*/
+
 
 
 }

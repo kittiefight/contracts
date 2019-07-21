@@ -1,0 +1,297 @@
+const BigNumber = require('bignumber.js');
+require('chai')
+  .use(require('chai-shallow-deep-equal'))
+  .use(require('chai-bignumber')(BigNumber))
+  .use(require('chai-as-promised'))
+  .should();
+
+const KFProxy = artifacts.require('KFProxy')
+const GenericDB = artifacts.require('GenericDB');
+const ProfileDB = artifacts.require('ProfileDB')
+const RoleDB = artifacts.require('RoleDB')
+const GMSetterDB = artifacts.require('GMSetterDB')
+const GMGetterDB = artifacts.require('GMGetterDB')
+const GameManager = artifacts.require('GameManager')
+const GameVarAndFee = artifacts.require('GameVarAndFee')
+const Distribution = artifacts.require('Distribution')
+const Forfeiter = artifacts.require('Forfeiter')
+const DateTime = artifacts.require('DateTime')
+const Scheduler = artifacts.require('Scheduler')
+const Betting = artifacts.require('Betting')
+const HitsResolve = artifacts.require('HitsResolve')
+const RarityCalculator = artifacts.require('RarityCalculator')
+const Register = artifacts.require('Register')
+const EndowmentFund = artifacts.require('EndowmentFund')
+const EndowmentDB = artifacts.require('EndowmentDB')
+const Escrow = artifacts.require('Escrow')
+const KittieHELL = artifacts.require('KittieHELL')
+const KittieHellDB = artifacts.require('KittieHellDB')
+const SuperDaoToken = artifacts.require('MockERC20Token');
+const KittieFightToken = artifacts.require('MockERC20Token');
+const CryptoKitties = artifacts.require('MockERC721Token');
+const CronJob = artifacts.require('CronJob');
+const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
+
+//Contract instances
+let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
+  kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
+  endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
+  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager,
+  cronJob, escrow
+
+
+const kittie1 = 1234
+const kittie2 = 32452
+const kittie3 = 23134
+const kittie4 = 44444
+const kittie5 = 55555
+const kittie6 = 6666
+
+const cividId1 = 1;
+const cividId2 = 2;
+const cividId3 = 3;
+const cividId4 = 4;
+
+// GAME VARS AND FEES
+const LISTING_FEE = 1000
+const TICKET_FEE = 100
+const BETTING_FEE = 100
+const MIN_CONTRIBUTORS = 2
+const REQ_NUM_MATCHES = 2
+const GAME_PRESTART = 120 // 2 min
+const GAME_DURATION = 300 // games last 5 min
+const ETH_PER_GAME = 0 //How does endowment start funds?
+const TOKENS_PER_GAME = 0;
+const GAME_TIMES = 3600 //Scheduled games 1 hour apart
+
+
+function setMessage(contract, funcName, argArray) {
+  return web3.eth.abi.encodeFunctionCall(
+    contract.abi.find((f) => { return f.name == funcName; }),
+    argArray
+  );
+}
+
+contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor2, bettor3, bettor4, randomAddress]) => {
+
+  it('deploys contracts', async () => {
+    // PROXY
+    proxy = await KFProxy.new()
+
+    // DATABASES
+    genericDB = await GenericDB.new()
+    profileDB = await ProfileDB.new(genericDB.address);
+    roleDB = await RoleDB.new(genericDB.address);
+    endowmentDB = await EndowmentDB.new(genericDB.address)
+    getterDB = await GMGetterDB.new(genericDB.address)
+    setterDB = await GMSetterDB.new(genericDB.address)
+    kittieHellDB = await KittieHellDB.new(genericDB.address)
+
+    // CRONJOB
+    cronJob = await CronJob.new(genericDB.address)
+
+    // TOKENS
+    superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
+    kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
+    cryptoKitties = await CryptoKitties.new();
+
+    // MODULES
+    gameManager = await GameManager.new()
+    register = await Register.new()
+    dateTime = await DateTime.new()
+    gameVarAndFee = await GameVarAndFee.new(genericDB.address, randomAddress)
+    distribution = await Distribution.new()
+    forfeiter = await Forfeiter.new()
+    scheduler = await Scheduler.new()
+    betting = await Betting.new()
+    hitsResolve = await HitsResolve.new()
+    rarityCalculator = await RarityCalculator.new()
+    endowmentFund = await EndowmentFund.new()
+    kittieHELL = await KittieHELL.new()
+
+    //ESCROW
+    escrow = await Escrow.new()
+    await escrow.transferOwnership(endowmentFund.address).should.be.fulfilled
+
+  })
+
+  it('adds contract addresses to contract manager', async () => {
+    await proxy.addContract('TimeContract', dateTime.address)
+    await proxy.addContract('GenericDB', genericDB.address)
+    await proxy.addContract('CryptoKitties', cryptoKitties.address);
+    await proxy.addContract('SuperDAOToken', superDaoToken.address);
+    await proxy.addContract('KittieFightToken', kittieFightToken.address);
+    await proxy.addContract('ProfileDB', profileDB.address);
+    await proxy.addContract('RoleDB', roleDB.address);
+    await proxy.addContract('Register', register.address)
+    await proxy.addContract('GameVarAndFee', gameVarAndFee.address)
+    await proxy.addContract('EndowmentFund', endowmentFund.address)
+    await proxy.addContract('EndowmentDB', endowmentDB.address)
+    await proxy.addContract('Distribution', distribution.address)
+    await proxy.addContract('Forfeiter', forfeiter.address)
+    await proxy.addContract('Scheduler', scheduler.address)
+    await proxy.addContract('Betting', betting.address)
+    await proxy.addContract('HitsResolve', hitsResolve.address)
+    await proxy.addContract('RarityCalculator', rarityCalculator.address)
+    await proxy.addContract('GMSetterDB', setterDB.address)
+    await proxy.addContract('GMGetterDB', getterDB.address)
+    await proxy.addContract('GameManager', gameManager.address)
+    await proxy.addContract('CronJob', cronJob.address)
+    await proxy.addContract('KittieHell', kittieHELL.address)
+    await proxy.addContract('KittieHellDB', kittieHellDB.address)
+  })
+
+  it('sets proxy in contracts', async () => {
+    await genericDB.setProxy(proxy.address)
+    await profileDB.setProxy(proxy.address);
+    await roleDB.setProxy(proxy.address);
+    await setterDB.setProxy(proxy.address)
+    await getterDB.setProxy(proxy.address)
+    await endowmentFund.setProxy(proxy.address)
+    await endowmentDB.setProxy(proxy.address)
+    await gameVarAndFee.setProxy(proxy.address)
+    await distribution.setProxy(proxy.address)
+    await forfeiter.setProxy(proxy.address)
+    await scheduler.setProxy(proxy.address)
+    await betting.setProxy(proxy.address)
+    await hitsResolve.setProxy(proxy.address)
+    await rarityCalculator.setProxy(proxy.address)
+    await register.setProxy(proxy.address)
+    await gameManager.setProxy(proxy.address)
+    await cronJob.setProxy(proxy.address)
+    await kittieHELL.setProxy(proxy.address)
+    await kittieHellDB.setProxy(proxy.address)
+  })
+
+  it('initializes contract variables', async () => {
+    await gameVarAndFee.initialize()
+    await forfeiter.initialize()
+    await scheduler.initialize()
+    await register.initialize()
+    //await gameManager.initialize()
+    await getterDB.initialize()
+    await endowmentFund.initialize()
+    await endowmentFund.initUpgradeEscrow(escrow.address)
+    await kittieHellDB.setKittieHELL()
+    await kittieHELL.initialize()
+  })
+
+  /*
+  // Mint some kitties for the test addresses
+  it('mint some kitties for the test addresses', async () => {
+    await cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
+    await cryptoKitties.mint(user2, kittie2).should.be.fulfilled;
+    await cryptoKitties.mint(user3, kittie3).should.be.fulfilled;
+    await cryptoKitties.mint(user4, kittie4).should.be.fulfilled;
+    await cryptoKitties.mint(user1, kittie5).should.be.fulfilled;
+    await cryptoKitties.mint(user2, kittie6).should.be.fulfilled;
+  })
+*/
+
+  // Approve transfer operation for the system
+  // Register no longer holds kittie
+  // await cryptoKitties.approve(register.address, kittie1, { from: user1 }).should.be.fulfilled;
+  // await cryptoKitties.approve(register.address, kittie2, { from: user2 }).should.be.fulfilled;
+  // await cryptoKitties.approve(register.address, kittie3, { from: user3 }).should.be.fulfilled;
+  // await cryptoKitties.approve(register.address, kittie4, { from: user4 }).should.be.fulfilled;
+  // await cryptoKitties.approve(register.address, kittie5, { from: user5 }).should.be.fulfilled;
+  // await cryptoKitties.approve(register.address, kittie6, { from: user2 }).should.be.fulfilled;
+
+
+  it('transfer some KTY for the test addresses', async () => {
+    await kittieFightToken.transfer(user1, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(user2, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(user3, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(user4, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(bettor1, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(bettor2, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(bettor3, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(bettor4, 100000).should.be.fulfilled;
+  })
+
+
+  it('approves erc20 token transfer operation by endowment contract', async () => {
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user1 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user2 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user3 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user4 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor1 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor2 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor3 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor4 }).should.be.fulfilled;
+  })
+
+
+  it('Escrow addFundsToEscrow KTY', async () => {
+
+   let eth = await escrow.getBalanceETH();
+   let kty = await escrow.getBalanceKTY();
+   //assert.equal(eth, 0); assert.equal(kty, 0);
+
+    //send some kty
+   await kittieFightToken.transfer(endowmentFund.address, 1000).should.be.fulfilled;
+   endowmentFund.addFundsToEscrow(10, 0);
+   kty = await escrow.getBalanceKTY();   //console.log('escrow.getBalanceKTY() = ' + kty);
+   assert.equal(kty, 10);  
+
+  });
+
+  it('Escrow contributeKTY', async () => {
+
+    let kty_pre = await escrow.getBalanceKTY(); //console.log('Escrow contributeKTY : kty_pre = ' + kty_pre);
+
+    await endowmentFund.contributeKTY(bettor1, 10);
+    
+    let kty_post = await escrow.getBalanceKTY(); //console.log('Escrow contributeKTY : kty_post = ' + kty_post);
+    assert.equal(kty_post - kty_pre, 10);
+
+  });
+
+/*
+  it('Add ETH to endowmentFund', async () => {
+
+    let eth_pre = await web3.eth.getBalance(endowmentFund.address); console.log('eth_pre =' + eth_pre);
+     
+     // send some eth
+     //let user1_eth = await web3.eth.getBalance(user1); //console.log('user1 eth =' + user1_eth);     
+     let txHash = await web3.eth.sendTransaction({from: user1, to: endowmentFund.address, value: 10 });
+
+     let eth_post = await web3.eth.getBalance(endowmentFund.address); console.log('eth_post =' + eth_post);
+ 
+ 
+   });
+*/
+
+/*
+  it('Escrow addFundsToEscrow ETH', async () => {
+
+    let eth_pre = await escrow.getBalanceETH(); console.log('eth_pre =' + eth_pre);
+     
+     // send some eth
+     endowmentFund.addFundsToEscrow(0, 10);
+     let eth_post = await escrow.getBalanceETH();  console.log('eth_post =' + eth_post);
+     assert.equal(eth_post - eth_pre, 10);
+     
+ 
+   });
+ */
+
+/*
+  it('Escrow contributeETH', async () => {
+
+    await endowmentFund.contributeETH(1);
+    let kty = await escrow.getBalanceKTY();
+    assert.equal(kty, 10);
+
+  });
+  */
+
+
+
+return;
+
+
+
+})
+
+
