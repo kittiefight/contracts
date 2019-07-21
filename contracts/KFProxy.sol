@@ -58,7 +58,10 @@ contract KFProxy is
         }
 
         (bool success, bytes memory result) = target.call.value(msg.value)(payloadWithSender);
-        require(success, 'Proxied call failed');
+        //require(success, 'Proxied call failed');
+        if(!success) assembly {
+            revert(add(result,32), result)
+        }
 
         executeScheduledJobs();
 
