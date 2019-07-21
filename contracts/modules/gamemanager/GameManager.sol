@@ -241,7 +241,7 @@ contract GameManager is Proxied, Guard {
 
         //Update state if reached prestart time
         //Include check game state because it can be called from the bet function
-        if (gameState == uint(eGameState.WAITING) && preStartTime >= now)
+        if (gameState == uint(eGameState.WAITING) && preStartTime <= now)
             gmSetterDB.updateGameState(gameId, uint(eGameState.PRE_GAME));
         
         emit NewSupporter(gameId, supporter, playerToSupport);
@@ -269,13 +269,13 @@ contract GameManager is Proxied, Guard {
 
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
-        (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId);
+        // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId); // TODO: check why it fails here
         
         games[gameId][player].hitStart = true;
         games[gameId][player].random = randomNum;
             
-        uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
-        betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
+        // uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
+        // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
