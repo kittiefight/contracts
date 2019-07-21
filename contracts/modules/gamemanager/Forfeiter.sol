@@ -17,6 +17,7 @@ import "../databases/GMGetterDB.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
+import '../kittieHELL/KittieHELL.sol';
 
 
 /**
@@ -31,10 +32,13 @@ contract Forfeiter is Proxied {
   GMGetterDB public gmGetterDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
+  KittieHELL public kittieHELL;
 
   uint256 public constant UNDERSUPPORTED = 0;
   uint256 public constant KITTIE_LEFT = 1;
   uint256 public constant NOT_HIT_START = 2;
+
+  event GameCancelled(uint gameId, string reason);
 
   /**
    * @notice Owner can call this function to update the needed contracts for checking conditions
@@ -45,6 +49,7 @@ contract Forfeiter is Proxied {
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
+    kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
   }
 
   /**
@@ -73,8 +78,8 @@ contract Forfeiter is Proxied {
     if (gameState == 1) {
       (uint256 gameStartTime,,) = gmGetterDB.getGameTimes(gameId);
       // (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
-      (,bool redStarted) = gameManager.players(playerRed, gameId);
-      (,bool blackStarted) = gameManager.players(playerBlack, gameId);
+      (,bool redStarted,,,,) = gameManager.games(gameId, playerRed);
+      (,bool blackStarted,,,,) = gameManager.games(gameId, playerBlack);
 
       checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed);
       didPlayersStartGame(gameId, blackStarted, redStarted, gameStartTime);
@@ -88,7 +93,12 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId, string memory reason) internal {
-    gameManager.cancelGame(gameId, reason);
+    (address playerBlack, address playerRed, uint256 kittyBlack,
+      uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+    kittieHELL.releaseKittyForfeiter(kittyRed);
+    kittieHELL.releaseKittyForfeiter(kittyBlack);
+    gameManager.cancelGame(gameId);
+    emit GameCancelled(gameId, reason);
   }
 
   /**

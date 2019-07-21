@@ -24,8 +24,7 @@ import "../../libs/SafeMath.sol";
 contract GMSetterDB is Proxied {
  using SafeMath for uint256;
 
-  event NewGame(uint gameId, address playerRed, uint kittieRed, address playerBlack, uint kittieBlack, uint gameStartTime);
-  event NewSupporter(uint game_id, address supporter, address playerSupported);
+  
 
   GenericDB public genericDB;
 
@@ -90,7 +89,7 @@ contract GMSetterDB is Proxied {
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "inGame")), true);
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "inGame")), true);
 
-    emit NewGame(gameId, playerRed, kittyRed, playerBlack, kittyBlack, gameStartTime);
+    
     return gameId;
   }
 
@@ -119,9 +118,7 @@ contract GMSetterDB is Proxied {
       genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")), true);
       
       // And increase the number of supporters for that player
-      incrementSupporters(gameId, supportedPlayer);
-
-      emit NewSupporter(gameId, bettor, supportedPlayer);
+      incrementSupporters(gameId, supportedPlayer);      
 
       return true;
     }
@@ -180,6 +177,7 @@ contract GMSetterDB is Proxied {
   /**
    * @dev Updates the amount of bet for the given bettor in the given game by the given amount.
    */
+   //DONE IN ENDOWMENTDB
   function updateBet(uint256 gameId, address bettor, uint256 amount) internal {
     uint256 prevAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GM_SETTER_DB,

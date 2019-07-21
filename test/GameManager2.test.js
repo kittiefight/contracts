@@ -301,10 +301,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       [kittie2]), { from: user1 }).should.be.rejected;
   })
 
-  // it('cannot list kitties without proxy', async () => {
-  //   await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
-  //   await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
-  // })
+  it('cannot list kitties without proxy', async () => {
+    await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
+    await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
+  })
 
   it('list 4 kitties to the system', async () => {
     // //For testing without proxy for getting back error
@@ -327,7 +327,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
   it('correctly creates 2 games', async () => {
-    let events = await setterDB.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 2);
 
     console.log('\nGames Created: \n');
@@ -342,7 +342,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   //--- PARTICIPATING -----
   it('user can participate in a created game', async () => {
 
-    let events = await setterDB.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
 
     //Check games that user1 is not in
     let gameNotIn = events
@@ -354,7 +354,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       [gameId, playerRed]), { from: user1 }).should.be.fulfilled;
 
     //New Supporter added
-    events = await setterDB.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+    events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 1);
 
     //Cannot support the opponent too
