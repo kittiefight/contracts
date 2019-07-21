@@ -33,7 +33,7 @@ import "./Escrow.sol";
 contract EndowmentFund is Distribution {
     using SafeMath for uint256;
 
-    Escrow escrow;
+    Escrow public escrow;
 
     /// @notice  the count of all invocations of `generatePotId`.
     uint256 public potRequestCount;
@@ -109,20 +109,29 @@ contract EndowmentFund is Distribution {
         ));
     }
 
-
+    /*
     struct KittieTokenTx {
         address sender;
         uint value;
         bytes data;
         bytes4 sig;
     }
+    */
 
+    /**
+     * @dev for this to work endowment should be tokens! This would mean making endowment payable as well
+     * Although we can send directly send to escrow. But since we need to update DB as well.
+     * we can get the balance directly from escrow
+     */
     function addFundsToEscrow(uint256 _kty_amount, uint256 _eth_amount) external onlyOwner {
-        require(address(escrow) != address(0), "escrow not initialized");
+        require(address(escrow) != address(0),
+            "Error: escrow not initialized");
 
-        require(kittieFightToken.transfer(address(escrow), _kty_amount), "Transfer of KTY to Escrow failed");
+        require(kittieFightToken.transfer(address(escrow), _kty_amount),
+            "Error: Transfer of KTY to Escrow failed");
+
         require(endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false),
-             'Error: endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false) failed');
+            "Error: endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false) failed");
 
         address(escrow).transfer(_eth_amount);
     }
@@ -134,14 +143,17 @@ contract EndowmentFund is Distribution {
         require(address(escrow) != address(0), "escrow not initialized");
 
         // do transfer of KTY
+        kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount);
+        /*
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
             return false; // since GM expects bool.
         }
+        * /
 
         // update DB
         require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
             'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');
-
+        */
         return true;
     }
 
@@ -152,7 +164,6 @@ contract EndowmentFund is Distribution {
         require(address(escrow) != address(0), "escrow not initialized");
 
         // transfer ETH to Escrow
-        //address(escrow).transfer(msg.value); // with through if not successful
         if (!address(escrow).send(msg.value)){
             return false; // since GM expects bool
         }
@@ -210,31 +221,33 @@ contract EndowmentFund is Distribution {
     * @dev Initialize or Upgrade Escrow
     * @notice BEFORE CALLING: Deploy escrow contract and set the owner as EndowmentFund contract
     */
-    function initUpgradeEscrow(address payable _newEscrow) external onlyOwner {
+    function initUpgradeEscrow(Escrow _newEscrow) external onlyOwner returns(bool){
 
         require(address(_newEscrow) != address(0), "_newEscrow address not set");
+        _newEscrow.initialize(kittieFightToken);
 
         // check ownership
-        Escrow tmpEscrow = Escrow(_newEscrow);
-        require(tmpEscrow.owner() == address(this),
+        require(_newEscrow.owner() == address(this),
             "Error: The new contract owner is not Endowment. Transfer ownership to Endowment before calling this function");
-
-        if (address(escrow) != address(0)){ // already initialized. Transfer if any funds
+//*
+        if (address(escrow) != address(0)){ // Transfer if any funds
 
             // transfer all the ETH
-            require(escrow.transferETH(_newEscrow, address(escrow).balance),
+            require(escrow.transferETH(address(_newEscrow), address(escrow).balance),
                 "Error: Transfer of ETH failed");
 
             // transfer all the KTY
             uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
-            require(escrow.transferKTY(_newEscrow, ktyBalance),
+            require(escrow.transferKTY(address(_newEscrow), ktyBalance),
                 "Error: Transfer of KYT failed");
 
+            require(escrow.getBalanceKTY() > 0, "Current escrow is not empty. It has KTY");
+            require(escrow.getBalanceETH() > 0, "Current escrow is not empty. It has ETH");
+
         }
-
-        escrow = Escrow(_newEscrow);
-        escrow.initialize(address(kittieFightToken));
-
+//*/
+        escrow = _newEscrow;
+        return true;
     }
 
     /**
@@ -244,6 +257,16 @@ contract EndowmentFund is Distribution {
         return (address(escrow.owner) != address(this));
     }
 
+//*
+// test
+    function getEscrowAddress() public view returns(address){
+        return address(escrow);
+        //return escrow.address;
+    }
+    function getAddress() public view returns(address){
+        return address(this);
+    }
+//*/
 
 
 }

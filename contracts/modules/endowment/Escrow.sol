@@ -16,8 +16,9 @@ contract Escrow is Owned {
    * @dev Initialize contracts used
    * @dev Can be called only by the owner of this contract
    */
-    function initialize(address ktyAddress) external onlyOwner {
-        kittieFightToken = ERC20Standard(address(ktyAddress));
+    function initialize(ERC20Standard _kittieFightToken) external onlyOwner {
+        //kittieFightToken = ERC20Standard(address(ktyAddress));
+        kittieFightToken = _kittieFightToken;
     }
 
     function () external payable {}
