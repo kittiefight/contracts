@@ -121,7 +121,8 @@ contract EndowmentFund is Distribution {
         require(address(escrow) != address(0), "escrow not initialized");
 
         require(kittieFightToken.transfer(address(escrow), _kty_amount), "Transfer of KTY to Escrow failed");
-        // update DB
+        require(endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false),
+             'Error: endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false) failed');
 
         address(escrow).transfer(_eth_amount);
     }
@@ -180,7 +181,13 @@ contract EndowmentFund is Distribution {
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the ETH
-        return escrow.transferETH(_someAddress, _eth_amount);
+        require(escrow.transferETH(_someAddress, _eth_amount),
+            "Error: escrow.transferETH(_someAddress, _eth_amount) failed");
+        // Update DB. true = deductFunds
+        require(endowmentDB.updateEndowmentFund(0, _eth_amount, true),
+            "Error: endowmentDB.updateEndowmentFund(0, _eth_amount, true) failed");
+
+        return true;
     }
 
     /**
@@ -190,7 +197,13 @@ contract EndowmentFund is Distribution {
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the KTY
-        return escrow.transferKTY(_someAddress, _kty_amount);
+        require(escrow.transferKTY(_someAddress, _kty_amount),
+            "Error: escrow.transferKTY(_someAddress, _kty_amount) failed");
+        // Update DB. true = deductFunds
+        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, true),
+            "Error: endowmentDB.updateEndowmentFund(_kty_amount, 0, true) failed");
+
+        return true;
     }
 
     /**

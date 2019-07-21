@@ -33,4 +33,13 @@ contract Escrow is Owned {
         return true;
     }
 
+    function getBalanceKTY() public view returns (uint256){
+        return kittieFightToken.balanceOf(address(this));
+    }
+
+    function getBalanceETH() public view returns (uint256){
+        return  address(this).balance;
+    }
+
+
 }

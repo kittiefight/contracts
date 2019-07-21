@@ -77,6 +77,37 @@ contract EndowmentDB is Proxied {
     return true;
   }
 
+  function updateEndowmentFund(
+    uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
+  )
+    external
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    returns (bool)
+  {
+
+    if (_kty_amount>0){
+      uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
+      if (deductFunds){
+        require(actualFundsKTY >= _kty_amount, ERROR_INSUFFICIENT_FUNDS);
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amount));
+      }else{ // add
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.add(_kty_amount));
+      }
+    }
+
+    if (_eth_amount>0){
+      uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+      if (deductFunds){
+        require(actualFundsETH >= _eth_amount, ERROR_INSUFFICIENT_FUNDS);
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amount));
+      }else{ // add
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.add(_eth_amount));
+      }
+    }
+    
+    return true;
+  }
+
   function createHoneypot(
     uint gameId,
     uint state,
