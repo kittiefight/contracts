@@ -9,6 +9,7 @@ module.exports = (deployer, network, accounts) => {
     // Do not deploy anything in case of tests, let Truffle do it
     return;
   }
+
   let contractManagerInst;
 
   deployer.deploy(SafeMath, {from: accounts[0]});
