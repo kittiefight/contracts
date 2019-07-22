@@ -2,7 +2,7 @@ pragma solidity ^0.5.5;
 
 /**
  * @title Escrow Contract
- * @dev Owns the tokens
+ * @dev Tokens are stored here
  * @ author
  */
 import "../../authority/Owned.sol";
@@ -13,9 +13,9 @@ contract Escrow is Owned {
     ERC20Standard public kittieFightToken;
 
     /**
-   * @dev Initialize contracts used
-   * @dev Can be called only by the owner of this contract
-   */
+    * @dev Initialize contracts used
+    * @dev Can be called only by the owner of this contract
+    */
     function initialize(ERC20Standard _kittieFightToken) external onlyOwner {
         //kittieFightToken = ERC20Standard(address(ktyAddress));
         kittieFightToken = _kittieFightToken;

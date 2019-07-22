@@ -33,7 +33,7 @@ import "./Escrow.sol";
 contract EndowmentFund is Distribution {
     using SafeMath for uint256;
 
-    Escrow public escrow;
+    Escrow public escrow ;
 
     /// @notice  the count of all invocations of `generatePotId`.
     uint256 public potRequestCount;
@@ -118,6 +118,8 @@ contract EndowmentFund is Distribution {
     }
     */
 
+    function () external payable {}
+
     /**
      * @dev for this to work endowment should be tokens!
      */
@@ -125,13 +127,18 @@ contract EndowmentFund is Distribution {
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
 
-        require(kittieFightToken.transfer(address(escrow), _kty_amount),
-            "Error: Transfer of KTY to Escrow failed");
+        if (_kty_amount > 0) {
+            require(kittieFightToken.transfer(address(escrow), _kty_amount),
+                "Error: Transfer of KTY to Escrow failed");
+        }
+
+        if (_eth_amount > 0) {
+            address(escrow).transfer(_eth_amount);
+        }
 
         require(endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false),
             "Error: endowmentDB.updateEndowmentFund(_kty_amount, _eth_amount, false) failed");
 
-        address(escrow).transfer(_eth_amount);
     }
 
     /**
@@ -144,13 +151,12 @@ contract EndowmentFund is Distribution {
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
             return false; // since GM expects bool.
         }
-
-        /*
-        // Error: Not registered
+/*
+        //error: Not registered -- Reason given: Not registered
         // update DB
         require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
             'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');
-        */
+*/
         return true;
     }
 
@@ -167,9 +173,11 @@ contract EndowmentFund is Distribution {
 
         // check transaction status
 
+        /*
         // update DB
         require(endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0),
             'Error: endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0) failed');
+        */
 
         return true;
     }
@@ -207,6 +215,7 @@ contract EndowmentFund is Distribution {
         // transfer the KTY
         require(escrow.transferKTY(_someAddress, _kty_amount),
             "Error: escrow.transferKTY(_someAddress, _kty_amount) failed");
+
         // Update DB. true = deductFunds
         require(endowmentDB.updateEndowmentFund(_kty_amount, 0, true),
             "Error: endowmentDB.updateEndowmentFund(_kty_amount, 0, true) failed");
@@ -242,12 +251,17 @@ contract EndowmentFund is Distribution {
             require(escrow.getBalanceETH() > 0, "Current escrow is not empty. It has ETH");
 
         }
+
         escrow = _newEscrow;
         return true;
     }
 
     /**
-     * @dev check owner of escrow is still this contract
+     * @dev Do not upgrade Endowment if owner of escrow is still this contract's address
+     * Steps:
+     * deploy new Endowment
+     * set owner of escrow to new Endowment adrress using endowment.transferEscrowOwnership(new Endowment adrress)
+     * than set the new Endowment adrress in proxy
      */
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
