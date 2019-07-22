@@ -46,7 +46,6 @@ contract Distribution is Proxied {
     function initialize() external onlyOwner {
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        //kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
     }
 
@@ -54,10 +53,11 @@ contract Distribution is Proxied {
      * @notice Calculates amount of Eth the winner can claim
      */
     function getWinnerShare(uint gameId, address claimer) public view returns(uint256 winningsETH, uint256 winningsKTY) {
-        //TODO: check honeypot state to see if we can allow claiming
-        //require(endowmentDB.getHoneypotState(gameId) == 'Claiming')
 
         address winningSide = gmGetterDB.getWinner(gameId);
+
+        require(winningSide != address(0));
+
         (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getBettor(gameId, claimer);
 
         // Is the winning player or part of the bettors of the winning corner
