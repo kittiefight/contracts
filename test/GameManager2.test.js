@@ -65,12 +65,12 @@ const TOKENS_PER_GAME = 0;
 const GAME_TIMES = 60 //Scheduled games 1 min apart
 
 const GameState = {
-  WAITING : 0, 
-  PRE_GAME : 1,
-  MAIN_GAME : 2,
-  KITTIE_HELL : 3,
-  WITHDREW_EARNINGS : 4,
-  CANCELLED : 5
+  WAITING: 0,
+  PRE_GAME: 1,
+  MAIN_GAME: 2,
+  KITTIE_HELL: 3,
+  WITHDREW_EARNINGS: 4,
+  CANCELLED: 5
 }
 
 function setMessage(contract, funcName, argArray) {
@@ -203,7 +203,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await cryptoKitties.approve(kittieHELL.address, kittie4, { from: user4 }).should.be.fulfilled;
     await cryptoKitties.approve(kittieHELL.address, kittie6, { from: user2 }).should.be.fulfilled;
   })
-  
+
   it('transfer some KTY for the test addresses', async () => {
     await kittieFightToken.transfer(user1, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(user2, 100000).should.be.fulfilled;
@@ -232,10 +232,16 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     let names = ['listingFee', 'ticketFee', 'gamePrestart', 'gameDuration',
       'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
       'gameTimes'];
+
+    let bytesNames = [];
+    for (i = 0; i < names.length; i++) {
+      bytesNames.push(web3.utils.asciiToHex(names[i]));
+    }
+
     let values = [LISTING_FEE, TICKET_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
       REQ_NUM_MATCHES, ETH_PER_GAME, TOKENS_PER_GAME, GAME_TIMES];
 
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [names, values]), {
+    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
       from: creator
     }).should.be.fulfilled;
 
@@ -245,6 +251,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     getVar = await gameVarAndFee.getListingFee();
     getVar.toNumber().should.be.equal(LISTING_FEE);
   })
+
 
   it('registers user to the system', async () => {
     await proxy.execute('Register', setMessage(register, 'register', [user1]), {
@@ -344,7 +351,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   it('user can participate in a created game', async () => {
 
     let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
-    
+
     //Check games that user1 is not in
     let gameNotIn = events
       .filter(e => ((e.returnValues.playerRed !== user1) || (e.returnValues.playerBlack !== user1)))
@@ -365,29 +372,29 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     // adds more participants
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerRed]), { from: bettor2 }).should.be.fulfilled;
-  
+
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerBlack]), { from: bettor3 }).should.be.fulfilled;
   })
 
-  it('should move gameState to PRE_GAME', function(done){
+  it('should move gameState to PRE_GAME', function (done) {
     this.timeout(180000)
 
-    setTimeout(async function (){
+    setTimeout(async function () {
       console.log('waiting for preStartTime to expire...')
 
       let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
       let { gameId, playerRed, playerBlack } = events[0].returnValues;
-      
+
       let currentState = await getterDB.getGameState(gameId)
       currentState.toNumber().should.be.equal(GameState.WAITING)
 
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerBlack]), { from: bettor4 }).should.be.fulfilled;
-  
+        [gameId, playerBlack]), { from: bettor4 }).should.be.fulfilled;
+
       let newState = await getterDB.getGameState(gameId)
       newState.toNumber().should.be.equal(GameState.PRE_GAME)
-      
+
       done()
     }, 31000);
   })
@@ -402,10 +409,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     currentState.toNumber().should.be.equal(GameState.PRE_GAME)
 
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-    [gameId, 99]), { from: playerRed }).should.be.fulfilled;
+      [gameId, 99]), { from: playerRed }).should.be.fulfilled;
 
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-    [gameId, 100]), { from: playerBlack }).should.be.fulfilled;
+      [gameId, 100]), { from: playerBlack }).should.be.fulfilled;
 
     let gameInfo = await getterDB.getGameInfo(gameId)
     gameInfo.pressedStart[0].should.be.true
