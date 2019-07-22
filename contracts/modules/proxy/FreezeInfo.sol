@@ -19,24 +19,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pragma solidity ^0.5.5;
 
-import "../../authority/Owned.sol";
-import "../../CronJob.sol";
+import "../../authority/Guard.sol";
+import "./Proxied.sol";
 
-contract FrozableProxy is ProxyBase {
+contract FreezeInfo is Proxied, Guard {
     event SystemFrozen();
     event SystemUnfrozen();
-    bool public frozen;
 
     struct Freeze {
         uint256 start;
         uint256 end;
     }
+
     Freeze[] public freezes;
+    bool public frozen;
+    uint256 public lastFreezeEnd = 0;   //Used to optimize getFrozenTime() for most common scenario: no freezes during interesting period
+
     /**
      * @notice Used to prevent KFProxy to handle new user requests in case of emergency
      * @param _frozen set new state: true -frozen (KFProxy will revert new requests), false - unfrozen
      */
-    function setFrozen(bool _frozen) external onlyOwner {
+    function setFrozen(bool _frozen) external onlySuperAdmin {
         require(frozen != _frozen);
         frozen = _frozen;
         if(frozen){
@@ -46,6 +49,7 @@ contract FrozableProxy is ProxyBase {
             }));
             emit SystemFrozen();
         }else{
+            lastFreezeEnd = now;
             freezes[freezes.length-1].end = now;
             emit SystemUnfrozen();
         }
@@ -56,7 +60,7 @@ contract FrozableProxy is ProxyBase {
      * @param ends Array of Freezes ends
      * @dev end time may be > now, in this case Freeze is considered as not finished
      */
-    function importFreezes(uint256[] calldata starts, uint256[] calldata ends) external onlyOwner {
+    function importFreezes(uint256[] calldata starts, uint256[] calldata ends) external onlySuperAdmin {
         require(freezes.length == 0, 'Only allow import to empty list');
         require(starts.length == ends.length, 'Each start should have matching end');
         frozen = false;
@@ -81,7 +85,7 @@ contract FrozableProxy is ProxyBase {
      * @param since timestmap which limits search of frozen periods
      */
     function getFrozenTime(uint256 since) view public returns(uint256){
-        if(since >= now) return 0;
+        if(since >= lastFreezeEnd) return 0;
         uint256 frozenTime = 0;
         //Special handling for last freeze
         if(frozen) {
