@@ -58,8 +58,8 @@ const TICKET_FEE = 100
 const BETTING_FEE = 100
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 30 // 30 secs for quick test
-const GAME_DURATION = 300 // games last 5 min
+const GAME_PRESTART = 15 // 15 secs for quick test
+const GAME_DURATION = 60 // games last 1 min
 const ETH_PER_GAME = 0 //How does endowment start funds?
 const TOKENS_PER_GAME = 0;
 const GAME_TIMES = 60 //Scheduled games 1 min apart
@@ -72,6 +72,8 @@ const GameState = {
   WITHDREW_EARNINGS: 4,
   CANCELLED: 5
 }
+
+let newGameEvents;
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -178,11 +180,13 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await register.initialize()
     await gameManager.initialize()
     await getterDB.initialize()
+    await setterDB.initialize()
     await endowmentFund.initialize()
     await endowmentFund.initUpgradeEscrow(escrow.address)
     await kittieHellDB.setKittieHELL()
     await kittieHELL.initialize()
   })
+
 
   // Mint some kitties for the test addresses
   it('mint some kitties for the test addresses', async () => {
@@ -229,7 +233,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
   //Set var and fees
   it('Set game vars and fees correctly', async () => {
-    let names = ['listingFee', 'ticketFee', 'gamePrestart', 'gameDuration',
+    let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
       'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
       'gameTimes'];
 
@@ -238,7 +242,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       bytesNames.push(web3.utils.asciiToHex(names[i]));
     }
 
-    let values = [LISTING_FEE, TICKET_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+    let values = [LISTING_FEE, TICKET_FEE, BETTING_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
       REQ_NUM_MATCHES, ETH_PER_GAME, TOKENS_PER_GAME, GAME_TIMES];
 
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
@@ -335,11 +339,11 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   })
 
   it('correctly creates 2 games', async () => {
-    let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
-    assert.equal(events.length, 2);
+    newGameEvents = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    assert.equal(newGameEvents.length, 2);
 
     console.log('\nGames Created: \n');
-    events.map(e => {
+    newGameEvents.map(e => {
       console.log('-GameId ', e.returnValues.gameId)
       console.log('KittiRed ', e.returnValues.kittieRed)
       console.log('KittiBlack ', e.returnValues.kittieBlack)
@@ -350,10 +354,8 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   //--- PARTICIPATING -----
   it('user can participate in a created game', async () => {
 
-    let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
-
     //Check games that user1 is not in
-    let gameNotIn = events
+    let gameNotIn = newGameEvents
       .filter(e => ((e.returnValues.playerRed !== user1) || (e.returnValues.playerBlack !== user1)))
 
     let { gameId, playerRed, playerBlack } = gameNotIn[0].returnValues;
@@ -362,7 +364,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       [gameId, playerRed]), { from: user1 }).should.be.fulfilled;
 
     //New Supporter added
-    events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+    let events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 1);
 
     //Cannot support the opponent too
@@ -379,12 +381,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
   it('should move gameState to PRE_GAME', function (done) {
     this.timeout(180000)
-
+    console.log('waiting for preStartTime to expire...')
     setTimeout(async function () {
-      console.log('waiting for preStartTime to expire...')
 
-      let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
-      let { gameId, playerRed, playerBlack } = events[0].returnValues;
+      let { gameId, playerRed, playerBlack } = newGameEvents[0].returnValues;
 
       let currentState = await getterDB.getGameState(gameId)
       currentState.toNumber().should.be.equal(GameState.WAITING)
@@ -402,8 +402,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
   // START GAME
   it('should move gameState to MAIN_GAME', async () => {
-    let events = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
-    let { gameId, playerRed, playerBlack } = events[0].returnValues;
+    let { gameId, playerRed, playerBlack } = newGameEvents[0].returnValues;
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.PRE_GAME)

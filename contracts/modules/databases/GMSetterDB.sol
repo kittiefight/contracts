@@ -23,7 +23,7 @@ import "../../GameVarAndFee.sol";
  * @author @psychoplasma
  */
 contract GMSetterDB is Proxied {
- using SafeMath for uint256;  
+ using SafeMath for uint256;
 
   GenericDB public genericDB;
   GameVarAndFee public gameVarAndFee;
@@ -56,8 +56,7 @@ contract GMSetterDB is Proxied {
   (
     address playerRed, address playerBlack,
     uint256 kittyRed, uint256 kittyBlack,
-    uint256 gameStartTime, uint256 gamePrestartTime,
-    uint256 gameEndTime
+    uint256 gameStartTime
   )
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
@@ -73,6 +72,9 @@ contract GMSetterDB is Proxied {
     gameId = prevGameId.add(1);
     genericDB.pushNodeToLinkedList(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
 
+    uint256 gamePrestartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
+    uint256 gameEndTime = gameStartTime.add(gameVarAndFee.getGameDuration());
+
     // Save players for the created game
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")), playerRed);
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")), playerBlack);
@@ -87,7 +89,7 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
 
-    //GameVarAndFee Vars
+    //Lock Game Var And Fee to this Game
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "listingFee")), gameVarAndFee.getListingFee());
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "ticketFee")), gameVarAndFee.getTicketFee());
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "bettingFee")), gameVarAndFee.getBettingFee());
@@ -102,6 +104,7 @@ contract GMSetterDB is Proxied {
     
     return gameId;
   }
+  
 
   /**
    * @dev Adds a bettor to the given game iff the game exists.
@@ -244,47 +247,47 @@ contract GMSetterDB is Proxied {
   /**
    * @dev set topBettor
    */
-  function setTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
-    public
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(_gameId) {
-    genericDB.setAddressStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor")), _bettor);
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")), _amountEth);
-  }
+  // function setTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
+  //   public
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(_gameId) {
+  //   genericDB.setAddressStorage(
+  //     CONTRACT_NAME_GM_SETTER_DB,
+  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor")), _bettor);
+  //   genericDB.setUintStorage(
+  //     CONTRACT_NAME_GM_SETTER_DB,
+  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")), _amountEth);
+  // }
 
-  /**
-   * @dev set secondTopBettor
-   */
-  function setSecondTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
-    public
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(_gameId) {
-    genericDB.setAddressStorage(
-      CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId,
-      _supportedPlayer, "SecondTopBettor")), _bettor);
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")), _amountEth);
-  }
+  // /**
+  //  * @dev set secondTopBettor
+  //  */
+  // function setSecondTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
+  //   public
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(_gameId) {
+  //   genericDB.setAddressStorage(
+  //     CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId,
+  //     _supportedPlayer, "SecondTopBettor")), _bettor);
+  //   genericDB.setUintStorage(
+  //     CONTRACT_NAME_GM_SETTER_DB,
+  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")), _amountEth);
+  // }
 
   /**
    * @dev set last bet amount (eth)
    */
-  function setLastBet(uint256 _gameId, uint256 _amountEth, uint256 _lastBetTimestamp, address _supportedPlayer)
-    public
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(_gameId) {
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet")), _amountEth);
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")), _lastBetTimestamp);
-  }
+  // function setLastBet(uint256 _gameId, uint256 _amountEth, uint256 _lastBetTimestamp, address _supportedPlayer)
+  //   public
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(_gameId) {
+  //   genericDB.setUintStorage(
+  //     CONTRACT_NAME_GM_SETTER_DB,
+  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet")), _amountEth);
+  //   genericDB.setUintStorage(
+  //     CONTRACT_NAME_GM_SETTER_DB,
+  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")), _lastBetTimestamp);
+  // }
 
   /**
    * @dev Update game to one of 5 states
@@ -306,77 +309,6 @@ contract GMSetterDB is Proxied {
   {
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "inGame")), state);
   }
-
-  // /**
-  //  * @dev ?
-  //  */
-  // function setDefenseLevel(uint256 gameId, address player, uint defenseLevel)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(gameId)
-  // {
-
-  //   //Defense Level
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
-
-  //   // Set random seed send by player in startGame function
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "randomNum")), randomNum);
-
-  // }
-
-  // /**
-  //  * @dev ?
-  //  */
-  // function updateDefenseLevel(uint256 gameId, address player, uint defenseLevel)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(gameId)
-  // {
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "defenseLevel")), defenseLevel);
-
-  // }
-
-  // /**
-  //  * @dev Pressed start button
-  //  */
-  // function setHitStart(uint256 gameId, address player)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  // {
-  //   genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "hitStart")), true);
-  // }
-
-  // /**
-  //  * @dev TODO: Set the fight map sent by betting algo
-  //  */
-  // function setFightMap(uint256 gameId)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(gameId)
-  // {
-  //   //TODO: How to store the fight map, what input variable types
-  // }
-
-  // /**
-  //  * @dev TODO: Set the attack values returned by HitResolver when game ends
-  //  */
-  // function setAttackValues
-  // (
-  //   uint256 gameId, uint256 lowPunch, uint256 lowKick, uint256 lowThunder,
-  //   uint256 hardPunch, uint256 hardKick, uint256 hardThunder, uint256 slash)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(gameId)
-  // {
-  //   //TODO: How to store the attack values
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lowPunch")), lowPunch);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lowKick")), lowKick);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lowThunder")), lowThunder);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "hardPunch")), hardPunch);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "hardKick")), hardKick);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "hardThunder")), hardThunder);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "slash")), slash);
-  // }
 
   /**
    * @dev set HoneyPotId and initial ETH in jackpot created by Endowment

@@ -78,10 +78,10 @@ contract Forfeiter is Proxied {
     if (gameState == 1) {
       (uint256 gameStartTime,,) = gmGetterDB.getGameTimes(gameId);
       // (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
-      (,bool redStarted,,,,) = gameManager.games(gameId, playerRed);
-      (,bool blackStarted,,,,) = gameManager.games(gameId, playerBlack);
+      (,bool redStarted,,) = gameManager.games(gameId, playerRed);
+      (,bool blackStarted,,) = gameManager.games(gameId, playerBlack);
 
-      // checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed); // TODO check why it fails here
+      //checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed); // TODO check why it fails here
       didPlayersStartGame(gameId, blackStarted, redStarted, gameStartTime);
     }
   }
@@ -93,7 +93,7 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId, string memory reason) internal {
-    (address playerBlack, address playerRed, uint256 kittyBlack,
+    (,,uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
     kittieHELL.releaseKittyForfeiter(kittyRed);
     kittieHELL.releaseKittyForfeiter(kittyBlack);
@@ -115,8 +115,16 @@ contract Forfeiter is Proxied {
   )
     internal
   {
-    bool checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
-    bool checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
+    bool checkBlack;
+    bool checkRed;
+
+    //When one player hits start, that kittie is owned by kittieHELL
+    if (ckc.ownerOf(kittieIdBlack) == address(kittieHELL)) checkBlack = true;
+    else if(ckc.ownerOf(kittieIdRed) == address(kittieHELL)) checkRed = true;
+    else{
+      checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
+      checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
+    }
 
     if (!(checkBlack && checkRed)) forfeitGame(gameId, 'Kittie Left');
   }
@@ -129,9 +137,9 @@ contract Forfeiter is Proxied {
    */
   function checkAmountSupporters(uint gameId, uint supportersBlack, uint supportersRed, uint gamePreStartTime)
     internal
-  { 
+  {
     if (gamePreStartTime <= now) {
-      uint minSupporters = gameVarAndFee.getMinimumContributors();
+      uint minSupporters = gameVarAndFee.getMinimumContributors(); //TODO: should call getterDB as vars and fees are locked
       if(!(supportersBlack > minSupporters) && (supportersRed > minSupporters))
         forfeitGame(gameId, "Undersupported");
     }

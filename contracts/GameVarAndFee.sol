@@ -94,7 +94,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         }
     }
 
-    function bytes32ToString(bytes32 x) internal view returns (string memory) {
+    function bytes32ToString(bytes32 x) internal pure returns (string memory) {
         bytes memory bytesString = new bytes(32);
         uint charCount = 0;
         for (uint j = 0; j < 32; j++) {
@@ -113,6 +113,14 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
 
     // ----- GETTERS ------
+
+    /// @notice FrontEnd Global Getter
+    function getGlobalSettings() public view    
+        returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
+    {
+        return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
+            getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieHellExpiration());
+    }
 
     /// @notice get eth/usd current price
     function getEthUsdPrice() public view returns(uint){

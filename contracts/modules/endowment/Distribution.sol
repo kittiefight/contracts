@@ -22,6 +22,7 @@ import '../databases/GMGetterDB.sol';
 import "../databases/EndowmentDB.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
+import "../gamemanager/GameManager.sol";
 
 /**
  * @title Distribution Contract
@@ -38,6 +39,7 @@ contract Distribution is Proxied {
     GMGetterDB public gmGetterDB;
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
+    GameManager public gameManager;
 
     /**
     * @dev Sets related contracts
@@ -47,6 +49,7 @@ contract Distribution is Proxied {
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
+        gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
     }
 
     /**
@@ -56,7 +59,7 @@ contract Distribution is Proxied {
 
         address winningSide = gmGetterDB.getWinner(gameId);
 
-        require(winningSide != address(0));
+        require(winningSide != address(0), 'No winner detected for this game');
 
         (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
@@ -99,11 +102,11 @@ contract Distribution is Proxied {
         if (winner == claimer) return 0;
 
         // Winning Top Bettor
-        (address topBettor,) = gmGetterDB.getTopBettor(gameId, supportedPlayer);
+        (,,address topBettor,) = gameManager.games(gameId,supportedPlayer);
         if (topBettor == claimer) return 1;
 
         // Winning SecondTop Bettor
-        (address secondTopBettor,) = gmGetterDB.getSecondTopBettor(gameId, supportedPlayer);
+        (,,,address secondTopBettor) = gameManager.games(gameId,supportedPlayer);
         if (secondTopBettor == claimer) return 2;
 
         // Winning Other Bettors List

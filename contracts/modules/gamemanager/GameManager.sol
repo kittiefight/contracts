@@ -59,7 +59,6 @@ contract GameManager is Proxied, Guard {
     IKittyCore public cryptoKitties;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, KITTIE_HELL, WITHDREW_EARNINGS, CANCELLED}
-    enum eCorner {BLACK, RED}
 
     //EVENTS
     event NewGame(uint gameId, address playerRed, uint kittieRed, address playerBlack, uint kittieBlack, uint gameStartTime);
@@ -82,8 +81,6 @@ contract GameManager is Proxied, Guard {
         bool hitStart;
         address topBettor;
         address secondTopBettor;
-        uint amountTopBettor;
-        uint amountSecondTopBettor;
     }
 
     // struct Bettor{
@@ -179,17 +176,13 @@ contract GameManager is Proxied, Guard {
     )
         internal
     {
-        uint256 preStartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
-        uint256 endTime = gameStartTime.add(gameVarAndFee.getGameDuration());
-
         uint256 gameId = gmSetterDB.createGame(
-            playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime, preStartTime, endTime);
+            playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
 
         (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
         gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
 
         emit NewGame(gameId, playerRed, kittyRed, playerBlack, kittyBlack, gameStartTime);
-
     }
 
     /**
@@ -265,11 +258,14 @@ contract GameManager is Proxied, Guard {
         uint gameState = gmGetterDB.getGameState(gameId);
         forfeiter.checkGameStatus(gameId, gameState);
 
-        require(gameState == uint(eGameState.PRE_GAME));
+        require(gameState == uint(eGameState.PRE_GAME), 'Game has not reached pre-game state');
 
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
+
         // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId); // TODO: check why it fails here
+        //For testing, random
+        //uint genes = uint256(keccak256(abi.encodePacked(block.timestamp, randomNum)));
         
         games[gameId][player].hitStart = true;
         games[gameId][player].random = randomNum;
@@ -277,7 +273,7 @@ contract GameManager is Proxied, Guard {
         // uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
         // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
-        require(kittieHELL.acquireKitty(kittieId, player));
+        require(kittieHELL.acquireKitty(kittieId, player), 'Error acquiring kitty');
 
         address opponentPlayer = gmGetterDB.getOpponent(gameId, player);
 
@@ -366,7 +362,7 @@ contract GameManager is Proxied, Guard {
         betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
         // update game variables
-        calculateBettorStats(gameId, sender, msg.value, supportedPlayer);
+        calculateBettorStats(gameId, sender, supportedPlayer);
 
         // check underperforming game if one minut
         extendTime(gameId);
@@ -379,18 +375,35 @@ contract GameManager is Proxied, Guard {
     * set lastBet, topBettor, secondTopBettor
     * @author vikrammandal
     */
+    // function calculateBettorStats(
+    //     uint256 _gameId, address _account, uint256 _amountEth, address _supportedPlayer
+    // ) private {
+
+    //     ( ,uint256 topBettorEth) = gmGetterDB.getTopBettor(_gameId, _supportedPlayer);
+
+    //     if (_amountEth > topBettorEth){
+    //         gmSetterDB.setTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
+    //     } else {
+    //         ( ,uint256 secondTopBettorEth) = gmGetterDB.getSecondTopBettor(_gameId, _supportedPlayer);
+    //         if (_amountEth > secondTopBettorEth){
+    //             gmSetterDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
+    // }   }   }
+
     function calculateBettorStats(
-        uint256 _gameId, address _account, uint256 _amountEth, address _supportedPlayer
+        uint256 _gameId, address _account, address _supportedPlayer
     ) private {
 
-        ( ,uint256 topBettorEth) = gmGetterDB.getTopBettor(_gameId, _supportedPlayer);
+        (uint256 bettorTotal, ,) = gmGetterDB.getSupporterInfo(_gameId, _account);
+        (uint256 topBettorEth, ,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
 
-        if (_amountEth > topBettorEth){
-            gmSetterDB.setTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
+        if (bettorTotal > topBettorEth){
+            address topBettor = games[_gameId][_supportedPlayer].topBettor;
+            games[_gameId][_supportedPlayer].topBettor = _account;
+            games[_gameId][_supportedPlayer].secondTopBettor = topBettor;
         } else {
-            ( ,uint256 secondTopBettorEth) = gmGetterDB.getSecondTopBettor(_gameId, _supportedPlayer);
-            if (_amountEth > secondTopBettorEth){
-                gmSetterDB.setSecondTopBettor(_gameId, _account, _supportedPlayer, _amountEth);
+            (uint256 secondTopBettorEth,,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
+            if (bettorTotal > secondTopBettorEth){
+                games[_gameId][_supportedPlayer].secondTopBettor = _account;
     }   }   }
 
 
