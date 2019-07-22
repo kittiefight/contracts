@@ -58,7 +58,7 @@ contract Distribution is Proxied {
 
         require(winningSide != address(0));
 
-        (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getBettor(gameId, claimer);
+        (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
         // Is the winning player or part of the bettors of the winning corner
         require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");

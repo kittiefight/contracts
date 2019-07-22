@@ -290,15 +290,13 @@ contract GameManager is Proxied, Guard {
             betting.startGame(gameId, games[gameId][opponentPlayer].random, randomNum);
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
-            (uint honeyPotId,) = gmGetterDB.getHoneypotInfo(gameId);
+            uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
             endowmentFund.updateHoneyPotState(honeyPotId, uint(HoneypotState.gameStarted));
             return true; //Game Started
         }
 
         return false; //Game is not starting yet
     }
-
-    
 
     /**
      * @dev Extend time of underperforming game indefinitely, each time 1 minute before game ends, by checking at everybet
@@ -319,7 +317,7 @@ contract GameManager is Proxied, Guard {
      */
     function checkPerformance(uint gameId) internal view returns(bool) {
         //get initial jackpot, need endowment to send this when creating honeypot
-        (,uint initialEth) = gmGetterDB.getHoneypotInfo(gameId);
+        uint initialEth = gmGetterDB.getHoneypotInitialEth(gameId);
         uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
         if(currentJackpotEth > initialEth.mul(10)) return true;
@@ -347,7 +345,7 @@ contract GameManager is Proxied, Guard {
         require(gameState == uint(eGameState.MAIN_GAME));
         
         address sender = getOriginalSender();
-        (, address supportedPlayer, bool payedFee) = gmGetterDB.getBettor(gameId, sender);
+        (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
 
         require(payedFee); //Needs to call participate First if false
         

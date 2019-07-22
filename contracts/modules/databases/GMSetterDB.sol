@@ -16,17 +16,17 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
+import "../../GameVarAndFee.sol";
 
 /**
  * @dev Stores game instances
  * @author @psychoplasma
  */
 contract GMSetterDB is Proxied {
- using SafeMath for uint256;
-
-  
+ using SafeMath for uint256;  
 
   GenericDB public genericDB;
+  GameVarAndFee public gameVarAndFee;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
@@ -43,6 +43,10 @@ contract GMSetterDB is Proxied {
 
   function setGenericDB(GenericDB _genericDB) public onlyOwner {
     genericDB = _genericDB;
+  }
+
+  function initialize() external onlyOwner {
+    gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
   }
 
  /**
@@ -82,6 +86,12 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "startTime")), gameStartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
+
+    //GameVarAndFee Vars
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "listingFee")), gameVarAndFee.getListingFee());
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "ticketFee")), gameVarAndFee.getTicketFee());
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "bettingFee")), gameVarAndFee.getBettingFee());
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "minContributors")), gameVarAndFee.getMinimumContributors());
 
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
 
