@@ -50,8 +50,6 @@ contract ProfileDB is Proxied {
     // Creates a linked list with the given keys, if it does not exist
     // And push the new profile pointer to the list
     require(genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_PROFILE_DB, TABLE_KEY_PROFILE, account), ERROR_ALREADY_EXIST);
-<<<<<<< HEAD
-=======
   }
 
   function setCivicId(address account, uint256 civicId)
@@ -68,7 +66,6 @@ contract ProfileDB is Proxied {
     genericDB.setAddressStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked("civicIdTable", civicId)), account);
     // Save the civic id under the given account as well
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "civicId")), civicId);
->>>>>>> feature/gameManager
   }
 
   // FIXME: Stale function
@@ -251,12 +248,9 @@ contract ProfileDB is Proxied {
       CONTRACT_NAME_PROFILE_DB,
       keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE))
     );
-<<<<<<< HEAD
-=======
   }
 
   function doesKittieExist(address account, uint256 kittieId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId);
->>>>>>> feature/gameManager
   }
 }

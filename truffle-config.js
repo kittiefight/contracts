@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-const HDWalletProvider = require('truffle-hdwallet-provider');
-
-
-const providerFactory = network => new HDWalletProvider(
-  process.env.MNEMONICS || '',     // Mnemonics of the deployer
-  `https://${network}.infura.io}`  // Provider URL => web3.HttpProvider
-);
-
-=======
 const HDWalletProvider = require("truffle-hdwallet-provider");
 
 const providerFactory = network =>
@@ -15,7 +5,6 @@ const providerFactory = network =>
     process.env.MNEMONICS || "", // Mnemonics of the deployer
     `https://${network}.infura.io}` // Provider URL => web3.HttpProvider
   );
->>>>>>> feature/gameManager
 
 module.exports = {
   compilers: {
@@ -28,13 +17,8 @@ module.exports = {
     }
   },
   networks: {
-<<<<<<< HEAD
-    'mainnet': {
-      provider: providerFactory('mainnet'),
-=======
     mainnet: {
       provider: providerFactory("mainnet"),
->>>>>>> feature/gameManager
       network_id: 1,
       gas: 7000000,
       gasPrice: 100000000000 // 100 Gwei, Change this value according to price average of the deployment time
