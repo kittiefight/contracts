@@ -62,6 +62,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         cryptoKitties.transferFrom(owner, address(this), _kittyID);
         require(cryptoKitties.ownerOf(_kittyID) == address(this));
         kitties[_kittyID].owner = owner;
+        kitties[_kittyID].playing = true;
         emit KittyAcquired(_kittyID);
         return true;
     }
@@ -94,6 +95,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;
+        kitties[_kittyID].playing = false;
         emit KittyDied(_kittyID);
         return true;
     }
