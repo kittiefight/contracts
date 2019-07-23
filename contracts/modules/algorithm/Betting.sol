@@ -59,7 +59,10 @@ contract Betting is Proxied, Guard {
      * @param _randomRed random number generated when the red corner presses Button start
      * @param _randomBlack black number generated when the black corner presses Button start
      */
-    function setFightMap(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack) public {
+    function setFightMap(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack)
+        public //temporarily set as public just for truffle test purpose
+        //internal
+    {
         uint randomNum = _randomRed.add(_randomBlack);
         bytes32 hashLowPunch = keccak256(abi.encodePacked(randomNum, "lowPunch"));
         bytes32 hashLowKick = keccak256(abi.encodePacked(randomNum, "lowKick"));
@@ -75,6 +78,8 @@ contract Betting is Proxied, Guard {
         fightMap[_gameId].push(HitType(hashHardKick, "hardKick"));
         fightMap[_gameId].push(HitType(hashHardThunder, "hardThunder"));
         fightMap[_gameId].push(HitType(hashSlash, "slash"));
+
+        emit FightMapGenerated(_gameId);
     }
 
     // setDirectAttacksScored() is internal. Temporarily set as public for truffle test purpose.
@@ -398,6 +403,8 @@ contract Betting is Proxied, Guard {
         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
+
+        emit GameStarted(_gameId);
     }
 
     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
@@ -444,6 +451,20 @@ contract Betting is Proxied, Guard {
 
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
+
+        emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelOpponent);
     }
+
+    event GameStarted(uint256 indexed _gameId);
+
+    event FightMapGenerated(uint256 indexed _gameId);
+
+    event BetPlaced(
+        uint256 indexed _gameId,
+        address _supportedPlyer,
+        uint256 _lastBetAmount,
+        bytes32 attackHash,
+        string attackType,
+        uint256 defenseLevelOpponent);
 
 }
