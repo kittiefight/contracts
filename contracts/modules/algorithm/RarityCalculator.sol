@@ -31,6 +31,7 @@ import "../../authority/Guard.sol";
 import "../../libs/SafeMath.sol";
 import "./RarityCalculationDBs/Rarity.sol";
 import "./RarityCalculationDBs/DefenseLevel.sol";
+import "./RarityCalculationDBs/FancyKitties.sol";
 
 /**
  * @title This contract is responsible to calculate the defense level of a kitty
@@ -38,7 +39,7 @@ import "./RarityCalculationDBs/DefenseLevel.sol";
  * @author @ziweidream
  */
 
-contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
+contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties {
     using SafeMath for uint256;
 
     /**
@@ -63,6 +64,8 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
 
       if (kittieId < 10000) {
           defenseLevel = 6;
+      } else if (isFancy(kittieId)) {
+          defenseLevel = 5;
       } else if (rarity < defenseLevelLimit.level5Limit) {
           defenseLevel = 6;
       } else if (rarity >= defenseLevelLimit.level5Limit && rarity < defenseLevelLimit.level4Limit) {
@@ -78,5 +81,16 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
       }
 
       return defenseLevel;
+    }
+
+    function isFancy(uint256 _kittieId) public returns(bool) {
+        string memory fancyName = FancyKittiesList[_kittieId];
+        bytes memory fancyNameBytes = bytes(fancyName);
+        if (fancyNameBytes.length != 0) {
+            // fancyName is NOT an empty string
+            return true;
+        }
+
+        return false;
     }
 }
