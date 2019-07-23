@@ -10,6 +10,7 @@ contract ContractNames {
      * Names of KittyFight system contracts, used to load/store their deployed
      * addresses in ContractManager
      */
+    string constant CONTRACT_NAME_GENERIC_DB        = "GenericDB";
     string constant CONTRACT_NAME_REGISTER          = "Register";
     string constant CONTRACT_NAME_PROFILE_DB        = "ProfileDB";
     string constant CONTRACT_NAME_KITTIEHELL        = "KittieHell";
@@ -19,4 +20,5 @@ contract ContractNames {
     string constant CONTRACT_NAME_TIMECONTRACT      = "TimeContract";
     string constant CONTRACT_NAME_CRONJOB           = "CronJob";
     string constant CONTRACT_NAME_ROLE_DB           = "RoleDB";
+    string constant CONTRACT_NAME_FREEZE_INFO       = "FreezeInfo";
 }
