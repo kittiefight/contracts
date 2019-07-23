@@ -12,6 +12,7 @@ const RoleDB = artifacts.require('RoleDB')
 const GMSetterDB = artifacts.require('GMSetterDB')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const GameManager = artifacts.require('GameManager')
+const GameStore = artifacts.require('GameStore')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
 const Distribution = artifacts.require('Distribution')
 const Forfeiter = artifacts.require('Forfeiter')
@@ -58,8 +59,8 @@ const TICKET_FEE = 100
 const BETTING_FEE = 100
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 15 // 15 secs for quick test
-const GAME_DURATION = 60 // games last 1 min
+const GAME_PRESTART = 30 // 30 secs for quick test
+const GAME_DURATION = 120 // games last 2 min
 const ETH_PER_GAME = 0 //How does endowment start funds?
 const TOKENS_PER_GAME = 0;
 const GAME_TIMES = 60 //Scheduled games 1 min apart
@@ -107,6 +108,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
     // MODULES
     gameManager = await GameManager.new()
+    gameStore = await GameStore.new()
     register = await Register.new()
     dateTime = await DateTime.new()
     gameVarAndFee = await GameVarAndFee.new(genericDB.address, randomAddress)
@@ -146,6 +148,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await proxy.addContract('GMSetterDB', setterDB.address)
     await proxy.addContract('GMGetterDB', getterDB.address)
     await proxy.addContract('GameManager', gameManager.address)
+    await proxy.addContract('GameStore', gameStore.address)
     await proxy.addContract('CronJob', cronJob.address)
     await proxy.addContract('KittieHell', kittieHELL.address)
     await proxy.addContract('KittieHellDB', kittieHellDB.address)
@@ -168,6 +171,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     await rarityCalculator.setProxy(proxy.address)
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
+    await gameStore.setProxy(proxy.address)
     await cronJob.setProxy(proxy.address)
     await kittieHELL.setProxy(proxy.address)
     await kittieHellDB.setProxy(proxy.address)

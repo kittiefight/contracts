@@ -100,7 +100,6 @@ contract GMSetterDB is Proxied {
     // Set kittieIds to true, so we know that there are in a match
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "inGame")), true);
     genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "inGame")), true);
-
     
     return gameId;
   }
@@ -229,65 +228,6 @@ contract GMSetterDB is Proxied {
   {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), newTime);
   }
-
-  //  /**
-  //  * @dev Update different game vars for every bet function call
-  //  */
-  // function updateGameVars(uint256 gameId, uint256 lastBet, uint lastBetTimestamp, address topBettor, address secondTopBettor)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(gameId)
-  // {
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lastBet")), lastBet);
-  //   genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "lastBetTimestamp")), lastBetTimestamp);
-  //   genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "topBettor")), topBettor);
-  //   genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
-  // }
-
-  /**
-   * @dev set topBettor
-   */
-  // function setTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
-  //   public
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(_gameId) {
-  //   genericDB.setAddressStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor")), _bettor);
-  //   genericDB.setUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")), _amountEth);
-  // }
-
-  // /**
-  //  * @dev set secondTopBettor
-  //  */
-  // function setSecondTopBettor(uint256 _gameId, address _bettor, address _supportedPlayer, uint256 _amountEth)
-  //   public
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(_gameId) {
-  //   genericDB.setAddressStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(_gameId,
-  //     _supportedPlayer, "SecondTopBettor")), _bettor);
-  //   genericDB.setUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")), _amountEth);
-  // }
-
-  /**
-   * @dev set last bet amount (eth)
-   */
-  // function setLastBet(uint256 _gameId, uint256 _amountEth, uint256 _lastBetTimestamp, address _supportedPlayer)
-  //   public
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  //   onlyExistentGame(_gameId) {
-  //   genericDB.setUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBet")), _amountEth);
-  //   genericDB.setUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(_gameId, _supportedPlayer, "lastBetTimestamp")), _lastBetTimestamp);
-  // }
 
   /**
    * @dev Update game to one of 5 states

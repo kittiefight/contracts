@@ -17,7 +17,7 @@ import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
-import "../gamemanager/GameManager.sol";
+import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
 import "../kittieHELL/KittieHELL.sol";
 
@@ -31,7 +31,7 @@ contract GMGetterDB is Proxied {
 
   GenericDB public genericDB;
   GameVarAndFee public gameVarAndFee;
-  GameManager public gameManager;
+  GameStore public gameStore;
   EndowmentDB public endowmentDB;
   KittieHELL public kittieHELL;
 
@@ -53,7 +53,7 @@ contract GMGetterDB is Proxied {
 
   function initialize() external onlyOwner {
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-    gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+    gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
     kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
   }
@@ -197,59 +197,7 @@ contract GMGetterDB is Proxied {
     }
 
     return false;
-  }
-
-  // function getGames() public view returns (uint256[] memory) {
-  //   return genericDB.getAll(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     TABLE_KEY_GAME
-  //   );
-  // }
-
-  // /**
-  //  * @dev get all bettors for a given game id
-  //  */
-  // function getBettors(uint gameId) public view returns (address[] memory) {
-  //   return genericDB.getAllAddr(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR))
-  //   );
-  // }
-
-
-  /**
-   * @dev get topBettor
-   */
-  // function getTopBettor(uint256 _gameId, address _supportedPlayer)
-  //   public view
-  //   onlyExistentGame(_gameId)
-  //   returns (address, uint256){
-  //   return (
-  //     genericDB.getAddressStorage(
-  //       CONTRACT_NAME_GM_SETTER_DB,
-  //       keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettor"))),
-  //     genericDB.getUintStorage(
-  //       CONTRACT_NAME_GM_SETTER_DB,
-  //       keccak256(abi.encodePacked(_gameId, _supportedPlayer, "TopBettorAmountEth")))
-  //     );
-  // }
-
-  // /**
-  //  * @dev get secondTopBettor
-  //  */
-  // function getSecondTopBettor(uint256 _gameId, address _supportedPlayer)
-  //   public view
-  //   onlyExistentGame(_gameId)
-  //   returns (address, uint256){
-  //   return (
-  //     genericDB.getAddressStorage(
-  //       CONTRACT_NAME_GM_SETTER_DB,
-  //       keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettor"))),
-  //     genericDB.getUintStorage(
-  //       CONTRACT_NAME_GM_SETTER_DB,
-  //       keccak256(abi.encodePacked(_gameId, _supportedPlayer, "SecondTopBettorAmountEth")))
-  //     );
-  // }
+  } 
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
@@ -260,7 +208,7 @@ contract GMGetterDB is Proxied {
 
   function getFighterByKittieID(uint256 kittieId)
     public view
-    returns (address owner, uint listFee, uint challengeFee, bool isDead, bool isGhost, bool isPlaying)
+    returns (address owner, bool isDead, bool isGhost, bool isPlaying)
   {
     (owner, isDead,,isGhost,) = kittieHELL.getKittyStatus(kittieId);
 
@@ -306,8 +254,8 @@ contract GMGetterDB is Proxied {
     minSupporters = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "minContributors")));
     supporters[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "supporters")));
     supporters[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "supporters")));
-    (,pressedStart[0],,) = gameManager.games(gameId, players[0]);
-    (,pressedStart[1],,) = gameManager.games(gameId, players[1]);
+    pressedStart[0] = gameStore.didHitStart(gameId, players[0]);
+    pressedStart[1] = gameStore.didHitStart(gameId, players[1]);
     timeCreated = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "createdTime")));
     winner = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "winner")));
   }

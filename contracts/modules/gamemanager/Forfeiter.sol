@@ -14,6 +14,7 @@ pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
 import "../databases/GMGetterDB.sol";
+import "./GameStore.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
@@ -28,6 +29,7 @@ import '../kittieHELL/KittieHELL.sol';
  // TODO: check GameManager implementation, update API calls, and figure out how to test.
 contract Forfeiter is Proxied {
 
+  GameStore public gameStore;
   GameManager public gameManager;
   GMGetterDB public gmGetterDB;
   GameVarAndFee public gameVarAndFee;
@@ -46,6 +48,7 @@ contract Forfeiter is Proxied {
    */
   function initialize() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+    gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
@@ -77,9 +80,8 @@ contract Forfeiter is Proxied {
     // GAME_PRESTART
     if (gameState == 1) {
       (uint256 gameStartTime,,) = gmGetterDB.getGameTimes(gameId);
-      // (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
-      (,bool redStarted,,) = gameManager.games(gameId, playerRed);
-      (,bool blackStarted,,) = gameManager.games(gameId, playerBlack);
+      bool redStarted = gameStore.didHitStart(gameId, playerRed);
+      bool blackStarted = gameStore.didHitStart(gameId, playerRed);
 
       //checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed); // TODO check why it fails here
       didPlayersStartGame(gameId, blackStarted, redStarted, gameStartTime);
