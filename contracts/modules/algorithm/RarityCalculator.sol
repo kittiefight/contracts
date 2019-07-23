@@ -80,10 +80,12 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
           defenseLevel = 1;
       }
 
+      emit OriginalDefenseLevelCalculated(kittieId, defenseLevel);
+
       return defenseLevel;
     }
 
-    function isFancy(uint256 _kittieId) 
+    function isFancy(uint256 _kittieId)
         public // temporarily set as public just for truffle test purpose
         // internal
         view
@@ -98,4 +100,6 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
 
         return false;
     }
+
+    event OriginalDefenseLevelCalculated(uint256 indexed _kittieId, uint256 _originalDefenseLevel);
 }

@@ -452,7 +452,9 @@ contract Betting is Proxied, Guard {
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
 
-        emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelOpponent);
+        uint defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
+
+        emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelSupportedPlayer, defenseLevelOpponent);
     }
 
     event GameStarted(uint256 indexed _gameId);
@@ -465,6 +467,6 @@ contract Betting is Proxied, Guard {
         uint256 _lastBetAmount,
         bytes32 attackHash,
         string attackType,
+        uint256 defenseLevelSupportedPlayer,
         uint256 defenseLevelOpponent);
-
 }
