@@ -8,7 +8,7 @@ import "../../../authority/Owned.sol";
  */
 contract FancyKitties is Owned {
 
-    mapping(uint256 => string) public FancyKittiesList;
+    mapping(uint256 => string) internal FancyKittiesList;
 
     /**
      * @author @ziweidream

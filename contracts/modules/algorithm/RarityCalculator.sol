@@ -83,7 +83,12 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
       return defenseLevel;
     }
 
-    function isFancy(uint256 _kittieId) public returns(bool) {
+    function isFancy(uint256 _kittieId) 
+        public // temporarily set as public just for truffle test purpose
+        // internal
+        view
+        returns(bool)
+    {
         string memory fancyName = FancyKittiesList[_kittieId];
         bytes memory fancyNameBytes = bytes(fancyName);
         if (fancyNameBytes.length != 0) {
