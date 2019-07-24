@@ -337,8 +337,8 @@ contract GameManager is Proxied, Guard {
         require(payedFee); //Needs to call participate First if false
         
         //Transfer Funds to endowment
-        require(endowmentFund.contributeETH.value(msg.value)(gameId));
-        require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()));
+        // require(endowmentFund.contributeETH.value(msg.value)(gameId));
+        // require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()));
 
         //Update bettor's total bet
         gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
@@ -350,7 +350,7 @@ contract GameManager is Proxied, Guard {
         
         //Send bet to betting algo, to decide attacks
         //TODO: event NewBet(uint game_id, address player, uint corner, uint ethAmount);
-        betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
+        // betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
         // update game variables
         calculateBettorStats(gameId, sender, supportedPlayer);
@@ -359,7 +359,7 @@ contract GameManager is Proxied, Guard {
         extendTime(gameId);
 
         //Check if game has ended
-        gameEnd(gameId);
+        // gameEnd(gameId);
 
         emit NewBet(gameId, sender, msg.value);
     }
