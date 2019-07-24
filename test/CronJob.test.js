@@ -1,7 +1,10 @@
 const Proxy = artifacts.require('KFProxy');
 const GenericDB = artifacts.require('GenericDB');
 const CronJob = artifacts.require('CronJob');
+const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
+const RoleDB = artifacts.require('RoleDB');
+
 const BigNumber = require('bignumber.js');
 const evm = require('./utils/evm.js');
 
@@ -17,14 +20,24 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
     beforeEach(async () => {
         this.proxy = await Proxy.new();
         this.genericDB = await GenericDB.new();
+        this.freezeInfo = await FreezeInfo.new();
         this.cronJob = await CronJob.new(this.genericDB.address);
         this.cronJobTarget= await CronJobTarget.new();
 
+        await this.proxy.addContract('GenericDB', this.genericDB.address);
+        await this.proxy.addContract('FreezeInfo', this.freezeInfo.address);
         await this.proxy.addContract('CronJob', this.cronJob.address);
         await this.proxy.addContract('CronJobTarget', this.cronJobTarget.address);
         await this.genericDB.setProxy(this.proxy.address);
         await this.cronJob.setProxy(this.proxy.address);
         await this.cronJobTarget.setProxy(this.proxy.address);
+
+        //Add creator as admin (because only admins can call executeScheduledJobs())
+        this.roleDB = await RoleDB.new(this.genericDB.address);
+        await this.proxy.addContract('RoleDB', this.roleDB.address);
+        await this.proxy.addContract('Creator', creator);
+        await this.roleDB.setProxy(this.proxy.address);
+        await this.roleDB.addRole('Creator', 'admin', creator);
     });
     describe('CronJob::Authority', () => {
         it('sets proxy and db', async () => {

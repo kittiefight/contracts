@@ -38,10 +38,10 @@ contract CronJobProxy is ProxyBase {
      */
     function executeScheduledJobs() external {
         address genericDB = getContract(CONTRACT_NAME_GENERIC_DB);
-        (bool success, bytes result) = genericDB.staticcall(abi.encodeWithSignature(
+        (bool success, bytes memory result) = genericDB.staticcall(abi.encodeWithSignature(
             "getBoolStorage(string,bytes32)",
             CONTRACT_NAME_ROLE_DB,
-            keccak256(abi.encodePacked("admin", msg.sender)
+            keccak256(abi.encodePacked("admin", msg.sender))
         ));
         require(success, 'Failed to load role');
         bool hasRole = abi.decode(result, (bool));

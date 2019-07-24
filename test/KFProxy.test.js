@@ -21,6 +21,7 @@ contract('KFProxy', ([owner, addr1, unauthorizedAddr, randomAddr]) => {
     this.genericDB = await GenericDB.new();
     this.cronJob = await CronJob.new(this.genericDB.address);
     this.proxiedTest = await ProxiedTest.new();
+    await this.proxy.addContract('GenericDB', this.genericDB.address);
     await this.proxy.addContract('FreezeInfo', this.freezeInfo.address);
     await this.proxy.addContract('CronJob', this.cronJob.address);
 
