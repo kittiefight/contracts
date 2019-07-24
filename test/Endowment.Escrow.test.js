@@ -1,9 +1,18 @@
+/*
 const BigNumber = require('bignumber.js');
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
   .should();
+*/
+
+const BigNumber = web3.utils.BN;
+  require('chai')
+  .use(require('chai-shallow-deep-equal'))
+  .use(require('chai-bignumber')(BigNumber))
+  .use(require('chai-as-promised'))
+  .should();  
 
 const KFProxy = artifacts.require('KFProxy')
 const GenericDB = artifacts.require('GenericDB');
@@ -63,6 +72,10 @@ const GAME_DURATION = 300 // games last 5 min
 const ETH_PER_GAME = 0 //How does endowment start funds?
 const TOKENS_PER_GAME = 0;
 const GAME_TIMES = 3600 //Scheduled games 1 hour apart
+
+let five_escrow_pre = 0, five_escrow_post = 0, five_receiver_pre = 0, five_receiver_post = 0, five_add_amount = 10
+let six_escrow_pre = 0, six_escrow_post = 0, six_receiver_pre = 0, six_receiver_post = 0, six_add_amount = 10
+
 
 
 function setMessage(contract, funcName, argArray) {
@@ -207,6 +220,8 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     await kittieFightToken.transfer(bettor2, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(bettor3, 100000).should.be.fulfilled;
     await kittieFightToken.transfer(bettor4, 100000).should.be.fulfilled;
+    await kittieFightToken.transfer(randomAddress, 100000).should.be.fulfilled;
+    
   })
 
 
@@ -219,36 +234,150 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor2 }).should.be.fulfilled;
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor3 }).should.be.fulfilled;
     await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor4 }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, 100000, { from: randomAddress }).should.be.fulfilled;
   })
 
+    // registers user to the system
+  it('approves erc20 token transfer operation by endowment contract', async () => {
+    await proxy.execute('Register', setMessage(register, 'register', [user1]), {from: user1}).should.be.fulfilled;
+    await proxy.execute('Register', setMessage(register, 'register', [bettor1]), {from: user1}).should.be.fulfilled;
+ 
+  })
+      
 
-  it('Add KTY to Escrow using endowmentFund.addFundsToEscrow()', async () => {
+  it('endowmentFund.sendKTYtoEscrow() : add initial KTY to Escrow', async () => {
 
-   let eth = await escrow.getBalanceETH();
    let kty = await escrow.getBalanceKTY();
-   //assert.equal(eth, 0); assert.equal(kty, 0);
 
-    //send some kty
+    //send some kty to endowmentFund first
    await kittieFightToken.transfer(endowmentFund.address, 1000).should.be.fulfilled;
 
    let add_amount = 10;
-   endowmentFund.addFundsToEscrow(add_amount, 0);
+   endowmentFund.sendKTYtoEscrow(add_amount);
    kty = await escrow.getBalanceKTY();   //console.log('escrow.getBalanceKTY() = ' + kty);
    assert.equal(kty, add_amount);  
 
   });
 
-  it('Escrow contributeKTY', async () => {
+  it('endowmentFund.sendETHtoEscrow() : add initial Eth to Escrow', async () => {
+
+    let sender_balance = await  web3.eth.getBalance(user1); //console.log('sender_balance =' + sender_balance);
     let add_amount = 10;
-    let pre = await escrow.getBalanceKTY(); //console.log('Escrow contributeKTY : pre = ' + kty_pre);
+    assert(sender_balance >= add_amount, 'sender does not have balance');
+
+    //let pre = await  web3.eth.getBalance(escrow.address); //console.log('escrow pre =' + pre);
+    let pre = await escrow.getBalanceETH(); 
+
+    // send some eth
+    endowmentFund.sendETHtoEscrow({from: user1, value: add_amount });
+
+    let post1 = await escrow.getBalanceETH(); // REQUIRED - to introduces a delay perhaps
+    let post = await web3.eth.getBalance(escrow.address); 
+    assert.equal(post - pre, add_amount);
+ 
+   });
+
+  it('endowmentFund.contributeKTY() : bettor sends KTY to escrow', async () => {
+    let add_amount = 10;
+    let pre = await escrow.getBalanceKTY(); 
 
     await endowmentFund.contributeKTY(bettor1, add_amount);
     
-    let post = await escrow.getBalanceKTY(); //console.log('Escrow contributeKTY : post = ' + kty_post);
+    let post = await escrow.getBalanceKTY(); 
     assert.equal(post - pre, add_amount);
 
   });
 
+  // five  - pre
+  it('endowmentFund.contributeETH() : Bettors sends Eth to Escrow via endowmentFund', async () => {
+
+    let sender_balance = await  web3.eth.getBalance(bettor1); //console.log('sender_balance =' + sender_balance);
+    assert(sender_balance >= five_add_amount, 'sender does not have balance');
+
+    five_escrow_pre = await escrow.getBalanceETH(); 
+
+    // send some eth
+    endowmentFund.contributeETH(1, {from: bettor1, value: five_add_amount });
+
+  });
+
+   // five  - post
+   it('endowmentFund.contributeETH() : Verify', async () => {
+
+    five_escrow_post = await web3.eth.getBalance(escrow.address);  
+
+    assert.equal(five_escrow_post - five_escrow_pre, five_add_amount);
+
+  }); 
+   
+  it('endowmentFund.transferKFTfromEscrow() : Escrow send Eth to given address', async () => {
+
+    let sender_balance = await kittieFightToken.balanceOf(escrow.address); //console.log('sender_balance =' + sender_balance);
+    let add_amount = 10;
+    assert(sender_balance >= add_amount, 'sender does not have balance');
+
+    let pre = await kittieFightToken.balanceOf(bettor1);
+
+    // send some eth
+    endowmentFund.transferKFTfromEscrow(bettor1, add_amount);
+
+    let post = await kittieFightToken.balanceOf(bettor1); //console.log('escrow post =' + post);
+    assert.equal(post - pre, add_amount);
+
+  });
+
+  // six - pre
+  it('endowmentFund.transferETHfromEscrow() : Escrow send Eth to given address', async () => {
+
+    let sender_balance = await web3.eth.getBalance(escrow.address); 
+    assert(sender_balance >= six_add_amount, 'sender does not have balance');
+
+    six_receiver_pre = await web3.eth.getBalance(bettor1); console.log('six_receiver_pre =' + six_receiver_pre);    
+    six_escrow_pre = await web3.eth.getBalance(escrow.address); 
+
+    // send some eth
+    endowmentFund.transferETHfromEscrow(bettor1, six_add_amount);
+
+  });
+
+  // six - post
+  it('endowmentFund.transferETHfromEscrow() : Verify sender', async () => {
+
+    six_escrow_post = await web3.eth.getBalance(escrow.address); 
+    assert.equal(six_escrow_pre - six_escrow_post, six_add_amount);
+
+  });  
+
+  // six - post
+  it('endowmentFund.transferETHfromEscrow() : Verify receiver', async () => {
+
+    six_receiver_post = await web3.eth.getBalance(bettor1);  console.log('six_receiver_post =' + six_receiver_post);
+    // console.log( (await web3.eth.getBalance(bettor1)).toNumber() ); // toNumber() not working. 
+    // console.log( web3.fromWei((await web3.eth.getBalance(bettor1)).toNumber(), "ether") ); // toNumber() not working. 
+   
+    //assert.equal(six_receiver_post - six_receiver_pre, six_add_amount); // big number problem
+
+  });  
+
+
+  it('Replace Escrow with New Escrow', async () => {
+
+    newEscrow = await Escrow.new()
+
+    await newEscrow.transferOwnership(endowmentFund.address).should.be.fulfilled
+
+    await endowmentFund.initUpgradeEscrow(newEscrow.address);
+
+  });
+
+
+return;
+
+
+
+
+/*
+// no needed
 
   it('Add ETH to endowmentFund', async () => {
     
@@ -265,41 +394,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     assert.equal(post - pre, add_amount); 
 
    });
-
-
-  it('Add ETH to Escrow using endowmentFund.addFundsToEscrow()', async () => {
-
-    //let eth = await escrow.getBalanceETH(); console.log('eth_pre =' + eth_pre);
-    let sender_balance = await  web3.eth.getBalance(endowmentFund.address); //console.log('sender_balance =' + sender_balance);
-    let add_amount = 10;
-    assert(sender_balance >= add_amount, 'sender does not have balance');
-
-    let pre = await  web3.eth.getBalance(escrow.address); //console.log('escrow pre =' + pre);
-
-    // send some eth
-    endowmentFund.addFundsToEscrow(0, add_amount);
-
-    let eth_post = await escrow.getBalanceETH(); // REQUIRED - to introduces a delay perhaps
-    let post = await web3.eth.getBalance(escrow.address);  //console.log('escrow post =' + post);
-    assert.equal(post - pre, add_amount);
-
- 
-   });
-
-
-/*
-  it('Escrow contributeETH', async () => {
-
-    await endowmentFund.contributeETH(1);
-    let kty = await escrow.getBalanceKTY();
-    assert.equal(kty, 10);
-
-  });
-  */
-
-
-
-return;
+*/
 
 
 

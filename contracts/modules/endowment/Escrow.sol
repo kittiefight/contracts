@@ -12,9 +12,11 @@ contract Escrow is Owned {
 
     ERC20Standard public kittieFightToken;
 
+    event EthTransfered(address to, uint256 amount);
+    event KtyTransfered(address to, uint256 amount);
+
     /**
     * @dev Initialize contracts used
-    * @dev Can be called only by the owner of this contract
     */
     function initialize(ERC20Standard _kittieFightToken) external onlyOwner {
         //kittieFightToken = ERC20Standard(address(ktyAddress));
@@ -25,12 +27,14 @@ contract Escrow is Owned {
 
     function transferETH(address payable _to, uint256 _eth_amount) public onlyOwner returns(bool){
         _to.transfer(_eth_amount);
+        emit EthTransfered(_to, _eth_amount);
         return true;
     }
 
     function transferKTY(address _to, uint256 _kty_amount) public onlyOwner returns(bool){
-        require(address(kittieFightToken) != address(0), "kittieFightToken not initialized in Escrow");
+        
         kittieFightToken.transfer(_to, _kty_amount);
+        emit EthTransfered(_to, _kty_amount);
         return true;
     }
 
@@ -42,5 +46,8 @@ contract Escrow is Owned {
         return  address(this).balance;
     }
 
+    function getKTYaddress() public view returns (address){
+        return  address(kittieFightToken);
+    }
 
 }
