@@ -7,7 +7,7 @@ contract ContractManager is Owned, IContractManager {
     mapping(string => address) private contracts;
 
     function addContract(string memory name, address contractAddress) public onlyOwner {
-        require(contracts[name] == address(0));
+        require(contracts[name] == address(0), 'Can not add contract with zero address');
 
         contracts[name] = contractAddress;
     }
