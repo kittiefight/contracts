@@ -39,6 +39,7 @@ contract('RoleDB & Guard', ([owner, addr1, addr2, addr3, addr4, unauthorizedAddr
     await this.proxy.addContract(ROLEDB_CONTRACT_NAME, this.roleDB.address);
     await this.genericDB.setProxy(this.proxy.address);
     await this.roleDB.setProxy(this.proxy.address);
+    await this.guardImplementor.setProxy(this.proxy.address);
   });
 
   describe('RoleDB::Authority', () => {
@@ -127,7 +128,6 @@ contract('RoleDB & Guard', ([owner, addr1, addr2, addr3, addr4, unauthorizedAddr
 
   describe('Guard::Modifiers', () => {
     beforeEach(async () => {
-      this.guardImplementor.addContract(ROLEDB_CONTRACT_NAME, this.roleDB.address).should.be.fulfilled;
       // First add roles for some addresses
       await this.roleDB.addRole(GUARD_IMPL_CONTRACT_NAME, ROLES.superAdmin, addr1).should.be.fulfilled;
       await this.roleDB.addRole(GUARD_IMPL_CONTRACT_NAME, ROLES.admin, addr2).should.be.fulfilled;
