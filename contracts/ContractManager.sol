@@ -25,14 +25,13 @@ contract ContractManager is Owned, IContractManager {
     }
 
     function getContract(string memory name) public view returns (address) {
-        require(contracts[name] != address(0), 'Contract not registered');
-        // if(contracts[name] == address(0)) {
-        //     bytes memory error = bytes(abi.encodePacked('Contract not registered: ', name));
-        //     //revert('Contract not registered');            
-        //     assembly {
-        //         revert(add(name,32), name)
-        //     }
-        // }
+        //require(contracts[name] != address(0), 'Contract not registered');
+        if(contracts[name] == address(0)) {
+            bytes memory error = abi.encodeWithSignature('Error(string)',string(abi.encodePacked('Contract not registered: ', name)));
+            assembly {
+                revert(add(error,32), error)
+            }
+        }
 
         return contracts[name];
     }
