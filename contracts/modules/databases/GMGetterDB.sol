@@ -97,7 +97,7 @@ contract GMGetterDB is Proxied {
   function getHoneypotId(uint256 gameId)
     public view
     returns(uint)
-  {   
+  {
     return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
   }
 
@@ -283,5 +283,31 @@ contract GMGetterDB is Proxied {
     isPlayerInGame = isPlayer(gameId, msg.sender);
     corner = getCorner(gameId, msg.sender);
   }
+
+  function getPlayer(uint gameId, address player)
+    public view
+    returns(uint kittieId, uint corner, uint betsTotalEth)
+  {
+    kittieId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
+    corner = getCorner(gameId, player);
+    betsTotalEth = getTotalBet(gameId, player);
+  }
+
+  function getGameResults(uint gameId)
+    public view
+    returns(address winner, address topBettor, address secondTopBettor)
+  {
+    winner = getWinner(gameId);
+    topBettor = gameStore.getTopBettor(gameId, winner);
+    secondTopBettor = gameStore.getSecondTopBettor(gameId, winner);
+  }
+
+  //ENDOWMENT?
+  // function getWithdrawalState(uint gameId)
+  //   public view
+  //   returns(bool winner, bool topBettor, bool secondTopBettor, bool, bool)
+  // {
+
+  // }
 
 }

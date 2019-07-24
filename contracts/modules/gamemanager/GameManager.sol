@@ -63,11 +63,11 @@ contract GameManager is Proxied, Guard {
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, KITTIE_HELL, WITHDREW_EARNINGS, CANCELLED}
 
     //EVENTS
-    event NewGame(uint gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
-    event NewSupporter(uint game_id, address supporter, address playerSupported);
-    event PressStart(uint game_id, address player);
-    event NewBet(uint game_id, address player, uint ethAmount);
-    event GameStateChanged(uint game_id, eGameState old_state, eGameState new_state);
+    event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
+    event NewSupporter(uint indexed game_id, address indexed supporter, address playerSupported);
+    event PressStart(uint indexed game_id, address player);
+    event NewBet(uint indexed game_id, address indexed player, uint ethAmount);
+    event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
 
     enum HoneypotState {
         created,
