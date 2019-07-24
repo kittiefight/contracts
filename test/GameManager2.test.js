@@ -1,4 +1,4 @@
-const BigNumber = require('bignumber.js');
+const BigNumber = web3.utils.BN;
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
@@ -31,7 +31,10 @@ const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
-const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
+// const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
+const ERC20_TOKEN_SUPPLY = new BigNumber(
+  web3.utils.toWei("100000000", "ether") //100 Million
+);
 
 //Contract instances
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
@@ -40,18 +43,10 @@ let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager,
   cronJob, escrow
 
+const kovanMedianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F'
+const kitties = [0, 1234, 32452, 23134, 44444, 55555, 6666];
 
-const kittie1 = 1234
-const kittie2 = 32452
-const kittie3 = 23134
-const kittie4 = 44444
-const kittie5 = 55555
-const kittie6 = 6666
-
-const cividId1 = 1;
-const cividId2 = 2;
-const cividId3 = 3;
-const cividId4 = 4;
+const cividIds = [0, 1, 2, 3, 4, 5, 6];
 
 // GAME VARS AND FEES
 const LISTING_FEE = 1000
@@ -83,7 +78,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2, bettor3, bettor4, randomAddress]) => {
+contract('GameManager', (accounts) => {
 
   it('deploys contracts', async () => {
     // PROXY
@@ -111,7 +106,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
     gameStore = await GameStore.new()
     register = await Register.new()
     dateTime = await DateTime.new()
-    gameVarAndFee = await GameVarAndFee.new(genericDB.address, randomAddress)
+    gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
     distribution = await Distribution.new()
     forfeiter = await Forfeiter.new()
     scheduler = await Scheduler.new()
@@ -194,45 +189,28 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
   // Mint some kitties for the test addresses
   it('mint some kitties for the test addresses', async () => {
-    await cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
-    await cryptoKitties.mint(user2, kittie2).should.be.fulfilled;
-    await cryptoKitties.mint(user3, kittie3).should.be.fulfilled;
-    await cryptoKitties.mint(user4, kittie4).should.be.fulfilled;
-    await cryptoKitties.mint(user1, kittie5).should.be.fulfilled;
-    await cryptoKitties.mint(user2, kittie6).should.be.fulfilled;
+    for (let i = 1; i < 5; i++) {
+      await cryptoKitties.mint(accounts[i], kitties[i]).should.be.fulfilled;
+    }
   })
-
 
   // Approve transfer operation for the system
   it('approve transfer operation', async () => {
-    await cryptoKitties.approve(kittieHELL.address, kittie1, { from: user1 }).should.be.fulfilled;
-    await cryptoKitties.approve(kittieHELL.address, kittie2, { from: user2 }).should.be.fulfilled;
-    await cryptoKitties.approve(kittieHELL.address, kittie3, { from: user3 }).should.be.fulfilled;
-    await cryptoKitties.approve(kittieHELL.address, kittie4, { from: user4 }).should.be.fulfilled;
-    await cryptoKitties.approve(kittieHELL.address, kittie6, { from: user2 }).should.be.fulfilled;
+    for (let i = 1; i < 5; i++) {
+      await cryptoKitties.approve(kittieHELL.address, kitties[i], { from: accounts[i] }).should.be.fulfilled;
+    }
   })
 
   it('transfer some KTY for the test addresses', async () => {
-    await kittieFightToken.transfer(user1, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(user2, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(user3, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(user4, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(bettor1, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(bettor2, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(bettor3, 100000).should.be.fulfilled;
-    await kittieFightToken.transfer(bettor4, 100000).should.be.fulfilled;
+    for (let i = 1; i < 20; i++) {
+      await kittieFightToken.transfer(accounts[i], 100000).should.be.fulfilled;
+    }
   })
 
-
   it('approves erc20 token transfer operation by endowment contract', async () => {
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user1 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user2 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user3 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: user4 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor1 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor2 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor3 }).should.be.fulfilled;
-    await kittieFightToken.approve(endowmentFund.address, 100000, { from: bettor4 }).should.be.fulfilled;
+    for (let i = 1; i < 20; i++) {
+      await kittieFightToken.approve(endowmentFund.address, 100000, { from: accounts[i] }).should.be.fulfilled;
+    }
   })
 
   //Set var and fees
@@ -250,7 +228,7 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       REQ_NUM_MATCHES, ETH_PER_GAME, TOKENS_PER_GAME, GAME_TIMES];
 
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
-      from: creator
+      from: accounts[0]
     }).should.be.fulfilled;
 
     let getVar = await gameVarAndFee.getRequiredNumberMatches();
@@ -262,84 +240,50 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
 
   it('registers user to the system', async () => {
-    await proxy.execute('Register', setMessage(register, 'register', [user1]), {
-      from: user1
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user2]), {
-      from: user2
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user3]), {
-      from: user3
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [user4]), {
-      from: user4
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [bettor1]), {
-      from: bettor1
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [bettor2]), {
-      from: bettor2
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [bettor3]), {
-      from: bettor3
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [bettor4]), {
-      from: bettor4
-    }).should.be.fulfilled;
+    for (let i = 1; i < 20; i++) {
+      await proxy.execute('Register', setMessage(register, 'register', [accounts[i]]), {
+        from: accounts[i]
+      }).should.be.fulfilled;
+    }
   })
 
-
   it('verify users civid Id', async () => {
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user1, cividId1]), {
-      from: user1
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user2, cividId2]), {
-      from: user2
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user3, cividId3]), {
-      from: user3
-    }).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'verifyAccount', [user4, cividId4]), {
-      from: user4
-    }).should.be.fulfilled;
+    for (let i = 1; i < 5; i++) {
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [accounts[i], cividIds[i]]), {
+        from: accounts[i]
+      }).should.be.fulfilled;
+    }
   })
 
   it('verified users have player role', async () => {
-    let hasRole = await roleDB.hasRole('player', user1);
+    let hasRole = await roleDB.hasRole('player', accounts[1]);
     hasRole.should.be.true;
 
-    hasRole = await roleDB.hasRole('player', user2);
+    hasRole = await roleDB.hasRole('player', accounts[2]);
     hasRole.should.be.true;
   })
 
   it('unverified users cannot list kitties', async () => {
+    //account 5 not verified
     await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
-      [156]), { from: bettor1 }).should.be.rejected;
+      [156]), { from: accounts[5] }).should.be.rejected;
   })
 
   it('is not able to list kittie without kitty ownership', async () => {
-    //user2 not owner of kittie1
+    //account 3 not owner of kittie1
     await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
-      [kittie2]), { from: user1 }).should.be.rejected;
+      [kitties[1]]), { from: accounts[3] }).should.be.rejected;
   })
 
   it('cannot list kitties without proxy', async () => {
-    await gameManager.listKittie(kittie1, { from: user1 }).should.be.rejected;
-    await gameManager.listKittie(kittie2, { from: user2 }).should.be.rejected;
+    await gameManager.listKittie(kitties[1], { from: accounts[1] }).should.be.rejected;
   })
 
   it('list 4 kitties to the system', async () => {
-    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
-      [kittie1]), { from: user1 }).should.be.fulfilled;
-
-    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
-      [kittie2]), { from: user2 }).should.be.fulfilled;
-
-    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
-      [kittie3]), { from: user3 }).should.be.fulfilled;
-
-    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
-      [kittie4]), { from: user4 }).should.be.fulfilled;
+    for (let i = 1; i < 5; i++) {
+      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+        [kitties[i]]), { from: accounts[i] }).should.be.fulfilled;
+    }
   })
 
   it('correctly creates 2 games', async () => {
@@ -358,14 +302,10 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
   //--- PARTICIPATING -----
   it('user can participate in a created game', async () => {
 
-    //Check games that user1 is not in
-    let gameNotIn = newGameEvents
-      .filter(e => ((e.returnValues.playerRed !== user1) || (e.returnValues.playerBlack !== user1)))
-
-    let { gameId, playerRed, playerBlack } = gameNotIn[0].returnValues;
+    let { gameId, playerRed, playerBlack } = newGameEvents[0].returnValues;
 
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerRed]), { from: user1 }).should.be.fulfilled;
+      [gameId, playerRed]), { from: accounts[5] }).should.be.fulfilled;
 
     //New Supporter added
     let events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
@@ -373,15 +313,22 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
     //Cannot support the opponent too
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerBlack]), { from: user1 }).should.be.rejected;
+      [gameId, playerBlack]), { from: accounts[5] }).should.be.rejected;
 
     // adds more participants
-    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerRed]), { from: bettor2 }).should.be.fulfilled;
+    for (let i = 6; i < 15; i++) {
+      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+        [gameId, playerRed]), { from: accounts[i] }).should.be.fulfilled;
+    }
 
-    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerBlack]), { from: bettor3 }).should.be.fulfilled;
+    events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+    assert.equal(events.length, 10);
+
+    let currentState = await getterDB.getGameState(gameId)
+    console.log('Current state: ', currentState.toNumber())
   })
+
+
 
   it('should move gameState to PRE_GAME', function (done) {
     this.timeout(180000)
@@ -393,11 +340,16 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
       let currentState = await getterDB.getGameState(gameId)
       currentState.toNumber().should.be.equal(GameState.WAITING)
 
+      //Should be able to participate in prestart state
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-        [gameId, playerBlack]), { from: bettor4 }).should.be.fulfilled;
+        [gameId, playerBlack]), { from: accounts[15] }).should.be.fulfilled;
 
       let newState = await getterDB.getGameState(gameId)
+      console.log('\nNew State: ', newState.toNumber())
       newState.toNumber().should.be.equal(GameState.PRE_GAME)
+
+      events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+      assert.equal(events.length, 11);
 
       done()
     }, 31000);
@@ -406,25 +358,37 @@ contract('GameManager', ([creator, user1, user2, user3, user4, bettor1, bettor2,
 
   // START GAME
   it('should move gameState to MAIN_GAME', async () => {
-    let { gameId, playerRed, playerBlack } = newGameEvents[0].returnValues;
+    let { gameId, playerRed, playerBlack, kittieRed, kittieBlack } = newGameEvents[0].returnValues;
 
     let currentState = await getterDB.getGameState(gameId)
+    console.log('Current state: ', currentState.toNumber())
     currentState.toNumber().should.be.equal(GameState.PRE_GAME)
 
+    console.log('address of KittieHell', kittieHELL.address)
+    let owner = await cryptoKitties.ownerOf(kittieRed)
+    console.log(`\nowner of kittie kittieRed: `, owner);
+    owner = await cryptoKitties.ownerOf(kittieBlack)
+    console.log(`owner of kittie kittieBlack: `, owner);
+
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 99]), { from: playerRed }).should.be.fulfilled;
+      [gameId, 99]), { from: playerRed }).should.be.fulfilled
 
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
       [gameId, 100]), { from: playerBlack }).should.be.fulfilled;
 
+    owner = await cryptoKitties.ownerOf(kittieRed)
+    console.log(`\nNew owner of kittie kittieRed: `, owner);
+    owner = await cryptoKitties.ownerOf(kittieBlack)
+    console.log(`New owner of kittie kittieBlack: `, owner);
+
     let gameInfo = await getterDB.getGameInfo(gameId)
+    console.log('New state: ', gameInfo.state.toNumber())
     gameInfo.pressedStart[0].should.be.true
     gameInfo.pressedStart[1].should.be.true
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
 
   return;
-
 
 })
 
