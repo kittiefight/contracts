@@ -46,6 +46,8 @@ let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
 const kovanMedianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F'
 const kitties = [0, 1234, 32452, 23134, 44444, 55555, 6666];
 
+gameStates = ['WAITING', 'PREGAME', 'STARTED', 'FINISHED'];
+
 const cividIds = [0, 1, 2, 3, 4, 5, 6];
 
 // GAME VARS AND FEES
@@ -69,7 +71,13 @@ const GameState = {
   CANCELLED: 5
 }
 
-let newGameEvents;
+let gameDetails;
+
+function timeout(s) {
+  // console.log(`~~~ Timeout for ${s} seconds`);
+  return new Promise(resolve => setTimeout(resolve, s * 1000));
+}
+
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -77,6 +85,7 @@ function setMessage(contract, funcName, argArray) {
     argArray
   );
 }
+
 
 contract('GameManager', (accounts) => {
 
@@ -186,15 +195,12 @@ contract('GameManager', (accounts) => {
     await kittieHELL.initialize()
   })
 
-
-  // Mint some kitties for the test addresses
   it('mint some kitties for the test addresses', async () => {
     for (let i = 1; i < 5; i++) {
       await cryptoKitties.mint(accounts[i], kitties[i]).should.be.fulfilled;
     }
   })
 
-  // Approve transfer operation for the system
   it('approve transfer operation', async () => {
     for (let i = 1; i < 5; i++) {
       await cryptoKitties.approve(kittieHELL.address, kitties[i], { from: accounts[i] }).should.be.fulfilled;
@@ -213,7 +219,6 @@ contract('GameManager', (accounts) => {
     }
   })
 
-  //Set var and fees
   it('Set game vars and fees correctly', async () => {
     let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
       'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
@@ -237,7 +242,6 @@ contract('GameManager', (accounts) => {
     getVar = await gameVarAndFee.getListingFee();
     getVar.toNumber().should.be.equal(LISTING_FEE);
   })
-
 
   it('registers user to the system', async () => {
     for (let i = 1; i < 20; i++) {
@@ -287,22 +291,26 @@ contract('GameManager', (accounts) => {
   })
 
   it('correctly creates 2 games', async () => {
-    newGameEvents = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    let newGameEvents = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
     assert.equal(newGameEvents.length, 2);
 
-    console.log('\nGames Created: \n');
     newGameEvents.map(e => {
-      console.log('-GameId ', e.returnValues.gameId)
-      console.log('KittiRed ', e.returnValues.kittieRed)
-      console.log('KittiBlack ', e.returnValues.kittieBlack)
-      console.log('---')
+      console.log('\n==== NEW GAME CREATED ===');
+      console.log('    GameId ', e.returnValues.gameId)
+      console.log('    KittieRed ', e.returnValues.kittieRed)
+      console.log('    KittieBlack ', e.returnValues.kittieBlack)
+      console.log('    StartTime ', e.returnValues.gameStartTime)
+      console.log('========================\n')
     })
+
+    gameDetails = newGameEvents[0].returnValues
   })
 
-  //--- PARTICIPATING -----
-  it('user can participate in a created game', async () => {
+  it('bettors can participate in a created game', async () => {
 
-    let { gameId, playerRed, playerBlack } = newGameEvents[0].returnValues;
+    console.log('\n==== PLAING GAME 1 ===\n');
+
+    let { gameId, playerRed, playerBlack } = gameDetails;
 
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerRed]), { from: accounts[5] }).should.be.fulfilled;
@@ -311,31 +319,43 @@ contract('GameManager', (accounts) => {
     let events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 1);
 
+
     //Cannot support the opponent too
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerBlack]), { from: accounts[5] }).should.be.rejected;
 
-    // adds more participants
-    for (let i = 6; i < 15; i++) {
+    // adds more supporters for player red
+    for (let i = 6; i < 10; i++) {
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
         [gameId, playerRed]), { from: accounts[i] }).should.be.fulfilled;
     }
 
+    // adds more supporters for player red
+    for (let i = 10; i < 15; i++) {
+      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+        [gameId, playerBlack]), { from: accounts[i] }).should.be.fulfilled;
+    }
+
+    //Check NewSupporter events
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 10);
 
     let currentState = await getterDB.getGameState(gameId)
-    console.log('Current state: ', currentState.toNumber())
+    console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
   })
 
-
+  it('player cant start a game before reaching PRE_GAME', async () => {
+    let { gameId, playerRed } = gameDetails;
+    await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
+      [gameId, 99]), { from: playerRed }).should.be.rejected;
+  })
 
   it('should move gameState to PRE_GAME', function (done) {
+    console.log('\n==== WAITING FOR PREGAME TIME')
     this.timeout(180000)
-    console.log('waiting for preStartTime to expire...')
     setTimeout(async function () {
 
-      let { gameId, playerRed, playerBlack } = newGameEvents[0].returnValues;
+      let { gameId, playerRed, playerBlack } = gameDetails;
 
       let currentState = await getterDB.getGameState(gameId)
       currentState.toNumber().should.be.equal(GameState.WAITING)
@@ -344,51 +364,89 @@ contract('GameManager', (accounts) => {
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
         [gameId, playerBlack]), { from: accounts[15] }).should.be.fulfilled;
 
+      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+        [gameId, playerRed]), { from: accounts[16] }).should.be.fulfilled;
+
+      let redSupporters = await getterDB.getSupporters(gameId, playerRed);
+      console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
+
+      let blackSupporters = await getterDB.getSupporters(gameId, playerBlack);
+      console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
+
+
       let newState = await getterDB.getGameState(gameId)
-      console.log('\nNew State: ', newState.toNumber())
+      console.log('\n==== NEW STATE: ', gameStates[newState.toNumber()])
       newState.toNumber().should.be.equal(GameState.PRE_GAME)
 
       events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
-      assert.equal(events.length, 11);
+      assert.equal(events.length, 12);
 
       done()
     }, 31000);
+
   })
 
-
-  // START GAME
   it('should move gameState to MAIN_GAME', async () => {
-    let { gameId, playerRed, playerBlack, kittieRed, kittieBlack } = newGameEvents[0].returnValues;
 
-    let currentState = await getterDB.getGameState(gameId)
-    console.log('Current state: ', currentState.toNumber())
-    currentState.toNumber().should.be.equal(GameState.PRE_GAME)
+    let { gameId, playerRed, playerBlack } = gameDetails
 
-    console.log('address of KittieHell', kittieHELL.address)
-    let owner = await cryptoKitties.ownerOf(kittieRed)
-    console.log(`\nowner of kittie kittieRed: `, owner);
-    owner = await cryptoKitties.ownerOf(kittieBlack)
-    console.log(`owner of kittie kittieBlack: `, owner);
-
+    await timeout(1);
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 99]), { from: playerRed }).should.be.fulfilled
+      [gameId, 99]), { from: playerRed }).should.be.fulfilled;
+    console.log(`\n==== PLAYER RED STARTS`);
 
+    await timeout(1);
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
       [gameId, 100]), { from: playerBlack }).should.be.fulfilled;
-
-    owner = await cryptoKitties.ownerOf(kittieRed)
-    console.log(`\nNew owner of kittie kittieRed: `, owner);
-    owner = await cryptoKitties.ownerOf(kittieBlack)
-    console.log(`New owner of kittie kittieBlack: `, owner);
+    console.log(`\n==== PLAYER BLACK STARTS`);
 
     let gameInfo = await getterDB.getGameInfo(gameId)
-    console.log('New state: ', gameInfo.state.toNumber())
+    console.log('\n==== NEW STATE: ', gameStates[gameInfo.state.toNumber()])
+
+    //Check players start button
     gameInfo.pressedStart[0].should.be.true
     gameInfo.pressedStart[1].should.be.true
+
+    //Game starts
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
 
+  // it('defense level', async () => { })
+
+  it('kittie hell contracts is now owner of fighting kitties', async () => {
+    let { kittieRed, kittieBlack } = gameDetails;
+
+    //Red Kitty
+    let owner = await cryptoKitties.ownerOf(kittieRed);
+    owner.should.be.equal(kittieHELL.address)
+    //Black kitty
+    owner = await cryptoKitties.ownerOf(kittieBlack);
+    owner.should.be.equal(kittieHELL.address)
+  })
+
+  it('escrow contract should have KTY funds from fees', async () => {
+    let balanceKTY = await escrow.getBalanceKTY()
+
+    // 4 Listed kitties, and 12 supporters
+    balanceKTY.toNumber().should.be.equal(LISTING_FEE * 4 + TICKET_FEE * 12)
+  })
+
+  it('betting algo creates a fight map', async () => {
+    let { gameId } = gameDetails;
+
+    let attack;
+    console.log('\n==== FIGHT MAP CREATED')
+    for (let i = 0; i < 7; i++) {
+      attack = await betting.fightMap(gameId, i)
+      console.log(`Name: ${attack.attack}`);
+      console.log(`Hash: ${attack.hash}\n`);
+    }
+    console.log('=================\n')
+  })
+
   return;
+
+  it('supporter can successfully make a bet', async () => { })
 
 })
 
