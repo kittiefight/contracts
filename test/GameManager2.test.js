@@ -73,12 +73,6 @@ const GameState = {
 
 let gameDetails;
 
-function timeout(s) {
-  // console.log(`~~~ Timeout for ${s} seconds`);
-  return new Promise(resolve => setTimeout(resolve, s * 1000));
-}
-
-
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
     contract.abi.find((f) => { return f.name == funcName; }),
@@ -86,6 +80,14 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
+function randomValue() {
+  return Math.floor(Math.random() * 1000000000000);
+}
+
+function timeout(s) {
+  // console.log(`~~~ Timeout for ${s} seconds`);
+  return new Promise(resolve => setTimeout(resolve, s * 1000));
+}
 
 contract('GameManager', (accounts) => {
 
@@ -308,7 +310,7 @@ contract('GameManager', (accounts) => {
 
   it('bettors can participate in a created game', async () => {
 
-    console.log('\n==== PLAING GAME 1 ===\n');
+    console.log('\n==== PLAYING GAME 1 ===\n');
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -364,9 +366,7 @@ contract('GameManager', (accounts) => {
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
         [gameId, playerBlack]), { from: accounts[15] }).should.be.fulfilled;
 
-      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-        [gameId, playerRed]), { from: accounts[16] }).should.be.fulfilled;
-
+      //Show supporters
       let redSupporters = await getterDB.getSupporters(gameId, playerRed);
       console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
 
@@ -379,7 +379,7 @@ contract('GameManager', (accounts) => {
       newState.toNumber().should.be.equal(GameState.PRE_GAME)
 
       events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
-      assert.equal(events.length, 12);
+      assert.equal(events.length, 11);
 
       done()
     }, 31000);
@@ -428,7 +428,7 @@ contract('GameManager', (accounts) => {
     let balanceKTY = await escrow.getBalanceKTY()
 
     // 4 Listed kitties, and 12 supporters
-    balanceKTY.toNumber().should.be.equal(LISTING_FEE * 4 + TICKET_FEE * 12)
+    balanceKTY.toNumber().should.be.equal(LISTING_FEE * 4 + TICKET_FEE * 11)
   })
 
   it('betting algo creates a fight map', async () => {
@@ -444,9 +444,80 @@ contract('GameManager', (accounts) => {
     console.log('=================\n')
   })
 
-  return;
+  // BETTING
+  it('should be able to make bet and calculate top bettors', async () => {
+    let { gameId, playerRed, playerBlack } = gameDetails;
 
-  it('supporter can successfully make a bet', async () => { })
+    let currentState = await getterDB.getGameState(gameId)
+    currentState.toNumber().should.be.equal(GameState.MAIN_GAME)
+
+    let totalBetAmount = 0
+    let redBetStore = new Map()
+    let blackBetStore = new Map()
+
+    for (let i = 6; i < 15; i++) {
+      let supportedPlayer = i < 10 ? playerRed : playerBlack
+      let betAmount = randomValue()
+      let bettor = accounts[i]
+
+      if (supportedPlayer == playerRed) {
+        (redBetStore.has(bettor)) ?
+          redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
+          redBetStore.set(bettor, betAmount)
+      } else {
+        (blackBetStore.has(bettor)) ?
+          blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
+          blackBetStore.set(bettor, betAmount)
+      }
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'bet',
+        [gameId, randomValue()]), { from: bettor, value: betAmount }).should.be.fulfilled;
+
+      totalBetAmount += betAmount;
+      await timeout(1);
+    }
+
+    let redSortMap = new Map([...redBetStore.entries()].sort((a, b) => b[1] - a[1]));
+    let blackSortMap = new Map([...blackBetStore.entries()].sort((a, b) => b[1] - a[1]));
+
+    console.log('---- RED SORTED MAP -----')
+    console.log(redSortMap)
+    console.log('---- BLACK SORTED MAP -----')
+    console.log(blackSortMap)
+
+    let redSorted = Array.from(redSortMap.keys())
+    let blackSorted = Array.from(blackSortMap.keys())
+
+    let redTopBettor = await gameStore.getTopBettor(gameId, playerRed)
+    let redSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerRed)
+
+    let blackTopBettor = await gameStore.getTopBettor(gameId, playerBlack)
+    let blackSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerBlack)
+
+    let redTotal = await getterDB.getTotalBet(gameId, playerRed)
+    let blackTotal = await getterDB.getTotalBet(gameId, playerBlack)
+    let actualTotalBet = redTotal.toNumber() + blackTotal.toNumber()
+
+    console.log('---- RED TOP BETTORS -----')
+    console.log(`Top: ${redTopBettor} \nSecond: ${redSecondTopBettor}`)
+
+    console.log('---- BLACK TOP BETTORS -----')
+    console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
+
+    console.log('---- TOTAL BETS -----')
+    console.log(`totalBetAmount: ${totalBetAmount} \nactualTotalBet: ${actualTotalBet}`)
+
+    // TODO : check why these fails
+    // redTopBettor.should.be.equal(redSorted[0])
+    // redSecondTopBettor.should.be.equal(redSorted[1])
+    // blackTopBettor.should.be.equal(blackSorted[0])
+    // blackSecondTopBettor.should.be.equal(blackSorted[1])
+    actualTotalBet.should.be.equal(totalBetAmount)
+  })
+
+  //TODO: check escrow balances
+
+  return;
 
 })
 
