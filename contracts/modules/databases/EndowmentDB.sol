@@ -134,10 +134,14 @@ contract EndowmentDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")));
   }
 
-  function setHoneypotState( uint gameId, uint state ) external {
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+  function getHoneypotStateChangeTime(uint gameId) external view returns (uint stateChangeTime) {
+    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "stateChangeTime")));
   }
 
+  function setHoneypotState( uint gameId, uint state ) external {
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "stateChangeTime")), block.timestamp);
+  }
 
   function getHoneypotTotalETH(
     uint gameId

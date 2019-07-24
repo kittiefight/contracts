@@ -41,6 +41,7 @@ contract Scheduler is Proxied {
     GameManager public gameManager;
     GameVarAndFee public gameVarAndFee;
     ERC721 public cryptoKitties;
+    uint256 lastGameCreationTime;
 
     struct Kitty {
         uint256 kittyId;
@@ -114,11 +115,15 @@ contract Scheduler is Proxied {
             playerBlack[i] = kittyListShuffled[i + playerRed.length];
         }
 
-        uint256 gameCreationTime;
         uint256 gameTimeSeperation = gameVarAndFee.getGameTimes();
 
+        uint256 gameCreationTime = block.timestamp;
+        if (lastGameCreationTime > gameCreationTime){
+            gameCreationTime = lastGameCreationTime;
+        }
+
         for(uint256 i = 0; i < gameCount; i++){
-            gameCreationTime = block.timestamp.add(gameTimeSeperation.mul(1 seconds));
+            gameCreationTime = gameCreationTime.add(gameTimeSeperation);
 
             // check kitty owners
             if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
@@ -131,7 +136,7 @@ contract Scheduler is Proxied {
                     playerBlack[i].kittyId,
                     gameCreationTime
                     );
-                    
+
             }else { // owner has changed. add kitty who's owner has not changed back to unmatched list
                 if (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player){
                     addKittyToListAgain(playerBlack[i].kittyId, playerBlack[i].player);
@@ -139,7 +144,7 @@ contract Scheduler is Proxied {
                 if (cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player){
                     addKittyToListAgain(playerRed[i].kittyId, playerRed[i].player);
         }   }   }
-
+        lastGameCreationTime = gameCreationTime;
         delete kittyListShuffled;
     }
 
