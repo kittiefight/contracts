@@ -171,7 +171,7 @@ contract GameManager is Proxied, Guard {
         (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
         gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
 
-        emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime); 
+        emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
     }
 
     /**
@@ -286,30 +286,22 @@ contract GameManager is Proxied, Guard {
     }
 
     /**
-     * @dev Extend time of underperforming game indefinitely, each time 1 minute before game ends, by checking at everybet
+     * @dev checks to see if current jackpot is at least 10 times (10x)
+     *  the amount of funds originally placed in jackpot
      */
-    function extendTime(uint gameId) internal {
-        // check if underperforming
+    function checkPerformance(uint gameId) internal {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
 
         //each time 1 minute before game ends
         if(gameEndTime.sub(now) <= 60) {
-            if(!checkPerformance(gameId)) gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
+            //get initial jackpot, need endowment to send this when creating honeypot
+            uint initialEth = gmGetterDB.getHoneypotInitialEth(gameId);
+            uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
+
+            if(currentJackpotEth > initialEth.mul(10)){
+                gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
+            }
         }
-    }
-
-    /**
-     * @dev checks to see if current jackpot is at least 10 times (10x)
-     *  the amount of funds originally placed in jackpot
-     */
-    function checkPerformance(uint gameId) internal view returns(bool) {
-        //get initial jackpot, need endowment to send this when creating honeypot
-        uint initialEth = gmGetterDB.getHoneypotInitialEth(gameId);
-        uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
-
-        if(currentJackpotEth > initialEth.mul(10)) return true;
-
-        return false;
     }
 
     /**
@@ -334,11 +326,11 @@ contract GameManager is Proxied, Guard {
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
 
-        require(payedFee); //Needs to call participate First if false
+        require(payedFee); //Needs to call participate first if false
         
         //Transfer Funds to endowment
-        // require(endowmentFund.contributeETH.value(msg.value)(gameId));
-        // require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()));
+        require(endowmentFund.contributeETH.value(msg.value)(gameId));
+        require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()));
 
         //Update bettor's total bet
         gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
@@ -349,38 +341,19 @@ contract GameManager is Proxied, Guard {
         address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
         
         //Send bet to betting algo, to decide attacks
-        //TODO: event NewBet(uint game_id, address player, uint corner, uint ethAmount);
-        // betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
+        betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
         // update game variables
-        calculateBettorStats(gameId, sender, supportedPlayer);
+        gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
 
         // check underperforming game if one minut
-        extendTime(gameId);
+        //checkPerformance(gameId);
 
         //Check if game has ended
         // gameEnd(gameId);
 
         emit NewBet(gameId, sender, msg.value);
     }
-
-    function calculateBettorStats(
-        uint256 _gameId, address _account, address _supportedPlayer
-    ) private {
-
-        (uint256 bettorTotal, ,) = gmGetterDB.getSupporterInfo(_gameId, _account);
-        (uint256 topBettorEth, ,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
-
-        if (bettorTotal > topBettorEth){
-            address prevTopBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
-            gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
-            gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, prevTopBettor);
-        } else {
-            (uint256 secondTopBettorEth,,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
-            if (bettorTotal > secondTopBettorEth){
-                gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
-    }   }   }
-
 
     /**
      * @dev game comes to an end at time duration,continously check game time end
@@ -393,10 +366,9 @@ contract GameManager is Proxied, Guard {
         if ( endTime >= now){
             gmSetterDB.updateGameState(gameId, uint(eGameState.KITTIE_HELL));
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.KITTIE_HELL);
-        }
-            
+        }           
 
-        updateKitties(gameId);
+        gmSetterDB.updateKittieState(gameId);
     }
 
     /**
@@ -425,15 +397,7 @@ contract GameManager is Proxied, Guard {
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
-        updateKitties(gameId);
+        gmSetterDB.updateKittieState(gameId);
 
-    }
-
-    function updateKitties(uint gameId) internal {
-        //TODO: Change this to kittieHell isPlaying
-        // When creating the game, set to true, then we set it to false when game cancels or ends
-        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-        gmSetterDB.updateKittieState(kittyRed, false);
-        gmSetterDB.updateKittieState(kittyBlack, false);
     }
 }

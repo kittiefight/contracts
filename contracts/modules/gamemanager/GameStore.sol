@@ -11,7 +11,13 @@ contract GameStore is Proxied {
         address secondTopBettor;
     }
 
+    struct GlobalSettings {
+        uint bettingFee;
+    }
+
+    //GPlayers info in a game
     mapping(uint => mapping(address => Game)) gameByPlayer;
+    mapping(uint => GlobalSettings) globalSettings;
 
 
     function hitStart(uint gameId, address player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){

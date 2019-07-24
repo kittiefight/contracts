@@ -15,8 +15,10 @@ pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
+import "./GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
+import "../gamemanager/GameStore.sol";
 
 /**
  * @dev Stores game instances
@@ -27,6 +29,8 @@ contract GMSetterDB is Proxied {
 
   GenericDB public genericDB;
   GameVarAndFee public gameVarAndFee;
+  GMGetterDB public gmGetterDB;
+  GameStore public gameStore;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
@@ -47,6 +51,8 @@ contract GMSetterDB is Proxied {
 
   function initialize() external onlyOwner {
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+    gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+    gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
   }
 
  /**
@@ -130,7 +136,7 @@ contract GMSetterDB is Proxied {
       genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")), true);
       
       // And increase the number of supporters for that player
-      incrementSupporters(gameId, supportedPlayer);      
+      incrementSupporters(gameId, supportedPlayer);
 
       return true;
     }
@@ -243,11 +249,13 @@ contract GMSetterDB is Proxied {
   /**
    * @dev Update kittie state
    */
-  function updateKittieState(uint256 kittieId, bool state)
+  function updateKittieState(uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
   {
-    genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "inGame")), state);
+    ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+    genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "inGame")), false);
+    genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "inGame")), false);
   }
 
   /**
@@ -276,4 +284,23 @@ contract GMSetterDB is Proxied {
   {
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "winner")), winner);
   }
+
+  function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(_gameId)
+  {
+
+        (uint256 bettorTotal, ,) = gmGetterDB.getSupporterInfo(_gameId, _account);
+        (uint256 topBettorEth, ,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
+
+        if (bettorTotal > topBettorEth){
+            address prevTopBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
+            gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
+            gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, prevTopBettor);
+        } else {
+            (uint256 secondTopBettorEth,,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
+            if (bettorTotal > secondTopBettorEth){
+                gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
+    }   }   }
 }
