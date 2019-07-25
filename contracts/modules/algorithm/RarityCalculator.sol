@@ -78,6 +78,10 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
           defenseLevel = 2;
       } else if (rarity >= defenseLevelLimit.level1Limit) {
           defenseLevel = 1;
+      } else {
+          // if all conditions above are not met for some unprecitable reason,
+          // then default to 1 so that the game can continue
+          defenseLevel = 1;
       }
 
       emit OriginalDefenseLevelCalculated(kittieId, defenseLevel);
