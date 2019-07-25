@@ -20,7 +20,6 @@
 pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
-
 import "./Distribution.sol";
 import "./Escrow.sol";
 
@@ -33,7 +32,7 @@ import "./Escrow.sol";
 contract EndowmentFund is Distribution {
     using SafeMath for uint256;
 
-    Escrow public escrow ;
+    Escrow public escrow;
 
     event WinnerClaimed(address winner, uint256 ethAmount, uint256 ktyAmount, address from);
     event SentKTYtoEscrow(address sender, uint256 ktyAmount, address receiver);
@@ -42,25 +41,13 @@ contract EndowmentFund is Distribution {
     /// @notice  the count of all invocations of `generatePotId`.
     uint256 public potRequestCount;
 
-    /**
-    HoneypotState status codes
-        10  created
-        20  assigned
-        30  gameScheduled
-        40  gameStarted
-        50  forefeited
-        60  claimingStarted
-        70  claimingStopped
-        80  HoneypotDissolved
-    */
-
     enum HoneypotState {
         created,
         assigned,
         gameScheduled,
         gameStarted,
         forefeited,
-        claimed
+        claiming
     }
 
     struct Honeypot {
@@ -104,7 +91,11 @@ contract EndowmentFund is Distribution {
     * @dev updateHoneyPotState
     */
     function updateHoneyPotState(uint256 _potId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
-        endowmentDB.setHoneypotState(_potId,_state);
+        uint256 claimTime;
+        if (_state == uint(HoneypotState.claiming)){
+            claimTime = now.add(gameVarAndFee.getHoneypotExpiration());
+        }
+        endowmentDB.setHoneypotState(_potId, _state, claimTime);
     }
 
     /** @notice  Returns a fresh unique identifier.
@@ -125,33 +116,17 @@ contract EndowmentFund is Distribution {
         ));
     }
 
-
-    /**
-    HoneypotState status codes
-        10  created
-        20  assigned
-        30  gameScheduled
-        40  gameStarted
-        50  forefeited
-        60  claiming
-        70  HoneypotDissolved
-    */
-
     /**
     * @dev winner claims
     */
     function claim(uint256 _gameId) external payable {
 
         // status
-        uint status = endowmentDB.getHoneypotState(_gameId);
-        //require(uint(HoneypotState.claimed) == status, "Error: HoneypotState can not be claimed");
-        require(status <= 60, "Time to claim Honeypot share is over");
+        (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
+        require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
 
         // get the time when state changed to claming start and add to it the Expiration time
-        require(
-            now < (endowmentDB.getHoneypotStateChangeTime(_gameId).add(gameVarAndFee.getHoneypotExpiration())),
-            "Time to claim is over"
-        );
+        require(now < claimTime, "Time to claim is over");
     
         (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msg.sender);
         if (winningsKTY > 0){
@@ -165,6 +140,10 @@ contract EndowmentFund is Distribution {
         emit WinnerClaimed(msg.sender, winningsETH, winningsKTY, address(escrow));
     }
 
+    function getWithdrawalState(uint gameId) public view returns
+        (bool winner, bool topBettor, bool secondTopBettor, bool, bool) {
+
+    }
 
     /**
      * @dev Send KTY from EndowmentFund to Escrow
