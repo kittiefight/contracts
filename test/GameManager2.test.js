@@ -46,7 +46,7 @@ let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
 const kovanMedianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F'
 const kitties = [0, 1234, 32452, 23134, 44444, 55555, 6666];
 
-gameStates = ['WAITING', 'PREGAME', 'STARTED', 'FINISHED'];
+gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING'];
 
 const cividIds = [0, 1, 2, 3, 4, 5, 6];
 
@@ -185,6 +185,7 @@ contract('GameManager', (accounts) => {
 
   it('initializes contract variables', async () => {
     await gameVarAndFee.initialize()
+    await gameStore.initialize()
     await forfeiter.initialize()
     await scheduler.initialize()
     await register.initialize()
@@ -247,7 +248,7 @@ contract('GameManager', (accounts) => {
 
   it('registers user to the system', async () => {
     for (let i = 1; i < 20; i++) {
-      await proxy.execute('Register', setMessage(register, 'register', [accounts[i]]), {
+      await proxy.execute('Register', setMessage(register, 'register', []), {
         from: accounts[i]
       }).should.be.fulfilled;
     }
@@ -255,7 +256,7 @@ contract('GameManager', (accounts) => {
 
   it('verify users civid Id', async () => {
     for (let i = 1; i < 5; i++) {
-      await proxy.execute('Register', setMessage(register, 'verifyAccount', [accounts[i], cividIds[i]]), {
+      await proxy.execute('Register', setMessage(register, 'verifyAccount', [cividIds[i]]), {
         from: accounts[i]
       }).should.be.fulfilled;
     }
@@ -410,6 +411,7 @@ contract('GameManager', (accounts) => {
     //Game starts
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
+
 
   // it('defense level', async () => { })
 
