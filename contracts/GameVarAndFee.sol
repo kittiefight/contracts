@@ -119,7 +119,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
     {
         return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
-            getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieHellExpiration());
+            getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
     }
 
     /// @notice get eth/usd current price
@@ -146,7 +146,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
     
     /// @notice Gets how long to wait for payment for kittie in kittiehell before kittie is lost forever 
-    function getKittieHellExpiration() 
+    function getKittieExpiry() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_HELL_EXPIRATION);
     }
@@ -214,11 +214,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
     }
 
-    /// @notice Gets Kittie expiry time in kittieHELL 
-    function getKittieExpiry() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY);
-    }
+    // /// @notice Gets Kittie expiry time in kittieHELL 
+    // function getKittieExpiry() 
+    // public view returns(uint) {
+    //     return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY);
+    // }
 
     /// @notice Gets minimum contributors needed for the game to continue
     function getMinimumContributors() 

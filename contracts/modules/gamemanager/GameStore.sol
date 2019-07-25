@@ -1,8 +1,11 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
+import "../../GameVarAndFee.sol";
 
 contract GameStore is Proxied {
+
+    GameVarAndFee public gameVarAndFee;
 
     struct Game {
         uint randomNum; //when pressing start
@@ -13,12 +16,39 @@ contract GameStore is Proxied {
 
     struct GlobalSettings {
         uint bettingFee;
+        uint ticketFee;
+        uint redemptionFee;
+        uint kittieHellExpirationTime;
+        uint honeypotExpirationTime;
+        uint minimumContributors;
+        uint[5] distributionRates;
     }
 
-    //GPlayers info in a game
-    mapping(uint => mapping(address => Game)) gameByPlayer;
-    mapping(uint => GlobalSettings) globalSettings;
+    //Players info in a game
+    mapping(uint => mapping(address => Game)) public gameByPlayer;
+    mapping(uint => GlobalSettings) public gameSettings;
 
+    function initialize() external onlyOwner {
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+    }
+
+    function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+        GlobalSettings memory globalSettings;
+
+        globalSettings.bettingFee = gameVarAndFee.getBettingFee();
+        globalSettings.ticketFee = gameVarAndFee.getTicketFee();
+        globalSettings.redemptionFee = gameVarAndFee.getKittieRedemptionFee();
+        globalSettings.kittieHellExpirationTime = gameVarAndFee.getKittieExpiry();
+        globalSettings.honeypotExpirationTime = gameVarAndFee.getHoneypotExpiration();
+        globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
+        globalSettings.distributionRates = gameVarAndFee.getDistributionRates();
+
+        gameSettings[gameId] = globalSettings;
+    }
+
+    function getDistributionRates(uint gameId) public view returns(uint[5] memory){
+        return gameSettings[gameId].distributionRates;
+    }
 
     function hitStart(uint gameId, address player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
         gameByPlayer[gameId][player].pressedStart = true;
@@ -51,4 +81,6 @@ contract GameStore is Proxied {
     function getSecondTopBettor(uint gameId, address player) public view returns(address){
         return gameByPlayer[gameId][player].secondTopBettor;
     }
+
+    
 }

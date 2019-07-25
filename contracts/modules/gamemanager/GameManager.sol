@@ -60,7 +60,7 @@ contract GameManager is Proxied, Guard {
     IKittyCore public cryptoKitties;
     GameStore public gameStore;
  
-    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, KITTIE_HELL, WITHDREW_EARNINGS, CANCELLED}
+    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, KITTIE_HELL, CANCELLED}
 
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
@@ -167,6 +167,8 @@ contract GameManager is Proxied, Guard {
     {
         uint256 gameId = gmSetterDB.createGame(
             playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+        
+        gameStore.lockVars(gameId);
 
         (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
         gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
@@ -256,12 +258,14 @@ contract GameManager is Proxied, Guard {
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
 
         // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId); // TODO: check why it fails here
+
+        uint genes = 621602280461119273000377613714842202937902730777750890758407393079864686;
         
         gameStore.hitStart(gameId, player);
         gameStore.setRandom(gameId, player, randomNum);
             
-        // uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
-        // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
+        uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
+        betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
         require(kittieHELL.acquireKitty(kittieId, player), 'Error acquiring kitty');
 
@@ -319,6 +323,9 @@ contract GameManager is Proxied, Guard {
     {
         require(msg.value > 0);
 
+        //Check if game has ended
+        // gameEnd(gameId);
+
         uint gameState = gmGetterDB.getGameState(gameId);
         
         require(gameState == uint(eGameState.MAIN_GAME));
@@ -349,9 +356,6 @@ contract GameManager is Proxied, Guard {
         // check underperforming game if one minut
         //checkPerformance(gameId);
 
-        //Check if game has ended
-        // gameEnd(gameId);
-
         emit NewBet(gameId, sender, msg.value);
     }
 
@@ -364,18 +368,17 @@ contract GameManager is Proxied, Guard {
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
 
         if ( endTime >= now){
-            gmSetterDB.updateGameState(gameId, uint(eGameState.KITTIE_HELL));
-            emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.KITTIE_HELL);
-        }           
-
-        gmSetterDB.updateKittieState(gameId);
+            gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
+            gmSetterDB.removeKittiesInGame(gameId);
+            emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
+        }
     }
 
     /**
      * @dev Determine winner of game based on  **HitResolver **
      */
     function finalize(uint gameId, uint randomNum) external {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.KITTIE_HELL));
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER));
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 
@@ -384,6 +387,12 @@ contract GameManager is Proxied, Guard {
 
         address winner = playerBlackPoints > playerRedPoints ? playerBlack : playerRed;
         gmSetterDB.setWinner(gameId, winner);
+
+        //TODO: Update HoneyPot state to claiming
+
+        gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
+        emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
+
     }
     
 
@@ -397,7 +406,7 @@ contract GameManager is Proxied, Guard {
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
-        gmSetterDB.updateKittieState(gameId);
+        gmSetterDB.removeKittiesInGame(gameId);
 
     }
 }
