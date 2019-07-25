@@ -188,10 +188,25 @@ contract('RarityCalculator', (accounts) => {
         const kittie3BodyCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 0)
         const kittie3PatternCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 1)
         const kittie3ColoreyesCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 2)
-    
+        const kittie3EyesCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 3)
+        const kittie3Color1Cattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 4)
+        const kittie3Color2Cattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 5)
+        const kittie3Color3Cattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 6)
+        const kittie3WildCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 7)
+        const kittie3MouthCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 8)
+        const kittie3EnvironmentCattribute = await RarityCalculatorInst.kittiesDominantCattributes.call(kittie3, 9)
+
         assert.equal(kittie3BodyCattribute, "toyger")
         assert.equal(kittie3PatternCattribute, "camo")
         assert.equal(kittie3ColoreyesCattribute, "cyan")
+        assert.equal(kittie3EyesCattribute, "wiley")
+        assert.equal(kittie3Color1Cattribute, "martian")
+        assert.equal(kittie3Color2Cattribute, "royalpurple")
+        assert.equal(kittie3Color3Cattribute, "icy")
+        assert.equal(kittie3WildCattribute, "")
+        assert.equal(kittie3MouthCattribute, "confuzzled")
+        assert.equal(kittie3EnvironmentCattribute, "")
+        
 })
 
 it('is able to tell whether a kittie is a valule fancy kitite or not', async () => {

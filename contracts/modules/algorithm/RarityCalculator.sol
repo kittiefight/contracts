@@ -82,6 +82,7 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
 
       emit OriginalDefenseLevelCalculated(kittieId, defenseLevel);
 
+      assert(defenseLevel > 0);
       return defenseLevel;
     }
 
