@@ -68,117 +68,117 @@ contract ProfileDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "civicId")), civicId);
   }
 
-  // FIXME: Stale function
-  function setKittieAttributes(
-    address account,
-    uint256 kittieId,
-    uint256 deadAt,
-    uint256 gene,
-    string calldata kittieStatus
-  )
-    external
-    onlyContract(CONTRACT_NAME_REGISTER)
-    onlyExistentProfile(account)
-  {
-    // Check if kittie exists under this account
-    require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")), gene);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
-    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
-  }
+  // // FIXME: Stale function
+  // function setKittieAttributes(
+  //   address account,
+  //   uint256 kittieId,
+  //   uint256 deadAt,
+  //   uint256 gene,
+  //   string calldata kittieStatus
+  // )
+  //   external
+  //   onlyContract(CONTRACT_NAME_REGISTER)
+  //   onlyExistentProfile(account)
+  // {
+  //   // Check if kittie exists under this account
+  //   require(genericDB.doesNodeExist(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")), gene);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
+  //   genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
+  // }
 
-  // FIXME: Stale function
-  function addKittie(
-    address account,
-    uint256 kittieId,
-    uint256 deadAt,
-    uint256 gene,
-    string calldata kittieStatus
-  )
-    external
-    onlyContract(CONTRACT_NAME_REGISTER)
-    onlyExistentProfile(account)
-  {
-    // Check if kittie exists or not under this account
-    // If it does not, add it to kittie table under this account
-    require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
-    // Set that kittie's attributes
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")), gene);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
-    genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
-  }
+  // // FIXME: Stale function
+  // function addKittie(
+  //   address account,
+  //   uint256 kittieId,
+  //   uint256 deadAt,
+  //   uint256 gene,
+  //   string calldata kittieStatus
+  // )
+  //   external
+  //   onlyContract(CONTRACT_NAME_REGISTER)
+  //   onlyExistentProfile(account)
+  // {
+  //   // Check if kittie exists or not under this account
+  //   // If it does not, add it to kittie table under this account
+  //   require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
+  //   // Set that kittie's attributes
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "gene")), gene);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "deadAt")), deadAt);
+  //   genericDB.setStringStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, kittieId, "kittieStatus")), kittieStatus);
+  // }
 
-  // FIXME: Stale function
-  function removeKittie(
-    address account,
-    uint256 kittieId
-  )
-    external
-    onlyContract(CONTRACT_NAME_REGISTER)
-    onlyExistentProfile(account)
-  {
-    // Check if kittie exists under this account
-    // If it exists, remove the kittie from kittie table under this account
-    require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
-  }
+  // // FIXME: Stale function
+  // function removeKittie(
+  //   address account,
+  //   uint256 kittieId
+  // )
+  //   external
+  //   onlyContract(CONTRACT_NAME_REGISTER)
+  //   onlyExistentProfile(account)
+  // {
+  //   // Check if kittie exists under this account
+  //   // If it exists, remove the kittie from kittie table under this account
+  //   require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, TABLE_NAME_KITTIE)), kittieId));
+  // }
 
-  // FIXME: Stale function
-  function setGamingAttributes(
-    address account,
-    uint256 totalWins,
-    uint256 totalLosses,
-    uint256 tokensWon,
-    uint256 lastFeeDate,
-    uint256 feeHistory,
-    bool isFreeToPlay
-  )
-    external
-    onlyContract(CONTRACT_NAME_REGISTER)
-    onlyExistentProfile(account)
-  {
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalWins")), totalWins);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalLosses")), totalLosses);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "tokensWon")), tokensWon);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "lastFeeDate")), lastFeeDate);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "feeHistory")), feeHistory);
-    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isFreeToPlay")), isFreeToPlay);
-  }
+  // // FIXME: Stale function
+  // function setGamingAttributes(
+  //   address account,
+  //   uint256 totalWins,
+  //   uint256 totalLosses,
+  //   uint256 tokensWon,
+  //   uint256 lastFeeDate,
+  //   uint256 feeHistory,
+  //   bool isFreeToPlay
+  // )
+  //   external
+  //   onlyContract(CONTRACT_NAME_REGISTER)
+  //   onlyExistentProfile(account)
+  // {
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalWins")), totalWins);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalLosses")), totalLosses);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "tokensWon")), tokensWon);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "lastFeeDate")), lastFeeDate);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "feeHistory")), feeHistory);
+  //   genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isFreeToPlay")), isFreeToPlay);
+  // }
 
-  // FIXME: Stale function
-  function setFightingAttributes(
-    address account,
-    uint256 totalFights,
-    uint256 nextFight,
-    uint256 listingStart,
-    uint256 listingEnd
-  )
-    external
-    onlyContract(CONTRACT_NAME_REGISTER)
-    onlyExistentProfile(account)
-  {
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalFights")), totalFights);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "nextFight")), nextFight);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "listingStart")), listingStart);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "listingEnd")), listingEnd);
-  }
+  // // FIXME: Stale function
+  // function setFightingAttributes(
+  //   address account,
+  //   uint256 totalFights,
+  //   uint256 nextFight,
+  //   uint256 listingStart,
+  //   uint256 listingEnd
+  // )
+  //   external
+  //   onlyContract(CONTRACT_NAME_REGISTER)
+  //   onlyExistentProfile(account)
+  // {
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "totalFights")), totalFights);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "nextFight")), nextFight);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "listingStart")), listingStart);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "listingEnd")), listingEnd);
+  // }
 
-  // FIXME: Stale function
-  function setFeeAttributes(
-    address account,
-    uint256 feeType,
-    uint256 paidDate,
-    uint256 expirationDate,
-    bool isPaid
-  )
-    external
-    onlyContract(CONTRACT_NAME_REGISTER)
-    onlyExistentProfile(account)
-  {
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "feeType")), feeType);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "paidDate")), paidDate);
-    genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "expirationDate")), expirationDate);
-    genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isPaid")), isPaid);
-  }
+  // // FIXME: Stale function
+  // function setFeeAttributes(
+  //   address account,
+  //   uint256 feeType,
+  //   uint256 paidDate,
+  //   uint256 expirationDate,
+  //   bool isPaid
+  // )
+  //   external
+  //   onlyContract(CONTRACT_NAME_REGISTER)
+  //   onlyExistentProfile(account)
+  // {
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "feeType")), feeType);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "paidDate")), paidDate);
+  //   genericDB.setUintStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "expirationDate")), expirationDate);
+  //   genericDB.setBoolStorage(CONTRACT_NAME_PROFILE_DB, keccak256(abi.encodePacked(account, "isPaid")), isPaid);
+  // }
 
   function setSuperDAOTokens(
     address account,

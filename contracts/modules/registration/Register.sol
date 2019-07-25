@@ -19,6 +19,7 @@ import "../databases/RoleDB.sol";
 import "../proxy/Proxied.sol";
 import "../../interfaces/ERC721.sol";
 import "../../interfaces/ERC20Standard.sol";
+import "../../authority/Guard.sol";
 
 
 /**
@@ -31,7 +32,7 @@ import "../../interfaces/ERC20Standard.sol";
  * for both CryptoKitties and ERC20 tokens should be given to this contarct in advance.
  * @author @psychoplasma
  */
-contract Register is Proxied, SystemRoles {
+contract Register is Proxied, SystemRoles, Guard {
   using SafeMath for uint256;
 
   ProfileDB public profileDB;
@@ -63,32 +64,33 @@ contract Register is Proxied, SystemRoles {
    * @dev Creates a new profile with the given address in ProfileDB
    * and sets its role to `bettor` by default.
    * @dev Can be called only through Proxy contract
-   * @param account address Address of the user to be registered
    */
-  function register(address account)
+  function register()
     external
     onlyProxy
     returns (bool)
   {
-    profileDB.create(account);
-    _registerRole(account, BETTOR_ROLE);
+    profileDB.create(getOriginalSender());
+    _registerRole(getOriginalSender(), BETTOR_ROLE);
+    return true;
   }
 
   /**
    * @dev Validates the account with the provided civic id so that
    * the account can be eligible to list kitties.
    * @dev Can be called only through Proxy contract
-   * @param account address Address of the account
    * @param civicId uint256 Civic id to validate the account
    */
-  function verifyAccount(address account, uint256 civicId)
+  function verifyAccount(uint256 civicId)
     external
     onlyProxy
+    onlyBettor
     returns (bool)
   {
     // FIXME: If there is a way to check whether the provided civic id is valid or not, do it here!
-    profileDB.setCivicId(account, civicId);
-    _registerRole(account, PLAYER_ROLE);
+    profileDB.setCivicId(getOriginalSender(), civicId);
+    _registerRole(getOriginalSender(), PLAYER_ROLE);
+    return true;
   }
 
   /**
@@ -199,25 +201,25 @@ contract Register is Proxied, SystemRoles {
     return profileDB.doesProfileExist(account);
   }
 
-  /**
-   * @dev Checks whether the kittie provided is registered to the system under the given account.
-   * @param account address Account to be checked against kittie
-   * @param kittieId uint256 Kittie to be checked if it exists
-   * @return bool true if the kittie is registered to the system under the given account
-   */
-  function doesKittieBelong(address account, uint256 kittieId) public view returns (bool) {
-    return profileDB.doesKittieExist(account, kittieId);
-  }
+  // /**
+  //  * @dev Checks whether the kittie provided is registered to the system under the given account.
+  //  * @param account address Account to be checked against kittie
+  //  * @param kittieId uint256 Kittie to be checked if it exists
+  //  * @return bool true if the kittie is registered to the system under the given account
+  //  */
+  // function doesKittieBelong(address account, uint256 kittieId) public view returns (bool) {
+  //   return profileDB.doesKittieExist(account, kittieId);
+  // }
 
-  /**
-   * @dev Checks whether there the registered account owns any cryptokitty
-   * @param account address Address to be checked
-   * @return bool true if the account owns any
-   */
-  function hasKitties(address account) public view returns (bool) {
-    return cryptoKitties.balanceOf(account) > 0;
-    // return profileDB.getKitties(account).length > 0;
-  }
+  // /**
+  //  * @dev Checks whether there the registered account owns any cryptokitty
+  //  * @param account address Address to be checked
+  //  * @return bool true if the account owns any
+  //  */
+  // function hasKitties(address account) public view returns (bool) {
+  //   return cryptoKitties.balanceOf(account) > 0;
+  //   // return profileDB.getKitties(account).length > 0;
+  // }
 
   /**
    * @dev Registers a role for the given address on RoleDB.
