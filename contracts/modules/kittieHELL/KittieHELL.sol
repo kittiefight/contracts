@@ -259,14 +259,14 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         _;
     }
 
-    event KittyAcquired(uint256 _kittyID);
+    event KittyAcquired(uint256 indexed _kittyID);
 
-    event KittyReleased(uint256 _kittyID);
+    event KittyReleased(uint256 indexed _kittyID);
 
-    event KittyDied(uint256 _kittyID);
+    event KittyDied(uint256 indexed _kittyID);
 
-    event KittyResurrected(uint256 _kittyID);
+    event KittyResurrected(uint256 indexed _kittyID);
 
-    event KittyPermanentDeath(uint256 _kittyID);
+    event KittyPermanentDeath(uint256 indexed _kittyID);
 }
 
