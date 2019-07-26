@@ -159,7 +159,7 @@ contract GameManager is Proxied, Guard {
         
         gameStore.lockVars(gameId);
 
-        (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot();
+        (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot(gameId);
         gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
 
         emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
@@ -248,12 +248,12 @@ contract GameManager is Proxied, Guard {
 
         // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId); // TODO: check why it fails here
 
-        // uint genes = 621602280461119273000377613714842202937902730777750890758407393079864686;
+        //uint genes = 621602280461119273000377613714842202937902730777750890758407393079864686;
         
         gameStore.hitStart(gameId, player);
         gameStore.setRandom(gameId, player, randomNum);
             
-        // uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
+        //uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
         // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
         require(kittieHELL.acquireKitty(kittieId, player), 'Error acquiring kitty');
@@ -286,12 +286,12 @@ contract GameManager is Proxied, Guard {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
 
         //each time 1 minute before game ends
-        if(gameEndTime.sub(now) <= 60) {
+        if(gameEndTime.sub(now) <= 5) {
             //get initial jackpot, need endowment to send this when creating honeypot
             uint initialEth = gmGetterDB.getHoneypotInitialEth(gameId);
             uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
-            if(currentJackpotEth > initialEth.mul(10)){
+            if(currentJackpotEth < initialEth.mul(10)){
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
             }
         }
@@ -317,35 +317,36 @@ contract GameManager is Proxied, Guard {
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running");
+        if(gameState == uint(eGameState.MAIN_GAME)){
         
-        address sender = getOriginalSender();
-        (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
+            address sender = getOriginalSender();
+            (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
 
-        require(payedFee, "Bettor has not payed fee yet"); //Needs to call participate first if false
-        
-        //Transfer Funds to endowment
-        require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
-        require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)), "Error sending kty to endowment");
+            require(payedFee, "Bettor has not payed fee yet"); //Needs to call participate first if false
+            
+            //Transfer Funds to endowment
+            require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
+            require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)), "Error sending kty to endowment");
 
-        //Update bettor's total bet
-        gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
+            //Update bettor's total bet
+            if (sender != supportedPlayer) gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
 
-        // Update Random
-        hitsResolve.calculateCurrentRandom(gameId, randomNum);
-        
-        //address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
-        
-        //Send bet to betting algo, to decide attacks
-        //betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
+            // Update Random
+            hitsResolve.calculateCurrentRandom(gameId, randomNum);
+            
+            address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
+            
+            //Send bet to betting algo, to decide attacks
+            //betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
-        // update game variables
-        gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
+            // update game variables
+            gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
 
-        // check underperforming game if one minut
-        //checkPerformance(gameId);
+            // check underperforming game if one minut
+            checkPerformance(gameId);
 
-        // emit NewBet(gameId, sender, msg.value);
+            // emit NewBet(gameId, sender, msg.value);
+        }
     }
 
     /**
@@ -375,7 +376,10 @@ contract GameManager is Proxied, Guard {
         uint256 playerRedPoints = hitsResolve.calculateFinalPoints(gameId, playerRed, randomNum);
 
         address winner = playerBlackPoints > playerRedPoints ? playerBlack : playerRed;
-        gmSetterDB.setWinner(gameId, winner);
+
+        //Store Winners in DB
+        gmSetterDB.setWinners(gameId, winner, gameStore.getTopBettor(gameId, winner),
+            gameStore.getSecondTopBettor(gameId, winner));
 
         //Set to claiming
         uint honeyPotId = gmGetterDB.getHoneypotId(gameId);

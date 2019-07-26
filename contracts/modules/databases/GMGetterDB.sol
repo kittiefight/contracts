@@ -80,19 +80,6 @@ contract GMGetterDB is Proxied {
       keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
     );
   }
-  /**
-   * @dev Returns the total amount of bet of the given bettor
-   * and the player supported by that bettor in the game given.
-   */
-  function getWinner(uint256 gameId)
-    public view
-    returns (address)
-  {
-    return genericDB.getAddressStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "winner"))
-    );
-  }
 
   function getHoneypotId(uint256 gameId)
     public view
@@ -287,21 +274,13 @@ contract GMGetterDB is Proxied {
     betsTotalEth = getTotalBet(gameId, player);
   }
 
-  function getGameResults(uint gameId)
+  function getWinners(uint256 gameId)
     public view
-    returns(address winner, address topBettor, address secondTopBettor)
+    returns (address winner, address topBettor, address secondTopBettor)
   {
-    winner = getWinner(gameId);
-    topBettor = gameStore.getTopBettor(gameId, winner);
-    secondTopBettor = gameStore.getSecondTopBettor(gameId, winner);
+    winner = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "winner")));
+    topBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "topBettor")));
+    secondTopBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "secondTopBettor")));
   }
-
-  //ENDOWMENT?
-  // function getWithdrawalState(uint gameId)
-  //   public view
-  //   returns(bool winner, bool topBettor, bool secondTopBettor, bool, bool)
-  // {
-
-  // }
 
 }

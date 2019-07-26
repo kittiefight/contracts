@@ -57,7 +57,7 @@ contract Distribution is Proxied {
      */
     function getWinnerShare(uint gameId, address claimer) public view returns(uint256 winningsETH, uint256 winningsKTY) {
 
-        address winningSide = gmGetterDB.getWinner(gameId);
+        (address winningSide,,) = gmGetterDB.getWinners(gameId);
 
         require(winningSide != address(0), 'No winner detected for this game');
 

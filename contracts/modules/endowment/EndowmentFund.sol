@@ -62,7 +62,7 @@ contract EndowmentFund is Distribution {
         uint ethTotal;
     }
 
-    function generateHoneyPot() external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
+    function generateHoneyPot(uint gameId) external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
         require(endowmentDB.allocateKTY(ktyAllocated), 'Error: endowmentDB.allocateKTY(ktyAllocated) failed');
         uint ethAllocated = gameVarAndFee.getEthPerGame();
@@ -71,7 +71,8 @@ contract EndowmentFund is Distribution {
         uint potId = generatePotId();
 
         Honeypot memory honeypot;
-        honeypot.gameId = potId;
+        // honeypot.gameId = potId;
+        honeypot.gameId = gameId;
         honeypot.state = HoneypotState.created;
         honeypot.createdTime = now;
         honeypot.ktyTotal = ktyAllocated;

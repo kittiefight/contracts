@@ -271,12 +271,14 @@ contract GMSetterDB is Proxied {
   /**
    * @dev set winner for each game
    */
-  function setWinner(uint256 gameId, address winner)
+  function setWinners(uint256 gameId, address winner, address topBettor, address secondTopBettor)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "winner")), winner);
+    genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "topBettor")), topBettor);
+    genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
   }
 
   function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
