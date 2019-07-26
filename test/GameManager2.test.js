@@ -519,11 +519,10 @@ it('correctly computes the top bettors for each corner', async () => {
   console.log('---- BLACK TOP BETTORS -----')
   console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
   
-  // TODO : check why these fails
-  // redTopBettor.should.be.equal(redSorted[0])
-  // redSecondTopBettor.should.be.equal(redSorted[1])
-  // blackTopBettor.should.be.equal(blackSorted[0])
-  // blackSecondTopBettor.should.be.equal(blackSorted[1])
+  redTopBettor.should.be.equal(redSorted[0])
+  redSecondTopBettor.should.be.equal(redSorted[1])
+  blackTopBettor.should.be.equal(blackSorted[0])
+  blackSecondTopBettor.should.be.equal(blackSorted[1])
 })
 
 
