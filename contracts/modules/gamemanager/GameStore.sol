@@ -66,7 +66,7 @@ contract GameStore is Proxied {
         return gameByPlayer[gameId][player].randomNum;
     }
 
-    function updateTopBettor(uint gameId, address player, address newTopBettor) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+    function updateTopBettor(uint gameId, address player, address newTopBettor) external onlyContract(CONTRACT_NAME_GM_SETTER_DB){
         gameByPlayer[gameId][player].topBettor = newTopBettor;
     }
 
@@ -74,7 +74,7 @@ contract GameStore is Proxied {
         return gameByPlayer[gameId][player].topBettor;
     }
 
-    function updateSecondTopBettor(uint gameId, address player, address newSecondTopBettor) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+    function updateSecondTopBettor(uint gameId, address player, address newSecondTopBettor) external onlyContract(CONTRACT_NAME_GM_SETTER_DB){
         gameByPlayer[gameId][player].secondTopBettor = newSecondTopBettor;
     }
 
