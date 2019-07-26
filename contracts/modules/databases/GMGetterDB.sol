@@ -168,16 +168,6 @@ contract GMGetterDB is Proxied {
     preStartTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")));
     endTime = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")));
   }
-
-   /**
-   * @dev Update kittie state
-   */
-  function getKittieState(uint256 kittieId)
-    public view
-    returns (bool)
-  {
-    return genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "inGame")));
-  }
   
   /**
    * @dev Checks whether the given player is playing in the given game.
@@ -200,16 +190,20 @@ contract GMGetterDB is Proxied {
     return genericDB.doesNodeExist(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
   }
 
+  function getGameOfKittie(uint kittieId) public view returns(uint){
+    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "playingGame")));
+  }
+
 
   // === FRONTEND GETTERS ===
 
   function getFighterByKittieID(uint256 kittieId)
     public view
-    returns (address owner, bool isDead, bool isGhost, bool isPlaying)
+    returns (address owner, bool isDead, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead,,isGhost,) = kittieHELL.getKittyStatus(kittieId);
+    (owner, isDead, isPlaying, isGhost,) = kittieHELL.getKittyStatus(kittieId);
 
-    isPlaying = getKittieState(kittieId);
+    gameId = getGameOfKittie(kittieId);
   }
 
   /**

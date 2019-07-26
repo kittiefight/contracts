@@ -68,15 +68,6 @@ contract GameManager is Proxied, Guard {
     event PressStart(uint indexed game_id, address player);
     event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
 
-    enum HoneypotState {
-        created,
-        assigned,
-        gameScheduled,
-        gameStarted,
-        forefeited,
-        claimed
-    }
-
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player);
         _;
@@ -126,8 +117,7 @@ contract GameManager is Proxied, Guard {
         //Pay Listing Fee
         endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
 
-        // When creating the game, set to true, then we set it to false when game cancels or ends
-        require((gmGetterDB.getKittieState(kittieId) == false));
+        require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
 
         scheduler.addKittyToList(kittieId, player);
     }
@@ -210,13 +200,13 @@ contract GameManager is Proxied, Guard {
 
         address supporter = getOriginalSender();
 
-        //Before KittieHell
-        require(gameState <= 2);
+        //Before GAME_OVER
+        require(gameState <= 2, "Game is not available");
 
         //pay ticket fee
-        require(endowmentFund.contributeKTY(supporter, gameVarAndFee.getTicketFee()));
+        require(endowmentFund.contributeKTY(supporter, gameStore.getTicketFee(gameId)), "Error paying ticket fee");
         
-        require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
+        require(gmSetterDB.addBettor(gameId, supporter, playerToSupport), "Error adding bettor to DB");
 
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
@@ -280,7 +270,7 @@ contract GameManager is Proxied, Guard {
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
             uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
-            endowmentFund.updateHoneyPotState(honeyPotId, uint(HoneypotState.gameStarted));
+            endowmentFund.updateHoneyPotState(honeyPotId, 3);
             emit GameStateChanged(gameId, eGameState.PRE_GAME, eGameState.MAIN_GAME);
             return true; //Game Started
         }
@@ -336,7 +326,7 @@ contract GameManager is Proxied, Guard {
         
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
-        require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()), "Error sending kty to endowment");
+        require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)), "Error sending kty to endowment");
 
         //Update bettor's total bet
         gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
@@ -344,7 +334,7 @@ contract GameManager is Proxied, Guard {
         // Update Random
         hitsResolve.calculateCurrentRandom(gameId, randomNum);
         
-        address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
+        //address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
         
         //Send bet to betting algo, to decide attacks
         //betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
@@ -387,7 +377,9 @@ contract GameManager is Proxied, Guard {
         address winner = playerBlackPoints > playerRedPoints ? playerBlack : playerRed;
         gmSetterDB.setWinner(gameId, winner);
 
-        //TODO: Update HoneyPot state to claiming
+        //Set to claiming
+        uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
+        endowmentFund.updateHoneyPotState(honeyPotId, 5);
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
@@ -405,6 +397,9 @@ contract GameManager is Proxied, Guard {
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
+        //Set to forfeited
+        uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
+        endowmentFund.updateHoneyPotState(honeyPotId, 4);
         gmSetterDB.removeKittiesInGame(gameId);
 
     }

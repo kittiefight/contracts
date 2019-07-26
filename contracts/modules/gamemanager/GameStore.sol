@@ -82,5 +82,13 @@ contract GameStore is Proxied {
         return gameByPlayer[gameId][player].secondTopBettor;
     }
 
+    function getTicketFee(uint gameId) public view returns(uint){
+        return gameSettings[gameId].ticketFee;
+    }
+
+    function getBettingFee(uint gameId) public view returns(uint){
+        return gameSettings[gameId].bettingFee;
+    }
+
     
 }
