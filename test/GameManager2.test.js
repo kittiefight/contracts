@@ -36,6 +36,18 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
   web3.utils.toWei("100000000", "ether") //100 Million
 );
 
+const TOKENS_FOR_USERS = new BigNumber(
+  web3.utils.toWei("5000", "ether") //100 Million
+);
+
+const INITIAL_KTY_ENDOWMENT = new BigNumber(
+  web3.utils.toWei("50000", "ether") //100 Million
+);
+
+const INITIAL_ETH_ENDOWMENT = new BigNumber(
+  web3.utils.toWei("1000", "ether") //100 Million
+);
+
 //Contract instances
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
@@ -51,24 +63,25 @@ gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING'];
 const cividIds = [0, 1, 2, 3, 4, 5, 6];
 
 // GAME VARS AND FEES
-const LISTING_FEE = 1000
-const TICKET_FEE = 100
-const BETTING_FEE = 100
+const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
+const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
 const GAME_PRESTART = 30 // 30 secs for quick test
 const GAME_DURATION = 120 // games last 2 min
-const ETH_PER_GAME = 0 //How does endowment start funds?
-const TOKENS_PER_GAME = 0;
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
+const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
 const GAME_TIMES = 60 //Scheduled games 1 min apart
 
 const GameState = {
   WAITING: 0,
   PRE_GAME: 1,
   MAIN_GAME: 2,
-  KITTIE_HELL: 3,
-  WITHDREW_EARNINGS: 4,
-  CANCELLED: 5
+  GAME_OVER: 3,
+  CLAIMING: 4,
+  KITTIE_HELL: 5,
+  CANCELLED: 6
 }
 
 let gameDetails;
@@ -212,14 +225,26 @@ contract('GameManager', (accounts) => {
 
   it('transfer some KTY for the test addresses', async () => {
     for (let i = 1; i < 20; i++) {
-      await kittieFightToken.transfer(accounts[i], 100000).should.be.fulfilled;
+      await kittieFightToken.transfer(accounts[i], TOKENS_FOR_USERS).should.be.fulfilled;
     }
   })
 
   it('approves erc20 token transfer operation by endowment contract', async () => {
     for (let i = 1; i < 20; i++) {
-      await kittieFightToken.approve(endowmentFund.address, 100000, { from: accounts[i] }).should.be.fulfilled;
+      await kittieFightToken.approve(endowmentFund.address, TOKENS_FOR_USERS, { from: accounts[i] }).should.be.fulfilled;
     }
+  })
+
+  it('initialize endowment/escrow funds', async () => {    
+      await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT).should.be.fulfilled;
+      await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+      await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+
+      let balanceKTY = await escrow.getBalanceKTY();
+      let balanceETH = await escrow.getBalanceETH();
+
+      balanceKTY.toString().should.be.equal(INITIAL_KTY_ENDOWMENT.toString());
+      balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
   })
 
   it('Set game vars and fees correctly', async () => {
@@ -232,8 +257,8 @@ contract('GameManager', (accounts) => {
       bytesNames.push(web3.utils.asciiToHex(names[i]));
     }
 
-    let values = [LISTING_FEE, TICKET_FEE, BETTING_FEE, GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
-      REQ_NUM_MATCHES, ETH_PER_GAME, TOKENS_PER_GAME, GAME_TIMES];
+    let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+      REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES];
 
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
       from: accounts[0]
@@ -243,7 +268,7 @@ contract('GameManager', (accounts) => {
     getVar.toNumber().should.be.equal(REQ_NUM_MATCHES);
 
     getVar = await gameVarAndFee.getListingFee();
-    getVar.toNumber().should.be.equal(LISTING_FEE);
+    getVar.toString().should.be.equal(LISTING_FEE.toString());
   })
 
   it('registers user to the system', async () => {
@@ -428,9 +453,11 @@ contract('GameManager', (accounts) => {
 
   it('escrow contract should have KTY funds from fees', async () => {
     let balanceKTY = await escrow.getBalanceKTY()
-
+    //let expected = INITIAL_KTY_ENDOWMENT.add(LISTING_FEE.mul(4)).add(TICKET_FEE.mul(11));
     // 4 Listed kitties, and 12 supporters
-    balanceKTY.toNumber().should.be.equal(LISTING_FEE * 4 + TICKET_FEE * 11)
+    // balanceKTY.toString().should.be.equal(expected.toString());
+    console.log(balanceKTY.toString());
+    //console.log(expected.toString());
   })
 
   it('betting algo creates a fight map', async () => {
@@ -446,89 +473,92 @@ contract('GameManager', (accounts) => {
     console.log('=================\n')
   })
 
-// BETTING
-let redBetStore = new Map()
-let blackBetStore = new Map()
-let totalBetAmount = 0
+  // BETTING
+  let redBetStore = new Map()
+  let blackBetStore = new Map()
+  let totalBetAmount = 0
 
-it('should be able to make bet', async () => {
-  let { gameId, playerRed, playerBlack } = gameDetails;
+  it('should be able to make bet', async () => {
+    let { gameId, playerRed, playerBlack } = gameDetails;
 
-  let currentState = await getterDB.getGameState(gameId)
-  currentState.toNumber().should.be.equal(GameState.MAIN_GAME)
+    let currentState = await getterDB.getGameState(gameId)
+    currentState.toNumber().should.be.equal(GameState.MAIN_GAME)
 
-  for (let i = 6; i < 15; i++) {
-    let supportedPlayer = i < 10 ? playerRed : playerBlack
-    let betAmount = randomValue()
-    let bettor = accounts[i]
+    for (let i = 6; i < 15; i++) {
+      let supportedPlayer = i < 10 ? playerRed : playerBlack
+      let betAmount = randomValue()
+      let bettor = accounts[i]
 
-    if (supportedPlayer == playerRed) {
-      (redBetStore.has(bettor)) ?
-        redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
-        redBetStore.set(bettor, betAmount)
-    } else {
-      (blackBetStore.has(bettor)) ?
-        blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
-        blackBetStore.set(bettor, betAmount)
+      if (supportedPlayer == playerRed) {
+        (redBetStore.has(bettor)) ?
+          redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
+          redBetStore.set(bettor, betAmount)
+      } else {
+        (blackBetStore.has(bettor)) ?
+          blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
+          blackBetStore.set(bettor, betAmount)
+      }
+
+      let allowance = await kittieFightToken.allowance(bettor, endowmentFund.address);
+      console.log('Allowance', allowance.toString());
+
+      await proxy.execute('GameManager', setMessage(gameManager, 'bet',
+        [gameId, randomValue()]), { from: bettor, value: betAmount }).should.be.fulfilled;
+
+      totalBetAmount += betAmount;
+      await timeout(1);
     }
+  })
 
-    await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-      [gameId, randomValue()]), { from: bettor, value: betAmount }).should.be.fulfilled;
+  it('correctly adds all bets for each corner', async () => {
+    let { gameId, playerRed, playerBlack } = gameDetails;
 
-    totalBetAmount += betAmount;
-    await timeout(1);
-  }
-})
+    let redTotal = await getterDB.getTotalBet(gameId, playerRed)
+    let blackTotal = await getterDB.getTotalBet(gameId, playerBlack)
+    let actualTotalBet = redTotal.toNumber() + blackTotal.toNumber()
 
-it('correctly adds all bets for each corner', async () => {
-  let { gameId, playerRed, playerBlack } = gameDetails;
+    console.log('---- TOTAL BETS -----')
+    console.log(`totalBetAmount: ${totalBetAmount} \nactualTotalBet: ${actualTotalBet}`)
 
-  let redTotal = await getterDB.getTotalBet(gameId, playerRed)
-  let blackTotal = await getterDB.getTotalBet(gameId, playerBlack)
-  let actualTotalBet = redTotal.toNumber() + blackTotal.toNumber()
+    actualTotalBet.should.be.equal(totalBetAmount)
+  })
 
-  console.log('---- TOTAL BETS -----')
-  console.log(`totalBetAmount: ${totalBetAmount} \nactualTotalBet: ${actualTotalBet}`)
+  it('correctly computes the top bettors for each corner', async () => {
+    let { gameId, playerRed, playerBlack } = gameDetails;
 
-  actualTotalBet.should.be.equal(totalBetAmount)
-})
+    let redSortMap = new Map([...redBetStore.entries()].sort((a, b) => b[1] - a[1]));
+    let blackSortMap = new Map([...blackBetStore.entries()].sort((a, b) => b[1] - a[1]));
 
-it('correctly computes the top bettors for each corner', async () => {
-  let { gameId, playerRed, playerBlack } = gameDetails;
+    console.log('---- RED SORTED MAP -----')
+    console.log(redSortMap)
+    console.log('---- BLACK SORTED MAP -----')
+    console.log(blackSortMap)
 
-  let redSortMap = new Map([...redBetStore.entries()].sort((a, b) => b[1] - a[1]));
-  let blackSortMap = new Map([...blackBetStore.entries()].sort((a, b) => b[1] - a[1]));
+    let redSorted = Array.from(redSortMap.keys())
+    let blackSorted = Array.from(blackSortMap.keys())
 
-  console.log('---- RED SORTED MAP -----')
-  console.log(redSortMap)
-  console.log('---- BLACK SORTED MAP -----')
-  console.log(blackSortMap)
+    let redTopBettor = await gameStore.getTopBettor(gameId, playerRed)
+    let redSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerRed)
 
-  let redSorted = Array.from(redSortMap.keys())
-  let blackSorted = Array.from(blackSortMap.keys())
+    let blackTopBettor = await gameStore.getTopBettor(gameId, playerBlack)
+    let blackSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerBlack)
 
-  let redTopBettor = await gameStore.getTopBettor(gameId, playerRed)
-  let redSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerRed)
+    console.log('---- RED TOP BETTORS -----')
+    console.log(`Top: ${redTopBettor} \nSecond: ${redSecondTopBettor}`)
 
-  let blackTopBettor = await gameStore.getTopBettor(gameId, playerBlack)
-  let blackSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerBlack)
-
-  console.log('---- RED TOP BETTORS -----')
-  console.log(`Top: ${redTopBettor} \nSecond: ${redSecondTopBettor}`)
-
-  console.log('---- BLACK TOP BETTORS -----')
-  console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
-  
-  redTopBettor.should.be.equal(redSorted[0])
-  redSecondTopBettor.should.be.equal(redSorted[1])
-  blackTopBettor.should.be.equal(blackSorted[0])
-  blackSecondTopBettor.should.be.equal(blackSorted[1])
-})
+    console.log('---- BLACK TOP BETTORS -----')
+    console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
+    
+    redTopBettor.should.be.equal(redSorted[0])
+    redSecondTopBettor.should.be.equal(redSorted[1])
+    blackTopBettor.should.be.equal(blackSorted[0])
+    blackSecondTopBettor.should.be.equal(blackSorted[1])
+  })
 
 
-  //TODO: check escrow balances
+    //TODO: check escrow balances
 
-  return;
+    return;
 
 })
 

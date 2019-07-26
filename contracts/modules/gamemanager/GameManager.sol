@@ -321,23 +321,23 @@ contract GameManager is Proxied, Guard {
         external payable
         onlyProxy onlyBettor
     {
-        require(msg.value > 0);
+        require(msg.value > 0, "Bet must be greater than 0");
 
         //Check if game has ended
         gameEnd(gameId);
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == uint(eGameState.MAIN_GAME));
+        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running");
         
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
 
-        require(payedFee); //Needs to call participate first if false
+        require(payedFee, "Bettor has not payed fee yet"); //Needs to call participate first if false
         
         //Transfer Funds to endowment
-        require(endowmentFund.contributeETH.value(msg.value)(gameId));
-        require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()));
+        require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
+        require(endowmentFund.contributeKTY(sender, gameVarAndFee.getBettingFee()), "Error sending kty to endowment");
 
         //Update bettor's total bet
         gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
@@ -348,7 +348,7 @@ contract GameManager is Proxied, Guard {
         address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
         
         //Send bet to betting algo, to decide attacks
-        betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
+        //betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
         // update game variables
         gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);

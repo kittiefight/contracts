@@ -66,7 +66,7 @@ contract Distribution is Proxied {
         // Is the winning player or part of the bettors of the winning corner
         require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
 
-        uint256[5] memory rates = gameVarAndFee.getDistributionRates();
+        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
  
         uint8 winningCategory = checkWinnerCategory(gameId, claimer, winningSide, supportedPlayer);
 
@@ -88,6 +88,16 @@ contract Distribution is Proxied {
             winningsETH = winningsETH.mul(betAmount).div(totalBets);
             winningsKTY = winningsKTY.mul(betAmount).div(totalBets);
         }
+    }
+
+    function getEndowmentShare(uint gameId) public view returns(uint256 winningsETH, uint256 winningsKTY){
+        uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
+        uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
+
+        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
+        
+        winningsETH = (totalEthFunds.mul(rates[4])).div(100);
+        winningsKTY = (totalKTYFunds.mul(rates[4])).div(100);
     }
 
     function checkWinnerCategory
