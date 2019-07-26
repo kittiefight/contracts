@@ -285,15 +285,16 @@ contract GMSetterDB is Proxied {
     onlyExistentGame(_gameId)
   {
 
+        address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
         (uint256 bettorTotal, ,) = gmGetterDB.getSupporterInfo(_gameId, _account);
-        (uint256 topBettorEth, ,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
+        (uint256 topBettorEth, ,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
 
         if (bettorTotal > topBettorEth){
-            address prevTopBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
             gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
-            gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, prevTopBettor);
+            gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
         } else {
-            (uint256 secondTopBettorEth,,) = gmGetterDB.getSupporterInfo(_gameId, _supportedPlayer);
+            address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
+            (uint256 secondTopBettorEth,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
             if (bettorTotal > secondTopBettorEth){
                 gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
     }   }   }
