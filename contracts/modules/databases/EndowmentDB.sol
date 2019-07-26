@@ -129,18 +129,20 @@ contract EndowmentDB is Proxied {
     uint gameId
   )
     external
-    view returns (uint state)
+    view returns (uint state, uint256 claimTime)
   {
-    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")));
+    return(
+      genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state"))),
+      genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")))
+    );
   }
 
-  function getHoneypotStateChangeTime(uint gameId) external view returns (uint stateChangeTime) {
-    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "stateChangeTime")));
-  }
-
-  function setHoneypotState( uint gameId, uint state ) external {
+  function setHoneypotState( uint gameId, uint state, uint256 claimTime) external {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "stateChangeTime")), block.timestamp);
+    if (claimTime > 0){
+      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")), claimTime);
+    }
+    
   }
 
   function getHoneypotTotalETH(
@@ -179,8 +181,7 @@ contract EndowmentDB is Proxied {
     address account, uint gameId, uint ethContribution, uint ktyContribution
   ) external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    // onlyExistingProfile(account)
-    // onlyExistingHoneypot(gameId)
+    onlyExistingHoneypot(gameId)
     returns (bool) {
 
     if (ethContribution > 0) {
@@ -200,7 +201,6 @@ contract EndowmentDB is Proxied {
       return true;
     }
 
-    // removing gameid
     if (ktyContribution > 0) {
       // genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, TABLE_NAME_CONTRIBUTION_KTY, account);
 
