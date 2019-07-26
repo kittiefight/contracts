@@ -137,13 +137,24 @@ contract EndowmentFund is Distribution {
             transferETHfromEscrow(msg.sender, winningsETH);
         }
 
+        // log debit of funds
+        endowmentDB.debitFunds(_gameId, msg.sender, winningsETH, winningsKTY);
+
         emit WinnerClaimed(msg.sender, winningsETH, winningsKTY, address(escrow));
     }
 
+/*
     function getWithdrawalState(uint gameId) public view returns
         (bool winner, bool topBettor, bool secondTopBettor, bool, bool) {
 
+        }*/
+
+    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
+        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msg.sender);
+        (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
+        return ((winningsETH == totalETHdebited) && (winningsKTY == totalKTYdebited));
     }
+
 
     /**
      * @dev Send KTY from EndowmentFund to Escrow

@@ -176,12 +176,12 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "status")), status);
   }
 
-
   function contributeFunds(
     address account, uint gameId, uint ethContribution, uint ktyContribution
   ) external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    onlyExistingHoneypot(gameId)
+    // onlyExistingProfile(account)
+    // onlyExistingHoneypot(gameId)
     returns (bool) {
 
     if (ethContribution > 0) {
@@ -198,7 +198,6 @@ contract EndowmentDB is Proxied {
       // bytes32 ethBalanceKey = keccak256(abi.encodePacked(gameId, account, "ethBalance"));
       // uint ethBalance = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethBalanceKey);
       // genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethBalanceKey, ethBalance.add(ethContribution));
-      return true;
     }
 
     if (ktyContribution > 0) {
@@ -213,11 +212,60 @@ contract EndowmentDB is Proxied {
       // bytes32 ktyBalanceKey = keccak256(abi.encodePacked(account, "ktyBalance"));
       // uint ktyBalance = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyBalanceKey);
       // genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyBalanceKey, ktyBalance.add(ktyContribution));
-      return true;
     }
 
+  return true;
   }
-  
+
+/**
+ * store the total debit by an a/c per game
+ */
+  function debitFunds(
+    uint _gameId, address _account, uint _eth_amount, uint _kty_amount
+  ) external
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    //onlyExistingProfile(_account)
+    onlyExistingHoneypot(_gameId)
+    returns (bool) {
+
+    if (_eth_amount > 0) {
+
+      bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
+      uint ethTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
+      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey, ethTotal.add(_eth_amount));
+
+    }
+
+    if (_kty_amount > 0) {
+
+      bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
+      uint ktyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
+      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey, ktyTotal.add(_kty_amount));
+
+    }
+
+  return true;
+  }
+
+
+/**
+ * get total debit by an a/c per game
+ */
+  function getTotalDebit(
+    uint _gameId, address _account
+  ) external view
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    //onlyExistingProfile(_account)
+    onlyExistingHoneypot(_gameId)
+    returns (uint, uint) {
+      bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
+      bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
+      return (
+        genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey),
+        genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey)
+      );
+  }
+
 
   modifier onlyExistingHoneypot(uint gameId) {
     require(genericDB.doesNodeExist(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT, gameId), ERROR_DOES_NOT_EXIST);
