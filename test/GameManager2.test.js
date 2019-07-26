@@ -453,11 +453,9 @@ contract('GameManager', (accounts) => {
 
   it('escrow contract should have KTY funds from fees', async () => {
     let balanceKTY = await escrow.getBalanceKTY()
-    //let expected = INITIAL_KTY_ENDOWMENT.add(LISTING_FEE.mul(4)).add(TICKET_FEE.mul(11));
-    // 4 Listed kitties, and 12 supporters
-    // balanceKTY.toString().should.be.equal(expected.toString());
-    console.log(balanceKTY.toString());
-    //console.log(expected.toString());
+    // 50.000 + 4*1000 + 11*100
+    let expected = new BigNumber(web3.utils.toWei("55100", "ether"));
+    balanceKTY.toString().should.be.equal(expected.toString())
   })
 
   it('betting algo creates a fight map', async () => {
@@ -499,8 +497,8 @@ contract('GameManager', (accounts) => {
           blackBetStore.set(bettor, betAmount)
       }
 
-      let allowance = await kittieFightToken.allowance(bettor, endowmentFund.address);
-      console.log('Allowance', allowance.toString());
+      
+      console.log('\n==== NEW BET', 'Amount:', betAmount, 'bettor:',bettor);
 
       await proxy.execute('GameManager', setMessage(gameManager, 'bet',
         [gameId, randomValue()]), { from: bettor, value: betAmount }).should.be.fulfilled;
@@ -517,8 +515,9 @@ contract('GameManager', (accounts) => {
     let blackTotal = await getterDB.getTotalBet(gameId, playerBlack)
     let actualTotalBet = redTotal.toNumber() + blackTotal.toNumber()
 
-    console.log('---- TOTAL BETS -----')
+    console.log('\n==== TOTAL BETS ====')
     console.log(`totalBetAmount: ${totalBetAmount} \nactualTotalBet: ${actualTotalBet}`)
+    console.log('=================\n')
 
     actualTotalBet.should.be.equal(totalBetAmount)
   })
@@ -529,9 +528,9 @@ contract('GameManager', (accounts) => {
     let redSortMap = new Map([...redBetStore.entries()].sort((a, b) => b[1] - a[1]));
     let blackSortMap = new Map([...blackBetStore.entries()].sort((a, b) => b[1] - a[1]));
 
-    console.log('---- RED SORTED MAP -----')
+    console.log('\n==== RED SORTED MAP ====')
     console.log(redSortMap)
-    console.log('---- BLACK SORTED MAP -----')
+    console.log('\n==== BLACK SORTED MAP ====')
     console.log(blackSortMap)
 
     let redSorted = Array.from(redSortMap.keys())
@@ -543,10 +542,10 @@ contract('GameManager', (accounts) => {
     let blackTopBettor = await gameStore.getTopBettor(gameId, playerBlack)
     let blackSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerBlack)
 
-    console.log('---- RED TOP BETTORS -----')
+    console.log('\n==== RED TOP BETTORS ====')
     console.log(`Top: ${redTopBettor} \nSecond: ${redSecondTopBettor}`)
 
-    console.log('---- BLACK TOP BETTORS -----')
+    console.log('\n-==== BLACK TOP BETTORS ====')
     console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
     
     redTopBettor.should.be.equal(redSorted[0])

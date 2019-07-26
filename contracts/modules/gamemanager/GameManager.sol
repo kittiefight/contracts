@@ -66,7 +66,6 @@ contract GameManager is Proxied, Guard {
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
     event NewSupporter(uint indexed game_id, address indexed supporter, address playerSupported);
     event PressStart(uint indexed game_id, address player);
-    event NewBet(uint indexed game_id, address indexed player, uint ethAmount);
     event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
 
     enum HoneypotState {
@@ -356,7 +355,7 @@ contract GameManager is Proxied, Guard {
         // check underperforming game if one minut
         //checkPerformance(gameId);
 
-        emit NewBet(gameId, sender, msg.value);
+        // emit NewBet(gameId, sender, msg.value);
     }
 
     /**
