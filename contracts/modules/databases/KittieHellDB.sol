@@ -159,6 +159,8 @@ contract KittieHellDB is Proxied, Guard {
     return genericDB.getAdjacent(CONTRACT_NAME_KITTIEHELL_DB, TABLE_NAME_GHOST, _id, false);
   }
 
+  // this function should not exist since no kitty can be released from the hell once the deadline
+  // for ressurection has been passed without proper action (pay for ressrrection) being taken
   /**
    * @author @ziweidream
    * @dev This function can only be carried out via CronJob.sol contract
@@ -166,12 +168,12 @@ contract KittieHellDB is Proxied, Guard {
    * @param _id the node id
    * @return true if the node is removed from GhostsList
    */
-  function removeGhostFromHell(uint256 _id)
-   public
-   onlyContract(CONTRACT_NAME_CRONJOB)
-   returns (bool) {
-    return genericDB.removeNodeFromLinkedList(CONTRACT_NAME_KITTIEHELL_DB, TABLE_NAME_GHOST, _id);
-  }
+  //function removeGhostFromHell(uint256 _id)
+   //public
+   //onlyContract(CONTRACT_NAME_CRONJOB)
+   //returns (bool) {
+    //return genericDB.removeNodeFromLinkedList(CONTRACT_NAME_KITTIEHELL_DB, TABLE_NAME_GHOST, _id);
+  //}
 
 }
 
