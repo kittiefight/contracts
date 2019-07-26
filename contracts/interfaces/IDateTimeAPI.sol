@@ -1,4 +1,4 @@
-pragma solidity ^0.5.5;
+pragma solidity >=0.5.0 <0.6.0;
 
 interface IDateTimeAPI {
     function isLeapYear(uint16 year) external pure returns (bool);
