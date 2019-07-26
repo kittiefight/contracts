@@ -22,6 +22,7 @@ import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
 import "./Escrow.sol";
+import '../../authority/Guard.sol';
 
 /**
  * @title EndowmentFund
@@ -29,7 +30,7 @@ import "./Escrow.sol";
  * @author @vikrammndal @wafflemakr
  */
 
-contract EndowmentFund is Distribution {
+contract EndowmentFund is Distribution, Guard {
     using SafeMath for uint256;
 
     Escrow public escrow;
@@ -120,7 +121,8 @@ contract EndowmentFund is Distribution {
     * @dev winner claims
     */
     function claim(uint256 _gameId) external payable {
-
+        //address payable msgSender = getOriginalSender();
+        address payable msgSender = address(uint160(getOriginalSender()));
         // status
         (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
         require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
@@ -128,38 +130,34 @@ contract EndowmentFund is Distribution {
         // get the time when state changed to claming start and add to it the Expiration time
         require(now < claimTime, "Time to claim is over");
     
-        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msg.sender);
+        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
         if (winningsKTY > 0){
-            transferKFTfromEscrow(msg.sender, winningsKTY);
+            transferKFTfromEscrow(msgSender, winningsKTY);
         }
 
         if (winningsETH > 0){
-            transferETHfromEscrow(msg.sender, winningsETH);
+            transferETHfromEscrow(msgSender, winningsETH);
         }
 
         // log debit of funds
-        endowmentDB.debitFunds(_gameId, msg.sender, winningsETH, winningsKTY);
+        endowmentDB.debitFunds(_gameId, msgSender, winningsETH, winningsKTY);
 
-        emit WinnerClaimed(msg.sender, winningsETH, winningsKTY, address(escrow));
+        emit WinnerClaimed(msgSender, winningsETH, winningsKTY, address(escrow));
     }
 
-/*
-    function getWithdrawalState(uint gameId) public view returns
-        (bool winner, bool topBettor, bool secondTopBettor, bool, bool) {
-
-        }*/
-
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
-        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msg.sender);
+        address msgSender = getOriginalSender();
         (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
-        return ((winningsETH == totalETHdebited) && (winningsKTY == totalKTYdebited));
+        //(uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
+        //return ((winningsETH == totalETHdebited) && (winningsKTY == totalKTYdebited));
+        return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts
     }
 
 
     /**
      * @dev Send KTY from EndowmentFund to Escrow
      */
-    function sendKTYtoEscrow(uint256 _kty_amount) external onlyOwner {
+    function sendKTYtoEscrow(uint256 _kty_amount) external onlySuperAdmin {
 
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
@@ -180,6 +178,7 @@ contract EndowmentFund is Distribution {
      * @dev Send eth to Escrow
      */
     function sendETHtoEscrow() external payable {
+        address msgSender = getOriginalSender();
 
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
@@ -190,9 +189,9 @@ contract EndowmentFund is Distribution {
         address(escrow).transfer(msg.value);
 
         require(endowmentDB.updateEndowmentFund(0, msg.value, false),
-            "Error: endowmentDB.updateEndowmentFund(0, msg.value, false) failed");
+            "Error: endowmentDB.updateEndowmentFund(0, msgSender, false) failed");
 
-        emit SentETHtoEscrow(msg.sender, msg.value, address(escrow));
+        emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
     }
 
     /**
@@ -219,6 +218,7 @@ contract EndowmentFund is Distribution {
      */
     function contributeETH(uint _gameId) external payable returns(bool) {
         require(address(escrow) != address(0), "escrow not initialized");
+        address msgSender = getOriginalSender();
 
         // transfer ETH to Escrow
         if (!address(escrow).send(msg.value)){
@@ -226,10 +226,10 @@ contract EndowmentFund is Distribution {
         }
 
         // update DB
-        require(endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0),
-            'Error: endowmentDB.contributeFunds(msg.sender, _gameId, msg.value, 0) failed');
+        require(endowmentDB.contributeFunds(msgSender, _gameId, msg.value, 0),
+            'Error: endowmentDB.contributeFunds(msgSender, _gameId, msg.value, 0) failed');
 
-        emit SentETHtoEscrow(msg.sender, msg.value, address(escrow));
+        emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
 
         return true;
     }
@@ -238,14 +238,14 @@ contract EndowmentFund is Distribution {
     * @notice MUST BE DONE BEFORE UPGRADING ENDOWMENT AS IT IS THE OWNER
     * @dev change Escrow contract owner before UPGRADING ENDOWMENT AS IT IS THE OWNER
     */
-    function transferEscrowOwnership(address payable _newOwner) external onlyOwner {
+    function transferEscrowOwnership(address payable _newOwner) external onlySuperAdmin {
         escrow.transferOwnership(_newOwner);
     }
 
     /**
     * @dev transfer Escrow ETH funds
     */
-    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public onlyOwner returns(bool){
+    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public onlySuperAdmin returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the ETH
@@ -262,7 +262,7 @@ contract EndowmentFund is Distribution {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public onlyOwner returns(bool){
+    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public onlySuperAdmin returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the KTY
@@ -280,7 +280,7 @@ contract EndowmentFund is Distribution {
     * @dev Initialize or Upgrade Escrow
     * @notice BEFORE CALLING: Deploy escrow contract and set the owner as EndowmentFund contract
     */
-    function initUpgradeEscrow(Escrow _newEscrow) external onlyOwner returns(bool){
+    function initUpgradeEscrow(Escrow _newEscrow) external onlySuperAdmin returns(bool){
 
         require(address(_newEscrow) != address(0), "_newEscrow address not set");
         _newEscrow.initialize(kittieFightToken);
@@ -325,3 +325,17 @@ contract EndowmentFund is Distribution {
 
 
 }
+
+/**
+Change log
+
+2019-07-26 11:17:05
+Aadded Guard to EndowmentFund
+Use getOriginalSender()insteads of msg.sender
+Replaced onlyOwner with onlySuperAdmin
+
+2019-07-26 11:51:59
+Improve getWithdrawalState() - just set staus when fund is withdrawn
+
+
+*/
