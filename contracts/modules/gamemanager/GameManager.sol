@@ -324,7 +324,7 @@ contract GameManager is Proxied, Guard {
         require(msg.value > 0);
 
         //Check if game has ended
-        // gameEnd(gameId);
+        gameEnd(gameId);
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
@@ -367,7 +367,7 @@ contract GameManager is Proxied, Guard {
 
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
 
-        if ( endTime >= now){
+        if ( endTime <= now){
             gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
             gmSetterDB.removeKittiesInGame(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
