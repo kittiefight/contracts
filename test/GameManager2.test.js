@@ -615,26 +615,7 @@ contract('GameManager', (accounts) => {
     console.log(`\n==== TOTAL BETS: ${totalBetAmount} ETH `)
 
     actualTotalBet.toString().should.be.equal(String(web3.utils.toWei(String(totalBetAmount))));
-  })
-
-  it('correct honeypot info', async () => {
-    // let initKty = await gameVarAndFee.getTokensPerGame();
-    // console.log(initKty.toString());
-
-    let { gameId } = gameDetails;
-
-    let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
-
-    console.log(`\n==== HONEPOT INFO ==== `)
-    console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
-    console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
-    console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
-    console.log('=======================\n')
-
-    honeyPotInfo.ethTotal.toString().should.be.equal(
-      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount)))))
-    )
-  })
+  })  
 
   it('correctly computes the top bettors for each corner', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
@@ -710,12 +691,31 @@ contract('GameManager', (accounts) => {
     let corner = winners.winner === playerBlack ? "Black Corner":"Red Corner"
 
     console.log(`\n==== WINNER: ${corner} ==== `)
-    console.log(`     Winner: ${winners.winner}   `);
-    console.log(`     TopBettor: ${winners.topBettor}   `)
-    console.log(`     SecondTopBettor: ${winners.secondTopBettor}   `)
+    console.log(`   Winner: ${winners.winner}   `);
+    console.log(`   TopBettor: ${winners.topBettor}   `)
+    console.log(`   SecondTopBettor: ${winners.secondTopBettor}   `)
     console.log('=======================\n')
     
-  })  
+  })
+  
+  it('correct honeypot info', async () => {
+    // let initKty = await gameVarAndFee.getTokensPerGame();
+    // console.log(initKty.toString());
+
+    let { gameId } = gameDetails;
+
+    let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
+
+    console.log(`\n==== HONEPOT INFO ==== `)
+    console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
+    console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
+    console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
+    console.log('=======================\n')
+
+    honeyPotInfo.ethTotal.toString().should.be.equal(
+      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount)))))
+    )
+  })
 
   it('state changes to CLAIMING', async () => {
 
@@ -724,6 +724,33 @@ contract('GameManager', (accounts) => {
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(4);
     console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
+
+    let potState = await endowmentDB.getHoneypotState(gameId);
+    console.log('==== Honeypot State: ', potState.state.toString());
+ 
+  })
+
+  it('state changes to CLAIMING', async () => {
+
+    let { gameId } = gameDetails;
+
+    let winners = await getterDB.getWinners(gameId);
+
+
+    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
+    console.log('==== WINNERS SHARE: ', winnerShare.toString());
+    // let topShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
+    // console.log('==== TOP BETTOR SHARE: ', topShare.toString());
+    // let secondTopShare = await endowmentFund.getWinnerShare(gameId, secondTopBettor);
+    // console.log('==== SECOND TOP BETTOR SHARE: ', secondTopShare.toString());
+    // let otherBettorRed = await endowmentFund.getWinnerShare(gameId, accounts[7]);
+    // console.log('==== OTHER BETTOR SHARE: ', otherBettorRed.toString());
+    // let otherBettorBlack = await endowmentFund.getWinnerShare(gameId, accounts[14]);
+    // console.log('==== WINNERS SHARE: ', otherBettorBlack.toString());
+
+    // let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+    // console.log('==== WINNERS SHARE: ', endowmentShare.toString());
+
  
   })
 
