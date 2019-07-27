@@ -77,6 +77,8 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     const kittie3 = 23134;
 
     beforeEach(async () => {
+      // Fake the proxy contract to be able to make calls directly to Register contract
+      await this.register.setProxy(creator);
       // Mint some kitties for the test addresses
       await this.cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
       await this.cryptoKitties.mint(user2, kittie2).should.be.fulfilled;
@@ -101,31 +103,25 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     });
 
     it('registers user', async () => {
-      await this.proxy.register({from: user1}).should.be.fulfilled;
+      await this.register.register(user1).should.be.fulfilled;
       let doesExist = await this.profileDB.doesProfileExist(user1);
       let hasRole = await this.roleDB.hasRole('bettor', user1);
       doesExist.should.be.true;
       hasRole.should.be.true;
     });
 
-    it('locks a kittie to the system', async () => {
-      await this.proxy.register({from: user1}).should.be.fulfilled;
-      await this.proxy.lockKittie(kittie1, {from: user1}).should.be.fulfilled;
+    it('verifies user', async () => {
+      let civicId = 12345;
+      await this.register.register(user1).should.be.fulfilled;
+      let doesExist = await this.profileDB.doesProfileExist(user1);
+      let bettorRole = await this.roleDB.hasRole('bettor', user1);
+      doesExist.should.be.true;
+      bettorRole.should.be.true;
 
-      let ownerAddr = await this.cryptoKitties.ownerOf(kittie1);
-      ownerAddr.should.be.equal(this.register.address);
-    });
+      await this.register.verifyAccount(user1, civicId).should.be.fulfilled;
 
-    it('unlocks a kittie from the system', async () => {
-      await this.proxy.register({from: user1}).should.be.fulfilled;
-
-      await this.proxy.lockKittie(kittie1, {from: user1}).should.be.fulfilled;
-      let ownerAddr = await this.cryptoKitties.ownerOf(kittie1);
-      ownerAddr.should.be.equal(this.register.address);
-
-      await this.proxy.releaseKittie(kittie1, {from: user1}).should.be.fulfilled;
-      ownerAddr = await this.cryptoKitties.ownerOf(kittie1);
-      ownerAddr.should.be.equal(user1);
+      let playerRole = await this.roleDB.hasRole('player', user1);
+      playerRole.should.be.true;
     });
 
     it('stakes SuperDAO tokens', async () => {
@@ -133,8 +129,8 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
       let preBalance = (await this.superDaoToken.balanceOf(user1)).toNumber();
       let postBalance;
 
-      await this.proxy.register({from: user1}).should.be.fulfilled;
-      await this.proxy.stakeSuperDAO(stakeAmount, {from: user1}).should.be.fulfilled;
+      await this.register.register(user1).should.be.fulfilled;
+      await this.register.stakeSuperDAO(user1, stakeAmount).should.be.fulfilled;
 
       postBalance = (await this.superDaoToken.balanceOf(user1)).toNumber();
       let isStaking = await this.genericDB.getBoolStorage('ProfileDB', web3.utils.soliditySha3(user1, "isStakingSuperDAO"));
@@ -149,8 +145,8 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
       let preBalance = (await this.kittieFightToken.balanceOf(user1)).toNumber();
       let postBalance;
 
-      await this.proxy.register({from: user1}).should.be.fulfilled;
-      await this.proxy.lockTokens(tokenAmount, {from: user1}).should.be.fulfilled;
+      await this.register.register(user1).should.be.fulfilled;
+      await this.register.lockTokens(user1, tokenAmount).should.be.fulfilled;
 
       let _tokenAmount = (await this.profileDB.getKittieFightTokens(user1)).toNumber();
       postBalance = (await this.kittieFightToken.balanceOf(user1)).toNumber();
@@ -164,14 +160,51 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
       let preBalance = (await this.kittieFightToken.balanceOf(user1)).toNumber();
       let postBalance;
 
-      await this.proxy.register({from: user1}).should.be.fulfilled;
-      await this.proxy.lockTokens(tokenAmount, {from: user1}).should.be.fulfilled;
-      await this.proxy.releaseTokens(releaseAmount, {from: user1}).should.be.fulfilled;
+      await this.register.register(user1).should.be.fulfilled;
+      await this.register.lockTokens(user1, tokenAmount).should.be.fulfilled;
+      await this.register.releaseTokens(user1, releaseAmount).should.be.fulfilled;
 
       let _tokenAmount = (await this.profileDB.getKittieFightTokens(user1)).toNumber();
       postBalance = (await this.kittieFightToken.balanceOf(user1)).toNumber();
       _tokenAmount.should.be.equal(tokenAmount - releaseAmount);
       postBalance.should.be.equal(preBalance - releaseAmount);
+    });
+  });
+
+  describe('Register::Features:Negatives', () => {
+    beforeEach(async () => {
+      // Fake the proxy contract to be able to make calls directly to Register contract
+      await this.register.setProxy(creator);
+    });
+
+    it('does not allow to register the same account more than once', async () => {
+      await this.register.register(user1).should.be.fulfilled;
+      let doesExist = await this.profileDB.doesProfileExist(user1);
+      doesExist.should.be.true;
+      await this.register.register(user1).should.be.rejected;
+    });
+
+    it('does not allow to verify two different account with the same civic id', async () => {
+      let civicId = 12345;
+      await this.register.register(user1).should.be.fulfilled;
+      let doesExist = await this.profileDB.doesProfileExist(user1);
+      let bettorRole = await this.roleDB.hasRole('bettor', user1);
+      doesExist.should.be.true;
+      bettorRole.should.be.true;
+
+      await this.register.register(user2).should.be.fulfilled;
+      doesExist = await this.profileDB.doesProfileExist(user2);
+      bettorRole = await this.roleDB.hasRole('bettor', user2);
+      doesExist.should.be.true;
+      bettorRole.should.be.true;
+
+      await this.register.verifyAccount(user1, civicId).should.be.fulfilled;
+      await this.register.verifyAccount(user2, civicId).should.be.rejected;
+
+      let playerRole = await this.roleDB.hasRole('player', user1);
+      playerRole.should.be.true;
+      playerRole = await this.roleDB.hasRole('player', user2);
+      playerRole.should.be.false;
     });
   });
 });

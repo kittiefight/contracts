@@ -6,7 +6,6 @@ import "../modules/proxy/Proxied.sol";
 
 
 contract Guard is Proxied, SystemRoles {
-
   modifier onlySuperAdmin() {
     assert(msg.sender != address(0));
     require(checkRole(SUPER_ADMIN_ROLE), "Only super admin");
