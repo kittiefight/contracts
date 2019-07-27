@@ -18,6 +18,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pragma solidity ^0.5.5;
+
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
@@ -62,7 +63,7 @@ contract EndowmentFund is Distribution, Guard {
         uint ethTotal;
     }
 
-    function generateHoneyPot() external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
+    function generateHoneyPot(uint gameId) external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
         require(endowmentDB.allocateKTY(ktyAllocated), 'Error: endowmentDB.allocateKTY(ktyAllocated) failed');
         uint ethAllocated = gameVarAndFee.getEthPerGame();
@@ -71,7 +72,8 @@ contract EndowmentFund is Distribution, Guard {
         uint potId = generatePotId();
 
         Honeypot memory honeypot;
-        honeypot.gameId = potId;
+        // honeypot.gameId = potId;
+        honeypot.gameId = gameId;
         honeypot.state = HoneypotState.created;
         honeypot.createdTime = now;
         honeypot.ktyTotal = ktyAllocated;

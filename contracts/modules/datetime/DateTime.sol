@@ -41,6 +41,10 @@ contract DateTime {
         (_year, _month, _day, _hour, _minute, second) = timestampToDateTime(now);
     }
 
+    function getBlockTimeStamp() public view returns(uint){
+        return now;
+    }
+
     /**
     * @notice generic timestamp parser
     */

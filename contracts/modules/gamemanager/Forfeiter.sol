@@ -14,6 +14,7 @@ pragma solidity ^0.5.5;
 
 import "../proxy/Proxied.sol";
 import "../databases/GMGetterDB.sol";
+import "./GameStore.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
@@ -28,6 +29,7 @@ import '../kittieHELL/KittieHELL.sol';
  // TODO: check GameManager implementation, update API calls, and figure out how to test.
 contract Forfeiter is Proxied {
 
+  GameStore public gameStore;
   GameManager public gameManager;
   GMGetterDB public gmGetterDB;
   GameVarAndFee public gameVarAndFee;
@@ -46,6 +48,7 @@ contract Forfeiter is Proxied {
    */
   function initialize() external onlyOwner {
     gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+    gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
@@ -70,19 +73,20 @@ contract Forfeiter is Proxied {
       uint supportersBlack = gmGetterDB.getSupporters(gameId, playerBlack);
       uint supportersRed = gmGetterDB.getSupporters(gameId, playerRed);
 
-      checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed);
-      checkAmountSupporters(gameId, supportersBlack, supportersRed, gamePreStartTime);
+      bool check = checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed);
+      //if previous check passes, check players start
+       if(check) checkAmountSupporters(gameId, supportersBlack, supportersRed, gamePreStartTime);
     }
 
     // GAME_PRESTART
     if (gameState == 1) {
       (uint256 gameStartTime,,) = gmGetterDB.getGameTimes(gameId);
-      // (bool redStarted, bool blackStarted) = gmGetterDB.getPlayerStartStatus(gameId);
-      (,bool redStarted,,,,) = gameManager.games(gameId, playerRed);
-      (,bool blackStarted,,,,) = gameManager.games(gameId, playerBlack);
+      bool redStarted = gameStore.didHitStart(gameId, playerRed);
+      bool blackStarted = gameStore.didHitStart(gameId, playerRed);
 
-      checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed);
-      didPlayersStartGame(gameId, blackStarted, redStarted, gameStartTime);
+      bool check = checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed); // TODO check why it fails here
+      //if previous check passes, check players start
+      if(check) didPlayersStartGame(gameId, blackStarted, redStarted, gameStartTime);
     }
   }
 
@@ -93,7 +97,7 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId, string memory reason) internal {
-    (address playerBlack, address playerRed, uint256 kittyBlack,
+    (,,uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
     kittieHELL.releaseKittyForfeiter(kittyRed);
     kittieHELL.releaseKittyForfeiter(kittyBlack);
@@ -103,6 +107,7 @@ contract Forfeiter is Proxied {
 
   /**
    * @notice checks that the each player still own listed kittie
+   * @dev it can also be owned by kittie hell
    * @param kittieIdBlack uint256 kittieId of Black Corner
    * @param kittieIdRed uint256 kittieId of Red Corner
    * @param playerBlack address of Black Player
@@ -113,12 +118,24 @@ contract Forfeiter is Proxied {
     uint gameId, uint kittieIdBlack, uint kittieIdRed,
     address playerBlack, address playerRed
   )
-    internal
+    public returns(bool)
   {
-    bool checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
-    bool checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
+    bool checkBlack;
+    bool checkRed;
 
-    if (!(checkBlack && checkRed)) forfeitGame(gameId, 'Kittie Left');
+    //When one player hits start, that kittie is owned by kittieHELL
+    if (ckc.ownerOf(kittieIdBlack) == address(kittieHELL)) checkBlack = true;
+    else checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
+
+    if(ckc.ownerOf(kittieIdRed) == address(kittieHELL)) checkRed = true;
+    else checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
+
+    if (!(checkBlack && checkRed)) {
+      forfeitGame(gameId, 'Kittie Left');
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -128,11 +145,11 @@ contract Forfeiter is Proxied {
    * @param gamePreStartTime uint256 time when game starts 2 min countdown
    */
   function checkAmountSupporters(uint gameId, uint supportersBlack, uint supportersRed, uint gamePreStartTime)
-    internal
-  { 
+    public  returns(bool)
+  {
     if (gamePreStartTime <= now) {
-      uint minSupporters = gameVarAndFee.getMinimumContributors();
-      if(!(supportersBlack > minSupporters) && (supportersRed > minSupporters))
+      uint minSupporters = gameVarAndFee.getMinimumContributors(); //TODO: should call getterDB as vars and fees are locked
+      if(!(supportersBlack >= minSupporters) || !(supportersRed >= minSupporters))
         forfeitGame(gameId, "Undersupported");
     }
   }
@@ -144,11 +161,13 @@ contract Forfeiter is Proxied {
    * @param gameStartTime uint256 time when 2 min countdown ends
    */
   function didPlayersStartGame(uint gameId, bool blackStarted, bool redStarted, uint gameStartTime)
-    internal
+    public  returns(bool)
   {
     if (gameStartTime <= now){
-      if(blackStarted && redStarted)
+      if(!blackStarted || !redStarted){
         forfeitGame(gameId, "Did not hit start");
+        return true;
+      }
     }
   }
 }

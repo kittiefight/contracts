@@ -21,7 +21,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pragma solidity ^0.5.5;
-pragma experimental ABIEncoderV2;
+// pragma experimental ABIEncoderV2;
 
 import './modules/databases/RoleDB.sol';
 import './modules/databases/GenericDB.sol';
@@ -83,19 +83,44 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
 
     /// @dev set multiple variables
-    function setMultipleValues(string[] calldata names, uint[] calldata values)
+    function setMultipleValues(bytes32[] calldata names, uint[] calldata values)
         external onlyProxy onlySuperAdmin
     {
         require(names.length == values.length);
         bytes32 key;
         for(uint i = 0; i < names.length; i++){
-            key = keccak256(abi.encodePacked(TABLE_NAME, names[i]));
+            key = keccak256(abi.encodePacked(TABLE_NAME, bytes32ToString(names[i])));
             genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, values[i]);
         }
     }
 
+    function bytes32ToString(bytes32 x) internal pure returns (string memory) {
+        bytes memory bytesString = new bytes(32);
+        uint charCount = 0;
+        for (uint j = 0; j < 32; j++) {
+            byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
+            if (char != 0) {
+                bytesString[charCount] = char;
+                charCount++;
+            }
+        }
+        bytes memory bytesStringTrimmed = new bytes(charCount);
+        for (uint j = 0; j < charCount; j++) {
+            bytesStringTrimmed[j] = bytesString[j];
+        }
+        return string(bytesStringTrimmed);
+    }
+
 
     // ----- GETTERS ------
+
+    /// @notice FrontEnd Global Getter
+    function getGlobalSettings() public view    
+        returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
+    {
+        return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
+            getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
+    }
 
     /// @notice get eth/usd current price
     function getEthUsdPrice() public view returns(uint){
@@ -121,7 +146,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
     
     /// @notice Gets how long to wait for payment for kittie in kittiehell before kittie is lost forever 
-    function getKittieHellExpiration() 
+    function getKittieExpiry() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_HELL_EXPIRATION);
     }
@@ -189,11 +214,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
     }
 
-    /// @notice Gets Kittie expiry time in kittieHELL 
-    function getKittieExpiry() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY);
-    }
+    // /// @notice Gets Kittie expiry time in kittieHELL 
+    // function getKittieExpiry() 
+    // public view returns(uint) {
+    //     return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY);
+    // }
 
     /// @notice Gets minimum contributors needed for the game to continue
     function getMinimumContributors() 

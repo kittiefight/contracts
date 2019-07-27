@@ -8,6 +8,7 @@ require('chai')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB');
 const Proxy = artifacts.require('KFProxy');
+const CronJob = artifacts.require('CronJob');
 
 const CONTRACT_NAME = 'ProfileDB';
 const TABLE_NAME_PROFILE = 'ProfileTable';
@@ -21,6 +22,8 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     this.genericDB = await GenericDB.new();
     this.profileDB = await ProfileDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
+    this.cronJob = await CronJob.new(this.genericDB.address);
+    await this.proxy.addContract('CronJob', this.cronJob.address);
 
     await this.proxy.addContract('ProfileDB', this.profileDB.address);
     // Set the primary address as if it is Register Contract to call ProfileDB for testing purpose
@@ -50,7 +53,11 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     it('does not allow unauthorized address to access attribute setter functions', async () => {
       let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
 
+<<<<<<< HEAD
       await this.profileDB.create(userId, { from: unauthorizedUser }).should.be.rejected;
+=======
+      await this.profileDB.create(userId, { from: unauthorizedUser }).should.be.rejected;
+>>>>>>> feature/gameManager
 
       // Create a user with authorized address to test authorization for setter functions
       await this.profileDB.create(userId).should.be.fulfilled;
@@ -66,13 +73,20 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
 
       // First add a kittie to test update and remove functions
       await this.profileDB.addKittie(userId, 1, 2, 'dead').should.be.fulfilled;
+<<<<<<< HEAD
       await this.profileDB.removeKittie(userId, 1, { from: unauthorizedUser }).should.be.rejected;
       await this.profileDB.setKittieAttributes(userId, 1, 2, 'dead', { from: unauthorizedUser }).should.be.rejected;
+=======
+      await this.profileDB.removeKittie(userId, 1, { from: unauthorizedUser }).should.be.rejected;
+      await this.profileDB.setKittieAttributes(userId, 1, 2, 'dead', { from: unauthorizedUser }).should.be.rejected;
+>>>>>>> feature/gameManager
     });
   });
 
   describe('ProfileDB::Attributes', () => {
     it('creates a profile', async () => {
+<<<<<<< HEAD
+=======
       let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
 
       await this.profileDB.create(userId).should.be.fulfilled;
@@ -81,16 +95,20 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
     });
 
     it('sets a civic id', async () => {
+>>>>>>> feature/gameManager
       let tableKey = web3.utils.soliditySha3(TABLE_NAME_PROFILE);
       let _civicId = 12345;
 
       await this.profileDB.create(userId).should.be.fulfilled;
       // Check whether the node with the given user id is added to profile linked list
       (await this.genericDB.doesNodeAddrExist(CONTRACT_NAME, tableKey, userId)).should.be.true;
+<<<<<<< HEAD
+=======
 
       await this.profileDB.setCivicId(userId, _civicId).should.be.fulfilled;
       let civicId = await this.profileDB.getCivicId(userId);
       civicId.toNumber().should.be.equal(_civicId);
+>>>>>>> feature/gameManager
     });
 
     it('sets/gets gaming attributes', async () => {
@@ -193,7 +211,11 @@ contract('ProfileDB', ([creator, user1, user2, unauthorizedUser, randomAddress])
         superDAOTokens,
         isStakingSuperDAO
       ).should.be.fulfilled;
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> feature/gameManager
       let attrSuperDAOTokens = await this.genericDB.getUintStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'superDAOTokens'));
       let attrIsStakingSuperDAO = await this.genericDB.getBoolStorage(CONTRACT_NAME, web3.utils.soliditySha3(userId, 'isStakingSuperDAO'));
 

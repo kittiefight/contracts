@@ -22,6 +22,7 @@ import '../databases/GMGetterDB.sol';
 import "../databases/EndowmentDB.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
+import "../gamemanager/GameStore.sol";
 
 /**
  * @title Distribution Contract
@@ -38,6 +39,7 @@ contract Distribution is Proxied {
     GMGetterDB public gmGetterDB;
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
+    GameStore public gameStore;
 
     /**
     * @dev Sets related contracts
@@ -46,24 +48,25 @@ contract Distribution is Proxied {
     function initialize() external onlyOwner {
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        //kittieFightToken = ERC20Standard(proxy.getContract('MockERC20Token'));
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
+        gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
 
     /**
      * @notice Calculates amount of Eth the winner can claim
      */
     function getWinnerShare(uint gameId, address claimer) public view returns(uint256 winningsETH, uint256 winningsKTY) {
-        //TODO: check honeypot state to see if we can allow claiming
-        //require(endowmentDB.getHoneypotState(gameId) == 'Claiming')
 
-        address winningSide = gmGetterDB.getWinner(gameId);
-        (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getBettor(gameId, claimer);
+        (address winningSide,,) = gmGetterDB.getWinners(gameId);
+
+        require(winningSide != address(0), 'No winner detected for this game');
+
+        (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
         // Is the winning player or part of the bettors of the winning corner
         require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
 
-        uint256[5] memory rates = gameVarAndFee.getDistributionRates();
+        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
  
         uint8 winningCategory = checkWinnerCategory(gameId, claimer, winningSide, supportedPlayer);
 
@@ -87,6 +90,16 @@ contract Distribution is Proxied {
         }
     }
 
+    function getEndowmentShare(uint gameId) public view returns(uint256 winningsETH, uint256 winningsKTY){
+        uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
+        uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
+
+        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
+        
+        winningsETH = (totalEthFunds.mul(rates[4])).div(100);
+        winningsKTY = (totalKTYFunds.mul(rates[4])).div(100);
+    }
+
     function checkWinnerCategory
     (
         uint gameId, address claimer,
@@ -99,12 +112,10 @@ contract Distribution is Proxied {
         if (winner == claimer) return 0;
 
         // Winning Top Bettor
-        (address topBettor,) = gmGetterDB.getTopBettor(gameId, supportedPlayer);
-        if (topBettor == claimer) return 1;
+        if (gameStore.getTopBettor(gameId, supportedPlayer) == claimer) return 1;
 
         // Winning SecondTop Bettor
-        (address secondTopBettor,) = gmGetterDB.getSecondTopBettor(gameId, supportedPlayer);
-        if (secondTopBettor == claimer) return 2;
+        if (gameStore.getSecondTopBettor(gameId, supportedPlayer) == claimer) return 2;
 
         // Winning Other Bettors List
         if (winner == supportedPlayer) return 3;

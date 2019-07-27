@@ -31,6 +31,7 @@ import "../../authority/Guard.sol";
 import "../../libs/SafeMath.sol";
 import "./RarityCalculationDBs/Rarity.sol";
 import "./RarityCalculationDBs/DefenseLevel.sol";
+import "./RarityCalculationDBs/FancyKitties.sol";
 
 /**
  * @title This contract is responsible to calculate the defense level of a kitty
@@ -38,7 +39,7 @@ import "./RarityCalculationDBs/DefenseLevel.sol";
  * @author @ziweidream
  */
 
-contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
+contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties {
     using SafeMath for uint256;
 
     /**
@@ -63,6 +64,8 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
 
       if (kittieId < 10000) {
           defenseLevel = 6;
+      } else if (isFancy(kittieId)) {
+          defenseLevel = 5;
       } else if (rarity < defenseLevelLimit.level5Limit) {
           defenseLevel = 6;
       } else if (rarity >= defenseLevelLimit.level5Limit && rarity < defenseLevelLimit.level4Limit) {
@@ -75,8 +78,33 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel {
           defenseLevel = 2;
       } else if (rarity >= defenseLevelLimit.level1Limit) {
           defenseLevel = 1;
+      } else {
+          // if all conditions above are not met for some unprecitable reason,
+          // then default to 1 so that the game can continue
+          defenseLevel = 1;
       }
 
+      emit OriginalDefenseLevelCalculated(kittieId, defenseLevel);
+
+      assert(defenseLevel > 0);
       return defenseLevel;
     }
+
+    function isFancy(uint256 _kittieId)
+        public // temporarily set as public just for truffle test purpose
+        // internal
+        view
+        returns(bool)
+    {
+        string memory fancyName = FancyKittiesList[_kittieId];
+        bytes memory fancyNameBytes = bytes(fancyName);
+        if (fancyNameBytes.length != 0) {
+            // fancyName is NOT an empty string
+            return true;
+        }
+
+        return false;
+    }
+
+    event OriginalDefenseLevelCalculated(uint256 indexed _kittieId, uint256 _originalDefenseLevel);
 }
