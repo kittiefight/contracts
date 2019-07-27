@@ -91,12 +91,12 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev updateHoneyPotState
     */
-    function updateHoneyPotState(uint256 _potId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
+    function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
         uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
             claimTime = now.add(gameVarAndFee.getHoneypotExpiration());
         }
-        endowmentDB.setHoneypotState(_potId, _state, claimTime);
+        endowmentDB.setHoneypotState(_gameId, _state, claimTime);
     }
 
     /** @notice  Returns a fresh unique identifier.
@@ -148,8 +148,6 @@ contract EndowmentFund is Distribution, Guard {
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
         address msgSender = getOriginalSender();
         (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
-        //(uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
-        //return ((winningsETH == totalETHdebited) && (winningsKTY == totalKTYdebited));
         return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts
     }
 
@@ -189,7 +187,7 @@ contract EndowmentFund is Distribution, Guard {
         address(escrow).transfer(msg.value);
 
         require(endowmentDB.updateEndowmentFund(0, msg.value, false),
-            "Error: endowmentDB.updateEndowmentFund(0, msgSender, false) failed");
+            "Error: endowmentDB.updateEndowmentFund(0, msg.value, false) failed");
 
         emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
     }
@@ -337,5 +335,10 @@ Replaced onlyOwner with onlySuperAdmin
 2019-07-26 11:51:59
 Improve getWithdrawalState() - just set staus when fund is withdrawn
 
+2019-07-26 12:01:49
+git push
+
+2019-07-27 10:09:34
+small change
 
 */

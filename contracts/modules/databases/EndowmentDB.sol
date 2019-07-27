@@ -137,12 +137,11 @@ contract EndowmentDB is Proxied {
     );
   }
 
-  function setHoneypotState( uint gameId, uint state, uint256 claimTime) external {
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+  function setHoneypotState( uint _gameId, uint state, uint256 claimTime) external {
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "state")), state);
     if (claimTime > 0){
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")), claimTime);
+      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "claimTime")), claimTime);
     }
-    
   }
 
   function getHoneypotTotalETH(
@@ -218,7 +217,7 @@ contract EndowmentDB is Proxied {
   }
 
 /**
- * store the total debit by an a/c per game
+ * @dev store the total debit by an a/c per game
  */
   function debitFunds(
     uint _gameId, address _account, uint _eth_amount, uint _kty_amount
@@ -249,7 +248,7 @@ contract EndowmentDB is Proxied {
 
 
 /**
- * get total debit by an a/c per game
+ * @dev get total debit by an a/c per game
  */
   function getTotalDebit(
     uint _gameId, address _account
@@ -277,3 +276,12 @@ contract EndowmentDB is Proxied {
     _;
   }
 }
+
+
+/**
+change log
+
+2019-07-27 09:50:51 
+function setHoneypotState( uint _gameId  .. was _potId as else where gameid is used
+
+ */
