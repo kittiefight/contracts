@@ -68,7 +68,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @param n the integer to be converted
      * @return the binary
      */
-   function toBinaryString(uint256 n) internal pure returns (string memory) {
+   function toBinaryString(uint256 n) public pure returns (string memory) {
 
         bytes memory output = new bytes(240);
 
