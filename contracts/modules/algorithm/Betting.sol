@@ -455,6 +455,7 @@ contract Betting is Proxied, Guard {
         returns (
             string memory attackType,
             bytes32 attackHash,
+            uint256 defenseLevelSupportedPlayer,
             uint256 defenseLevelOpponent
         )
     {
@@ -462,7 +463,11 @@ contract Betting is Proxied, Guard {
 
         (attackType, attackHash, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
 
-        defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
+        defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
+
+        if (defenseLevelOpponent > 0) {
+           defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
+        }
 
         if (defenseLevelOpponent == 0) {
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
@@ -475,7 +480,7 @@ contract Betting is Proxied, Guard {
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
 
-        uint defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
+        defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
 
         emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelSupportedPlayer, defenseLevelOpponent);
     }
