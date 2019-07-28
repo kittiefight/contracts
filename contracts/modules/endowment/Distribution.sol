@@ -50,25 +50,30 @@ contract Distribution is Proxied {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     }
 
     /**
      * @notice Calculates amount of Eth the winner can claim
      */
-    function getWinnerShare(uint gameId, address claimer) public view returns(uint256 winningsETH, uint256 winningsKTY) {
+    function getWinnerShare(uint256 gameId, address payable claimer)
+        public view
+        returns(uint256 winningsETH, uint256 winningsKTY)
+    {
+        address[3] memory winners;
 
-        (address winningSide,,) = gmGetterDB.getWinners(gameId);
+        (winners[0], winners[1], winners[2]) = gmGetterDB.getWinners(gameId);
 
-        require(winningSide != address(0), 'No winner detected for this game');
+        require(winners[0] != address(0), 'No winner detected for this game');
 
         (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
-        // Is the winning player or part of the bettors of the winning corner
-        require(winningSide == supportedPlayer || winningSide == claimer, "Not on the winning group");
+        // If its the winning player or part of the bettors of the winning corner
+        require(claimer == winners[0] || supportedPlayer == winners[0], "Not on the winning group");
 
         uint256[5] memory rates = gameStore.getDistributionRates(gameId);
  
-        uint8 winningCategory = checkWinnerCategory(gameId, claimer, winningSide, supportedPlayer);
+        uint256 winningCategory = checkWinnerCategory(gameId, claimer, winners[0]);
 
         uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
         uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
@@ -78,10 +83,14 @@ contract Distribution is Proxied {
 
         //Other bettors winnings
         if (winningCategory == 3){
-            // uint amountSupporters = gmGetterDB.getSupporters(gameId, winningSide);
+            (uint256 betAmountTop,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);
+            (uint256 betAmountSecondTop,,) = gmGetterDB.getSupporterInfo(gameId, winners[2]);
 
             //get other supporters totalBets for winning side
-            uint256 totalBets = gmGetterDB.getTotalBet(gameId, winningSide);
+            uint256 totalBets = gmGetterDB.getTotalBet(gameId, winners[0]);
+
+            //Remove top and secondTop total bets
+            totalBets = totalBets.sub(betAmountTop).sub(betAmountSecondTop);
 
             // Distribute the 20% of the jackpot according to amount that supporter bet in game
             // This is to avoid a bettor for claiming winings if he/she did not bet
@@ -102,23 +111,23 @@ contract Distribution is Proxied {
 
     function checkWinnerCategory
     (
-        uint gameId, address claimer,
-        address winner, address supportedPlayer
+        uint gameId, address payable claimer,
+        address winner
     )
         public view
-        returns(uint8 winningGroup)
+        returns(uint256 winningGroup)
     {
         // Winning Player
         if (winner == claimer) return 0;
 
         // Winning Top Bettor
-        if (gameStore.getTopBettor(gameId, supportedPlayer) == claimer) return 1;
+        if (gameStore.getTopBettor(gameId, winner) == claimer) return 1;
 
         // Winning SecondTop Bettor
-        if (gameStore.getSecondTopBettor(gameId, supportedPlayer) == claimer) return 2;
+        if (gameStore.getSecondTopBettor(gameId, winner) == claimer) return 2;
 
         // Winning Other Bettors List
-        if (winner == supportedPlayer) return 3;
+        return 3;
     }
 
 

@@ -69,13 +69,13 @@ contract GameManager is Proxied, Guard {
     event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
 
     modifier onlyKittyOwner(address player, uint kittieId) {
-        require(cryptoKitties.ownerOf(kittieId) == player);
+        require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
         _;
     }
 
     modifier onlyGamePlayer(uint gameId, address player) {
-        require(profileDB.getCivicId(player) > 0);
-        require(gmGetterDB.isPlayer(gameId, player));
+        require(profileDB.getCivicId(player) > 0, "You need to verify your civic id");
+        require(gmGetterDB.isPlayer(gameId, player), "you are not a player of this game");
         _;
     }
 
@@ -136,8 +136,8 @@ contract GameManager is Proxied, Guard {
         onlyKittyOwner(playerRed, kittyRed)
         onlyKittyOwner(playerBlack, kittyBlack)
     {
-        require(!scheduler.isKittyListedForMatching(kittyRed));
-        require(!scheduler.isKittyListedForMatching(kittyBlack));
+        require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
+        require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
 
         generateFight(playerBlack, playerRed, kittyBlack, kittyRed, gameStartTime);
     }
@@ -269,8 +269,7 @@ contract GameManager is Proxied, Guard {
             betting.startGame(gameId, gameStore.getRandom(gameId, opponentPlayer), randomNum);
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
-            uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
-            endowmentFund.updateHoneyPotState(honeyPotId, 3);
+            endowmentFund.updateHoneyPotState(gameId, 3);
             emit GameStateChanged(gameId, eGameState.PRE_GAME, eGameState.MAIN_GAME);
             return true; //Game Started
         }
@@ -334,7 +333,7 @@ contract GameManager is Proxied, Guard {
             // Update Random
             hitsResolve.calculateCurrentRandom(gameId, randomNum);
             
-            address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
+            // address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
             
             //Send bet to betting algo, to decide attacks
             //betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
@@ -353,7 +352,7 @@ contract GameManager is Proxied, Guard {
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEnd(uint gameId) internal {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.MAIN_GAME));
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.MAIN_GAME), "game has not started yet");
 
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
 
@@ -368,7 +367,7 @@ contract GameManager is Proxied, Guard {
      * @dev Determine winner of game based on  **HitResolver **
      */
     function finalize(uint gameId, uint randomNum) external {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER));
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER), "game has not ended yet");
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 
@@ -382,8 +381,7 @@ contract GameManager is Proxied, Guard {
             gameStore.getSecondTopBettor(gameId, winner));
 
         //Set to claiming
-        uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
-        endowmentFund.updateHoneyPotState(honeyPotId, 5);
+        endowmentFund.updateHoneyPotState(gameId, 5);
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
@@ -397,13 +395,12 @@ contract GameManager is Proxied, Guard {
     function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
         uint gameState = gmGetterDB.getGameState(gameId);
         require(gameState == uint(eGameState.WAITING) ||
-                gameState == uint(eGameState.PRE_GAME));
+                gameState == uint(eGameState.PRE_GAME), "Game can't be cancelled at this point");
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
         //Set to forfeited
-        uint honeyPotId = gmGetterDB.getHoneypotId(gameId);
-        endowmentFund.updateHoneyPotState(honeyPotId, 4);
+        endowmentFund.updateHoneyPotState(gameId, 4);
         gmSetterDB.removeKittiesInGame(gameId);
 
     }

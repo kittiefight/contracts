@@ -14,7 +14,6 @@ const GMGetterDB = artifacts.require('GMGetterDB')
 const GameManager = artifacts.require('GameManager')
 const GameStore = artifacts.require('GameStore')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
-const Distribution = artifacts.require('Distribution')
 const Forfeiter = artifacts.require('Forfeiter')
 const DateTime = artifacts.require('DateTime')
 const Scheduler = artifacts.require('Scheduler')
@@ -31,6 +30,10 @@ const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
+const GuardImplementor = artifacts.require('GuardImplementor');
+const FreezeInfo = artifacts.require('FreezeInfo');
+const CronJobTarget = artifacts.require('CronJobTarget');
+
 // const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 const ERC20_TOKEN_SUPPLY = new BigNumber(
   web3.utils.toWei("100000000", "ether") //100 Million
@@ -60,6 +63,8 @@ const kitties = [0, 1001, 1555108, 1267904, 44444, 55555, 6666];
 
 gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING'];
 
+potStates = ['CREATED', 'ASSIGNED', 'SCHEDULED', 'STARTED', 'FORFEITED', 'CLAIMING', 'DISSOLVED']
+
 const cividIds = [0, 1, 2, 3, 4, 5, 6];
 
 // GAME VARS AND FEES
@@ -68,11 +73,20 @@ const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 30 // 30 secs for quick test
-const GAME_DURATION = 30 // games last 0.5 min
+const GAME_PRESTART = 20 // 20 secs for quick test
+const GAME_DURATION = 60 // games last 0.5 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
-const GAME_TIMES = 60 //Scheduled games 1 min apart
+const GAME_TIMES = 120 //Scheduled games 1 min apart
+const KITTIE_HELL_EXPIRATION = 300
+const HONEY_POT_EXPIRATION = 120
+const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
+//Distribution Rates
+const WINNING_KITTIE = 35
+const TOP_BETTOR = 25
+const SECOND_RUNNER_UP = 10
+const OTHER_BETTORS = 15
+const ENDOWNMENT = 15
 
 const GameState = {
   WAITING: 0,
@@ -82,6 +96,16 @@ const GameState = {
   CLAIMING: 4,
   KITTIE_HELL: 5,
   CANCELLED: 6
+}
+
+const HoneypotState = {
+  created: 0,
+  assigned: 1,
+  gameScheduled: 2,
+  gameStarted: 3,
+  forefeited: 4,
+  claiming: 5,
+  dissolved: 6
 }
 
 let gameDetails;
@@ -107,6 +131,13 @@ function timeout(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
+function formatDate(timestamp)
+{
+    let date = new Date(null);
+    date.setSeconds(timestamp);
+    return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+}
+
 contract('GameManager', (accounts) => {
 
   it('deploys contracts', async () => {
@@ -124,6 +155,10 @@ contract('GameManager', (accounts) => {
 
     // CRONJOB
     cronJob = await CronJob.new(genericDB.address)
+    //guardImplementor = await GuardImplementor.new(roleDB.address);
+    freezeInfo = await FreezeInfo.new();
+    cronJobTarget= await CronJobTarget.new();
+
 
     // TOKENS
     superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
@@ -136,13 +171,12 @@ contract('GameManager', (accounts) => {
     register = await Register.new()
     dateTime = await DateTime.new()
     gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
-    distribution = await Distribution.new()
     forfeiter = await Forfeiter.new()
     scheduler = await Scheduler.new()
     betting = await Betting.new()
     hitsResolve = await HitsResolve.new()
-    // rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
-    rarityCalculator = await RarityCalculator.new()
+    rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
+    // rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
     kittieHELL = await KittieHELL.new()
 
@@ -164,7 +198,6 @@ contract('GameManager', (accounts) => {
     await proxy.addContract('GameVarAndFee', gameVarAndFee.address)
     await proxy.addContract('EndowmentFund', endowmentFund.address)
     await proxy.addContract('EndowmentDB', endowmentDB.address)
-    await proxy.addContract('Distribution', distribution.address)
     await proxy.addContract('Forfeiter', forfeiter.address)
     await proxy.addContract('Scheduler', scheduler.address)
     await proxy.addContract('Betting', betting.address)
@@ -175,8 +208,12 @@ contract('GameManager', (accounts) => {
     await proxy.addContract('GameManager', gameManager.address)
     await proxy.addContract('GameStore', gameStore.address)
     await proxy.addContract('CronJob', cronJob.address)
+    await proxy.addContract('FreezeInfo', freezeInfo.address);
+    await proxy.addContract('CronJobTarget', cronJobTarget.address);
     await proxy.addContract('KittieHell', kittieHELL.address)
     await proxy.addContract('KittieHellDB', kittieHellDB.address)
+    
+
   })
 
   it('sets proxy in contracts', async () => {
@@ -188,7 +225,6 @@ contract('GameManager', (accounts) => {
     await endowmentFund.setProxy(proxy.address)
     await endowmentDB.setProxy(proxy.address)
     await gameVarAndFee.setProxy(proxy.address)
-    await distribution.setProxy(proxy.address)
     await forfeiter.setProxy(proxy.address)
     await scheduler.setProxy(proxy.address)
     await betting.setProxy(proxy.address)
@@ -200,6 +236,9 @@ contract('GameManager', (accounts) => {
     await cronJob.setProxy(proxy.address)
     await kittieHELL.setProxy(proxy.address)
     await kittieHellDB.setProxy(proxy.address)
+    await cronJobTarget.setProxy(proxy.address);
+    await freezeInfo.setProxy(proxy.address);
+
   })
 
   it('initializes contract variables', async () => {
@@ -257,7 +296,8 @@ contract('GameManager', (accounts) => {
   it('Set game vars and fees correctly', async () => {
     let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
       'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
-      'gameTimes'];
+      'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
+      'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment'];
 
     let bytesNames = [];
     for (i = 0; i < names.length; i++) {
@@ -265,7 +305,10 @@ contract('GameManager', (accounts) => {
     }
 
     let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
-      REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES];
+      REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
+      HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
+      OTHER_BETTORS, ENDOWNMENT];
+
 
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
       from: accounts[0]
@@ -336,15 +379,21 @@ contract('GameManager', (accounts) => {
     
       console.log('\n==== NEW GAME CREATED ===');
       console.log('    GameId ', e.returnValues.gameId)
-      console.log('    KittieRed ', e.returnValues.kittieRed)
-      console.log('    KittieBlack ', e.returnValues.kittieBlack)
-      console.log('    StartTime ', e.returnValues.gameStartTime)
-      console.log('    Prestart Time:', gameInfo.preStartTime.toString());
-      console.log('    End Time:', gameInfo.endTime.toString());
+      console.log('    Red Fighter ', e.returnValues.kittieRed)
+      console.log('    Black Fighter ', e.returnValues.kittieBlack)
+      console.log('    Start Time ', formatDate(e.returnValues.gameStartTime))
+      console.log('    Prestart Time:', formatDate(gameInfo.preStartTime));
+      console.log('    End Time:', formatDate(gameInfo.endTime));
       console.log('========================\n')
     })
 
     gameDetails = newGameEvents[0].returnValues
+
+    let gameTimes = await getterDB.getGameTimes(gameDetails.gameId);
+
+    gameDetails.endTime = gameTimes.endTime.toNumber();
+
+    gameDetails.preStartTime = gameTimes.preStartTime.toNumber();
   })
 
   it('bettors can participate in a created game', async () => {
@@ -352,6 +401,11 @@ contract('GameManager', (accounts) => {
     console.log('\n==== PLAYING GAME 1 ===\n');
 
     let { gameId, playerRed, playerBlack } = gameDetails;
+
+    let currentState = await getterDB.getGameState(gameId)
+    console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
+
+    console.log('\n==== ADDING SUPPORTERS TO THE GAME ');
 
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerRed]), { from: accounts[5] }).should.be.fulfilled;
@@ -381,8 +435,7 @@ contract('GameManager', (accounts) => {
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 10);
 
-    let currentState = await getterDB.getGameState(gameId)
-    console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
+    
   })
 
   it('player cant start a game before reaching PRE_GAME', async () => {
@@ -391,37 +444,43 @@ contract('GameManager', (accounts) => {
       [gameId, 99]), { from: playerRed }).should.be.rejected;
   })
 
-  it('should move gameState to PRE_GAME', function (done) {
+  it('should move gameState to PRE_GAME', async () => {
     console.log('\n==== WAITING FOR PREGAME TIME')
-    this.timeout(180000)
-    setTimeout(async function () {
 
-      let { gameId, playerRed, playerBlack } = gameDetails;
+    let block = await dateTime.getBlockTimeStamp();
 
-      let currentState = await getterDB.getGameState(gameId)
-      currentState.toNumber().should.be.equal(GameState.WAITING)
+      
+    while(block < gameDetails.preStartTime){
+      block = await dateTime.getBlockTimeStamp();
+      await(1);
+    }
 
-      //Should be able to participate in prestart state
-      await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-        [gameId, playerBlack]), { from: accounts[15] }).should.be.fulfilled;
+    let { gameId, playerRed, playerBlack } = gameDetails;
 
-      //Show supporters
-      let redSupporters = await getterDB.getSupporters(gameId, playerRed);
-      console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
+    let currentState = await getterDB.getGameState(gameId)
+    currentState.toNumber().should.be.equal(GameState.WAITING)
 
-      let blackSupporters = await getterDB.getSupporters(gameId, playerBlack);
-      console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
+    //Should be able to participate in prestart state
+    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [gameId, playerBlack]), { from: accounts[15] }).should.be.fulfilled;
+
+    //Show supporters
+    let redSupporters = await getterDB.getSupporters(gameId, playerRed);
+    console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
+
+    let blackSupporters = await getterDB.getSupporters(gameId, playerBlack);
+    console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
 
 
-      let newState = await getterDB.getGameState(gameId)
-      console.log('\n==== NEW STATE: ', gameStates[newState.toNumber()])
-      newState.toNumber().should.be.equal(GameState.PRE_GAME)
+    let newState = await getterDB.getGameState(gameId)
+    console.log('\n==== NEW STATE: ', gameStates[newState.toNumber()])
+    newState.toNumber().should.be.equal(GameState.PRE_GAME)
 
-      events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
-      assert.equal(events.length, 11);
+    events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+    assert.equal(events.length, 11);
 
-      done()
-    }, 31000);
+    //   done()
+    // }, 31000);
 
   })
 
@@ -482,7 +541,7 @@ contract('GameManager', (accounts) => {
     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
   })
 
-  it('testing rarity and betting', async () => { 
+  it('set defense level for both players', async () => { 
 
     let { gameId, playerRed, playerBlack, kittieBlack, kittieRed } = gameDetails;
 
@@ -491,16 +550,19 @@ contract('GameManager', (accounts) => {
     const gene2 = '24171491821178068054575826800486891805334952029503890331493652557302916'
 
     //This works, with previous test uncommented
-    // let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
-    // console.log('Defense Black:', defense.toString());
-
-    // let defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
-    // console.log('Defense Red :', defense.toString());
-
+    let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
+    //console.log('Defense Black:', defense.toString());
+    await betting.setOriginalDefenseLevel(gameId, playerBlack, defense);
     
 
-    await betting.setOriginalDefenseLevel(gameId, playerRed, 5);
-    await betting.setOriginalDefenseLevel(gameId, playerBlack, 5);
+    defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
+    //console.log('Defense Red :', defense.toString());
+    await betting.setOriginalDefenseLevel(gameId, playerRed, defense);
+    
+    
+
+    // await betting.setOriginalDefenseLevel(gameId, playerRed, 5);
+    // await betting.setOriginalDefenseLevel(gameId, playerBlack, 5);
 
     // let block = await dateTime.getBlockTimeStamp();
     //   console.log('\nblocktime: ', block.toString())
@@ -509,6 +571,9 @@ contract('GameManager', (accounts) => {
   it('should move gameState to MAIN_GAME', async () => {
 
     let { gameId, playerRed, playerBlack } = gameDetails
+
+    let block = await dateTime.getBlockTimeStamp();
+    console.log('\nblocktime: ', formatDate(block))
 
     await timeout(1);
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
@@ -580,14 +645,14 @@ contract('GameManager', (accounts) => {
         (redBetStore.has(bettor)) ?
           redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
           redBetStore.set(bettor, betAmount)
+          console.log('\n==== NEW BET FOR RED', 'Amount:', betAmount, 'ETH, bettor:', bettor);
       } else {
         (blackBetStore.has(bettor)) ?
           blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
           blackBetStore.set(bettor, betAmount)
-      }
-
+          console.log('\n==== NEW BET FOR BLACK', 'Amount:', betAmount, 'ETH, bettor:', bettor);
+      }     
       
-      console.log('\n==== NEW BET', 'Amount:', betAmount, 'ETH, bettor:', bettor);
 
       await proxy.execute('GameManager', setMessage(gameManager, 'bet',
         [gameId, randomValue()]), { from: bettor, value: web3.utils.toWei(String(betAmount)) }).should.be.fulfilled;
@@ -604,7 +669,7 @@ contract('GameManager', (accounts) => {
 
   it('correctly adds all bets for each corner', async () => {
     let block = await dateTime.getBlockTimeStamp();
-      console.log('\nblocktime: ', block.toString())
+      console.log('\nblocktime: ', formatDate(block))
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -615,6 +680,7 @@ contract('GameManager', (accounts) => {
     console.log(`\n==== TOTAL BETS: ${totalBetAmount} ETH `)
 
     actualTotalBet.toString().should.be.equal(String(web3.utils.toWei(String(totalBetAmount))));
+    await timeout(1);
   })  
 
   it('correctly computes the top bettors for each corner', async () => {
@@ -627,6 +693,7 @@ contract('GameManager', (accounts) => {
     console.log(redSortMap)
     console.log('\n==== BLACK SORTED MAP ====')
     console.log(blackSortMap)
+    await timeout(1);
 
     let redSorted = Array.from(redSortMap.keys())
     let blackSorted = Array.from(blackSortMap.keys())
@@ -642,6 +709,7 @@ contract('GameManager', (accounts) => {
 
     console.log('\n-==== BLACK TOP BETTORS ====')
     console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
+    await timeout(1);
     
     redTopBettor.should.be.equal(redSorted[0])
     redSecondTopBettor.should.be.equal(redSorted[1])
@@ -649,34 +717,40 @@ contract('GameManager', (accounts) => {
     blackSecondTopBettor.should.be.equal(blackSorted[1])
 
     let block = await dateTime.getBlockTimeStamp();
-      console.log('\nblocktime: ', block.toString())
+    console.log('\nblocktime: ', formatDate(block))
+
+    let gameTimes = await getterDB.getGameTimes(gameId);
+
+    console.log('\nGame end time: ', formatDate(gameTimes.endTime))
+
+    await timeout(1);
   })
 
-  it('game ends', function (done) {
+  it('game ends', async () => {
     
     console.log('\n==== WAITING FOR GAME OVER')
-    this.timeout(180000)
-    setTimeout(async function () {      
 
-      let { gameId } = gameDetails;      
-
-      let gameTimes = await getterDB.getGameTimes(gameId);
-
-      console.log('\nGame end time: ', gameTimes.endTime.toString())
-
-      await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-        [gameId, randomValue()]), { from: accounts[7], value: web3.utils.toWei('1') }).should.be.fulfilled;
+    let block = await dateTime.getBlockTimeStamp();
       
-      let currentState = await getterDB.getGameState(gameId)
-      currentState.toNumber().should.be.equal(3);
+    while(block < gameDetails.endTime){
+      block = await dateTime.getBlockTimeStamp();
+      await(1);
+    } 
 
-      console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
+    let { gameId } = gameDetails;  
 
-      let block = await dateTime.getBlockTimeStamp();
-      console.log('\nblocktime: ', block.toString())
+    await proxy.execute('GameManager', setMessage(gameManager, 'bet',
+      [gameId, randomValue()]), { from: accounts[7], value: web3.utils.toWei('1') }).should.be.fulfilled;
+    
+    let currentState = await getterDB.getGameState(gameId)
+    currentState.toNumber().should.be.equal(3);
 
-      done()
-    }, 40000);
+    console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
+
+    block = await dateTime.getBlockTimeStamp();
+    console.log('\nblocktime: ', formatDate(block))
+
+   
   })
 
   it('can call finalize game', async () => {
@@ -726,32 +800,69 @@ contract('GameManager', (accounts) => {
     console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
 
     let potState = await endowmentDB.getHoneypotState(gameId);
-    console.log('==== Honeypot State: ', potState.state.toString());
+    console.log('\n==== HONEYPOT STATE: ', potStates[potState.state.toNumber()]);
  
   })
 
-  it('state changes to CLAIMING', async () => {
+  it('correct distribution details', async () => {
 
     let { gameId } = gameDetails;
 
     let winners = await getterDB.getWinners(gameId);
 
+    console.log('\n==== DISTRIBUTIONS ==== ');
+    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);  
+    console.log('  WINNER SHARE: ');
+    console.log('    ETH: ', web3.utils.fromWei(winnerShare.winningsETH.toString()));
+    console.log('    KTY: ', web3.utils.fromWei(winnerShare.winningsKTY.toString()));
+    let topShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
+    console.log('  TOP BETTOR SHARE: ');
+    console.log('    ETH: ', web3.utils.fromWei(topShare.winningsETH.toString()));
+    console.log('    KTY: ', web3.utils.fromWei(topShare.winningsKTY.toString()));
+    let secondTopShare = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
+    console.log('  SECOND TOP BETTOR SHARE: ');
+    console.log('    ETH: ', web3.utils.fromWei(secondTopShare.winningsETH.toString()));
+    console.log('    KTY: ', web3.utils.fromWei(secondTopShare.winningsKTY.toString()))
+    let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+    console.log('  ENDOWMENT SHARE: ');
+    console.log('    ETH: ',  web3.utils.fromWei(endowmentShare.winningsETH.toString()));
+    console.log('    KTY: ',  web3.utils.fromWei(endowmentShare.winningsKTY.toString()));
+    
+    let supporters = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
 
-    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
-    console.log('==== WINNERS SHARE: ', winnerShare.toString());
-    // let topShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
-    // console.log('==== TOP BETTOR SHARE: ', topShare.toString());
-    // let secondTopShare = await endowmentFund.getWinnerShare(gameId, secondTopBettor);
-    // console.log('==== SECOND TOP BETTOR SHARE: ', secondTopShare.toString());
-    // let otherBettorRed = await endowmentFund.getWinnerShare(gameId, accounts[7]);
-    // console.log('==== OTHER BETTOR SHARE: ', otherBettorRed.toString());
-    // let otherBettorBlack = await endowmentFund.getWinnerShare(gameId, accounts[14]);
-    // console.log('==== WINNERS SHARE: ', otherBettorBlack.toString());
+    //Get list of other bettors
+    supporters = supporters
+      .map(e => e.returnValues) 
+      .filter(e => e.playerSupported === winners.winner)
+      .filter(e => e.supporter !== winners.topBettor)
+      .filter(e => e.supporter !== winners.secondTopBettor)
+      .map( e => e.supporter)    
 
-    // let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
-    // console.log('==== WINNERS SHARE: ', endowmentShare.toString());
+    console.log('\n  OTHER BETTORS SHARE: ');
+    console.log(' List: ', supporters) 
+    for(let i=0; i<supporters.length; i++){
+      let share = await endowmentFund.getWinnerShare(gameId, supporters[i]);      
+      let supporterInfo = await getterDB.getSupporterInfo(gameId, supporters[i]);
+      console.log(`\n  Bettor ${supporters[i]}: `);
+      console.log('    Amount Bet:', web3.utils.fromWei( supporterInfo.betAmount.toString()), 'ETH')      
+      console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
+      console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
+    }    
+
+    //Bettor from Black Corner
+    await endowmentFund.getWinnerShare(gameId, accounts[14]).should.be.rejected;
 
  
+  })
+
+  it.skip('winner can claim his share', async () => {
+    let { gameId, playerRed, playerBlack } = gameDetails;
+
+    let winners = await getterDB.getWinners(gameId);
+
+    await proxy.execute('EndowmentFund', setMessage(gameManager, 'claim',
+    [gameId]), { from: winners.winner }).should.be.fulfilled;
+
   })
 
 })
@@ -1242,7 +1353,6 @@ const cattributesData = [
   { description: "pawsfree", type: "prestige", gene: null, total: "264" },
   { description: "bionic", type: "prestige", gene: null, total: "195" },
 ]
-
 
 
 // original data based on 
