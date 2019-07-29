@@ -624,20 +624,18 @@ contract('Betting', accounts => {
     assert.equal(bet, 2)
   })
 
-  it('is able to get last 5 bet amount of the given corner of a game with a specific gameId', async () => {
+  it('is able to get last 4 bet amount of the given corner of a game with a specific gameId', async () => {
     await BettingInst.fillBets(123, accounts[0], 3)
     await BettingInst.fillBets(123, accounts[0], 4)
     await BettingInst.fillBets(123, accounts[0], 5)
     await BettingInst.fillBets(123, accounts[0], 6)
     await BettingInst.fillBets(123, accounts[0], 7)
     const {
-      lastBet5,
       lastBet4,
       lastBet3,
       lastBet2,
       lastBet1
-    } = await BettingInst.getLastFiveBets(123, accounts[0])
-    assert.equal(lastBet5.toNumber(), 3)
+    } = await BettingInst.getLastFourBets(123, accounts[0])
     assert.equal(lastBet4.toNumber(), 4)
     assert.equal(lastBet3.toNumber(), 5)
     assert.equal(lastBet2.toNumber(), 6)

@@ -200,6 +200,22 @@ contract Betting is Proxied, Guard {
       bets[_gameId][_player].push(_betAmount);
     }
 
+   /**
+    * @author @ziweidream
+    * @notice get the number of total bets placed by the given corner in a game
+    * with a specific gameId
+    * @param _gameId the gameID of the game
+    * @param _player the given corner in this game whose individual bet ether amount is recorded
+    * @return the number of total bets placed by the given corner in a game
+    */
+    function getNumberOfBets(uint256 _gameId, address _player)
+       public
+       view
+       returns(uint256 num)
+    {
+        num = bets[_gameId][_player].length;
+    }
+
     // get last 5 bet amount of the given corner
    /**
     * @author @ziweidream
@@ -210,13 +226,13 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game whose individual bet ether amount is recorded
     * @return the last 5 bet ether amount by the given corner in a game
     */
-    function getLastFiveBets(uint256 _gameId, address _player)
+    function getLastFourBets(uint256 _gameId, address _player)
         public
         view
-        returns(uint lastBet5, uint lastBet4, uint lastBet3, uint lastBet2, uint lastBet1)
+        returns(uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1)
     {
       uint256 arrLength = bets[_gameId][_player].length;
-      lastBet5 = bets[_gameId][_player][arrLength.sub(5)];
+      require(arrLength > 3);
       lastBet4 = bets[_gameId][_player][arrLength.sub(4)];
       lastBet3 = bets[_gameId][_player][arrLength.sub(3)];
       lastBet2 = bets[_gameId][_player][arrLength.sub(2)];
@@ -269,7 +285,7 @@ contract Betting is Proxied, Guard {
             bytes32 attackHash,
             uint256 index
         ){
-        (,,,,uint256 prevBetAmount) = getLastFiveBets(_gameId, _supportedPlayer);
+        (,,,uint256 prevBetAmount) = getLastFourBets(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (_lastBetAmount <= prevBetAmount) {
             uint256 diceLowValues = randomGen(_randomNum);
@@ -357,7 +373,7 @@ contract Betting is Proxied, Guard {
         )
         {
         require(defenseLevel[_gameId][_opponentPlayer] > 0, "Defense level is already zero");
-        (, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
+        (uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFourBets(_gameId, _supportedPlayer);
         if (_lastBetAmount > lastBet1 && lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4) {
             defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer].sub(1);
             setDefenseLevel(_gameId, _opponentPlayer, defenseLevelOpponent);
@@ -465,7 +481,9 @@ contract Betting is Proxied, Guard {
 
         defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
 
-        if (defenseLevelOpponent > 0) {
+        uint numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
+
+        if (defenseLevelOpponent > 0 && numberOfBets > 3) {
            defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
         }
 
