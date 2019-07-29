@@ -68,8 +68,8 @@ contract Distribution is Proxied {
 
         (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
-        // If its the winning player or part of the bettors of the winning corner
-        require(claimer == winners[0] || supportedPlayer == winners[0], "Not on the winning group");
+        // If its not the winning player or part of the bettors of the winning corner
+        if(claimer != winners[0] && supportedPlayer != winners[0]) return (0,0);
 
         uint256[5] memory rates = gameStore.getDistributionRates(gameId);
  

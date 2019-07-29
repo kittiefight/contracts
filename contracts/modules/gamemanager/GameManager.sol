@@ -67,6 +67,7 @@ contract GameManager is Proxied, Guard {
     event NewSupporter(uint indexed game_id, address indexed supporter, address playerSupported);
     event PressStart(uint indexed game_id, address player);
     event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
+    event GameEnded(uint indexed game_id, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
 
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
@@ -311,41 +312,41 @@ contract GameManager is Proxied, Guard {
     {
         require(msg.value > 0, "Bet must be greater than 0");
 
+        uint gameState = gmGetterDB.getGameState(gameId);
+        
+        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running");
+        
+        address sender = getOriginalSender();
+        (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
+
+        require(payedFee, "Bettor has not payed fee yet"); //Needs to call participate first if false
+        
+        //Transfer Funds to endowment
+        require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
+        require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)), "Error sending kty to endowment");
+
+        //Update bettor's total bet
+        if (sender != supportedPlayer) gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
+
+        // Update Random
+        hitsResolve.calculateCurrentRandom(gameId, randomNum);
+        
+        address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
+        
+        //Send bet to betting algo, to decide attacks
+        betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
+
+        // update game variables
+        gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
+
+        // check underperforming game if one minut
+        checkPerformance(gameId);
+
         //Check if game has ended
         gameEnd(gameId);
 
-        uint gameState = gmGetterDB.getGameState(gameId);
+        // emit NewBet(gameId, sender, msg.value);
         
-        if(gameState == uint(eGameState.MAIN_GAME)){
-        
-            address sender = getOriginalSender();
-            (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
-
-            require(payedFee, "Bettor has not payed fee yet"); //Needs to call participate first if false
-            
-            //Transfer Funds to endowment
-            require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
-            require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)), "Error sending kty to endowment");
-
-            //Update bettor's total bet
-            if (sender != supportedPlayer) gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
-
-            // Update Random
-            hitsResolve.calculateCurrentRandom(gameId, randomNum);
-            
-            // address opponentPlayer = gmGetterDB.getOpponent(gameId, supportedPlayer);
-            
-            //Send bet to betting algo, to decide attacks
-            //betting.bet(gameId, msg.value, supportedPlayer, opponentPlayer, randomNum);
-
-            // update game variables
-            gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
-
-            // check underperforming game if one minut
-            checkPerformance(gameId);
-
-            // emit NewBet(gameId, sender, msg.value);
-        }
     }
 
     /**
@@ -374,7 +375,20 @@ contract GameManager is Proxied, Guard {
         uint256 playerBlackPoints = hitsResolve.calculateFinalPoints(gameId, playerBlack, randomNum);
         uint256 playerRedPoints = hitsResolve.calculateFinalPoints(gameId, playerRed, randomNum);
 
-        address winner = playerBlackPoints > playerRedPoints ? playerBlack : playerRed;
+        address winner;
+        address loser;
+
+        // And a tie?
+        if (playerBlackPoints > playerRedPoints)
+        {
+            winner = playerBlack;
+            loser = playerRed;
+        }
+        else
+        {
+            winner = playerRed;
+            loser = playerBlack;
+        }
 
         //Store Winners in DB
         gmSetterDB.setWinners(gameId, winner, gameStore.getTopBettor(gameId, winner),
@@ -386,6 +400,7 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
 
+        emit GameEnded(gameId, winner, loser, playerBlackPoints, playerRedPoints);
     }
     
 

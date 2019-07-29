@@ -45,7 +45,7 @@ module.exports = {
       host: "127.0.0.1",
       port: 8544,
       network_id: 999,
-      gas: 7800000
+      gas: 9000000
     },
     live: {
       host: "127.0.0.1",

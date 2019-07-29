@@ -98,16 +98,6 @@ const GameState = {
   CANCELLED: 6
 }
 
-const HoneypotState = {
-  created: 0,
-  assigned: 1,
-  gameScheduled: 2,
-  gameStarted: 3,
-  forefeited: 4,
-  claiming: 5,
-  dissolved: 6
-}
-
 let gameDetails;
 
 // BETTING
@@ -420,20 +410,20 @@ contract('GameManager', (accounts) => {
       [gameId, playerBlack]), { from: accounts[5] }).should.be.rejected;
 
     // adds more supporters for player red
-    for (let i = 6; i < 10; i++) {
+    for (let i = 6; i < 12; i++) {
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
         [gameId, playerRed]), { from: accounts[i] }).should.be.fulfilled;
     }
 
     // adds more supporters for player red
-    for (let i = 10; i < 15; i++) {
+    for (let i = 12; i < 18; i++) {
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
         [gameId, playerBlack]), { from: accounts[i] }).should.be.fulfilled;
     }
 
     //Check NewSupporter events
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
-    assert.equal(events.length, 10);
+    assert.equal(events.length, 13);
 
     
   })
@@ -460,9 +450,9 @@ contract('GameManager', (accounts) => {
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.WAITING)
 
-    //Should be able to participate in prestart state
+    //Should be able to participate in prestart state (this one wont bet)
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerBlack]), { from: accounts[15] }).should.be.fulfilled;
+      [gameId, playerBlack]), { from: accounts[18] }).should.be.fulfilled;
 
     //Show supporters
     let redSupporters = await getterDB.getSupporters(gameId, playerRed);
@@ -477,7 +467,7 @@ contract('GameManager', (accounts) => {
     newState.toNumber().should.be.equal(GameState.PRE_GAME)
 
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
-    assert.equal(events.length, 11);
+    assert.equal(events.length, 14);
 
     //   done()
     // }, 31000);
@@ -612,9 +602,11 @@ contract('GameManager', (accounts) => {
 
   it('escrow contract should have KTY funds from fees', async () => {
     let balanceKTY = await escrow.getBalanceKTY()
-    // 50.000 + 4*1000 + 11*100
-    let expected = new BigNumber(web3.utils.toWei("55100", "ether"));
+    // 50.000 + 4*1000 + 14*100
+    let expected = new BigNumber(web3.utils.toWei("55400", "ether"));
     balanceKTY.toString().should.be.equal(expected.toString())
+
+    await timeout(1);
   })
 
   it('betting algo creates a fight map', async () => {
@@ -630,16 +622,48 @@ contract('GameManager', (accounts) => {
     console.log('=================\n')
   })
 
+  it('initializing last 5 bets (temporal)', async () => { 
+    
+    let { gameId, playerRed, playerBlack } = gameDetails;
+
+    for (let i = 0; i < 5; i++) {
+      await betting.fillBets(gameId, playerRed, 0)
+      await betting.fillBets(gameId, playerBlack, 0)
+    }
+    // await betting.bet(gameId, 10000, playerRed, playerBlack, 57, {from:accounts[8]});
+
+    // let attackType = await betting.getAttackType(gameId, playerRed, playerBlack, 57)
+    // console.log(attackType);
+
+    // let defenseLevelOpponent = await betting.reduceDefenseLevel.call(gameId, 10000, playerRed, playerBlack);
+    // console.log(defenseLevelOpponent.toNumber());
+
+    // if (defenseLevelOpponent.toNumber() === 0) {
+    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
+    // } else if(defenseLevelOpponent.toNumber() > 0 && isAttackBlocked(gameId, playerBlack)) {
+    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
+    // } else {
+    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
+    // }
+
+    // await betting.setLastBetTimestamp(gameId, playerRed, 1564354674);
+    // await betting.fillBets(gameId, playerRed, 10000);
+
+
+  })
+
   it('should be able to make bet', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.MAIN_GAME)
 
-    for (let i = 6; i < 15; i++) {
-      let supportedPlayer = i < 10 ? playerRed : playerBlack
+    for (let i = 6; i < 18; i++) {
+      // let supportedPlayer = i < 10 ? playerRed : playerBlack;
       let betAmount = randomValue()
       let bettor = accounts[i]
+      let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[i])
+      let supportedPlayer = supporterInfo.supportedPlayer;
 
       if (supportedPlayer == playerRed) {
         (redBetStore.has(bettor)) ?
@@ -662,10 +686,7 @@ contract('GameManager', (accounts) => {
     }
   })
 
-  it.skip('testing betting bet', async () => { 
-    let { gameId, playerRed, playerBlack } = gameDetails;
-    await betting.bet(gameId, randomValue(), playerRed, playerBlack, randomValue());
-  })
+ 
 
   it('correctly adds all bets for each corner', async () => {
     let block = await dateTime.getBlockTimeStamp();
@@ -760,21 +781,30 @@ contract('GameManager', (accounts) => {
     await proxy.execute('GameManager', setMessage(gameManager, 'finalize',
     [gameId, randomValue()]), { from: accounts[10] }).should.be.fulfilled;
 
+    let gameEnd = await gameManager.getPastEvents('GameEnded', {
+      filter: {gameId},
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    
+    let {pointsBlack, pointsRed} = gameEnd[0].returnValues;
+
     let winners = await getterDB.getWinners(gameId);
 
-    let corner = winners.winner === playerBlack ? "Black Corner":"Red Corner"
+    let corner = (winners.winner === playerBlack) ? "Black Corner":"Red Corner"
 
     console.log(`\n==== WINNER: ${corner} ==== `)
     console.log(`   Winner: ${winners.winner}   `);
     console.log(`   TopBettor: ${winners.topBettor}   `)
     console.log(`   SecondTopBettor: ${winners.secondTopBettor}   `)
+    console.log('')
+    console.log(`   Points Black: ${pointsBlack}   `);
+    console.log(`   Point Red: ${pointsRed}   `);
     console.log('=======================\n')
     
   })
   
   it('correct honeypot info', async () => {
-    // let initKty = await gameVarAndFee.getTokensPerGame();
-    // console.log(initKty.toString());
 
     let { gameId } = gameDetails;
 
@@ -786,8 +816,9 @@ contract('GameManager', (accounts) => {
     console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
     console.log('=======================\n')
 
+    //1 ether from the last bet that ended game
     honeyPotInfo.ethTotal.toString().should.be.equal(
-      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount)))))
+      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount+1)))))
     )
   })
 
@@ -804,53 +835,60 @@ contract('GameManager', (accounts) => {
  
   })
 
-  it('correct distribution details', async () => {
+  it('distribution details', async () => {
 
     let { gameId } = gameDetails;
 
     let winners = await getterDB.getWinners(gameId);
+    let rates = await gameStore.getDistributionRates(gameId);
 
-    console.log('\n==== DISTRIBUTIONS ==== ');
+    console.log('\n==== DISTRIBUTION STRUCTURE ==== \n');
     let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);  
-    console.log('  WINNER SHARE: ');
+    console.log(` WINNER SHARE: ${rates[0].toString()} %`);
     console.log('    ETH: ', web3.utils.fromWei(winnerShare.winningsETH.toString()));
     console.log('    KTY: ', web3.utils.fromWei(winnerShare.winningsKTY.toString()));
     let topShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
-    console.log('  TOP BETTOR SHARE: ');
+    console.log(`  TOP BETTOR SHARE: ${rates[1].toString()} %`);
     console.log('    ETH: ', web3.utils.fromWei(topShare.winningsETH.toString()));
     console.log('    KTY: ', web3.utils.fromWei(topShare.winningsKTY.toString()));
     let secondTopShare = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
-    console.log('  SECOND TOP BETTOR SHARE: ');
+    console.log(`  SECOND TOP BETTOR SHARE: ${rates[2].toString()} %`);
     console.log('    ETH: ', web3.utils.fromWei(secondTopShare.winningsETH.toString()));
     console.log('    KTY: ', web3.utils.fromWei(secondTopShare.winningsKTY.toString()))
     let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
-    console.log('  ENDOWMENT SHARE: ');
+    console.log(`  ENDOWMENT SHARE: ${rates[4].toString()} %`);
     console.log('    ETH: ',  web3.utils.fromWei(endowmentShare.winningsETH.toString()));
     console.log('    KTY: ',  web3.utils.fromWei(endowmentShare.winningsKTY.toString()));
     
-    let supporters = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+    let bettors = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
 
     //Get list of other bettors
-    supporters = supporters
+    supporters = bettors
       .map(e => e.returnValues) 
       .filter(e => e.playerSupported === winners.winner)
       .filter(e => e.supporter !== winners.topBettor)
       .filter(e => e.supporter !== winners.secondTopBettor)
       .map( e => e.supporter)    
 
-    console.log('\n  OTHER BETTORS SHARE: ');
-    console.log(' List: ', supporters) 
+    console.log(`\n  OTHER BETTORS SHARE: ${rates[3].toString()} %`);
+    console.log('   List: ', supporters) 
     for(let i=0; i<supporters.length; i++){
       let share = await endowmentFund.getWinnerShare(gameId, supporters[i]);      
-      let supporterInfo = await getterDB.getSupporterInfo(gameId, supporters[i]);
+      // let supporterInfo = await getterDB.getSupporterInfo(gameId, supporters[i]);
       console.log(`\n  Bettor ${supporters[i]}: `);
-      console.log('    Amount Bet:', web3.utils.fromWei( supporterInfo.betAmount.toString()), 'ETH')      
+      // console.log('    Amount Bet:', web3.utils.fromWei( supporterInfo.betAmount.toString()), 'ETH')      
       console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
       console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
-    }    
+    }  
+    
+    //Get list of lsoers
+    let losers = bettors
+      .map(e => e.returnValues) 
+      .filter(e => e.playerSupported !== winners.winner)
 
-    //Bettor from Black Corner
-    await endowmentFund.getWinnerShare(gameId, accounts[14]).should.be.rejected;
+    // //Bettor from Black Corner
+    let opponentShare = await endowmentFund.getWinnerShare(gameId, losers[0].supporter);
+    opponentShare.winningsETH.toString().should.be.equal('0');
 
  
   })
