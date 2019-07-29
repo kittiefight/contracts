@@ -226,4 +226,10 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS);
     }
 
+    /// @notice Gets the amount of KTY rewarded to the user that hits finalize button
+    function getFinalizeRewards() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
+    }
+
 }

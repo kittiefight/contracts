@@ -87,6 +87,7 @@ const TOP_BETTOR = 25
 const SECOND_RUNNER_UP = 10
 const OTHER_BETTORS = 15
 const ENDOWNMENT = 15
+const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
 
 const GameState = {
   WAITING: 0,
@@ -287,7 +288,7 @@ contract('GameManager', (accounts) => {
     let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
       'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
       'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
-      'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment'];
+      'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards'];
 
     let bytesNames = [];
     for (i = 0; i < names.length; i++) {
@@ -297,7 +298,7 @@ contract('GameManager', (accounts) => {
     let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
       REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
       HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-      OTHER_BETTORS, ENDOWNMENT];
+      OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString()];
 
 
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
