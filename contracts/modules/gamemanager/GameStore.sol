@@ -32,7 +32,7 @@ contract GameStore is Proxied {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     }
 
-    function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+    function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION){
         GlobalSettings memory globalSettings;
 
         globalSettings.bettingFee = gameVarAndFee.getBettingFee();
@@ -50,17 +50,22 @@ contract GameStore is Proxied {
         return gameSettings[gameId].distributionRates;
     }
 
-    function hitStart(uint gameId, address player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+    function getKittieRedemptionFee(uint gameId) public view returns(uint){
+        return  gameSettings[gameId].redemptionFee;
+    }
+
+    function start(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
         gameByPlayer[gameId][player].pressedStart = true;
+        gameByPlayer[gameId][player].randomNum = randomNum;
     }
 
     function didHitStart(uint gameId, address player) public view returns(bool){
         return gameByPlayer[gameId][player].pressedStart;
     }
 
-    function setRandom(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
-        gameByPlayer[gameId][player].randomNum = randomNum;
-    }
+    // function setRandom(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+    //     gameByPlayer[gameId][player].randomNum = randomNum;
+    // }
 
     function getRandom(uint gameId, address player) public view returns(uint){
         return gameByPlayer[gameId][player].randomNum;

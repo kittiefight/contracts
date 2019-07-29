@@ -13,6 +13,7 @@ const GMSetterDB = artifacts.require('GMSetterDB')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const GameManager = artifacts.require('GameManager')
 const GameStore = artifacts.require('GameStore')
+const GameCreation = artifacts.require('GameCreation')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
 const Forfeiter = artifacts.require('Forfeiter')
 const DateTime = artifacts.require('DateTime')
@@ -30,7 +31,6 @@ const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
-const GuardImplementor = artifacts.require('GuardImplementor');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 
@@ -146,7 +146,6 @@ contract('GameManager', (accounts) => {
 
     // CRONJOB
     cronJob = await CronJob.new(genericDB.address)
-    //guardImplementor = await GuardImplementor.new(roleDB.address);
     freezeInfo = await FreezeInfo.new();
     cronJobTarget= await CronJobTarget.new();
 
@@ -159,6 +158,7 @@ contract('GameManager', (accounts) => {
     // MODULES
     gameManager = await GameManager.new()
     gameStore = await GameStore.new()
+    gameCreation = await GameCreation.new()
     register = await Register.new()
     dateTime = await DateTime.new()
     gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
@@ -198,6 +198,7 @@ contract('GameManager', (accounts) => {
     await proxy.addContract('GMGetterDB', getterDB.address)
     await proxy.addContract('GameManager', gameManager.address)
     await proxy.addContract('GameStore', gameStore.address)
+    await proxy.addContract('GameCreation', gameCreation.address)
     await proxy.addContract('CronJob', cronJob.address)
     await proxy.addContract('FreezeInfo', freezeInfo.address);
     await proxy.addContract('CronJobTarget', cronJobTarget.address);
@@ -224,6 +225,7 @@ contract('GameManager', (accounts) => {
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
     await gameStore.setProxy(proxy.address)
+    await gameCreation.setProxy(proxy.address)
     await cronJob.setProxy(proxy.address)
     await kittieHELL.setProxy(proxy.address)
     await kittieHellDB.setProxy(proxy.address)
@@ -235,6 +237,7 @@ contract('GameManager', (accounts) => {
   it('initializes contract variables', async () => {
     await gameVarAndFee.initialize()
     await gameStore.initialize()
+    await gameCreation.initialize()
     await forfeiter.initialize()
     await scheduler.initialize()
     await register.initialize()
@@ -338,29 +341,30 @@ contract('GameManager', (accounts) => {
 
   it('unverified users cannot list kitties', async () => {
     //account 5 not verified
-    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+    await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
       [156]), { from: accounts[5] }).should.be.rejected;
   })
 
   it('is not able to list kittie without kitty ownership', async () => {
     //account 3 not owner of kittie1
-    await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+    await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
       [kitties[1]]), { from: accounts[3] }).should.be.rejected;
   })
 
   it('cannot list kitties without proxy', async () => {
-    await gameManager.listKittie(kitties[1], { from: accounts[1] }).should.be.rejected;
+    await gameCreation.listKittie(kitties[1], { from: accounts[1] }).should.be.rejected;
   })
 
   it('list 4 kitties to the system', async () => {
     for (let i = 1; i < 5; i++) {
-      await proxy.execute('GameManager', setMessage(gameManager, 'listKittie',
+      await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
         [kitties[i]]), { from: accounts[i] }).should.be.fulfilled;
     }
   })
 
+
   it('correctly creates 2 games', async () => {
-    let newGameEvents = await gameManager.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    let newGameEvents = await gameCreation.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
     assert.equal(newGameEvents.length, 2);
 
     
@@ -544,11 +548,15 @@ contract('GameManager', (accounts) => {
     let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
     //console.log('Defense Black:', defense.toString());
     await betting.setOriginalDefenseLevel(gameId, playerBlack, defense);
+
+    console.log(`\n====DEFENSE BLACK: ${defense}`);
+
     
 
     defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
     //console.log('Defense Red :', defense.toString());
     await betting.setOriginalDefenseLevel(gameId, playerRed, defense);
+    console.log(`\n====DEFENSE RED: ${defense}`);
     
     
 

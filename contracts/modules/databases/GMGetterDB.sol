@@ -16,7 +16,6 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
-import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
 import "../kittieHELL/KittieHELL.sol";
@@ -30,10 +29,8 @@ contract GMGetterDB is Proxied {
  using SafeMath for uint256;
 
   GenericDB public genericDB;
-  GameVarAndFee public gameVarAndFee;
   GameStore public gameStore;
   EndowmentDB public endowmentDB;
-  KittieHELL public kittieHELL;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
@@ -52,10 +49,8 @@ contract GMGetterDB is Proxied {
   }
 
   function initialize() external onlyOwner {
-    gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
-    kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
   }
 
   /**
@@ -81,19 +76,20 @@ contract GMGetterDB is Proxied {
     );
   }
 
-  function getHoneypotId(uint256 gameId)
-    public view
-    returns(uint)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
-  }
+  // function getHoneypot(uint256 gameId)
+  //   public view
+  //   returns(uint)
+  // {
+  //   return (genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId"))),
+  //     genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
+  // }
 
-  function getHoneypotInitialEth(uint256 gameId)
-    public view
-    returns(uint)
-  {    
-    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-  }
+  // function getHoneypotInitialEth(uint256 gameId)
+  //   public view
+  //   returns(uint)
+  // {    
+    
+  // }
 
 
   function getGamePlayers(uint256 gameId)
@@ -188,7 +184,7 @@ contract GMGetterDB is Proxied {
     public view
     returns (address owner, bool isDead, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead, isPlaying, isGhost,) = kittieHELL.getKittyStatus(kittieId);
+    (owner, isDead, isPlaying, isGhost,) = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
 
     gameId = getGameOfKittie(kittieId);
   }

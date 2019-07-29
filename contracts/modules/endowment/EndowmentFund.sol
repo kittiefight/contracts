@@ -63,7 +63,7 @@ contract EndowmentFund is Distribution, Guard {
         uint ethTotal;
     }
 
-    function generateHoneyPot(uint gameId) external onlyContract(CONTRACT_NAME_GAMEMANAGER) returns (uint, uint) {
+    function generateHoneyPot(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION) returns (uint, uint) {
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
         require(endowmentDB.allocateKTY(ktyAllocated), 'Error: endowmentDB.allocateKTY(ktyAllocated) failed');
         uint ethAllocated = gameVarAndFee.getEthPerGame();

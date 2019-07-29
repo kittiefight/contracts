@@ -25,6 +25,7 @@ import '../proxy/Proxied.sol';
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "./GameManager.sol";
+import "./GameCreation.sol";
 import "../../interfaces/ERC721.sol";
 
 
@@ -39,6 +40,7 @@ contract Scheduler is Proxied {
 
     //Contract Variables
     GameManager public gameManager;
+    GameCreation public gameCreation;
     GameVarAndFee public gameVarAndFee;
     ERC721 public cryptoKitties;
     uint256 lastGameCreationTime;
@@ -58,6 +60,7 @@ contract Scheduler is Proxied {
     function initialize() public onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
+        gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
         cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
@@ -65,7 +68,7 @@ contract Scheduler is Proxied {
     * @param _kittyId kitty id
     * @param _player is the address of the player
     */
-    function addKittyToList(uint256 _kittyId, address _player) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
+    function addKittyToList(uint256 _kittyId, address _player) external onlyContract(CONTRACT_NAME_GAMECREATION){
         // a kitty may play only one game at a time
         require(!isKittyListedForMatching(_kittyId), "Kitty is already listed. A kitty can take part in only one game at a time");
 
@@ -129,7 +132,7 @@ contract Scheduler is Proxied {
             if ((cryptoKitties.ownerOf(playerRed[i].kittyId) == playerRed[i].player) &&
                (cryptoKitties.ownerOf(playerBlack[i].kittyId) == playerBlack[i].player)){
 
-                gameManager.createFight(
+                gameCreation.createFight(
                     playerRed[i].player,
                     playerBlack[i].player,
                     playerRed[i].kittyId,

@@ -65,7 +65,7 @@ contract GMSetterDB is Proxied {
     uint256 gameStartTime
   )
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (uint256 gameId)
   {
     // Get the lastest item in the linkedlist.
@@ -257,7 +257,7 @@ contract GMSetterDB is Proxied {
    */
   function setHoneypotInfo(uint256 gameId, uint256 honeypotId, uint256 initialEth)
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyExistentGame(gameId)
   {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);

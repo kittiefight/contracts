@@ -27,10 +27,8 @@ import '../proxy/Proxied.sol';
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../databases/EndowmentDB.sol";
-import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
 import "./Forfeiter.sol";
-import "./Scheduler.sol";
 import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
@@ -47,14 +45,11 @@ contract GameManager is Proxied, Guard {
     //Contract Variables
     GMSetterDB public gmSetterDB;
     GMGetterDB public gmGetterDB;
-    GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
     EndowmentDB public endowmentDB;
     Forfeiter public forfeiter;
-    Scheduler public scheduler;
     Betting public betting;
     HitsResolve public hitsResolve;
-    RarityCalculator public rarityCalculator;
     ProfileDB public profileDB;
     KittieHELL public kittieHELL;
     IKittyCore public cryptoKitties;
@@ -63,16 +58,10 @@ contract GameManager is Proxied, Guard {
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, KITTIE_HELL, CANCELLED}
 
     //EVENTS
-    event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
     event NewSupporter(uint indexed game_id, address indexed supporter, address playerSupported);
     event PressStart(uint indexed game_id, address player);
     event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
     event GameEnded(uint indexed game_id, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
-
-    modifier onlyKittyOwner(address player, uint kittieId) {
-        require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
-        _;
-    }
 
     modifier onlyGamePlayer(uint gameId, address player) {
         require(profileDB.getCivicId(player) > 0, "You need to verify your civic id");
@@ -90,98 +79,13 @@ contract GameManager is Proxied, Guard {
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
-        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
-        scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-        rarityCalculator = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
         profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
         kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
-        cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
-
-    /**
-     * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
-     */
-    function listKittie
-    (
-        uint kittieId
-    )
-        external
-        onlyProxy onlyPlayer
-        onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
-    {
-        address player = getOriginalSender();
-
-        //Pay Listing Fee
-        endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
-
-        require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
-
-        scheduler.addKittyToList(kittieId, player);
-    }
-
-    /**
-     * @dev Check to make sure the only superADmin can list, Takes in two kittieID's and accounts as well as the jackpot ether and token number.
-     */
-    function manualMatchKitties
-    (
-        address playerRed, address playerBlack,
-        uint256 kittyRed, uint256 kittyBlack,
-        uint gameStartTime
-    )
-        external
-        onlyProxy onlySuperAdmin
-        onlyKittyOwner(playerRed, kittyRed)
-        onlyKittyOwner(playerBlack, kittyBlack)
-    {
-        require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
-        require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
-
-        generateFight(playerBlack, playerRed, kittyBlack, kittyRed, gameStartTime);
-    }
-
-    /**
-     * @dev Creates game and generates gameId
-     * @return gameId
-     */
-    function generateFight
-    (
-        address playerRed, address playerBlack,
-        uint256 kittyRed, uint256 kittyBlack,
-        uint gameStartTime
-    )
-        internal
-    {
-        uint256 gameId = gmSetterDB.createGame(
-            playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
-        
-        gameStore.lockVars(gameId);
-
-        (uint honeyPotId, uint initialEth) = endowmentFund.generateHoneyPot(gameId);
-        gmSetterDB.setHoneypotInfo(gameId, honeyPotId, initialEth);
-
-        emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
-    }
-
-    /**
-     * @dev External function for Scheduler to call
-     * @return gameId
-     */
-    function createFight
-    (
-        address playerRed, address playerBlack,
-        uint256 kittyRed, uint256 kittyBlack,
-        uint gameStartTime
-    )
-        external
-        onlyContract(CONTRACT_NAME_SCHEDULER)
-    {
-        generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
-    }
-
 
     /**
      * @dev Betters pay a ticket fee to participate in betting .
@@ -247,14 +151,13 @@ contract GameManager is Proxied, Guard {
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
 
-        // (,,,,,,,,,uint genes) = cryptoKitties.getKitty(kittieId); // TODO: check why it fails here
+        // (,,,,,,,,,uint genes) = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId); // TODO: check why it fails here
 
         //uint genes = 621602280461119273000377613714842202937902730777750890758407393079864686;
         
-        gameStore.hitStart(gameId, player);
-        gameStore.setRandom(gameId, player, randomNum);
+        gameStore.start(gameId, player,randomNum);
             
-        //uint defenseLevel = rarityCalculator.getDefenseLevel(kittieId, genes);
+        //uint defenseLevel = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes);
         // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
         require(kittieHELL.acquireKitty(kittieId, player), 'Error acquiring kitty');
@@ -288,7 +191,7 @@ contract GameManager is Proxied, Guard {
         //each time 1 minute before game ends
         if(gameEndTime.sub(now) <= 5) {
             //get initial jackpot, need endowment to send this when creating honeypot
-            uint initialEth = gmGetterDB.getHoneypotInitialEth(gameId);
+            (,uint initialEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
             uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
             if(currentJackpotEth < initialEth.mul(10)){
@@ -344,9 +247,6 @@ contract GameManager is Proxied, Guard {
 
         //Check if game has ended
         gameEnd(gameId);
-
-        // emit NewBet(gameId, sender, msg.value);
-        
     }
 
     /**
