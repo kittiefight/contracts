@@ -144,22 +144,10 @@ contract EndowmentDB is Proxied {
     }
   }
 
-  function getHoneypotTotalETH(
-    uint gameId
-  )
-    external
-    view returns (uint ethTotal)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "ethTotal")));
-  }
 
-  function getHoneypotTotalKTY(
-    uint gameId
-  )
-    external
-    view returns (uint ktyTotal)
-  {
-    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "ktyTotal")));
+  function getHoneypotTotal(uint _gameId) external view returns (uint256 totalEth, uint256 totalKty) {
+      totalEth = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
+      totalKty = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
   }
 
   function dissolveHoneypot(
@@ -180,7 +168,7 @@ contract EndowmentDB is Proxied {
   ) external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     // onlyExistingProfile(account)
-    onlyExistingHoneypot(gameId)
+    // onlyExistingHoneypot(gameId)
     returns (bool) {
 
     if (ethContribution > 0) {
@@ -219,7 +207,8 @@ contract EndowmentDB is Proxied {
 /**
  * @dev store the total debit by an a/c per game
  */
-  function debitFunds(
+  //function debitFunds(
+  function setTotalDebit(
     uint _gameId, address _account, uint _eth_amount, uint _kty_amount
   ) external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
@@ -256,13 +245,11 @@ contract EndowmentDB is Proxied {
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     //onlyExistingProfile(_account)
     onlyExistingHoneypot(_gameId)
-    returns (uint, uint) {
+    returns (uint256 ethTotalDebit, uint256 ktyTotalDebit) {
       bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
       bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
-      return (
-        genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey),
-        genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey)
-      );
+      ethTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
+      ktyTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
   }
 
 

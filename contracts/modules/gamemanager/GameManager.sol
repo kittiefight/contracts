@@ -192,7 +192,7 @@ contract GameManager is Proxied, Guard {
         if(gameEndTime.sub(now) <= 5) {
             //get initial jackpot, need endowment to send this when creating honeypot
             (,uint initialEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
-            uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
+            (uint256 currentJackpotEth, ) = endowmentDB.getHoneypotTotal(gameId);
 
             if(currentJackpotEth < initialEth.mul(10)){
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
@@ -278,28 +278,16 @@ contract GameManager is Proxied, Guard {
         address winner;
         address loser;
 
+        // And a tie?
         if (playerBlackPoints > playerRedPoints)
         {
             winner = playerBlack;
             loser = playerRed;
         }
-        else if(playerRedPoints > playerBlackPoints)
+        else
         {
             winner = playerRed;
             loser = playerBlack;
-        }
-        //If there is a tie in point, define by total eth bet
-        else
-        {
-            (,,,uint[2] memory ethByCorner,) = gmGetterDB.getHoneypotInfo(gameId);
-            if(ethByCorner[0] > ethByCorner[0] ){
-               winner = playerBlack;
-                loser = playerRed;
-            }
-            else{
-                winner = playerRed;
-                loser = playerBlack;
-            }
         }
 
         //Store Winners in DB
