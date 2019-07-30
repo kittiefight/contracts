@@ -517,7 +517,7 @@ contract Betting is Proxied, Guard {
 
     event BetPlaced(
         uint256 indexed _gameId,
-        address _supportedPlyer,
+        address indexed _supportedPlyer,
         uint256 _lastBetAmount,
         bytes32 attackHash,
         string attackType,
