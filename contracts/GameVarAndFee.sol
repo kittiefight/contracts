@@ -49,11 +49,17 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     GenericDB public genericDB;
     Medianizer medianizer;
 
+// temporarily comment out Medianizer just for truffle testing for KittieHELL 
+// until Medianizer is futher defined
     /// @notice Function called when deployed
     /// @param _genericDB Address of deployed GeneriDB contract
-    constructor (GenericDB _genericDB, Medianizer _medianizer) public {
+    constructor (GenericDB _genericDB
+                //, Medianizer _medianizer
+                )
+                public
+    {
         setGenericDB(_genericDB);
-        setMedianizer(_medianizer);
+        //setMedianizer(_medianizer);
     }
 
     // kovanMedianizer = 0xA944bd4b25C9F186A846fd5668941AA3d3B8425F

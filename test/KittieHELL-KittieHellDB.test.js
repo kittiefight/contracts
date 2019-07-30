@@ -13,10 +13,13 @@ const KittieHELL = artifacts.require('KittieHELL')
 const KittieFightToken = artifacts.require('MockERC20Token')
 const CryptoKitties = artifacts.require('MockERC721Token')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
+const GMGetterDB = artifacts.require('GMGetterDB')
+const GameStore = artifacts.require("GameStore")
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const RoleDB = artifacts.require('RoleDB')
 const FreezeInfo = artifacts.require('FreezeInfo')
+const EndowmentDB = artifacts.require('EndowmentDB')
 
 const evm = require('./utils/evm.js')
 
@@ -33,9 +36,12 @@ let GenericDBinst
 let cryptoKitties
 let gameVarAndFee
 let EndowmentFundInst
+let gmGetterDB
+let gameStore
 let KittieHellDBinst
 let RoleDBinst
 let FreezeInfoInst
+let EndowmentDBinst
 
 before(async () => {
   ProxyInst = await Proxy.new()
@@ -44,11 +50,14 @@ before(async () => {
   GenericDBinst = await GenericDB.new()
   cronJob = await CronJob.new(GenericDBinst.address)
   gameVarAndFee = await GameVarAndFee.new(GenericDBinst.address)
+  gmGetterDB = await GMGetterDB.new(GenericDBinst.address)
+  gameStore = await GameStore.new()
   KittieHELLinst = await KittieHELL.new()
   EndowmentFundInst = await EndowmentFund.new()
   KittieHellDBinst = await KittieHellDB.new(GenericDBinst.address)
   RoleDBinst = await RoleDB.new(GenericDBinst.address)
   FreezeInfoInst = await FreezeInfo.new()
+  EndowmentDBinst = await EndowmentDB.new(GenericDBinst.address)
 
   await ProxyInst.addContract('GenericDB', GenericDBinst.address)
   await ProxyInst.addContract('CronJob', cronJob.address)
@@ -57,20 +66,28 @@ before(async () => {
   await ProxyInst.addContract('KittieFightToken', kittieFightToken.address)
   await ProxyInst.addContract('CryptoKitties', cryptoKitties.address)
   await ProxyInst.addContract('GameVarAndFee', gameVarAndFee.address)
+  await ProxyInst.addContract('GMGetterDB', gmGetterDB.address)
+  await ProxyInst.addContract('GameStore', gameStore.address)
   await ProxyInst.addContract('EndowmentFund', EndowmentFundInst.address)
   await ProxyInst.addContract('RoleDB', RoleDBinst.address)
   await ProxyInst.addContract('FreezeInfo', FreezeInfoInst.address)
+  await ProxyInst.addContract('EndowmentDB', EndowmentDBinst.address)
 
   await KittieHELLinst.setProxy(ProxyInst.address)
   await GenericDBinst.setProxy(ProxyInst.address)
   await cronJob.setProxy(ProxyInst.address)
   await gameVarAndFee.setProxy(ProxyInst.address)
+  await gmGetterDB.setProxy(ProxyInst.address)
+  await gameStore.setProxy(ProxyInst.address)
   await EndowmentFundInst.setProxy(ProxyInst.address)
   await KittieHellDBinst.setProxy(ProxyInst.address)
   await RoleDBinst.setProxy(ProxyInst.address)
+  await EndowmentDBinst.setProxy(ProxyInst.address)
 
   await KittieHELLinst.initialize()
   await KittieHellDBinst.setKittieHELL()
+  await gameStore.initialize()
+  await gmGetterDB.initialize()
 })
 
 contract('KittieHELL', accounts => {
@@ -89,48 +106,14 @@ contract('KittieHELL', accounts => {
     assert.isFalse(isKittyDead)
   })
 
-  it('is able to kill a kitty only via CronJob', async () => {
-    await ProxyInst.addContract('Creator', accounts[0])
-    await RoleDBinst.addRole('Creator', 'admin', accounts[0])
+
+  it('is able to kill a kitty', async () => {
     const kitty123Before = await KittieHELLinst.kitties.call(123)
     assert.isFalse(kitty123Before.dead)
+    await KittieHELLinst.killKitty(123)
 
-    let delay = 3
-    // Create Job
-    let receipt = await KittieHELLinst.scheduleKillKitty(123, delay).should.be
-      .fulfilled
-    let jobId = receipt.logs[0].args.scheduledJob
-    let scheduledTime = receipt.logs[0].args.time
-    // Check Job created
-    let job = await cronJob.getJob(jobId)
-    assert.equal(
-      job[0].toString(),
-      scheduledTime.toString(),
-      'Scheduled time for Job does not match'
-    )
-    evm.increaseTime(web3, delay + 1)
-    receipt = await ProxyInst.executeScheduledJobs()
     const kitty123After = await KittieHELLinst.kitties.call(123)
     assert.isTrue(kitty123After.dead)
-  })
-
-  it('is not able to kill a kitty without through CronJob', async () => {
-    let errorMessage
-
-    await cryptoKitties.mint(accounts[0], 220)
-    await cryptoKitties.approve(KittieHELLinst.address, 220)
-    await KittieHELLinst.acquireKitty(220, accounts[0])
-
-    try {
-      await KittieHELLinst.killKitty(220)
-    } catch (error) {
-      errorMessage = error.toString()
-    }
-
-    assert.include(
-      errorMessage,
-      'revert Access is only allowed from specific contract'
-    )
   })
 
   it('is able to tell the time and date when a kitty was dead, if the kitty was dead', async () => {
@@ -146,6 +129,9 @@ contract('KittieHELL', accounts => {
   })
 
   it('is able to release a kitty back to its owner', async () => {
+    await cryptoKitties.mint(accounts[0], 220)
+    await cryptoKitties.approve(KittieHELLinst.address, 220)
+    await KittieHELLinst.acquireKitty(220, accounts[0])
     await KittieHELLinst.releaseKitty(220)
     assert.eventually.equal(cryptoKitties.ownerOf(220), accounts[0])
   })
@@ -154,23 +140,7 @@ contract('KittieHELL', accounts => {
     await cryptoKitties.mint(accounts[0], 7)
     await cryptoKitties.approve(KittieHELLinst.address, 7)
     await KittieHELLinst.acquireKitty(7, accounts[0])
-
-    let delay = 3
-    // Create Job
-    let receipt = await KittieHELLinst.scheduleKillKitty(7, delay).should.be
-      .fulfilled
-    let jobId = receipt.logs[0].args.scheduledJob
-    let scheduledTime = receipt.logs[0].args.time
-    // Check Job created
-    let job = await cronJob.getJob(jobId)
-    assert.equal(
-      job[0].toString(),
-      scheduledTime.toString(),
-      'Scheduled time for Job does not match'
-    )
-    evm.increaseTime(web3, delay + 1)
-    receipt = await ProxyInst.executeScheduledJobs()
-
+    await KittieHELLinst.killKitty(7);
     await sleep(1000)
     await kittieFightToken.approve(KittieHELLinst.address, 1000000000)
     let arg = 7
@@ -205,25 +175,8 @@ contract('KittieHELL', accounts => {
     await cryptoKitties.mint(accounts[0], 8)
     await cryptoKitties.approve(KittieHELLinst.address, 8)
     await KittieHELLinst.acquireKitty(8, accounts[0])
-
-    let delay = 3
-    // Create Job
-    let receipt = await KittieHELLinst.scheduleKillKitty(8, delay).should.be
-      .fulfilled
-    let jobId = receipt.logs[0].args.scheduledJob
-    let scheduledTime = receipt.logs[0].args.time
-    // Check Job created
-    let job = await cronJob.getJob(jobId)
-    assert.equal(
-      job[0].toString(),
-      scheduledTime.toString(),
-      'Scheduled time for Job does not match'
-    )
-    evm.increaseTime(web3, delay + 1)
-    receipt = await ProxyInst.executeScheduledJobs()
-
+    await KittieHELLinst.killKitty(8);
     await sleep(1000)
-
     try {
       await KittieHELLinst.payForResurrection(8)
     } catch (error) {
@@ -236,6 +189,8 @@ contract('KittieHELL', accounts => {
   })
 
   it('is able to make a dead kitty ghost and send the kitty ghost to KittieHellDB via CronJob', async () => {
+    await ProxyInst.addContract('Creator', accounts[0])
+    await RoleDBinst.addRole('Creator', 'admin', accounts[0])
     const kitty8 = await KittieHELLinst.kitties.call(8)
     assert.isTrue(kitty8.dead)
 
@@ -266,21 +221,7 @@ contract('KittieHELL', accounts => {
     await cryptoKitties.approve(KittieHELLinst.address, 10)
     await KittieHELLinst.acquireKitty(10, accounts[0])
 
-    let delay = 3
-    // Create Job
-    let receipt = await KittieHELLinst.scheduleKillKitty(10, delay).should.be
-      .fulfilled
-    let jobId = receipt.logs[0].args.scheduledJob
-    let scheduledTime = receipt.logs[0].args.time
-    // Check Job created
-    let job = await cronJob.getJob(jobId)
-    assert.equal(
-      job[0].toString(),
-      scheduledTime.toString(),
-      'Scheduled time for Job does not match'
-    )
-    evm.increaseTime(web3, delay + 1)
-    receipt = await ProxyInst.executeScheduledJobs()
+    await KittieHELLinst.killKitty(10)
 
     await sleep(2000)
 
@@ -339,23 +280,7 @@ contract('KittieHellDB', accounts => {
     await cryptoKitties.mint(accounts[0], 456)
     await cryptoKitties.approve(KittieHELLinst.address, 456)
     await KittieHELLinst.acquireKitty(456, accounts[0])
-
-    let delay = 3
-    // Create Job
-    let receipt = await KittieHELLinst.scheduleKillKitty(456, delay).should.be
-      .fulfilled
-    let jobId = receipt.logs[0].args.scheduledJob
-    let scheduledTime = receipt.logs[0].args.time
-    // Check Job created
-    let job = await cronJob.getJob(jobId)
-    assert.equal(
-      job[0].toString(),
-      scheduledTime.toString(),
-      'Scheduled time for Job does not match'
-    )
-    evm.increaseTime(web3, delay + 1)
-    receipt = await ProxyInst.executeScheduledJobs()
-
+    await KittieHELLinst.killKitty(456)
     await sleep(2000)
     let delay1 = 3
     // Create Job
