@@ -196,7 +196,7 @@ contract Scheduler is Proxied {
     }
 
     /**
-     * @dev uint256[] Returns only ids of currently un mathced kitties
+     * @dev uint256[] Returns only ids of currently un matched kitties
      */
     function getListedKitties() public view returns (uint256[] memory){
         uint256[] memory unMatchedKitties = new uint256[](kittyList.length);

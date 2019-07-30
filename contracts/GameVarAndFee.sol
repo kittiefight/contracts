@@ -154,7 +154,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     /// @notice Gets the time at which honey pot will be dissolved,after a game is over, used by time contract at end of gameduration
     function getHoneypotExpiration() 
     public view returns(uint) {
-        return genericDB.getUintStorage(TABLE_NAME, HONEY_POT_EXPIRATION);
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_EXPIRATION);
     }
     
     /// @notice Gets mount of initial KTY Tokens allowed to be drawn from EndowmentFund to be allocated to game

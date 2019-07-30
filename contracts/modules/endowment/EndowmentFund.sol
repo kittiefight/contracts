@@ -36,7 +36,7 @@ contract EndowmentFund is Distribution, Guard {
 
     Escrow public escrow;
 
-    event WinnerClaimed(address winner, uint256 ethAmount, uint256 ktyAmount, address from);
+    event WinnerClaimed(uint indexed gameId, address indexed winner, uint256 ethAmount, uint256 ktyAmount, address from);
     event SentKTYtoEscrow(address sender, uint256 ktyAmount, address receiver);
     event SentETHtoEscrow(address sender, uint256 ethAmount, address receiver);
 
@@ -96,7 +96,7 @@ contract EndowmentFund is Distribution, Guard {
     function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
         uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
-            claimTime = now.add(gameVarAndFee.getHoneypotExpiration());
+            claimTime = now.add(gameStore.getHoneypotExpiration(_gameId));
         }
         endowmentDB.setHoneypotState(_gameId, _state, claimTime);
     }
@@ -144,7 +144,7 @@ contract EndowmentFund is Distribution, Guard {
         // log debit of funds
         endowmentDB.debitFunds(_gameId, msgSender, winningsETH, winningsKTY);
 
-        emit WinnerClaimed(msgSender, winningsETH, winningsKTY, address(escrow));
+        emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
     }
 
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
@@ -245,7 +245,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow ETH funds
     */
-    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public onlySuperAdmin returns(bool){
+    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the ETH
@@ -262,7 +262,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public onlySuperAdmin returns(bool){
+    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public  returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the KTY

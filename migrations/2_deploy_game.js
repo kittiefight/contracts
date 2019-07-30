@@ -1,48 +1,7 @@
-const KFProxy = artifacts.require('KFProxy')
-const GenericDB = artifacts.require('GenericDB');
-const ProfileDB = artifacts.require('ProfileDB')
-const RoleDB = artifacts.require('RoleDB')
-const GMSetterDB = artifacts.require('GMSetterDB')
-const GMGetterDB = artifacts.require('GMGetterDB')
-const GameManager = artifacts.require('GameManager')
-const GameStore = artifacts.require('GameStore')
-const GameCreation = artifacts.require('GameCreation')
-const GameVarAndFee = artifacts.require('GameVarAndFee')
-const Forfeiter = artifacts.require('Forfeiter')
-const DateTime = artifacts.require('DateTime')
-const Scheduler = artifacts.require('Scheduler')
-const Betting = artifacts.require('Betting')
-const HitsResolve = artifacts.require('HitsResolve')
 const RarityCalculator = artifacts.require('RarityCalculator')
-const Register = artifacts.require('Register')
-const EndowmentFund = artifacts.require('EndowmentFund')
-const EndowmentDB = artifacts.require('EndowmentDB')
-const Escrow = artifacts.require('Escrow')
-const KittieHELL = artifacts.require('KittieHELL')
-const KittieHellDB = artifacts.require('KittieHellDB')
-const SuperDaoToken = artifacts.require('MockERC20Token');
-const KittieFightToken = artifacts.require('MockERC20Token');
-const CryptoKitties = artifacts.require('MockERC721Token');
-const CronJob = artifacts.require('CronJob');
-const FreezeInfo = artifacts.require('FreezeInfo');
-const CronJobTarget = artifacts.require('CronJobTarget');
 
-let proxy, genericDB;
 
 module.exports = (deployer, network, accounts) => {
-
-  // deployer.deploy(KFProxy)
-  // .then((i) => {
-  //   proxy = i;
-  //   return deployer.deploy(GenericDB) 
-  // })
-  // .then((i) => {
-  //   genericDB = i;
-  //   return deployer.deploy(ProfileDB, genericDB.address)
-  // })
-  // .then(() => deployer.deploy(RoleDB, genericDB.address))
-  // .then(() => deployer.deploy(EndowmentDB, genericDB.address))
-  // .then(() => deployer.deploy(GMGetterDB, genericDB.address))
 
   deployer.deploy(RarityCalculator, {from: accounts[0]})
   .then(async(RarityCalculatorInst) => {

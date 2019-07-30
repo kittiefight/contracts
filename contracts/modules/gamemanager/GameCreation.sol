@@ -51,7 +51,8 @@ contract GameCreation is Proxied, Guard {
 
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
-    
+    event NewListing(uint indexed kittieId, address indexed owner, uint timeListed);
+
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
         _;
@@ -91,6 +92,8 @@ contract GameCreation is Proxied, Guard {
         require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
 
         scheduler.addKittyToList(kittieId, player);
+
+        emit NewListing(kittieId, player, now);
     }
 
     /**

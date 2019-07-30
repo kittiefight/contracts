@@ -79,7 +79,7 @@ const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
 const GAME_TIMES = 120 //Scheduled games 1 min apart
 const KITTIE_HELL_EXPIRATION = 300
-const HONEY_POT_EXPIRATION = 120
+const HONEY_POT_EXPIRATION = 180
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
 //Distribution Rates
 const WINNING_KITTIE = 35
@@ -362,9 +362,11 @@ contract('GameManager', (accounts) => {
     }
   })
 
-
   it('correctly creates 2 games', async () => {
-    let newGameEvents = await gameCreation.getPastEvents("NewGame", { fromBlock: 0, toBlock: "latest" });
+    let newGameEvents = await gameCreation.getPastEvents("NewGame", { 
+      fromBlock: 0, 
+      toBlock: "latest" 
+    });
     assert.equal(newGameEvents.length, 2);
 
     
@@ -382,7 +384,7 @@ contract('GameManager', (accounts) => {
       console.log('========================\n')
     })
 
-    gameDetails = newGameEvents[0].returnValues
+    gameDetails = newGameEvents[newGameEvents.length -1].returnValues
 
     let gameTimes = await getterDB.getGameTimes(gameDetails.gameId);
 
@@ -393,7 +395,7 @@ contract('GameManager', (accounts) => {
 
   it('bettors can participate in a created game', async () => {
 
-    console.log('\n==== PLAYING GAME 1 ===\n');
+    console.log('\n==== PLAYING GAME 1 ===');
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -549,14 +551,14 @@ contract('GameManager', (accounts) => {
     //console.log('Defense Black:', defense.toString());
     await betting.setOriginalDefenseLevel(gameId, playerBlack, defense);
 
-    console.log(`\n====DEFENSE BLACK: ${defense}`);
+    console.log(`\n==== DEFENSE BLACK: ${defense}`);
 
     
 
     defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
     //console.log('Defense Red :', defense.toString());
     await betting.setOriginalDefenseLevel(gameId, playerRed, defense);
-    console.log(`\n====DEFENSE RED: ${defense}`);
+    console.log(`\n==== DEFENSE RED: ${defense}`);
     
     
 
@@ -693,9 +695,7 @@ contract('GameManager', (accounts) => {
       totalBetAmount  = totalBetAmount + betAmount;
       await timeout(1);
     }
-  })
-
- 
+  }) 
 
   it('correctly adds all bets for each corner', async () => {
     let block = await dateTime.getBlockTimeStamp();
@@ -807,8 +807,8 @@ contract('GameManager', (accounts) => {
     console.log(`   TopBettor: ${winners.topBettor}   `)
     console.log(`   SecondTopBettor: ${winners.secondTopBettor}   `)
     console.log('')
-    console.log(`   Points Black: ${pointsBlack}   `);
-    console.log(`   Point Red: ${pointsRed}   `);
+    console.log(`   Points Black: ${pointsBlack/100}   `);
+    console.log(`   Point Red: ${pointsRed/100}   `);
     console.log('=======================\n')
     
   })
@@ -844,7 +844,7 @@ contract('GameManager', (accounts) => {
  
   })
 
-  it('distribution details', async () => {
+  it('show distribution details', async () => {
 
     let { gameId } = gameDetails;
 
@@ -869,7 +869,12 @@ contract('GameManager', (accounts) => {
     console.log('    ETH: ',  web3.utils.fromWei(endowmentShare.winningsETH.toString()));
     console.log('    KTY: ',  web3.utils.fromWei(endowmentShare.winningsKTY.toString()));
     
-    let bettors = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
+    let bettors = await gameManager.getPastEvents("NewSupporter", { 
+      filter: {gameId}, 
+      fromBlock: 0, 
+      toBlock: "latest" 
+    });
+    gameDetails.bettors = bettors;
 
     //Get list of other bettors
     supporters = bettors
@@ -902,13 +907,59 @@ contract('GameManager', (accounts) => {
  
   })
 
-  it.skip('winner can claim his share', async () => {
-    let { gameId, playerRed, playerBlack } = gameDetails;
+  it('winners can claim their share', async () => {
+    let { gameId } = gameDetails;    
+
+    let block = await dateTime.getBlockTimeStamp();
+    console.log('\nblocktime: ', formatDate(block))
+
+    let potState = await endowmentDB.getHoneypotState(gameId);
+    console.log('\n==== HONEYPOT DISSOLUTION TIME: ',formatDate(potState.claimTime.toNumber()))
 
     let winners = await getterDB.getWinners(gameId);
+    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);     
 
-    await proxy.execute('EndowmentFund', setMessage(gameManager, 'claim',
+    let balance = await kittieFightToken.balanceOf(winners.winner)
+    balance = Number(web3.utils.fromWei(balance.toString()));   
+  
+    // WINNER CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.winner }).should.be.fulfilled;
+
+    let claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
+      filter: {gameId}, 
+      fromBlock: 0, 
+      toBlock: "latest" 
+    });
+    claims.length.should.be.equal(1);
+
+    let newBalance = await kittieFightToken.balanceOf(winners.winner)
+    // balance.should.be.equal(newBalance.add(winnerShare.winningsKTY))
+    newBalance = Number(web3.utils.fromWei(newBalance.toString()));
+    let winningsKTY = Number(web3.utils.fromWei(winnerShare.winningsKTY.toString()));
+
+    newBalance.should.be.equal(balance + winningsKTY);
+
+    // TOP BETTOR CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+    [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+
+    // SECOND TOP BETTOR CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+    [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
+
+    // OTHER BETTOR CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+    [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+
+    claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
+      filter: {gameId}, 
+      fromBlock: 0, 
+      toBlock: "latest" 
+    });
+
+    claims.length.should.be.equal(4);
+
 
   })
 

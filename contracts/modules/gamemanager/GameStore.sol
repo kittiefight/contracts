@@ -53,6 +53,11 @@ contract GameStore is Proxied {
     function getKittieRedemptionFee(uint gameId) public view returns(uint){
         return  gameSettings[gameId].redemptionFee;
     }
+    
+    function getHoneypotExpiration(uint gameId) public view returns(uint){
+        return  gameSettings[gameId].honeypotExpirationTime;
+    }
+
 
     function start(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
         gameByPlayer[gameId][player].pressedStart = true;
