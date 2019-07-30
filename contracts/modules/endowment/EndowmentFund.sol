@@ -125,6 +125,8 @@ contract EndowmentFund is Distribution, Guard {
     function claim(uint256 _gameId) external payable {
         //address payable msgSender = getOriginalSender();
         address payable msgSender = address(uint160(getOriginalSender()));
+
+        require(!getWithdrawalState(_gameId, msgSender), "already claimed");
         // status
         (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
         require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
@@ -245,7 +247,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow ETH funds
     */
-    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) public returns(bool){
+    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) internal returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the ETH
@@ -262,7 +264,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) public  returns(bool){
+    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) internal returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
         // transfer the KTY

@@ -180,7 +180,7 @@ contract EndowmentDB is Proxied {
   ) external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     // onlyExistingProfile(account)
-    // onlyExistingHoneypot(gameId)
+    onlyExistingHoneypot(gameId)
     returns (bool) {
 
     if (ethContribution > 0) {

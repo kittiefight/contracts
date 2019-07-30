@@ -278,16 +278,28 @@ contract GameManager is Proxied, Guard {
         address winner;
         address loser;
 
-        // And a tie?
         if (playerBlackPoints > playerRedPoints)
         {
             winner = playerBlack;
             loser = playerRed;
         }
-        else
+        else if(playerRedPoints > playerBlackPoints)
         {
             winner = playerRed;
             loser = playerBlack;
+        }
+        //If there is a tie in point, define by total eth bet
+        else
+        {
+            (,,,uint[2] memory ethByCorner,) = gmGetterDB.getHoneypotInfo(gameId);
+            if(ethByCorner[0] > ethByCorner[0] ){
+               winner = playerBlack;
+                loser = playerRed;
+            }
+            else{
+                winner = playerRed;
+                loser = playerBlack;
+            }
         }
 
         //Store Winners in DB

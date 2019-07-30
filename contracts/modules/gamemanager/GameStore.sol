@@ -68,10 +68,6 @@ contract GameStore is Proxied {
         return gameByPlayer[gameId][player].pressedStart;
     }
 
-    // function setRandom(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
-    //     gameByPlayer[gameId][player].randomNum = randomNum;
-    // }
-
     function getRandom(uint gameId, address player) public view returns(uint){
         return gameByPlayer[gameId][player].randomNum;
     }

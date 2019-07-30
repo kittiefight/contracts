@@ -367,7 +367,7 @@ contract('GameManager', (accounts) => {
       fromBlock: 0, 
       toBlock: "latest" 
     });
-    assert.equal(newGameEvents.length, 2);
+    // assert.equal(newGameEvents.length, 2);
 
     
 
@@ -384,6 +384,7 @@ contract('GameManager', (accounts) => {
       console.log('========================\n')
     })
 
+    //Assign variable to game that is going to be played in the test
     gameDetails = newGameEvents[newGameEvents.length -1].returnValues
 
     let gameTimes = await getterDB.getGameTimes(gameDetails.gameId);
@@ -395,9 +396,9 @@ contract('GameManager', (accounts) => {
 
   it('bettors can participate in a created game', async () => {
 
-    console.log('\n==== PLAYING GAME 1 ===');
-
     let { gameId, playerRed, playerBlack } = gameDetails;
+
+    console.log(`\n==== PLAYING GAME ${gameId} ===`);    
 
     let currentState = await getterDB.getGameState(gameId)
     console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
@@ -476,66 +477,7 @@ contract('GameManager', (accounts) => {
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 14);
 
-    //   done()
-    // }, 31000);
 
-  })
-
-  it.skip('setup rarity calculator', async () => {
-    
-    await rarityCalculator.fillKaiValue()
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
-    }
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
-    }
-
-    for (let j=0; j<cattributesData.length; j++) {
-        await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
-    }
-
-    for (let m=0; m<FancyKitties.length; m++) {
-      for (let n=1; n<FancyKitties[m].length; n++) {
-        await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-      }
-    } 
-
-    await rarityCalculator.updateTotalKitties(1600000)
-    await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
   })
 
   it('set defense level for both players', async () => { 
@@ -548,25 +490,12 @@ contract('GameManager', (accounts) => {
 
     //This works, with previous test uncommented
     let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
-    //console.log('Defense Black:', defense.toString());
     await betting.setOriginalDefenseLevel(gameId, playerBlack, defense);
-
     console.log(`\n==== DEFENSE BLACK: ${defense}`);
 
-    
-
     defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
-    //console.log('Defense Red :', defense.toString());
     await betting.setOriginalDefenseLevel(gameId, playerRed, defense);
     console.log(`\n==== DEFENSE RED: ${defense}`);
-    
-    
-
-    // await betting.setOriginalDefenseLevel(gameId, playerRed, 5);
-    // await betting.setOriginalDefenseLevel(gameId, playerBlack, 5);
-
-    // let block = await dateTime.getBlockTimeStamp();
-    //   console.log('\nblocktime: ', block.toString())
   })
 
   it('should move gameState to MAIN_GAME', async () => {
@@ -629,6 +558,7 @@ contract('GameManager', (accounts) => {
       attack = await betting.fightMap(gameId, i)
       console.log(`Name: ${attack.attack}`);
       console.log(`Hash: ${attack.hash}\n`);
+      await timeout(1);
     }
     console.log('=================\n')
   })
@@ -775,10 +705,12 @@ contract('GameManager', (accounts) => {
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(3);
 
-    console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
+    console.log('\n==== NEW GAME STATE: ', gameStates[currentState.toNumber()])
 
     block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
+
+    await timeout(1);
 
    
   })
@@ -796,9 +728,12 @@ contract('GameManager', (accounts) => {
       toBlock: 'latest'
     })
     
-    let {pointsBlack, pointsRed} = gameEnd[0].returnValues;
+    let {pointsBlack, pointsRed, loser} = gameEnd[0].returnValues;
 
     let winners = await getterDB.getWinners(gameId);
+
+    gameDetails.winners = winners;
+    gameDetails.loser = loser;
 
     let corner = (winners.winner === playerBlack) ? "Black Corner":"Red Corner"
 
@@ -810,6 +745,8 @@ contract('GameManager', (accounts) => {
     console.log(`   Points Black: ${pointsBlack/100}   `);
     console.log(`   Point Red: ${pointsRed/100}   `);
     console.log('=======================\n')
+
+    await timeout(1);
     
   })
   
@@ -829,6 +766,8 @@ contract('GameManager', (accounts) => {
     honeyPotInfo.ethTotal.toString().should.be.equal(
       String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount+1)))))
     )
+
+    await timeout(1);
   })
 
   it('state changes to CLAIMING', async () => {
@@ -841,14 +780,15 @@ contract('GameManager', (accounts) => {
 
     let potState = await endowmentDB.getHoneypotState(gameId);
     console.log('\n==== HONEYPOT STATE: ', potStates[potState.state.toNumber()]);
+
+    await timeout(1);
  
   })
 
   it('show distribution details', async () => {
 
-    let { gameId } = gameDetails;
+    let { gameId, winners } = gameDetails;
 
-    let winners = await getterDB.getWinners(gameId);
     let rates = await gameStore.getDistributionRates(gameId);
 
     console.log('\n==== DISTRIBUTION STRUCTURE ==== \n');
@@ -874,7 +814,8 @@ contract('GameManager', (accounts) => {
       fromBlock: 0, 
       toBlock: "latest" 
     });
-    gameDetails.bettors = bettors;
+
+    
 
     //Get list of other bettors
     supporters = bettors
@@ -882,7 +823,9 @@ contract('GameManager', (accounts) => {
       .filter(e => e.playerSupported === winners.winner)
       .filter(e => e.supporter !== winners.topBettor)
       .filter(e => e.supporter !== winners.secondTopBettor)
-      .map( e => e.supporter)    
+      .map( e => e.supporter) 
+    
+    gameDetails.supporters = supporters;
 
     console.log(`\n  OTHER BETTORS SHARE: ${rates[3].toString()} %`);
     console.log('   List: ', supporters) 
@@ -893,12 +836,16 @@ contract('GameManager', (accounts) => {
       // console.log('    Amount Bet:', web3.utils.fromWei( supporterInfo.betAmount.toString()), 'ETH')      
       console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
       console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
-    }  
+    }
     
-    //Get list of lsoers
+    await timeout(1);
+    
+    //Get list of losers
     let losers = bettors
       .map(e => e.returnValues) 
       .filter(e => e.playerSupported !== winners.winner)
+    
+    gameDetails.losers = losers;
 
     // //Bettor from Black Corner
     let opponentShare = await endowmentFund.getWinnerShare(gameId, losers[0].supporter);
@@ -908,7 +855,7 @@ contract('GameManager', (accounts) => {
   })
 
   it('winners can claim their share', async () => {
-    let { gameId } = gameDetails;    
+    let { gameId, supporters } = gameDetails;    
 
     let block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
@@ -925,6 +872,8 @@ contract('GameManager', (accounts) => {
     // WINNER CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.winner }).should.be.fulfilled;
+    let withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);
+    console.log('\nWinner withdrew funds? ', withdrawalState)
 
     let claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
       filter: {gameId}, 
@@ -943,14 +892,21 @@ contract('GameManager', (accounts) => {
     // TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
+    console.log('Top Bettor withdrew funds? ', withdrawalState)
+
 
     // SECOND TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
+    console.log('Second Top Bettor withdrew funds? ', withdrawalState)
 
     // OTHER BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+    [gameId]), { from: supporters[1]}).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[1]);
+    console.log('Other Bettor withdrew funds? ', withdrawalState)
 
     claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
       filter: {gameId}, 
@@ -960,6 +916,49 @@ contract('GameManager', (accounts) => {
 
     claims.length.should.be.equal(4);
 
+
+  })
+
+  it('check if loser kittie is dead', async () => {
+    
+    let { gameId, playerBlack, kittieBlack, kittieRed, supporters } = gameDetails; 
+
+    let loserKitty = gameDetails.loser === playerBlack ? kittieBlack : kittieRed;
+    await kittieHELL.scheduleKillKitty(loserKitty, 5) //Or how does he dies?
+
+    gameDetails.loserKitty = loserKitty;
+
+    await timeout(15);
+
+    // This will kill kitty, as cronjob will act
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+    [gameId]), { from: supporters[0]}).should.be.fulfilled;
+
+    let isKittyDead = await kittieHELL.isKittyDead(loserKitty);
+
+    isKittyDead.should.be.true;
+
+  })
+
+  it('pay for resurrection', async () => {
+
+    console.log('\n==== KITTIE HELL: ')
+    
+    let { loserKitty, loser } = gameDetails; 
+    
+    let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty);
+
+    console.log('Resurrection Cost: ',resurrectionCost.toString())
+
+    await kittieFightToken.approve(kittieHELL.address, resurrectionCost, 
+      { from: loser }).should.be.fulfilled;
+
+    await proxy.execute('KittieHell', setMessage(kittieHELL, 'payForResurrection',
+      [loserKitty]), { from: loser }).should.be.fulfilled;
+
+    let owner = await cryptoKitties.ownerOf(loserKitty)
+    //Ownership back to address, not kittieHell
+    owner.should.be.equal(loser);
 
   })
 
