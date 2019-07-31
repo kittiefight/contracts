@@ -110,7 +110,6 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     function killKitty(uint256 _kittyID)
     public
     onlyOwnedKitty(_kittyID)
-    onlyContract(CONTRACT_NAME_CRONJOB)
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;

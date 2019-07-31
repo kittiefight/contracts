@@ -58,14 +58,14 @@ contract GameManager is Proxied, Guard {
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, KITTIE_HELL, CANCELLED}
 
     //EVENTS
-    event NewSupporter(uint indexed game_id, address indexed supporter, address playerSupported);
-    event PressStart(uint indexed game_id, address player);
-    event GameStateChanged(uint indexed game_id, eGameState old_state, eGameState new_state);
-    event GameEnded(uint indexed game_id, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
+    event NewSupporter(uint indexed gameId, address supporter, address indexed playerSupported);
+    event PressStart(uint indexed gameId, address player);
+    event GameStateChanged(uint indexed gameId, eGameState old_state, eGameState new_state);
+    event GameEnded(uint indexed gameId, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
 
     modifier onlyGamePlayer(uint gameId, address player) {
-        require(profileDB.getCivicId(player) > 0, "You need to verify your civic id");
-        require(gmGetterDB.isPlayer(gameId, player), "you are not a player of this game");
+        require(profileDB.getCivicId(player) > 0);
+        require(gmGetterDB.isPlayer(gameId, player));
         _;
     }
 
@@ -106,12 +106,12 @@ contract GameManager is Proxied, Guard {
         address supporter = getOriginalSender();
 
         //Before GAME_OVER
-        require(gameState <= 2, "Game is not available");
+        require(gameState <= 2);
 
         //pay ticket fee
-        require(endowmentFund.contributeKTY(supporter, gameStore.getTicketFee(gameId)), "Error paying ticket fee");
+        require(endowmentFund.contributeKTY(supporter, gameStore.getTicketFee(gameId)));
         
-        require(gmSetterDB.addBettor(gameId, supporter, playerToSupport), "Error adding bettor to DB");
+        require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
         if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
 
@@ -146,7 +146,7 @@ contract GameManager is Proxied, Guard {
         uint gameState = gmGetterDB.getGameState(gameId);
         forfeiter.checkGameStatus(gameId, gameState);
 
-        require(gameState == uint(eGameState.PRE_GAME), 'Game has not reached pre-game state');
+        require(gameState == uint(eGameState.PRE_GAME));
 
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
@@ -160,7 +160,7 @@ contract GameManager is Proxied, Guard {
         //uint defenseLevel = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes);
         // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
 
-        require(kittieHELL.acquireKitty(kittieId, player), 'Error acquiring kitty');
+        require(kittieHELL.acquireKitty(kittieId, player));
 
         address opponentPlayer = gmGetterDB.getOpponent(gameId, player);
 
@@ -213,20 +213,20 @@ contract GameManager is Proxied, Guard {
         external payable
         onlyProxy onlyBettor
     {
-        require(msg.value > 0, "Bet must be greater than 0");
+        require(msg.value > 0);
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running");
+        require(gameState == uint(eGameState.MAIN_GAME));
         
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
 
-        require(payedFee, "Bettor has not payed fee yet"); //Needs to call participate first if false
+        require(payedFee); //Needs to call participate first if false
         
         //Transfer Funds to endowment
-        require(endowmentFund.contributeETH.value(msg.value)(gameId), "Error sending eth to endowment");
-        require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)), "Error sending kty to endowment");
+        require(endowmentFund.contributeETH.value(msg.value)(gameId));
+        require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
 
         //Update bettor's total bet
         if (sender != supportedPlayer) gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
@@ -253,7 +253,7 @@ contract GameManager is Proxied, Guard {
      * @dev game comes to an end at time duration,continously check game time end
      */
     function gameEnd(uint gameId) internal {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.MAIN_GAME), "game has not started yet");
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.MAIN_GAME));
 
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
 
@@ -268,7 +268,7 @@ contract GameManager is Proxied, Guard {
      * @dev Determine winner of game based on  **HitResolver **
      */
     function finalize(uint gameId, uint randomNum) external {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER), "game has not ended yet");
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER));
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 
@@ -306,6 +306,13 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.setWinners(gameId, winner, gameStore.getTopBettor(gameId, winner),
             gameStore.getSecondTopBettor(gameId, winner));
 
+        //Release winner's Kittie
+        // TODO: UPDATE FUNCTION NAME
+        kittieHELL.releaseKitty(gmGetterDB.getKittieInGame(gameId, winner));
+
+        //Kill losers's Kittie
+        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser));
+
         //Set to claiming
         endowmentFund.updateHoneyPotState(gameId, 5);
 
@@ -322,7 +329,7 @@ contract GameManager is Proxied, Guard {
     function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
         uint gameState = gmGetterDB.getGameState(gameId);
         require(gameState == uint(eGameState.WAITING) ||
-                gameState == uint(eGameState.PRE_GAME), "Game can't be cancelled at this point");
+                gameState == uint(eGameState.PRE_GAME));
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 

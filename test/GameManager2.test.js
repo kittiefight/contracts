@@ -355,11 +355,21 @@ contract('GameManager', (accounts) => {
     await gameCreation.listKittie(kitties[1], { from: accounts[1] }).should.be.rejected;
   })
 
-  it('list 4 kitties to the system', async () => {
-    for (let i = 1; i < 5; i++) {
+  it('list 3 kitties to the system', async () => {
+    for (let i = 1; i < 4; i++) {
       await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
         [kitties[i]]), { from: accounts[i] }).should.be.fulfilled;
     }
+  })
+
+  it('get correct amount of unmatched/listed kitties', async () => {
+    let listed = await scheduler.getListedKitties();
+    console.log('\n==== LISTED KITTIES: ',listed.length);
+  })
+
+  it('list 1 more kittie to the system', async () => {
+    await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
+      [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
   it('correctly creates 2 games', async () => {
@@ -392,6 +402,12 @@ contract('GameManager', (accounts) => {
     gameDetails.endTime = gameTimes.endTime.toNumber();
 
     gameDetails.preStartTime = gameTimes.preStartTime.toNumber();
+  })
+
+  it('listed kitties array emptied', async () => {
+    let listed = await scheduler.getListedKitties();
+    console.log('\n==== LISTED KITTIES: ',listed.length);
+    listed.length.should.be.equal(0);
   })
 
   it('bettors can participate in a created game', async () => {
@@ -571,26 +587,6 @@ contract('GameManager', (accounts) => {
       await betting.fillBets(gameId, playerRed, 0)
       await betting.fillBets(gameId, playerBlack, 0)
     }
-    // await betting.bet(gameId, 10000, playerRed, playerBlack, 57, {from:accounts[8]});
-
-    // let attackType = await betting.getAttackType(gameId, playerRed, playerBlack, 57)
-    // console.log(attackType);
-
-    // let defenseLevelOpponent = await betting.reduceDefenseLevel.call(gameId, 10000, playerRed, playerBlack);
-    // console.log(defenseLevelOpponent.toNumber());
-
-    // if (defenseLevelOpponent.toNumber() === 0) {
-    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
-    // } else if(defenseLevelOpponent.toNumber() > 0 && isAttackBlocked(gameId, playerBlack)) {
-    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
-    // } else {
-    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
-    // }
-
-    // await betting.setLastBetTimestamp(gameId, playerRed, 1564354674);
-    // await betting.fillBets(gameId, playerRed, 10000);
-
-
   })
 
   it('should be able to make bet', async () => {
@@ -919,24 +915,27 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('check if loser kittie is dead', async () => {
+  it('check game kitties dead status', async () => {
     
-    let { gameId, playerBlack, kittieBlack, kittieRed, supporters } = gameDetails; 
+    let { playerBlack, kittieBlack, kittieRed, winners } = gameDetails; 
 
-    let loserKitty = gameDetails.loser === playerBlack ? kittieBlack : kittieRed;
-    await kittieHELL.scheduleKillKitty(loserKitty, 5) //Or how does he dies?
+    if( gameDetails.loser === playerBlack) {
+      loserKitty = kittieBlack;
+      winnerKitty = kittieRed;
+    }
+    else{
+      loserKitty = kittieRed;
+      winnerKitty = kittieBlack
+    }
 
     gameDetails.loserKitty = loserKitty;
 
-    await timeout(15);
-
-    // This will kill kitty, as cronjob will act
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: supporters[0]}).should.be.fulfilled;
-
+    //Loser Kittie Dead
     let isKittyDead = await kittieHELL.isKittyDead(loserKitty);
-
     isKittyDead.should.be.true;
+
+    winnerOwner = await cryptoKitties.ownerOf(winnerKitty);
+    winnerOwner.should.be.equal( winners.winner);
 
   })
 
@@ -963,7 +962,6 @@ contract('GameManager', (accounts) => {
   })
 
 })
-
 
 // original data based on 
 // https://api.cryptokitties.co/cattributes

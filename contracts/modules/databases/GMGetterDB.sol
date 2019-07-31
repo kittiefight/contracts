@@ -216,7 +216,7 @@ contract GMGetterDB is Proxied {
   function getGameInfo(uint256 gameId)
     public view
     onlyExistentGame(gameId)
-    returns (address[2] memory players, uint[2] memory kittieIds, uint state, uint ticketPrice, uint minSupporters,
+    returns (address[2] memory players, uint[2] memory kittieIds, uint state,
       uint[2] memory supporters, bool[2] memory pressedStart, uint timeCreated, address winner)
   {
     players[0] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
@@ -224,8 +224,6 @@ contract GMGetterDB is Proxied {
     kittieIds[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "kitty")));
     kittieIds[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "kitty")));
     state = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
-    ticketPrice = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "ticketFee")));
-    minSupporters = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "minContributors")));
     supporters[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "supporters")));
     supporters[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "supporters")));
     pressedStart[0] = gameStore.didHitStart(gameId, players[0]);
