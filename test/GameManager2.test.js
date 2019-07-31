@@ -5,6 +5,33 @@ require('chai')
   .use(require('chai-as-promised'))
   .should();
 
+const jKFProxy = require('../build/contracts/KFProxy.json')
+const jGenericDB = require('../build/contracts/GenericDB.json')
+const jProfileDB = require('../build/contracts/ProfileDB.json')
+const jRoleDB = require('../build/contracts/RoleDB.json')
+const jGMSetterDB = require('../build/contracts/GMSetterDB.json')
+const jGMGetterDB = require('../build/contracts/GMGetterDB.json')
+const jGameManager = require('../build/contracts/GameManager.json')
+const jGameStore = require('../build/contracts/GameStore.json')
+const jGameCreation = require('../build/contracts/GameCreation.json')
+const jGameVarAndFee = require('../build/contracts/GameVarAndFee.json')
+const jForfeiter = require('../build/contracts/Forfeiter.json')
+const jDateTime = require('../build/contracts/DateTime.json')
+const jScheduler = require('../build/contracts/Scheduler.json')
+const jBetting = require('../build/contracts/Betting.json')
+const jHitsResolve = require('../build/contracts/HitsResolve.json')
+const jRarityCalculator = require('../build/contracts/RarityCalculator.json')
+const jRegister = require('../build/contracts/Register.json')
+const jEndowmentFund = require('../build/contracts/EndowmentFund.json')
+const jEndowmentDB = require('../build/contracts/EndowmentDB.json')
+const jEscrow = require('../build/contracts/Escrow.json')
+const jKittieHELL = require('../build/contracts/KittieHELL.json')
+const jKittieHellDB = require('../build/contracts/KittieHellDB.json')
+const jCronJob = require('../build/contracts/CronJob.json')
+const jFreezeInfo = require('../build/contracts/FreezeInfo.json')
+const jCronJobTarget = require('../build/contracts/CronJobTarget.json')
+
+
 const KFProxy = artifacts.require('KFProxy')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB')
@@ -132,47 +159,78 @@ function formatDate(timestamp)
 contract('GameManager', (accounts) => {
 
   it('deploys contracts', async () => {
-    // PROXY
-    proxy = await KFProxy.new()
+    // // PROXY
+    // proxy = await KFProxy.new()
 
-    // DATABASES
-    genericDB = await GenericDB.new()
-    profileDB = await ProfileDB.new(genericDB.address);
-    roleDB = await RoleDB.new(genericDB.address);
-    endowmentDB = await EndowmentDB.new(genericDB.address)
-    getterDB = await GMGetterDB.new(genericDB.address)
-    setterDB = await GMSetterDB.new(genericDB.address)
-    kittieHellDB = await KittieHellDB.new(genericDB.address)
+    // // DATABASES
+    // genericDB = await GenericDB.new()
+    // profileDB = await ProfileDB.new(genericDB.address);
+    // roleDB = await RoleDB.new(genericDB.address);
+    // endowmentDB = await EndowmentDB.new(genericDB.address)
+    // getterDB = await GMGetterDB.new(genericDB.address)
+    // setterDB = await GMSetterDB.new(genericDB.address)
+    // kittieHellDB = await KittieHellDB.new(genericDB.address)
 
-    // CRONJOB
-    cronJob = await CronJob.new(genericDB.address)
-    freezeInfo = await FreezeInfo.new();
-    cronJobTarget= await CronJobTarget.new();
+    // // CRONJOB
+    // cronJob = await CronJob.new(genericDB.address)
+    // freezeInfo = await FreezeInfo.new();
+    // cronJobTarget= await CronJobTarget.new();
 
 
-    // TOKENS
-    superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
-    kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
-    cryptoKitties = await CryptoKitties.new();
+    // // TOKENS
+    // superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
+    // kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
+    // cryptoKitties = await CryptoKitties.new();
 
-    // MODULES
-    gameManager = await GameManager.new()
-    gameStore = await GameStore.new()
-    gameCreation = await GameCreation.new()
-    register = await Register.new()
-    dateTime = await DateTime.new()
-    gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
-    forfeiter = await Forfeiter.new()
-    scheduler = await Scheduler.new()
-    betting = await Betting.new()
-    hitsResolve = await HitsResolve.new()
-    rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
-    // rarityCalculator = await RarityCalculator.new()
-    endowmentFund = await EndowmentFund.new()
-    kittieHELL = await KittieHELL.new()
+    // // MODULES
+    // gameManager = await GameManager.new()
+    // gameStore = await GameStore.new()
+    // gameCreation = await GameCreation.new()
+    // register = await Register.new()
+    // dateTime = await DateTime.new()
+    // gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
+    // forfeiter = await Forfeiter.new()
+    // scheduler = await Scheduler.new()
+    // betting = await Betting.new()
+    // hitsResolve = await HitsResolve.new()
+    // rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
+    // // rarityCalculator = await RarityCalculator.new()
+    // endowmentFund = await EndowmentFund.new()
+    // kittieHELL = await KittieHELL.new()
 
-    //ESCROW
-    escrow = await Escrow.new()
+    // //ESCROW
+    // escrow = await Escrow.new()
+
+    proxy = await KFProxy.at(jKFProxy.networks["999"].address);
+  	genericDB = await GenericDB.at(jGenericDB.networks["999"].address);    
+  	profileDB = await ProfileDB.at(jProfileDB.networks["999"].address);
+    roleDB = await RoleDB.at(jRoleDB.networks["999"].address);
+    endowmentDB = await EndowmentDB.at(jEndowmentDB.networks["999"].address);
+    getterDB = await GMGetterDB.at(jGMGetterDB.networks["999"].address);
+    setterDB = await GMSetterDB.at(jGMSetterDB.networks["999"].address);
+    kittieHellDB = await KittieHellDB.at(jKittieHellDB.networks["999"].address);
+    cronJob = await CronJob.at(jCronJob.networks["999"].address);
+    freezeInfo = await FreezeInfo.at(jFreezeInfo.networks["999"].address);
+    cronJobTarget = await CronJobTarget.at(jCronJobTarget.networks["999"].address);
+  	superDaoToken = await SuperDaoToken.deployed();
+    kittieFightToken = await KittieFightToken.deployed();
+    cryptoKitties = await CryptoKitties.deployed();
+    gameManager = await GameManager.at(jGameManager.networks["999"].address);
+    gameStore = await GameStore.at(jGameStore.networks["999"].address);
+    gameCreation = await GameCreation.at(jGameCreation.networks["999"].address);
+    register = await Register.at(jRegister.networks["999"].address);
+    dateTime = await DateTime.at(jDateTime.networks["999"].address);
+    gameVarAndFee = await GameVarAndFee.at(jGameVarAndFee.networks["999"].address);
+    forfeiter = await Forfeiter.at(jForfeiter.networks["999"].address);
+    scheduler = await Scheduler.at(jScheduler.networks["999"].address);
+    betting = await Betting.at(jBetting.networks["999"].address);
+    hitsResolve = await HitsResolve.at(jHitsResolve.networks["999"].address);
+    rarityCalculator = await RarityCalculator.at(jRarityCalculator.networks["999"].address);
+    endowmentFund = await EndowmentFund.at(jEndowmentFund.networks["999"].address);
+    kittieHELL = await KittieHELL.at(jKittieHELL.networks["999"].address);
+    escrow = await Escrow.at(jEscrow.networks["999"].address);
+
+
     await escrow.transferOwnership(endowmentFund.address).should.be.fulfilled
 
   })

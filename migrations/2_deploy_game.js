@@ -1,69 +1,177 @@
-const RarityCalculator = artifacts.require('RarityCalculator')
+const KFProxy = artifacts.require("KFProxy");
+const GenericDB = artifacts.require("GenericDB");
+const ProfileDB = artifacts.require("ProfileDB");
+const RoleDB = artifacts.require("RoleDB");
+const GMSetterDB = artifacts.require("GMSetterDB");
+const GMGetterDB = artifacts.require("GMGetterDB");
+const GameManager = artifacts.require("GameManager");
+const GameStore = artifacts.require("GameStore");
+const GameCreation = artifacts.require("GameCreation");
+const GameVarAndFee = artifacts.require("GameVarAndFee");
+const Forfeiter = artifacts.require("Forfeiter");
+const DateTime = artifacts.require("DateTime");
+const Scheduler = artifacts.require("Scheduler");
+const Betting = artifacts.require("Betting");
+const HitsResolve = artifacts.require("HitsResolve");
+const RarityCalculator = artifacts.require("RarityCalculator");
+const Register = artifacts.require("Register");
+const EndowmentFund = artifacts.require("EndowmentFund");
+const EndowmentDB = artifacts.require("EndowmentDB");
+const Escrow = artifacts.require("Escrow");
+const KittieHELL = artifacts.require("KittieHELL");
+const KittieHellDB = artifacts.require("KittieHellDB");
+const SuperDaoToken = artifacts.require("MockERC20Token");
+const KittieFightToken = artifacts.require("MockERC20Token");
+const CryptoKitties = artifacts.require("MockERC721Token");
+const CronJob = artifacts.require("CronJob");
+const GuardImplementor = artifacts.require("GuardImplementor");
+const FreezeInfo = artifacts.require("FreezeInfo");
+const CronJobTarget = artifacts.require("CronJobTarget");
 
+const BigNumber = web3.utils.BN;
+
+const ERC20_TOKEN_SUPPLY = new BigNumber(
+  web3.utils.toWei("100000000", "ether") //100 Million
+);
+
+const kovanMedianizer = "0xA944bd4b25C9F186A846fd5668941AA3d3B8425F";
 
 module.exports = (deployer, network, accounts) => {
+  deployer.deploy(KFProxy);
+  deployer.deploy(GenericDB).then(() => {
+    deployer.deploy(ProfileDB, GenericDB.address);
+    deployer.deploy(RoleDB, GenericDB.address);
+    deployer.deploy(EndowmentDB, GenericDB.address);
+    deployer.deploy(GMGetterDB, GenericDB.address);
+    deployer.deploy(GMSetterDB, GenericDB.address);
+    deployer.deploy(KittieHellDB, GenericDB.address);
+    deployer.deploy(CronJob, GenericDB.address);
+    deployer.deploy(GameVarAndFee, GenericDB.address, kovanMedianizer);
+  });
+  deployer.deploy(FreezeInfo);
+  deployer.deploy(CronJobTarget);
+  deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY);
+  deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY);
+  deployer.deploy(CryptoKitties);
+  deployer.deploy(GameManager);
+  deployer.deploy(GameStore);
+  deployer.deploy(GameCreation);
+  deployer.deploy(Register);
+  deployer.deploy(DateTime);
+  deployer.deploy(Forfeiter);
+  deployer.deploy(Scheduler);
+  deployer.deploy(Betting);
+  deployer.deploy(HitsResolve);
+  deployer.deploy(Scheduler);
+  deployer.deploy(EndowmentFund);
+  deployer.deploy(KittieHELL);
+  deployer.deploy(Escrow);
+  deployer
+    .deploy(RarityCalculator, { from: accounts[0] })
+    .then(async RarityCalculatorInst => {
+      await RarityCalculatorInst.fillKaiValue();
 
-  deployer.deploy(RarityCalculator, {from: accounts[0]})
-  .then(async(RarityCalculatorInst) => {
-    await RarityCalculatorInst.fillKaiValue()
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
-    }
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
-    }
-
-    for (let j=0; j<cattributesData.length; j++) {
-        await RarityCalculatorInst.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
-    }
-
-    for (let m=0; m<FancyKitties.length; m++) {
-      for (let n=1; n<FancyKitties[m].length; n++) {
-        await RarityCalculatorInst.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "body",
+          Object.keys(kaiToCattributesData[0].body.kai)[i],
+          Object.values(kaiToCattributesData[0].body.kai)[i]
+        );
       }
-    } 
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "pattern",
+          Object.keys(kaiToCattributesData[1].pattern.kai)[i],
+          Object.values(kaiToCattributesData[1].pattern.kai)[i]
+        );
+      }
 
-    await RarityCalculatorInst.updateTotalKitties(1600000)
-    await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "coloreyes",
+          Object.keys(kaiToCattributesData[2].coloreyes.kai)[i],
+          Object.values(kaiToCattributesData[2].coloreyes.kai)[i]
+        );
+      }
 
-  })
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "eyes",
+          Object.keys(kaiToCattributesData[3].eyes.kai)[i],
+          Object.values(kaiToCattributesData[3].eyes.kai)[i]
+        );
+      }
+
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "color1",
+          Object.keys(kaiToCattributesData[4].color1.kai)[i],
+          Object.values(kaiToCattributesData[4].color1.kai)[i]
+        );
+      }
+
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "color2",
+          Object.keys(kaiToCattributesData[5].color2.kai)[i],
+          Object.values(kaiToCattributesData[5].color2.kai)[i]
+        );
+      }
+
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "color3",
+          Object.keys(kaiToCattributesData[6].color3.kai)[i],
+          Object.values(kaiToCattributesData[6].color3.kai)[i]
+        );
+      }
+
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "wild",
+          Object.keys(kaiToCattributesData[7].wild.kai)[i],
+          Object.values(kaiToCattributesData[7].wild.kai)[i]
+        );
+      }
+
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "mouth",
+          Object.keys(kaiToCattributesData[8].mouth.kai)[i],
+          Object.values(kaiToCattributesData[8].mouth.kai)[i]
+        );
+      }
+
+      for (let i = 0; i < 32; i++) {
+        await RarityCalculatorInst.updateCattributes(
+          "environment",
+          Object.keys(kaiToCattributesData[9].environment.kai)[i],
+          Object.values(kaiToCattributesData[9].environment.kai)[i]
+        );
+      }
+
+      for (let j = 0; j < cattributesData.length; j++) {
+        await RarityCalculatorInst.updateCattributesScores(
+          cattributesData[j].description,
+          Number(cattributesData[j].total)
+        );
+      }
+
+      for (let m = 0; m < FancyKitties.length; m++) {
+        for (let n = 1; n < FancyKitties[m].length; n++) {
+          await RarityCalculatorInst.updateFancyKittiesList(
+            FancyKitties[m][n],
+            FancyKitties[m][0]
+          );
+        }
+      }
+
+      await RarityCalculatorInst.updateTotalKitties(1600000);
+      await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000);
+    });
 };
 
-
-// original data based on 
+// original data based on
 // https://api.cryptokitties.co/cattributes
 // RarityCalculationsDBs are built based on these original data.
 const cattributesData = [
@@ -74,38 +182,38 @@ const cattributesData = [
     description: "granitegrey",
     type: "colortertiary",
     gene: 4,
-    total: "231062",
+    total: "231062"
   },
   {
     description: "kittencream",
     type: "colortertiary",
     gene: 6,
-    total: "228748",
+    total: "228748"
   },
   { description: "happygokitty", type: "mouth", gene: 14, total: "217675" },
   {
     description: "royalpurple",
     type: "colorsecondary",
     gene: 6,
-    total: "208081",
+    total: "208081"
   },
   {
     description: "swampgreen",
     type: "colorsecondary",
     gene: 8,
-    total: "207611",
+    total: "207611"
   },
   {
     description: "lemonade",
     type: "colorsecondary",
     gene: 13,
-    total: "198827",
+    total: "198827"
   },
   {
     description: "greymatter",
     type: "colorprimary",
     gene: 10,
-    total: "197753",
+    total: "197753"
   },
   { description: "coffee", type: "colorsecondary", gene: 12, total: "187877" },
   { description: "soserious", type: "mouth", gene: 15, total: "181556" },
@@ -116,7 +224,7 @@ const cattributesData = [
     description: "cottoncandy",
     type: "colorprimary",
     gene: 4,
-    total: "170075",
+    total: "170075"
   },
   { description: "strawberry", type: "coloreyes", gene: 7, total: "158208" },
   { description: "mintgreen", type: "coloreyes", gene: 3, total: "152137" },
@@ -131,7 +239,7 @@ const cattributesData = [
     description: "bananacream",
     type: "colorprimary",
     gene: 15,
-    total: "126658",
+    total: "126658"
   },
   { description: "saycheese", type: "mouth", gene: 10, total: "124120" },
   { description: "simple", type: "eyes", gene: 5, total: "122615" },
@@ -143,26 +251,26 @@ const cattributesData = [
     description: "chocolate",
     type: "colorsecondary",
     gene: 14,
-    total: "113092",
+    total: "113092"
   },
   {
     description: "egyptiankohl",
     type: "colorsecondary",
     gene: 2,
-    total: "112992",
+    total: "112992"
   },
   { description: "tiger", type: "pattern", gene: 1, total: "112653" },
   {
     description: "purplehaze",
     type: "colortertiary",
     gene: 10,
-    total: "110145",
+    total: "110145"
   },
   {
     description: "sandalwood",
     type: "colortertiary",
     gene: 1,
-    total: "106106",
+    total: "106106"
   },
   { description: "sapphire", type: "coloreyes", gene: 8, total: "105881" },
   { description: "himalayan", type: "body", gene: 11, total: "105273" },
@@ -188,7 +296,7 @@ const cattributesData = [
     description: "emeraldgreen",
     type: "colortertiary",
     gene: 7,
-    total: "93291",
+    total: "93291"
   },
   { description: "cinderella", type: "colorprimary", gene: 9, total: "92005" },
   { description: "koladiviya", type: "body", gene: 4, total: "91854" },
@@ -197,7 +305,7 @@ const cattributesData = [
     description: "barkbrown",
     type: "colorsecondary",
     gene: 11,
-    total: "83274",
+    total: "83274"
   },
   { description: "whixtensions", type: "mouth", gene: 0, total: "80845" },
   { description: "coralsunrise", type: "coloreyes", gene: 11, total: "78633" },
@@ -205,7 +313,7 @@ const cattributesData = [
     description: "azaleablush",
     type: "colortertiary",
     gene: 12,
-    total: "77153",
+    total: "77153"
   },
   { description: "bobtail", type: "body", gene: 5, total: "77039" },
   { description: "scarlet", type: "colorsecondary", gene: 10, total: "75289" },
@@ -229,7 +337,7 @@ const cattributesData = [
     description: "morningglory",
     type: "colortertiary",
     gene: 14,
-    total: "49516",
+    total: "49516"
   },
   { description: "ganado", type: "pattern", gene: 3, total: "47030" },
   { description: "laperm", type: "body", gene: 22, total: "46224" },
@@ -240,7 +348,7 @@ const cattributesData = [
     description: "doridnudibranch",
     type: "coloreyes",
     gene: 13,
-    total: "42250",
+    total: "42250"
   },
   { description: "asif", type: "eyes", gene: 11, total: "41891" },
   { description: "oldlace", type: "colorprimary", gene: 18, total: "41208" },
@@ -261,7 +369,7 @@ const cattributesData = [
     description: "poisonberry",
     type: "colorsecondary",
     gene: 3,
-    total: "28719",
+    total: "28719"
   },
   { description: "tigerpunk", type: "pattern", gene: 20, total: "27526" },
   { description: "serpent", type: "eyes", gene: 2, total: "27220" },
@@ -274,7 +382,7 @@ const cattributesData = [
     description: "springcrocus",
     type: "colorsecondary",
     gene: 1,
-    total: "24317",
+    total: "24317"
   },
   { description: "chartreux", type: "body", gene: 10, total: "23641" },
   { description: "onyx", type: "colorprimary", gene: 25, total: "23223" },
@@ -289,7 +397,7 @@ const cattributesData = [
     description: "missmuffett",
     type: "colortertiary",
     gene: 13,
-    total: "19413",
+    total: "19413"
   },
   { description: "baddate", type: "eyes", gene: 10, total: "19360" },
   { description: "violet", type: "colorsecondary", gene: 9, total: "18679" },
@@ -300,7 +408,7 @@ const cattributesData = [
     description: "padparadscha",
     type: "colorsecondary",
     gene: 7,
-    total: "16226",
+    total: "16226"
   },
   { description: "wolfgrey", type: "colorsecondary", gene: 20, total: "15757" },
   { description: "persian", type: "body", gene: 23, total: "14624" },
@@ -315,7 +423,7 @@ const cattributesData = [
     description: "butterscotch",
     type: "colorsecondary",
     gene: 15,
-    total: "13361",
+    total: "13361"
   },
   { description: "hintomint", type: "colorprimary", gene: 14, total: "13248" },
   { description: "wasntme", type: "mouth", gene: 1, total: "13053" },
@@ -335,20 +443,20 @@ const cattributesData = [
     description: "patrickstarfish",
     type: "colortertiary",
     gene: 23,
-    total: "10688",
+    total: "10688"
   },
   {
     description: "dragonfruit",
     type: "colorprimary",
     gene: 13,
-    total: "10569",
+    total: "10569"
   },
   { description: "thunderstruck", type: "pattern", gene: 17, total: "10122" },
   {
     description: "safetyvest",
     type: "colorsecondary",
     gene: 17,
-    total: "10102",
+    total: "10102"
   },
   { description: "toyger", type: "body", gene: 26, total: "9949" },
   { description: "arcreactor", type: "pattern", gene: 22, total: "9660" },
@@ -359,7 +467,7 @@ const cattributesData = [
     description: "peppermint",
     type: "colorsecondary",
     gene: 24,
-    total: "9249",
+    total: "9249"
   },
   { description: "roadtogold", type: "environment", gene: 26, total: "9198" },
   { description: "wowza", type: "eyes", gene: 9, total: "9071" },
@@ -386,7 +494,7 @@ const cattributesData = [
     description: "finalfrontier",
     type: "environment",
     gene: 21,
-    total: "6775",
+    total: "6775"
   },
   { description: "pearl", type: "colorsecondary", gene: 29, total: "6743" },
   { description: "palejade", type: "coloreyes", gene: 21, total: "6396" },
@@ -398,7 +506,7 @@ const cattributesData = [
     description: "turtleback",
     type: "colorsecondary",
     gene: 18,
-    total: "5608",
+    total: "5608"
   },
   { description: "satiated", type: "mouth", gene: 27, total: "5522" },
   { description: "pinefresh", type: "coloreyes", gene: 22, total: "5508" },
@@ -406,7 +514,7 @@ const cattributesData = [
     description: "inflatablepool",
     type: "colorsecondary",
     gene: 28,
-    total: "5420",
+    total: "5420"
   },
   { description: "firedup", type: "eyes", gene: 26, total: "5410" },
   { description: "mekong", type: "body", gene: 17, total: "5270" },
@@ -421,7 +529,7 @@ const cattributesData = [
     description: "twilightsparkle",
     type: "coloreyes",
     gene: 20,
-    total: "4534",
+    total: "4534"
   },
   { description: "splat", type: "pattern", gene: 16, total: "4530" },
   { description: "flamingo", type: "colortertiary", gene: 17, total: "4485" },
@@ -430,7 +538,7 @@ const cattributesData = [
     description: "rosequartz",
     type: "colorsecondary",
     gene: 19,
-    total: "4380",
+    total: "4380"
   },
   { description: "vigilante", type: "pattern", gene: 0, total: "4318" },
   { description: "juju", type: "environment", gene: 18, total: "4210" },
@@ -446,7 +554,7 @@ const cattributesData = [
     description: "mintmacaron",
     type: "colortertiary",
     gene: 27,
-    total: "3477",
+    total: "3477"
   },
   { description: "garnet", type: "colorsecondary", gene: 23, total: "3356" },
   { description: "bornwithit", type: "eyes", gene: 28, total: "3328" },
@@ -472,7 +580,7 @@ const cattributesData = [
     description: "prairierose",
     type: "colorsecondary",
     gene: 30,
-    total: "1919",
+    total: "1919"
   },
   { description: "tendertears", type: "eyes", gene: 20, total: "1875" },
   { description: "candyshoppe", type: "eyes", gene: 29, total: "1864" },
@@ -506,7 +614,7 @@ const cattributesData = [
     description: "summerbonnet",
     type: "colortertiary",
     gene: 21,
-    total: "1158",
+    total: "1158"
   },
   { description: "liger", type: "body", gene: 30, total: "1149" },
   { description: "dune", type: "environment", gene: 17, total: "1144" },
@@ -530,7 +638,7 @@ const cattributesData = [
     description: "mallowflower",
     type: "colortertiary",
     gene: 26,
-    total: "809",
+    total: "809"
   },
   { description: "beatlesque", type: "prestige", gene: null, total: "783" },
   { description: "gauntlet", type: "prestige", gene: null, total: "781" },
@@ -546,502 +654,674 @@ const cattributesData = [
   { description: "timbers", type: "prestige", gene: null, total: "472" },
   { description: "catterypack", type: "prestige", gene: null, total: "340" },
   { description: "pawsfree", type: "prestige", gene: null, total: "264" },
-  { description: "bionic", type: "prestige", gene: null, total: "195" },
-]
+  { description: "bionic", type: "prestige", gene: null, total: "195" }
+];
 
-
-
-// original data based on 
+// original data based on
 // https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md
 
 const kaiToCattributesData = [
-    {
-      body: {
-        genes: "0-3",
-        name: "Fur",
-        code: "FU",
-        kai: {
-          "1": "savannah",
-          "2": "selkirk",
-          "3": "chantilly",
-          "4": "birman",
-          "5": "koladiviya",
-          "6": "bobtail",
-          "7": "manul",
-          "8": "pixiebob",
-          "9": "siberian",
-          a: "cymric",
-          b: "chartreux",
-          c: "himalayan",
-          d: "munchkin",
-          e: "sphynx",
-          f: "ragamuffin",
-          g: "ragdoll",
-          h: "norwegianforest",
-          i: "mekong",
-          j: "highlander",
-          k: "balinese",
-          m: "lynx",
-          n: "mainecoon",
-          o: "laperm",
-          p: "persian",
-          q: "fox",
-          r: "kurilian",
-          s: "toyger",
-          t: "manx",
-          u: "lykoi",
-          v: "burmilla",
-          w: "liger",
-          x: "",
-        },
-      },
-    },
-    {
-      pattern: {
-        genes: "4-7",
-        name: "Pattern",
-        code: "PA",
-        kai: {
-          "1": "vigilante",
-          "2": "tiger",
-          "3": "rascal",
-          "4": "ganado",
-          "5": "leopard",
-          "6": "camo",
-          "7": "rorschach",
-          "8": "spangled",
-          "9": "calicool",
-          a: "luckystripe",
-          b: "amur",
-          c: "jaguar",
-          d: "spock",
-          e: "mittens",
-          f: "totesbasic",
-          g: "totesbasic",
-          h: "splat",
-          i: "thunderstruck",
-          j: "dippedcone",
-          k: "highsociety",
-          m: "tigerpunk",
-          n: "henna",
-          o: "arcreactor",
-          p: "totesbasic",
-          q: "scorpius",
-          r: "razzledazzle",
-          s: "hotrod",
-          t: "allyouneed",
-          u: "avatar",
-          v: "gyre",
-          w: "moonrise",
-          x: "",
-        },
-      },
-    },
-    {
-      coloreyes: {
-        genes: "8-11",
-        name: "Eye Color",
-        code: "EC",
-        kai: {
-          "1": "thundergrey",
-          "2": "gold",
-          "3": "topaz",
-          "4": "mintgreen",
-          "5": "isotope",
-          "6": "sizzurp",
-          "7": "chestnut",
-          "8": "strawberry",
-          "9": "sapphire",
-          a: "forgetmenot",
-          b: "dahlia",
-          c: "coralsunrise",
-          d: "olive",
-          e: "doridnudibranch",
-          f: "parakeet",
-          g: "cyan",
-          h: "pumpkin",
-          i: "limegreen",
-          j: "bridesmaid",
-          k: "bubblegum",
-          m: "twilightsparkle",
-          n: "palejade",
-          o: "pinefresh",
-          p: "eclipse",
-          q: "babypuke",
-          r: "downbythebay",
-          s: "autumnmoon",
-          t: "oasis",
-          u: "gemini",
-          v: "dioscuri",
-          w: "kaleidoscope",
-          x: "",
-        },
-      },
-    },
-    {
-      eyes: {
-        genes: "12-15",
-        name: "Eye Shape",
-        code: "ES",
-        kai: {
-          "1": "swarley",
-          "2": "wonky",
-          "3": "serpent",
-          "4": "googly",
-          "5": "otaku",
-          "6": "simple",
-          "7": "crazy",
-          "8": "thicccbrowz",
-          "9": "caffeine",
-          a: "wowza",
-          b: "baddate",
-          c: "asif",
-          d: "chronic",
-          e: "slyboots",
-          f: "wiley",
-          g: "stunned",
-          h: "chameleon",
-          i: "alien",
-          j: "fabulous",
-          k: "raisedbrow",
-          m: "tendertears",
-          n: "hacker",
-          o: "sass",
-          p: "sweetmeloncakes",
-          q: "oceanid",
-          r: "wingtips",
-          s: "firedup",
-          t: "buzzed",
-          u: "bornwithit",
-          v: "candyshoppe",
-          w: "drama",
-          x: "",
-        },
-      },
-    },
-    {
-      color1: {
-        genes: "16-19",
-        name: "Base Color",
-        code: "BC",
-        kai: {
-          "1": "shadowgrey",
-          "2": "salmon",
-          "3": "meowgarine",
-          "4": "orangesoda",
-          "5": "cottoncandy",
-          "6": "mauveover",
-          "7": "aquamarine",
-          "8": "nachocheez",
-          "9": "harbourfog",
-          a: "cinderella",
-          b: "greymatter",
-          c: "tundra",
-          d: "brownies",
-          e: "dragonfruit",
-          f: "hintomint",
-          g: "bananacream",
-          h: "cloudwhite",
-          i: "cornflower",
-          j: "oldlace",
-          k: "koala",
-          m: "lavender",
-          n: "glacier",
-          o: "redvelvet",
-          p: "verdigris",
-          q: "icicle",
-          r: "onyx",
-          s: "hyacinth",
-          t: "martian",
-          u: "hotcocoa",
-          v: "shamrock",
-          w: "firstblush",
-          x: "",
-        },
-      },
-    },
-    {
-      color2: {
-        genes: "20-23",
-        name: "Highlight Color",
-        code: "HC",
-        kai: {
-          "1": "cyborg",
-          "2": "springcrocus",
-          "3": "egyptiankohl",
-          "4": "poisonberry",
-          "5": "lilac",
-          "6": "apricot",
-          "7": "royalpurple",
-          "8": "padparadscha",
-          "9": "swampgreen",
-          a: "violet",
-          b: "scarlet",
-          c: "barkbrown",
-          d: "coffee",
-          e: "lemonade",
-          f: "chocolate",
-          g: "butterscotch",
-          h: "ooze",
-          i: "safetyvest",
-          j: "turtleback",
-          k: "rosequartz",
-          m: "wolfgrey",
-          n: "cerulian",
-          o: "skyblue",
-          p: "garnet",
-          q: "peppermint",
-          r: "universe",
-          s: "royalblue",
-          t: "mertail",
-          u: "inflatablepool",
-          v: "pearl",
-          w: "prairierose",
-          x: "",
-        },
-      },
-    },
-    {
-      color3: {
-        genes: "24-27",
-        name: "Accent Color",
-        code: "AC",
-        kai: {
-          "1": "belleblue",
-          "2": "sandalwood",
-          "3": "peach",
-          "4": "icy",
-          "5": "granitegrey",
-          "6": "cashewmilk",
-          "7": "kittencream",
-          "8": "emeraldgreen",
-          "9": "kalahari",
-          a: "shale",
-          b: "purplehaze",
-          c: "hanauma",
-          d: "azaleablush",
-          e: "missmuffett",
-          f: "morningglory",
-          g: "frosting",
-          h: "daffodil",
-          i: "flamingo",
-          j: "buttercup",
-          k: "bloodred",
-          m: "atlantis",
-          n: "summerbonnet",
-          o: "periwinkle",
-          p: "patrickstarfish",
-          q: "seafoam",
-          r: "cobalt",
-          s: "mallowflower",
-          t: "mintmacaron",
-          u: "sully",
-          v: "fallspice",
-          w: "dreamboat",
-          x: "",
-        },
-      },
-    },
-    {
-      wild: {
-        genes: "28-31",
-        name: "Wild",
-        code: "WE",
-        kai: {
-          "1": "",
-          "2": "",
-          "3": "",
-          "4": "",
-          "5": "",
-          "6": "",
-          "7": "",
-          "8": "",
-          "9": "",
-          a: "",
-          b: "",
-          c: "",
-          d: "",
-          e: "",
-          f: "",
-          g: "",
-          h: "littlefoot",
-          i: "elk",
-          j: "ducky",
-          k: "trioculus",
-          m: "daemonwings",
-          n: "featherbrain",
-          o: "flapflap",
-          p: "daemonhorns",
-          q: "dragontail",
-          r: "aflutter",
-          s: "foghornpawhorn",
-          t: "unicorn",
-          u: "dragonwings",
-          v: "alicorn",
-          w: "wyrm",
-          x: "",
-        },
-      },
-    },
-    {
-      mouth: {
-        genes: "32-35",
-        name: "Mouth",
-        code: "MO",
-        kai: {
-          "1": "whixtensions",
-          "2": "wasntme",
-          "3": "wuvme",
-          "4": "gerbil",
-          "5": "confuzzled",
-          "6": "impish",
-          "7": "belch",
-          "8": "rollercoaster",
-          "9": "beard",
-          a: "pouty",
-          b: "saycheese",
-          c: "grim",
-          d: "fangtastic",
-          e: "moue",
-          f: "happygokitty",
-          g: "soserious",
-          h: "cheeky",
-          i: "starstruck",
-          j: "samwise",
-          k: "ruhroh",
-          m: "dali",
-          n: "grimace",
-          o: "majestic",
-          p: "tongue",
-          q: "yokel",
-          r: "topoftheworld",
-          s: "neckbeard",
-          t: "satiated",
-          u: "walrus",
-          v: "struck",
-          w: "delite",
-          x: "",
-        },
-      },
-    },
-    {
-      environment: {
-        genes: "36-39",
-        name: "Environment",
-        code: "EN",
-        kai: {
-          "1": "",
-          "2": "",
-          "3": "",
-          "4": "",
-          "5": "",
-          "6": "",
-          "7": "",
-          "8": "",
-          "9": "",
-          a: "",
-          b: "",
-          c: "",
-          d: "",
-          e: "",
-          f: "",
-          g: "",
-          h: "salty",
-          i: "dune",
-          j: "juju",
-          k: "tinybox",
-          m: "myparade",
-          n: "finalfrontier",
-          o: "metime",
-          p: "drift",
-          q: "secretgarden",
-          r: "frozen",
-          s: "roadtogold",
-          t: "jacked",
-          u: "floorislava",
-          v: "prism",
-          w: "junglebook",
-          x: "",
-        },
-      },
-    },
-    {
-      secret: {
-        genes: "40-43",
-        name: "Secret Y Gene",
-        code: "SE",
-        kai: {},
-      },
-    },
-    {
-      prestige: { genes: "44-47", name: "Purrstige", code: "PU", kai: {} },
-    },
-  ]
+  {
+    body: {
+      genes: "0-3",
+      name: "Fur",
+      code: "FU",
+      kai: {
+        "1": "savannah",
+        "2": "selkirk",
+        "3": "chantilly",
+        "4": "birman",
+        "5": "koladiviya",
+        "6": "bobtail",
+        "7": "manul",
+        "8": "pixiebob",
+        "9": "siberian",
+        a: "cymric",
+        b: "chartreux",
+        c: "himalayan",
+        d: "munchkin",
+        e: "sphynx",
+        f: "ragamuffin",
+        g: "ragdoll",
+        h: "norwegianforest",
+        i: "mekong",
+        j: "highlander",
+        k: "balinese",
+        m: "lynx",
+        n: "mainecoon",
+        o: "laperm",
+        p: "persian",
+        q: "fox",
+        r: "kurilian",
+        s: "toyger",
+        t: "manx",
+        u: "lykoi",
+        v: "burmilla",
+        w: "liger",
+        x: ""
+      }
+    }
+  },
+  {
+    pattern: {
+      genes: "4-7",
+      name: "Pattern",
+      code: "PA",
+      kai: {
+        "1": "vigilante",
+        "2": "tiger",
+        "3": "rascal",
+        "4": "ganado",
+        "5": "leopard",
+        "6": "camo",
+        "7": "rorschach",
+        "8": "spangled",
+        "9": "calicool",
+        a: "luckystripe",
+        b: "amur",
+        c: "jaguar",
+        d: "spock",
+        e: "mittens",
+        f: "totesbasic",
+        g: "totesbasic",
+        h: "splat",
+        i: "thunderstruck",
+        j: "dippedcone",
+        k: "highsociety",
+        m: "tigerpunk",
+        n: "henna",
+        o: "arcreactor",
+        p: "totesbasic",
+        q: "scorpius",
+        r: "razzledazzle",
+        s: "hotrod",
+        t: "allyouneed",
+        u: "avatar",
+        v: "gyre",
+        w: "moonrise",
+        x: ""
+      }
+    }
+  },
+  {
+    coloreyes: {
+      genes: "8-11",
+      name: "Eye Color",
+      code: "EC",
+      kai: {
+        "1": "thundergrey",
+        "2": "gold",
+        "3": "topaz",
+        "4": "mintgreen",
+        "5": "isotope",
+        "6": "sizzurp",
+        "7": "chestnut",
+        "8": "strawberry",
+        "9": "sapphire",
+        a: "forgetmenot",
+        b: "dahlia",
+        c: "coralsunrise",
+        d: "olive",
+        e: "doridnudibranch",
+        f: "parakeet",
+        g: "cyan",
+        h: "pumpkin",
+        i: "limegreen",
+        j: "bridesmaid",
+        k: "bubblegum",
+        m: "twilightsparkle",
+        n: "palejade",
+        o: "pinefresh",
+        p: "eclipse",
+        q: "babypuke",
+        r: "downbythebay",
+        s: "autumnmoon",
+        t: "oasis",
+        u: "gemini",
+        v: "dioscuri",
+        w: "kaleidoscope",
+        x: ""
+      }
+    }
+  },
+  {
+    eyes: {
+      genes: "12-15",
+      name: "Eye Shape",
+      code: "ES",
+      kai: {
+        "1": "swarley",
+        "2": "wonky",
+        "3": "serpent",
+        "4": "googly",
+        "5": "otaku",
+        "6": "simple",
+        "7": "crazy",
+        "8": "thicccbrowz",
+        "9": "caffeine",
+        a: "wowza",
+        b: "baddate",
+        c: "asif",
+        d: "chronic",
+        e: "slyboots",
+        f: "wiley",
+        g: "stunned",
+        h: "chameleon",
+        i: "alien",
+        j: "fabulous",
+        k: "raisedbrow",
+        m: "tendertears",
+        n: "hacker",
+        o: "sass",
+        p: "sweetmeloncakes",
+        q: "oceanid",
+        r: "wingtips",
+        s: "firedup",
+        t: "buzzed",
+        u: "bornwithit",
+        v: "candyshoppe",
+        w: "drama",
+        x: ""
+      }
+    }
+  },
+  {
+    color1: {
+      genes: "16-19",
+      name: "Base Color",
+      code: "BC",
+      kai: {
+        "1": "shadowgrey",
+        "2": "salmon",
+        "3": "meowgarine",
+        "4": "orangesoda",
+        "5": "cottoncandy",
+        "6": "mauveover",
+        "7": "aquamarine",
+        "8": "nachocheez",
+        "9": "harbourfog",
+        a: "cinderella",
+        b: "greymatter",
+        c: "tundra",
+        d: "brownies",
+        e: "dragonfruit",
+        f: "hintomint",
+        g: "bananacream",
+        h: "cloudwhite",
+        i: "cornflower",
+        j: "oldlace",
+        k: "koala",
+        m: "lavender",
+        n: "glacier",
+        o: "redvelvet",
+        p: "verdigris",
+        q: "icicle",
+        r: "onyx",
+        s: "hyacinth",
+        t: "martian",
+        u: "hotcocoa",
+        v: "shamrock",
+        w: "firstblush",
+        x: ""
+      }
+    }
+  },
+  {
+    color2: {
+      genes: "20-23",
+      name: "Highlight Color",
+      code: "HC",
+      kai: {
+        "1": "cyborg",
+        "2": "springcrocus",
+        "3": "egyptiankohl",
+        "4": "poisonberry",
+        "5": "lilac",
+        "6": "apricot",
+        "7": "royalpurple",
+        "8": "padparadscha",
+        "9": "swampgreen",
+        a: "violet",
+        b: "scarlet",
+        c: "barkbrown",
+        d: "coffee",
+        e: "lemonade",
+        f: "chocolate",
+        g: "butterscotch",
+        h: "ooze",
+        i: "safetyvest",
+        j: "turtleback",
+        k: "rosequartz",
+        m: "wolfgrey",
+        n: "cerulian",
+        o: "skyblue",
+        p: "garnet",
+        q: "peppermint",
+        r: "universe",
+        s: "royalblue",
+        t: "mertail",
+        u: "inflatablepool",
+        v: "pearl",
+        w: "prairierose",
+        x: ""
+      }
+    }
+  },
+  {
+    color3: {
+      genes: "24-27",
+      name: "Accent Color",
+      code: "AC",
+      kai: {
+        "1": "belleblue",
+        "2": "sandalwood",
+        "3": "peach",
+        "4": "icy",
+        "5": "granitegrey",
+        "6": "cashewmilk",
+        "7": "kittencream",
+        "8": "emeraldgreen",
+        "9": "kalahari",
+        a: "shale",
+        b: "purplehaze",
+        c: "hanauma",
+        d: "azaleablush",
+        e: "missmuffett",
+        f: "morningglory",
+        g: "frosting",
+        h: "daffodil",
+        i: "flamingo",
+        j: "buttercup",
+        k: "bloodred",
+        m: "atlantis",
+        n: "summerbonnet",
+        o: "periwinkle",
+        p: "patrickstarfish",
+        q: "seafoam",
+        r: "cobalt",
+        s: "mallowflower",
+        t: "mintmacaron",
+        u: "sully",
+        v: "fallspice",
+        w: "dreamboat",
+        x: ""
+      }
+    }
+  },
+  {
+    wild: {
+      genes: "28-31",
+      name: "Wild",
+      code: "WE",
+      kai: {
+        "1": "",
+        "2": "",
+        "3": "",
+        "4": "",
+        "5": "",
+        "6": "",
+        "7": "",
+        "8": "",
+        "9": "",
+        a: "",
+        b: "",
+        c: "",
+        d: "",
+        e: "",
+        f: "",
+        g: "",
+        h: "littlefoot",
+        i: "elk",
+        j: "ducky",
+        k: "trioculus",
+        m: "daemonwings",
+        n: "featherbrain",
+        o: "flapflap",
+        p: "daemonhorns",
+        q: "dragontail",
+        r: "aflutter",
+        s: "foghornpawhorn",
+        t: "unicorn",
+        u: "dragonwings",
+        v: "alicorn",
+        w: "wyrm",
+        x: ""
+      }
+    }
+  },
+  {
+    mouth: {
+      genes: "32-35",
+      name: "Mouth",
+      code: "MO",
+      kai: {
+        "1": "whixtensions",
+        "2": "wasntme",
+        "3": "wuvme",
+        "4": "gerbil",
+        "5": "confuzzled",
+        "6": "impish",
+        "7": "belch",
+        "8": "rollercoaster",
+        "9": "beard",
+        a: "pouty",
+        b: "saycheese",
+        c: "grim",
+        d: "fangtastic",
+        e: "moue",
+        f: "happygokitty",
+        g: "soserious",
+        h: "cheeky",
+        i: "starstruck",
+        j: "samwise",
+        k: "ruhroh",
+        m: "dali",
+        n: "grimace",
+        o: "majestic",
+        p: "tongue",
+        q: "yokel",
+        r: "topoftheworld",
+        s: "neckbeard",
+        t: "satiated",
+        u: "walrus",
+        v: "struck",
+        w: "delite",
+        x: ""
+      }
+    }
+  },
+  {
+    environment: {
+      genes: "36-39",
+      name: "Environment",
+      code: "EN",
+      kai: {
+        "1": "",
+        "2": "",
+        "3": "",
+        "4": "",
+        "5": "",
+        "6": "",
+        "7": "",
+        "8": "",
+        "9": "",
+        a: "",
+        b: "",
+        c: "",
+        d: "",
+        e: "",
+        f: "",
+        g: "",
+        h: "salty",
+        i: "dune",
+        j: "juju",
+        k: "tinybox",
+        m: "myparade",
+        n: "finalfrontier",
+        o: "metime",
+        p: "drift",
+        q: "secretgarden",
+        r: "frozen",
+        s: "roadtogold",
+        t: "jacked",
+        u: "floorislava",
+        v: "prism",
+        w: "junglebook",
+        x: ""
+      }
+    }
+  },
+  {
+    secret: {
+      genes: "40-43",
+      name: "Secret Y Gene",
+      code: "SE",
+      kai: {}
+    }
+  },
+  {
+    prestige: { genes: "44-47", name: "Purrstige", code: "PU", kai: {} }
+  }
+];
 
 // Samples of original data for fill in the db FancyKitties
 // based on https://www.cryptokitties.co/catalogue/fancy-cats
 // Fancy kitties are selected based on the rank of generation (low to high).
 // Generally speaking, fancy kitties priced lower than $100 are not considered as valualbe fancy kitties.
 const FancyKitties = [
-        
-  ['Catamari', 1642629, 1642657, 1641933, 1642019, 
-            1646755, 1639921, 1643320, 1646438, 
-            1649667, 1645264, 1643775, 1644114,
-            1640134, 1647228, 1643862, 1647294, 
-            1641007, 1646945, 1646255, 1642591, 
-            1644179, 1643528, 1647854, 1649527,
-            1646945, 1643862, 1640134, 1641704, 
-            1649527, 1641007, 1643252, 1644544,
-            1647485, 1649133, 1649632, 1640061],
+  [
+    "Catamari",
+    1642629,
+    1642657,
+    1641933,
+    1642019,
+    1646755,
+    1639921,
+    1643320,
+    1646438,
+    1649667,
+    1645264,
+    1643775,
+    1644114,
+    1640134,
+    1647228,
+    1643862,
+    1647294,
+    1641007,
+    1646945,
+    1646255,
+    1642591,
+    1644179,
+    1643528,
+    1647854,
+    1649527,
+    1646945,
+    1643862,
+    1640134,
+    1641704,
+    1649527,
+    1641007,
+    1643252,
+    1644544,
+    1647485,
+    1649133,
+    1649632,
+    1640061
+  ],
 
+  [
+    "Magmeow",
+    1631726,
+    1634450,
+    1632058,
+    1631206,
+    1631875,
+    1629596,
+    1635110,
+    1633445,
+    1634369,
+    1632890,
+    1631778,
+    1634504,
+    1635234,
+    1634504,
+    1631965,
+    1632890,
+    1635110,
+    1634369,
+    1632233,
+    1635107,
+    1632190,
+    1630243,
+    1634301,
+    1633445,
+    1632841,
+    1631778,
+    1632233,
+    1633445,
+    1635107,
+    1635234,
+    1635028,
+    1633281,
+    1635449,
+    1633501,
+    1633378,
+    1633885
+  ],
 
-  ['Magmeow', 1631726, 1634450, 1632058, 1631206,
-            1631875, 1629596, 1635110, 1633445,
-            1634369, 1632890, 1631778, 1634504,
-            1635234, 1634504, 1631965, 1632890,
-            1635110, 1634369, 1632233, 1635107,
-            1632190, 1630243, 1634301, 1633445,
-            1632841, 1631778, 1632233, 1633445,
-            1635107, 1635234, 1635028, 1633281,
-            1635449, 1633501, 1633378, 1633885],
+  [
+    "Kitijira",
+    1616077,
+    1626771,
+    1624378,
+    1621802,
+    1620498,
+    1620920,
+    1620827,
+    1622099,
+    1620131,
+    1625850,
+    1627335,
+    1621018,
+    1621802,
+    1619371,
+    1622012,
+    1628854,
+    1621378,
+    1619639,
+    1621078,
+    1618937,
+    1622779,
+    1623096,
+    1621843,
+    1622632,
+    1620432,
+    1619639,
+    1622012,
+    1621078,
+    1619371,
+    1616707,
+    1628854,
+    1621843,
+    1621907,
+    1623096,
+    1623973,
+    1618937,
+    1621078,
+    1620578,
+    1621508,
+    1624223,
+    1621330,
+    1622707,
+    1619208,
+    1628279,
+    1625513,
+    1627029,
+    1620855,
+    1621197
+  ],
 
-  ['Kitijira', 1616077, 1626771, 1624378, 1621802,
-            1620498, 1620920, 1620827, 1622099,
-            1620131, 1625850, 1627335, 1621018,
-            1621802, 1619371, 1622012, 1628854,
-            1621378, 1619639, 1621078, 1618937,
-            1622779, 1623096, 1621843, 1622632,
-            1620432, 1619639, 1622012, 1621078,
-            1619371, 1616707, 1628854, 1621843,
-            1621907, 1623096, 1623973, 1618937,
-            1621078, 1620578, 1621508, 1624223,
-            1621330, 1622707, 1619208, 1628279,
-            1625513, 1627029, 1620855, 1621197],
+  [
+    "Whisper",
+    1600063,
+    1598628,
+    1595078,
+    1598372,
+    1596604,
+    1610037,
+    1602063,
+    1597556,
+    1597306,
+    1605931,
+    1606998,
+    1607247,
+    1606998,
+    1607247,
+    1598164,
+    1600894,
+    1597556,
+    1597306,
+    1610037,
+    1601338,
+    1599641,
+    1598638,
+    1600664,
+    1599655,
+    1597774,
+    1601113,
+    1600664,
+    1604885,
+    1598748,
+    1599655,
+    1600074,
+    1600727,
+    1599641,
+    1598638,
+    1602861,
+    1605716
+  ],
 
-  ['Whisper', 1600063, 1598628, 1595078, 1598372,
-           1596604, 1610037, 1602063, 1597556,
-           1597306, 1605931, 1606998, 1607247,
-           1606998, 1607247, 1598164, 1600894,
-           1597556, 1597306, 1610037, 1601338,
-           1599641, 1598638, 1600664, 1599655,
-           1597774, 1601113, 1600664, 1604885,
-           1598748, 1599655, 1600074, 1600727,
-           1599641, 1598638, 1602861, 1605716],
-
-  ['Krakitten', 1549620, 1551317, 1549815, 1566316,
-             1551090, 1549243, 1551803, 1552014,
-             1554967, 1549707, 1550485, 1550517,
-             1550517, 1560149, 1550554, 1549707,
-             1555405, 1560460, 1549243, 1566316,
-             1551090, 1554967, 1563186, 1549402,
-             1555405, 1560376, 1555375, 1555108,
-             1554116, 1551753, 1551012, 1555717,
-             1553405, 1560593, 1555566, 1566504,
-             1560696, 1560593, 1560945, 1550568,
-             1554116, 1566504, 1551753, 1553323,
-             1555108, 1560376, 1555375, 1550523,
-             1555108, 1563428, 1564177, 1551401,
-             1555657, 1560945, 1560376, 1554116,
-             1555717, 1553405, 1550523, 1550507]
-]
-
+  [
+    "Krakitten",
+    1549620,
+    1551317,
+    1549815,
+    1566316,
+    1551090,
+    1549243,
+    1551803,
+    1552014,
+    1554967,
+    1549707,
+    1550485,
+    1550517,
+    1550517,
+    1560149,
+    1550554,
+    1549707,
+    1555405,
+    1560460,
+    1549243,
+    1566316,
+    1551090,
+    1554967,
+    1563186,
+    1549402,
+    1555405,
+    1560376,
+    1555375,
+    1555108,
+    1554116,
+    1551753,
+    1551012,
+    1555717,
+    1553405,
+    1560593,
+    1555566,
+    1566504,
+    1560696,
+    1560593,
+    1560945,
+    1550568,
+    1554116,
+    1566504,
+    1551753,
+    1553323,
+    1555108,
+    1560376,
+    1555375,
+    1550523,
+    1555108,
+    1563428,
+    1564177,
+    1551401,
+    1555657,
+    1560945,
+    1560376,
+    1554116,
+    1555717,
+    1553405,
+    1550523,
+    1550507
+  ]
+];
