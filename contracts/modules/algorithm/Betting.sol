@@ -24,6 +24,7 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "../../libs/SafeMath.sol";
+import "./RarityCalculator.sol";
 
 /**
  * @title This contract is responsible to carry out the betting module in a game
@@ -32,6 +33,12 @@ import "../../libs/SafeMath.sol";
 
 contract Betting is Proxied, Guard {
     using SafeMath for uint256;
+
+    RarityCalculator public RarityCalculatorInst;
+
+    function initialize() public {
+        RarityCalculatorInst = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
+    }
 
     ///fight map for a game with a specific gameId
      struct HitType {
@@ -193,6 +200,22 @@ contract Betting is Proxied, Guard {
       bets[_gameId][_player].push(_betAmount);
     }
 
+   /**
+    * @author @ziweidream
+    * @notice get the number of total bets placed by the given corner in a game
+    * with a specific gameId
+    * @param _gameId the gameID of the game
+    * @param _player the given corner in this game whose individual bet ether amount is recorded
+    * @return the number of total bets placed by the given corner in a game
+    */
+    function getNumberOfBets(uint256 _gameId, address _player)
+       public
+       view
+       returns(uint256 num)
+    {
+        num = bets[_gameId][_player].length;
+    }
+
     // get last 5 bet amount of the given corner
    /**
     * @author @ziweidream
@@ -203,13 +226,13 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game whose individual bet ether amount is recorded
     * @return the last 5 bet ether amount by the given corner in a game
     */
-    function getLastFiveBets(uint256 _gameId, address _player)
+    function getLastFourBets(uint256 _gameId, address _player)
         public
         view
-        returns(uint lastBet5, uint lastBet4, uint lastBet3, uint lastBet2, uint lastBet1)
+        returns(uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1)
     {
       uint256 arrLength = bets[_gameId][_player].length;
-      lastBet5 = bets[_gameId][_player][arrLength.sub(5)];
+      require(arrLength > 3);
       lastBet4 = bets[_gameId][_player][arrLength.sub(4)];
       lastBet3 = bets[_gameId][_player][arrLength.sub(3)];
       lastBet2 = bets[_gameId][_player][arrLength.sub(2)];
@@ -240,23 +263,6 @@ contract Betting is Proxied, Guard {
         defenseLevel[_gameId][_player] = _defenseLevel;
     }
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
-   /**
-    * @author @ziweidream
-    * @notice record the original defense level of the given corner in a game with a specific gameId
-    * @dev this function is only called by GameManager contract
-    * @param _gameId the gameID of the game
-    * @param _player the address of the given corner in this game for whom the defense level is recorded
-    * @param _originalDefenseLevel the original defense level of the given corner, which is calculated in
-    * the function startGame() in GameManager
-    */
-    function setOriginalDefenseLevel(uint256 _gameId, address _player, uint256 _originalDefenseLevel)
-        public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    {
-        setDefenseLevel(_gameId, _player, _originalDefenseLevel);
-    }
-
    /**
     * @author @ziweidream
     * @notice randomly select attack types from low values column or high values column depending on
@@ -279,7 +285,7 @@ contract Betting is Proxied, Guard {
             bytes32 attackHash,
             uint256 index
         ){
-        (,,,,uint256 prevBetAmount) = getLastFiveBets(_gameId, _supportedPlayer);
+        (,,,uint256 prevBetAmount) = getLastFourBets(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (_lastBetAmount <= prevBetAmount) {
             uint256 diceLowValues = randomGen(_randomNum);
@@ -367,7 +373,7 @@ contract Betting is Proxied, Guard {
         )
         {
         require(defenseLevel[_gameId][_opponentPlayer] > 0, "Defense level is already zero");
-        (, uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFiveBets(_gameId, _supportedPlayer);
+        (uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFourBets(_gameId, _supportedPlayer);
         if (_lastBetAmount > lastBet1 && lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4) {
             defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer].sub(1);
             setDefenseLevel(_gameId, _opponentPlayer, defenseLevelOpponent);
@@ -388,23 +394,55 @@ contract Betting is Proxied, Guard {
      // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
    /**
     * @author @ziweidream
-    * @notice generates a fight map for a game with a specific gameId
+    * @notice generates a fight map for a game with a specific gameId, and calculates the original defense levels
+    * of both corners in this game
     * @dev this function can only be called by the GameManager contract
     * @param _gameId the gameID of the game
+    * @param _kittieIdSupportedPlayer the kittieId of the kittie used by the supported player in this game
+    * @param _supportedPlayer the address of the supported player in the game
+    * @param _kittieIdOpponent the kittieId of the kittie used by the opponent player in this game
+    * @param _opponentPlayer the address of the opponent player in the game
     * @param _randomRed the random number generated when the Red corner presses the Button Bet
     * @param _randomBlack the random number generated when the Black corner presses the Button Bet
+    * @return the orginal defense level of both corners respectively
     */
     function startGame(
         uint256 _gameId,
+        uint256 _kittieIdSupportedPlayer,
+        uint256 _geneKittieSupportedPlayer,
+        address _supportedPlayer,
+        uint256 _kittieIdOpponent,
+        uint256 _geneKittieOpponent,
+        address _opponentPlayer,
         uint256 _randomRed,
         uint256 _randomBlack
         )
         public
         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        returns(
+            uint256 originalDefenseLevelSupportedPlayer,
+            uint256 originalDefenseLevelOpponent
+        )
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
+        originalDefenseLevelSupportedPlayer = RarityCalculatorInst.getDefenseLevel(
+                                                _kittieIdSupportedPlayer,
+                                                _geneKittieSupportedPlayer);
 
-        emit GameStarted(_gameId);
+        originalDefenseLevelOpponent = RarityCalculatorInst.getDefenseLevel(_kittieIdOpponent, _geneKittieOpponent);
+
+        setDefenseLevel(_gameId, _supportedPlayer, originalDefenseLevelSupportedPlayer);
+        setDefenseLevel(_gameId, _opponentPlayer, originalDefenseLevelOpponent);
+
+        emit GameStarted(
+            _gameId,
+            _kittieIdSupportedPlayer,
+            originalDefenseLevelSupportedPlayer,
+            _supportedPlayer,
+            _kittieIdOpponent,
+            originalDefenseLevelOpponent,
+            _opponentPlayer
+        );
     }
 
     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
@@ -420,7 +458,7 @@ contract Betting is Proxied, Guard {
     * @param _randomNum the random number generated when the supported player presses Button Bet
     * in the game
     * @return the attack type and attackHash for the supported player,
-    * and current defense level of the opponent player
+    * and current defense level of the supported and the opponent player
     */
     function bet(
         uint256 _gameId,
@@ -433,13 +471,21 @@ contract Betting is Proxied, Guard {
         returns (
             string memory attackType,
             bytes32 attackHash,
+            uint256 defenseLevelSupportedPlayer,
             uint256 defenseLevelOpponent
         )
     {
         uint256 index;
+
         (attackType, attackHash, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
-    
-        defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
+
+        defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
+
+        uint numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
+
+        if (defenseLevelOpponent > 0 && numberOfBets > 3) {
+           defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
+        }
 
         if (defenseLevelOpponent == 0) {
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
@@ -452,18 +498,26 @@ contract Betting is Proxied, Guard {
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
 
-        uint defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
+        defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
 
         emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelSupportedPlayer, defenseLevelOpponent);
     }
 
-    event GameStarted(uint256 indexed _gameId);
+    event GameStarted(
+        uint256 indexed _gameId,
+        uint256 indexed _kittieIdSupportedPlayer,
+        uint256 _originalDefenseLevelSupportedPlayer,
+        address _supportedPlayer,
+        uint256 indexed _kittieIdOpponent,
+        uint256 _originalDefenseLevelOpponent,
+        address _opponentPlayer
+        );
 
     event FightMapGenerated(uint256 indexed _gameId);
 
     event BetPlaced(
         uint256 indexed _gameId,
-        address _supportedPlyer,
+        address indexed _supportedPlyer,
         uint256 _lastBetAmount,
         bytes32 attackHash,
         string attackType,

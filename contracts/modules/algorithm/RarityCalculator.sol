@@ -1,8 +1,9 @@
 // Only RarityCalculator.sol is deployed. Contracts in /algorithm/RarityCalculationDBs are not deployed.
  // All functions and variables in contracts in the folder RarityCalculationDBs are internal. They are set as public just
  // temporarily for truffle test purpose. (Truffle test cannot carry out internal functions)
- // onlyContract modifier is temporarilly comment out until game manager contract is more defined
-// a kittie's gene is stored in ProfileDB, and can be obtained via the function: getKittieAttributes()
+ // onlyContract modifier is temporarilly comment out until game manager contract is more developed
+ // onlySuperAdmin is temporarilly comment out until further team instruction is given 
+
 /**
  * @title RarityCalculator
  *

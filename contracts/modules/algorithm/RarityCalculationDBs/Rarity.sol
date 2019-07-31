@@ -1,7 +1,6 @@
 pragma solidity ^0.5.5;
 
 import "../../../libs/SafeMath.sol";
-import "../../../authority/Owned.sol";
 import "./KittiesCattributesDB.sol";
 import "./CattributesScoresDB.sol";
 
@@ -10,7 +9,7 @@ import "./CattributesScoresDB.sol";
  * @author @ziweidream
  */
 // can only partially implement safe math in this contract due to compilation error of stack too deep
-contract Rarity is Owned, KittiesCattributesDB, CattributesScoresDB {
+contract Rarity is KittiesCattributesDB, CattributesScoresDB {
     using SafeMath for uint256;
 
     /**
@@ -19,8 +18,13 @@ contract Rarity is Owned, KittiesCattributesDB, CattributesScoresDB {
      * @return the rarity of a kittie as an integer
      */
 
-    function calculateRarity(uint256 kittieId) public view onlyOwner returns (uint256 rarity) {
-      rarity = (CattributesScores[kittiesDominantCattributes[kittieId][0]]
+    function calculateRarity(uint256 kittieId) 
+       public // temporarily set as public just for truffle testing purpose. should be internal
+       //internal
+       view 
+       returns (uint256 rarity) 
+    {
+       rarity = (CattributesScores[kittiesDominantCattributes[kittieId][0]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][1]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][2]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][3]]
