@@ -307,8 +307,7 @@ contract GameManager is Proxied, Guard {
             gameStore.getSecondTopBettor(gameId, winner));
 
         //Release winner's Kittie
-        // TODO: UPDATE FUNCTION NAME
-        kittieHELL.releaseKitty(gmGetterDB.getKittieInGame(gameId, winner));
+        kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
 
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser));
