@@ -19,6 +19,7 @@ import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
 import "../kittieHELL/KittieHELL.sol";
+import "../endowment/EndowmentFund.sol";
 
 /**
  * @dev Getters for game instances
@@ -75,22 +76,6 @@ contract GMGetterDB is Proxied {
       keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
     );
   }
-
-  // function getHoneypot(uint256 gameId)
-  //   public view
-  //   returns(uint)
-  // {
-  //   return (genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId"))),
-  //     genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-  // }
-
-  // function getHoneypotInitialEth(uint256 gameId)
-  //   public view
-  //   returns(uint)
-  // {    
-    
-  // }
-
 
   function getGamePlayers(uint256 gameId)
     public view
@@ -195,7 +180,7 @@ contract GMGetterDB is Proxied {
    */
   function getSupporterInfo(uint256 gameId, address bettor)
     public view
-    returns (uint256 betAmount, address supportedPlayer, bool ticketFeePaid)
+    returns (uint256 betAmount, address supportedPlayer, bool ticketFeePaid, bool hasClaimed)
   {
     betAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GM_SETTER_DB,
@@ -207,6 +192,7 @@ contract GMGetterDB is Proxied {
     );
 
     ticketFeePaid = genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")));
+    hasClaimed = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND)).getWithdrawalState(gameId, bettor);
   }
 
   /**

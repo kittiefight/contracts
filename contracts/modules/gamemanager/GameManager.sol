@@ -36,7 +36,7 @@ import "../databases/ProfileDB.sol";
 import "../../libs/SafeMath.sol";
 import '../kittieHELL/KittieHELL.sol';
 import '../../authority/Guard.sol';
-import "../../interfaces/IKittyCore.sol";
+import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 
 contract GameManager is Proxied, Guard {
@@ -50,9 +50,7 @@ contract GameManager is Proxied, Guard {
     Forfeiter public forfeiter;
     Betting public betting;
     HitsResolve public hitsResolve;
-    ProfileDB public profileDB;
     KittieHELL public kittieHELL;
-    IKittyCore public cryptoKitties;
     GameStore public gameStore;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, KITTIE_HELL, CANCELLED}
@@ -64,7 +62,7 @@ contract GameManager is Proxied, Guard {
     event GameEnded(uint indexed gameId, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
 
     modifier onlyGamePlayer(uint gameId, address player) {
-        require(profileDB.getCivicId(player) > 0);
+        require(ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(player) > 0);
         require(gmGetterDB.isPlayer(gameId, player));
         _;
     }
@@ -82,7 +80,6 @@ contract GameManager is Proxied, Guard {
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-        profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
         kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
@@ -153,10 +150,9 @@ contract GameManager is Proxied, Guard {
         
         gameStore.start(gameId, player,randomNum);
 
-        // (,,,,,,,,,uint genes) = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId); // TODO: check why it fails here
-        //Temporal
-        // uint genes = 512955438081049600613224346938352058409509756310147795204209859701881294;
-        // betting.setOriginalDefenseLevel(gameId, player, kittieId, genes);
+        // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        betting.setDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
@@ -218,7 +214,7 @@ contract GameManager is Proxied, Guard {
         require(gameState == uint(eGameState.MAIN_GAME));
         
         address sender = getOriginalSender();
-        (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
+        (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
 
         require(payedFee); //Needs to call participate first if false
         
