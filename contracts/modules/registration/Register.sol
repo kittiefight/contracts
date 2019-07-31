@@ -61,6 +61,20 @@ contract Register is Proxied, SystemRoles, Guard {
   }
 
   /**
+   * @dev Creates a super admin
+   */
+  function addSuperAdmin(address account) external onlyOwner {
+    _registerRole(account, SUPER_ADMIN_ROLE);
+  }
+
+  /**
+   * @dev Creates an admin
+   */
+  function addAdmin(address account) external onlyOwner {
+    _registerRole(account, ADMIN_ROLE);
+  }
+
+  /**
    * @dev Creates a new profile with the given address in ProfileDB
    * and sets its role to `bettor` by default.
    * @dev Can be called only through Proxy contract
