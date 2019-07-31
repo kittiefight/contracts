@@ -70,6 +70,12 @@ jQuery(document).ready(function($) {
         });
 
         initPublishAndConfigureForm();
+        window.deployer = {
+            'contractDefinitions': contractDefinitions,
+            'contractInstances': contractInstances,
+            'deployContract': deployContract,
+            'sendMessage': sendMessage,
+        };
     }
 
     function initPublishAndConfigureForm(){
@@ -155,7 +161,7 @@ jQuery(document).ready(function($) {
             printError('Proxy is not deployed');
             return;
         }
-        let targetContract = $('input[name=targetContract]', $form).val();
+        let targetContract = $('input[name=targetContract]', $form).val().trim();
         if(!targetContract){
             printError('Target contract not set');
             return;
