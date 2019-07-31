@@ -103,6 +103,7 @@ contract CronJob is CronJobDB {
      */
     function executeNextJobIfAvailable() external onlyProxy returns(bool, uint256) {
         uint256 nextJob = getFirstJobId();
+        if(nextJob == 0) return (false, 0);
         (uint256 time, /*uint16 nonce*/) = parseJobID(nextJob);
         if(time > now) return (false, 0);
         /*(bool success, bytes memory result) = */ executeJob(nextJob);
