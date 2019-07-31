@@ -1,11 +1,17 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
+const mnemonic = 'pilot affair rough elder couple expose swarm silver table expect glass reform';
+const infuraID = '615f9abed6d04d3abf8f2c3a66159ac5';
 
 const providerFactory = network => new HDWalletProvider(
-  process.env.MNEMONICS || '',     // Mnemonics of the deployer
-  `https://${network}.infura.io}`  // Provider URL => web3.HttpProvider
+  process.env.MNEMONICS || mnemonic,     // Mnemonics of the deployer
+  `https://${network}.infura.io/v3/${infuraID}`  // Provider URL => web3.HttpProvider
 );
 
+const providerFactoryLocal = network => new HDWalletProvider(
+  process.env.MNEMONICS || mnemonic,     // Mnemonics of the deployer
+  "http://localhost:8545"  // Provider URL => web3.HttpProvider
+);
 
 module.exports = {
   compilers: {
@@ -67,7 +73,7 @@ module.exports = {
         gas: 0xfffffffffff, // <-- Use this high gas value
         gasPrice: 0x01      // <-- Use this low gas price
     }
-  },
+  }/*,
   mocha: {
     useColors: true,
     reporter: 'eth-gas-reporter',
@@ -75,5 +81,5 @@ module.exports = {
       currency: 'USD',
       gasPrice: 21
     }
-  }
+  }*/
 };
