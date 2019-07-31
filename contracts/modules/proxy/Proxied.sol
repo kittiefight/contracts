@@ -1,7 +1,7 @@
 pragma solidity ^0.5.5;
 
 import "../../authority/Owned.sol";
-import "../../Proxy.sol";
+import "./ProxyBase.sol";
 import './ContractNames.sol';
 
 /**
@@ -11,12 +11,12 @@ import './ContractNames.sol';
  * @author @pash7ka
  */
 contract Proxied is Owned, ContractNames {
-    Proxy public proxy;
+    ProxyBase public proxy;
 
     /**
      * @notice Set/update address of Proxy contract
      */
-    function setProxy(Proxy _proxy) public onlyOwner {
+    function setProxy(ProxyBase _proxy) public onlyOwner {
         proxy = _proxy;
     }
 
@@ -33,8 +33,8 @@ contract Proxied is Owned, ContractNames {
     function _isContractAuthorized(string memory name) internal view {
         require(address(proxy) != address(0), "No Proxy");
         address allowedSender = proxy.getContract(name);
-        assert(allowedSender != address(0));    //If this fails, name is probablu incorrect
-        require(msg.sender == allowedSender, "Only specific contract");
+        assert(allowedSender != address(0));    //If this fails, name is probably incorrect
+        require(msg.sender == allowedSender, "Access is only allowed from specific contract");
     }
 
     function _isProxy() internal view {

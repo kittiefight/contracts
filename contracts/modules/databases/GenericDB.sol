@@ -14,8 +14,8 @@ pragma solidity ^0.5.5;
 
 import "./EternalStorage.sol";
 import "../proxy/Proxied.sol";
-import "../../Proxy.sol";
 import "../../libs/LinkedListLib.sol";
+import "../../libs/LinkedListAddrLib.sol";
 
 
 
@@ -26,13 +26,14 @@ import "../../libs/LinkedListLib.sol";
  */
 contract GenericDB is EternalStorage, Proxied {
   using LinkedListLib for LinkedListLib.LinkedList;
+  using LinkedListAddrLib for LinkedListAddrLib.LinkedList;
 
   function setIntStorage(
     string calldata contractName,
     bytes32 key,
     int256 value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     intStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -51,7 +52,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     uint256 value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     uintStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -70,7 +71,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     string calldata value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     stringStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -89,7 +90,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     address value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     addressStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -108,7 +109,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     bytes calldata value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     bytesStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -127,7 +128,7 @@ contract GenericDB is EternalStorage, Proxied {
     bytes32 key,
     bool value
   )
-    external onlyContract(contractName) 
+    external onlyContract(contractName)
   {
     boolStorage[keccak256(abi.encodePacked(contractName, key))] = value;
   }
@@ -143,70 +144,197 @@ contract GenericDB is EternalStorage, Proxied {
 
   function pushNodeToLinkedList(
     string calldata contractName,
-    string calldata linkedListName,
+    bytes32 tableKey,
     uint256 nodeId
   )
     external onlyContract(contractName) returns (bool)
   {
-    if (linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId)) {
+    if (linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId)) {
       return false;
     }
 
-    linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].push(nodeId, true);
+    linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].push(nodeId, true);
     return true;
   }
 
   function removeNodeFromLinkedList(
     string calldata contractName,
-    string calldata linkedListName,
+    bytes32 tableKey,
     uint256 nodeId
   )
     external onlyContract(contractName) returns (bool)
   {
-    if (!linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId)) {
+    if (!linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId)) {
       return false;
     }
     
-    linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].remove(nodeId);
+    linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].remove(nodeId);
     return true;
+  }
+
+  function insertNodeToLinkedList(
+    string calldata contractName,
+    bytes32 tableKey,
+    uint256 nodeId,
+    uint256 referenceNodeId,
+    bool direction
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].insert(referenceNodeId, nodeId, direction);
+  }
+
+  function findNextNodeInSortedLinkedList(
+    string memory contractName,
+    bytes32 tableKey,
+    uint256 value
+  )
+    public view onlyContract(contractName) returns (uint256)
+  {
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].getSortedSpot(0, value, true); //0 - search from HEAD, true - NEXT direction
   }
 
   function getAdjacent(
     string memory contractName,
-    string memory linkedListName,
+    bytes32 tableKey,
     uint256 nodeId,
     bool dir
   )
     public view returns (bool, uint256)
   {
-    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].getAdjacent(nodeId, dir);
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].getAdjacent(nodeId, dir);
+  }
+
+  function getAll(
+    string memory contractName,
+    bytes32 key
+  )
+    public
+    view returns (uint256[] memory nodes)
+  {
+    uint256 nextNode;
+    uint256 i;
+    uint256 len = getLinkedListSize(contractName, key);
+    nodes = new uint256[](len);
+
+    do {
+      (,nextNode) = getAdjacent(contractName, key, nextNode, true);
+      if (nextNode > 0) {nodes[i++] = nextNode;}
+    } while (nextNode != 0 && i < len);
   }
 
   function doesListExist(
     string memory contractName,
-    string memory linkedListName
+    bytes32 tableKey
   )
     public view returns (bool)
   {
-    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].listExists();
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].listExists();
   }
 
   function doesNodeExist(
     string memory contractName,
-    string memory linkedListName,
+    bytes32 tableKey,
     uint256 nodeId
   )
     public view returns (bool)
   {
-    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].nodeExists(nodeId);
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId);
   }
 
   function getLinkedListSize(
     string memory contractName,
-    string memory linkedListName
+    bytes32 tableKey
   )
     public view returns (uint256)
   {
-    return linkedListStorage[keccak256(abi.encodePacked(contractName, linkedListName))].sizeOf();
+    return linkedListStorage[keccak256(abi.encodePacked(contractName, tableKey))].sizeOf();
+  }
+
+  function pushNodeToLinkedListAddr(
+    string calldata contractName,
+    bytes32 tableKey,
+    address nodeId
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId)) {
+      return false;
+    }
+
+    linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].push(nodeId, true);
+    return true;
+  }
+
+  function removeNodeFromLinkedListAddr(
+    string calldata contractName,
+    bytes32 tableKey,
+    address nodeId
+  )
+    external onlyContract(contractName) returns (bool)
+  {
+    if (!linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId)) {
+      return false;
+    }
+  
+    linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].remove(nodeId);
+    return true;
+  }
+
+  function getAdjacentAddr(
+    string memory contractName,
+    bytes32 tableKey,
+    address nodeId,
+    bool dir
+  )
+    public view returns (bool, address)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].getAdjacent(nodeId, dir);
+  }
+
+  function getAllAddr(
+    string memory contractName,
+    bytes32 tableKey
+  )
+    public
+    view returns (address[] memory nodes)
+  {
+    address nextNode;
+    uint256 i;
+    uint256 len = getLinkedListAddrSize(contractName, tableKey);
+    nodes = new address[](len);
+
+    do {
+      (,nextNode) = getAdjacentAddr(contractName, tableKey, nextNode, true);
+      if (nextNode != address(0)) {nodes[i++] = nextNode;}
+    } while (nextNode != address(0) && i < len);
+  }
+
+  function doesListAddrExist(
+    string memory contractName,
+    bytes32 tableKey
+  )
+    public view returns (bool)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].listExists();
+  }
+
+  function doesNodeAddrExist(
+    string memory contractName,
+    bytes32 tableKey,
+    address nodeId
+  )
+    public view returns (bool)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].nodeExists(nodeId);
+  }
+
+  function getLinkedListAddrSize(
+    string memory contractName,
+    bytes32 tableKey
+  )
+    public view returns (uint256)
+  {
+    return linkedListAddrStorage[keccak256(abi.encodePacked(contractName, tableKey))].sizeOf();
   }
 }
