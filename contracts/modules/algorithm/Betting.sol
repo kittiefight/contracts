@@ -251,17 +251,24 @@ contract Betting is Proxied, Guard {
         lastBetTimestamp[_gameId][_player] = _lastBetTimestamp;
     }
 
-    // setDefenseLevel() is internal. Temporarily set as public for truffle test purpose.
    /**
     * @author @ziweidream
     * @notice record the current defense level of the given corner in a game with a specific gameId
     * @param _gameId the gameID of the game
     * @param _player the given corner in this game for whom the defense level is recorded
-    * @param _defenseLevel the current defense level of the given corner
     */
-    function setDefenseLevel(uint256 _gameId, address _player, uint256 _defenseLevel) public {
-        defenseLevel[_gameId][_player] = _defenseLevel;
+    function setDefenseLevel(uint256 _gameId, address _player, uint _defense) 
+        public        
+    {
+        defenseLevel[_gameId][_player] = _defense;
     }
+
+    // function setOriginalDefenseLevel(uint256 _gameId, address _player, uint _defense) 
+    //     public
+    // {
+    //     uint defense = RarityCalculatorInst.getDefenseLevel(_kittieId, _geneKittie);
+    //     defenseLevel[_gameId][_player] = defense;
+    // }
 
    /**
     * @author @ziweidream
@@ -391,58 +398,24 @@ contract Betting is Proxied, Guard {
         randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(1)), block.timestamp, block.difficulty, seed)))%100;
     }
 
-     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
    /**
     * @author @ziweidream
     * @notice generates a fight map for a game with a specific gameId, and calculates the original defense levels
     * of both corners in this game
     * @dev this function can only be called by the GameManager contract
-    * @param _gameId the gameID of the game
-    * @param _kittieIdSupportedPlayer the kittieId of the kittie used by the supported player in this game
-    * @param _supportedPlayer the address of the supported player in the game
-    * @param _kittieIdOpponent the kittieId of the kittie used by the opponent player in this game
-    * @param _opponentPlayer the address of the opponent player in the game
+    * @param _gameId the gameID of the game    
     * @param _randomRed the random number generated when the Red corner presses the Button Bet
     * @param _randomBlack the random number generated when the Black corner presses the Button Bet
-    * @return the orginal defense level of both corners respectively
     */
     function startGame(
         uint256 _gameId,
-        uint256 _kittieIdSupportedPlayer,
-        uint256 _geneKittieSupportedPlayer,
-        address _supportedPlayer,
-        uint256 _kittieIdOpponent,
-        uint256 _geneKittieOpponent,
-        address _opponentPlayer,
         uint256 _randomRed,
         uint256 _randomBlack
         )
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
-        returns(
-            uint256 originalDefenseLevelSupportedPlayer,
-            uint256 originalDefenseLevelOpponent
-        )
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
-        originalDefenseLevelSupportedPlayer = RarityCalculatorInst.getDefenseLevel(
-                                                _kittieIdSupportedPlayer,
-                                                _geneKittieSupportedPlayer);
-
-        originalDefenseLevelOpponent = RarityCalculatorInst.getDefenseLevel(_kittieIdOpponent, _geneKittieOpponent);
-
-        setDefenseLevel(_gameId, _supportedPlayer, originalDefenseLevelSupportedPlayer);
-        setDefenseLevel(_gameId, _opponentPlayer, originalDefenseLevelOpponent);
-
-        emit GameStarted(
-            _gameId,
-            _kittieIdSupportedPlayer,
-            originalDefenseLevelSupportedPlayer,
-            _supportedPlayer,
-            _kittieIdOpponent,
-            originalDefenseLevelOpponent,
-            _opponentPlayer
-        );
     }
 
     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed

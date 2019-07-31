@@ -150,15 +150,13 @@ contract GameManager is Proxied, Guard {
 
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
-
-        // (,,,,,,,,,uint genes) = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId); // TODO: check why it fails here
-
-        //uint genes = 621602280461119273000377613714842202937902730777750890758407393079864686;
         
         gameStore.start(gameId, player,randomNum);
-            
-        //uint defenseLevel = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes);
-        // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
+
+        // (,,,,,,,,,uint genes) = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId); // TODO: check why it fails here
+        //Temporal
+        // uint genes = 512955438081049600613224346938352058409509756310147795204209859701881294;
+        // betting.setOriginalDefenseLevel(gameId, player, kittieId, genes);
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
@@ -168,9 +166,9 @@ contract GameManager is Proxied, Guard {
 
         //Both Players Hit start
         if (gameStore.didHitStart(gameId, opponentPlayer)){
-
             //Call betting to set fight map
-            betting.startGame(gameId, gameStore.getRandom(gameId, opponentPlayer), randomNum);
+            betting.startGame(gameId, randomNum, gameStore.getRandom(gameId, opponentPlayer));
+
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
             endowmentFund.updateHoneyPotState(gameId, 3);
@@ -259,7 +257,8 @@ contract GameManager is Proxied, Guard {
 
         if ( endTime <= now){
             gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
-            gmSetterDB.removeKittiesInGame(gameId);
+            //KittieHell needs kittie gameId
+            //gmSetterDB.removeKittiesInGame(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
         }
     }

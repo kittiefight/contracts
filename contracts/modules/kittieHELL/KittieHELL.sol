@@ -140,8 +140,8 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         // kittieRedemptionFee is temporarily hardcoded until gameStore.sol is further developed to
         // be able to return a valid number instead of 0
         uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
-        uint256 kittieRedemptionFee = gameStore.getKittieRedemptionFee(gameId);
-	    return block.timestamp.sub(kitties[_kittyID].deadAt).mul(kittieRedemptionFee);
+        return gameStore.getKittieRedemptionFee(gameId);
+	    // return block.timestamp.sub(kitties[_kittyID].deadAt).mul(kittieRedemptionFee);
 	}
 
      /**

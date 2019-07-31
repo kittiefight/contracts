@@ -395,7 +395,8 @@ contract('GameManager', (accounts) => {
     })
 
     //Assign variable to game that is going to be played in the test
-    gameDetails = newGameEvents[newGameEvents.length -1].returnValues
+    // gameDetails = newGameEvents[newGameEvents.length -1].returnValues
+    gameDetails = newGameEvents[0].returnValues
 
     let gameTimes = await getterDB.getGameTimes(gameDetails.gameId);
 
@@ -496,6 +497,24 @@ contract('GameManager', (accounts) => {
 
   })
 
+  it.skip('get defense level for both players', async () => { 
+
+    let { gameId, playerRed, playerBlack, kittieBlack, kittieRed } = gameDetails;
+
+    // const gene1 = '512955438081049600613224346938352058409509756310147795204209859701881294'
+
+    // const gene2 = '24171491821178068054575826800486891805334952029503890331493652557302916'
+
+    // //This works, with previous test uncommented
+    // let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
+    let defense = await betting.defenseLevel(gameId, playerBlack);
+    console.log(`\n==== DEFENSE BLACK: ${defense}`);
+
+    // defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
+    defense = await betting.defenseLevel(gameId, playerRed);
+    console.log(`\n==== DEFENSE RED: ${defense}`);
+  })
+
   it('set defense level for both players', async () => { 
 
     let { gameId, playerRed, playerBlack, kittieBlack, kittieRed } = gameDetails;
@@ -506,13 +525,14 @@ contract('GameManager', (accounts) => {
 
     //This works, with previous test uncommented
     let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
-    await betting.setOriginalDefenseLevel(gameId, playerBlack, defense);
+    await betting.setDefenseLevel(gameId, playerBlack, defense);
     console.log(`\n==== DEFENSE BLACK: ${defense}`);
 
     defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
-    await betting.setOriginalDefenseLevel(gameId, playerRed, defense);
+    await betting.setDefenseLevel(gameId, playerRed, defense);
     console.log(`\n==== DEFENSE RED: ${defense}`);
   })
+
 
   it('should move gameState to MAIN_GAME', async () => {
 
@@ -947,7 +967,7 @@ contract('GameManager', (accounts) => {
     
     let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty);
 
-    console.log('Resurrection Cost: ',resurrectionCost.toString())
+    console.log('Resurrection Cost: ',resurrectionCost.toString(), 'KTY')
 
     await kittieFightToken.approve(kittieHELL.address, resurrectionCost, 
       { from: loser }).should.be.fulfilled;
