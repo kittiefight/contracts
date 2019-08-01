@@ -1,0 +1,720 @@
+{
+  "contractName": "KaiToCattributesDB",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "string"
+        },
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "cattributes",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_type",
+          "type": "string"
+        },
+        {
+          "name": "_kai",
+          "type": "string"
+        },
+        {
+          "name": "_cattribute",
+          "type": "string"
+        }
+      ],
+      "name": "updateCattributes",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.10+commit.5a6ea5b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"_type\",\"type\":\"string\"},{\"name\":\"_kai\",\"type\":\"string\"},{\"name\":\"_cattribute\",\"type\":\"string\"}],\"name\":\"updateCattributes\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"string\"},{\"name\":\"\",\"type\":\"string\"}],\"name\":\"cattributes\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"@ziweidream\",\"methods\":{\"updateCattributes(string,string,string)\":{\"author\":\"@ziweidream\",\"details\":\"https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md\",\"params\":{\"_cattribute\":\"the corresponding cattribute of a gene in kai notation, in small letters\",\"_kai\":\"kai notation of a gene in small letters\",\"_type\":\"type of cattributes in small letters\"}}},\"title\":\"This contract is a database storing a gene in kai notation and its corresponding cattribute\"},\"userdoc\":{\"methods\":{\"updateCattributes(string,string,string)\":{\"notice\":\"mapping a gene in kai notation to its corresponding cattribute\"}}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/KaiToCattributesDB.sol\":\"KaiToCattributesDB\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/KaiToCattributesDB.sol\":{\"keccak256\":\"0x34c11b15ac609a5ff07396c0ccdadf66b358f730509d9dd7e87925844e096406\",\"urls\":[\"bzzr://2672675e1513864a24e9ed12fb58ed840efa09b264ae07ce06a981496f913cb1\",\"dweb:/ipfs/QmPgdNcNkcqYrYBQCFXNXdiwcg1pGaMJi19LgSjwDbHTmK\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061069c806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063790a73c51461003b578063b030fa2814610224575b600080fd5b6102226004803603606081101561005157600080fd5b810190808035906020019064010000000081111561006e57600080fd5b82018360208201111561008057600080fd5b803590602001918460018302840111640100000000831117156100a257600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561010557600080fd5b82018360208201111561011757600080fd5b8035906020019184600183028401116401000000008311171561013957600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561019c57600080fd5b8201836020820111156101ae57600080fd5b803590602001918460018302840111640100000000831117156101d057600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506103ef565b005b6103746004803603604081101561023a57600080fd5b810190808035906020019064010000000081111561025757600080fd5b82018360208201111561026957600080fd5b8035906020019184600183028401116401000000008311171561028b57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156102ee57600080fd5b82018360208201111561030057600080fd5b8035906020019184600183028401116401000000008311171561032257600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506104d9565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156103b4578082015181840152602081019050610399565b50505050905090810190601f1680156103e15780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b806000846040518082805190602001908083835b602083106104265780518252602082019150602081019050602083039250610403565b6001836020036101000a0380198251168184511680821785525050505050509050019150509081526020016040518091039020836040518082805190602001908083835b6020831061048d578051825260208201915060208101905060208303925061046a565b6001836020036101000a038019825116818451168082178552505050505050905001915050908152602001604051809103902090805190602001906104d39291906105c2565b50505050565b60008280516020810182018051848252602083016020850120818352809550505050505081805160208101820180518482526020830160208501208183528095505050505050600091509150508054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156105ba5780601f1061058f576101008083540402835291602001916105ba565b820191906000526020600020905b81548152906001019060200180831161059d57829003601f168201915b505050505081565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061060357805160ff1916838001178555610631565b82800160010185558215610631579182015b82811115610630578251825591602001919060010190610615565b5b50905061063e9190610642565b5090565b61066491905b80821115610660576000816000905550600101610648565b5090565b9056fea265627a7a72305820c31e378269d7a966442fff99e3f57ee2ba657bff807a17312ea5dc3b13b68d1064736f6c634300050a0032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063790a73c51461003b578063b030fa2814610224575b600080fd5b6102226004803603606081101561005157600080fd5b810190808035906020019064010000000081111561006e57600080fd5b82018360208201111561008057600080fd5b803590602001918460018302840111640100000000831117156100a257600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561010557600080fd5b82018360208201111561011757600080fd5b8035906020019184600183028401116401000000008311171561013957600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561019c57600080fd5b8201836020820111156101ae57600080fd5b803590602001918460018302840111640100000000831117156101d057600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506103ef565b005b6103746004803603604081101561023a57600080fd5b810190808035906020019064010000000081111561025757600080fd5b82018360208201111561026957600080fd5b8035906020019184600183028401116401000000008311171561028b57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156102ee57600080fd5b82018360208201111561030057600080fd5b8035906020019184600183028401116401000000008311171561032257600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506104d9565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156103b4578082015181840152602081019050610399565b50505050905090810190601f1680156103e15780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b806000846040518082805190602001908083835b602083106104265780518252602082019150602081019050602083039250610403565b6001836020036101000a0380198251168184511680821785525050505050509050019150509081526020016040518091039020836040518082805190602001908083835b6020831061048d578051825260208201915060208101905060208303925061046a565b6001836020036101000a038019825116818451168082178552505050505050905001915050908152602001604051809103902090805190602001906104d39291906105c2565b50505050565b60008280516020810182018051848252602083016020850120818352809550505050505081805160208101820180518482526020830160208501208183528095505050505050600091509150508054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156105ba5780601f1061058f576101008083540402835291602001916105ba565b820191906000526020600020905b81548152906001019060200180831161059d57829003601f168201915b505050505081565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061060357805160ff1916838001178555610631565b82800160010185558215610631579182015b82811115610630578251825591602001919060010190610615565b5b50905061063e9190610642565b5090565b61066491905b80821115610660576000816000905550600101610648565b5090565b9056fea265627a7a72305820c31e378269d7a966442fff99e3f57ee2ba657bff807a17312ea5dc3b13b68d1064736f6c634300050a0032",
+  "sourceMap": "159:822:42:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;159:822:42;;;;;;;",
+  "deployedSourceMap": "159:822:42:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;159:822:42;;;;;;;;;;;;;;;;;;;;;;;;707:272;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;707:272:42;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;707:272:42;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;707:272:42;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;707:272:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;93:3;85:6;81:16;74:27;137:4;133:9;126:4;121:3;117:14;113:30;106:37;;169:3;161:6;157:16;147:26;;707:272:42;;;;;;;;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;707:272:42;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;707:272:42;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;707:272:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;93:3;85:6;81:16;74:27;137:4;133:9;126:4;121:3;117:14;113:30;106:37;;169:3;161:6;157:16;147:26;;707:272:42;;;;;;;;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;707:272:42;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;707:272:42;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;707:272:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;93:3;85:6;81:16;74:27;137:4;133:9;126:4;121:3;117:14;113:30;106:37;;169:3;161:6;157:16;147:26;;707:272:42;;;;;;;;;;;;;;;:::i;:::-;;194:63;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;194:63:42;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;194:63:42;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;194:63:42;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;194:63:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;93:3;85:6;81:16;74:27;137:4;133:9;126:4;121:3;117:14;113:30;106:37;;169:3;161:6;157:16;147:26;;194:63:42;;;;;;;;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;194:63:42;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;194:63:42;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;194:63:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;93:3;85:6;81:16;74:27;137:4;133:9;126:4;121:3;117:14;113:30;106:37;;169:3;161:6;157:16;147:26;;194:63:42;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;194:63:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;707:272;961:11;934;946:5;934:18;;;;;;;;;;;;;36:153:-1;66:2;61:3;58:11;36:153;;182:3;176:10;171:3;164:23;98:2;93:3;89:12;82:19;;123:2;118:3;114:12;107:19;;148:2;143:3;139:12;132:19;;36:153;;;274:1;267:3;263:2;259:12;254:3;250:22;246:30;315:4;311:9;305:3;299:10;295:26;356:4;350:3;344:10;340:21;389:7;380;377:20;372:3;365:33;3:399;;;934:18:42;;;;;;;;;;;;;;;;;;;;;953:4;934:24;;;;;;;;;;;;;36:153:-1;66:2;61:3;58:11;36:153;;182:3;176:10;171:3;164:23;98:2;93:3;89:12;82:19;;123:2;118:3;114:12;107:19;;148:2;143:3;139:12;132:19;;36:153;;;274:1;267:3;263:2;259:12;254:3;250:22;246:30;315:4;311:9;305:3;299:10;295:26;356:4;350:3;344:10;340:21;389:7;380;377:20;372:3;365:33;3:399;;;934:24:42;;;;;;;;;;;;;;;;;;;;;:38;;;;;;;;;;;;:::i;:::-;;707:272;;;:::o;194:63::-;;;28:7:-1;22:14;169:4;160:7;156:18;147:7;143:32;204:13;198:20;246:8;231:13;224:31;316:4;307:7;303:18;296:4;287:7;283:18;273:49;350:9;335:13;328:32;378:4;366:16;;0:388;;;;194:63:42;;28:7:-1;22:14;169:4;160:7;156:18;147:7;143:32;204:13;198:20;246:8;231:13;224:31;316:4;307:7;303:18;296:4;287:7;283:18;273:49;350:9;335:13;328:32;378:4;366:16;;0:388;;;;194:63:42;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;159:822::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o",
+  "source": "pragma solidity ^0.5.5;\n\n/**\n * @title This contract is a database storing a gene in kai notation and its corresponding cattribute\n * @author @ziweidream\n */\n\ncontract KaiToCattributesDB {\n\n    mapping(string => mapping(string => string)) public cattributes;\n\n    /**\n     * @author @ziweidream\n     * @notice mapping a gene in kai notation to its corresponding cattribute\n     * @dev https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md\n     * @param _type type of cattributes in small letters\n     * @param _kai kai notation of a gene in small letters\n     * @param _cattribute the corresponding cattribute of a gene in kai notation, in small letters\n     */\n    function updateCattributes(string memory _type, string memory _kai, string memory _cattribute)\n        public // temporarily set as public just for truffle test purpose\n        //internal\n        //onlySuperAdmin\n    {\n        cattributes[_type][_kai] = _cattribute;\n    }\n}",
+  "sourcePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/KaiToCattributesDB.sol",
+  "ast": {
+    "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/KaiToCattributesDB.sol",
+    "exportedSymbols": {
+      "KaiToCattributesDB": [
+        7503
+      ]
+    },
+    "id": 7504,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 7478,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".5"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:42"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title This contract is a database storing a gene in kai notation and its corresponding cattribute\n@author @ziweidream",
+        "fullyImplemented": true,
+        "id": 7503,
+        "linearizedBaseContracts": [
+          7503
+        ],
+        "name": "KaiToCattributesDB",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 7484,
+            "name": "cattributes",
+            "nodeType": "VariableDeclaration",
+            "scope": 7503,
+            "src": "194:63:42",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_$_t_mapping$_t_string_memory_$_t_string_storage_$_$",
+              "typeString": "mapping(string => mapping(string => string))"
+            },
+            "typeName": {
+              "id": 7483,
+              "keyType": {
+                "id": 7479,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "202:6:42",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "194:44:42",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_$_t_mapping$_t_string_memory_$_t_string_storage_$_$",
+                "typeString": "mapping(string => mapping(string => string))"
+              },
+              "valueType": {
+                "id": 7482,
+                "keyType": {
+                  "id": 7480,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "220:6:42",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "212:25:42",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_string_memory_$_t_string_storage_$",
+                  "typeString": "mapping(string => string)"
+                },
+                "valueType": {
+                  "id": 7481,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "230:6:42",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 7501,
+              "nodeType": "Block",
+              "src": "924:55:42",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 7499,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "id": 7493,
+                          "name": "cattributes",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 7484,
+                          "src": "934:11:42",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_string_memory_$_t_mapping$_t_string_memory_$_t_string_storage_$_$",
+                            "typeString": "mapping(string memory => mapping(string memory => string storage ref))"
+                          }
+                        },
+                        "id": 7496,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 7494,
+                          "name": "_type",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 7486,
+                          "src": "946:5:42",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_string_memory_ptr",
+                            "typeString": "string memory"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "934:18:42",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_string_memory_$_t_string_storage_$",
+                          "typeString": "mapping(string memory => string storage ref)"
+                        }
+                      },
+                      "id": 7497,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 7495,
+                        "name": "_kai",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 7488,
+                        "src": "953:4:42",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "934:24:42",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage",
+                        "typeString": "string storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 7498,
+                      "name": "_cattribute",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 7490,
+                      "src": "961:11:42",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_memory_ptr",
+                        "typeString": "string memory"
+                      }
+                    },
+                    "src": "934:38:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage",
+                      "typeString": "string storage ref"
+                    }
+                  },
+                  "id": 7500,
+                  "nodeType": "ExpressionStatement",
+                  "src": "934:38:42"
+                }
+              ]
+            },
+            "documentation": "@author @ziweidream\n@notice mapping a gene in kai notation to its corresponding cattribute\n@dev https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md\n@param _type type of cattributes in small letters\n@param _kai kai notation of a gene in small letters\n@param _cattribute the corresponding cattribute of a gene in kai notation, in small letters",
+            "id": 7502,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "updateCattributes",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 7491,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 7486,
+                  "name": "_type",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7502,
+                  "src": "734:19:42",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 7485,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "734:6:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 7488,
+                  "name": "_kai",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7502,
+                  "src": "755:18:42",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 7487,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "755:6:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 7490,
+                  "name": "_cattribute",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7502,
+                  "src": "775:25:42",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 7489,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "775:6:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "733:68:42"
+            },
+            "returnParameters": {
+              "id": 7492,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "924:0:42"
+            },
+            "scope": 7503,
+            "src": "707:272:42",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 7504,
+        "src": "159:822:42"
+      }
+    ],
+    "src": "0:981:42"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/KaiToCattributesDB.sol",
+    "exportedSymbols": {
+      "KaiToCattributesDB": [
+        7503
+      ]
+    },
+    "id": 7504,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 7478,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".5"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:42"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title This contract is a database storing a gene in kai notation and its corresponding cattribute\n@author @ziweidream",
+        "fullyImplemented": true,
+        "id": 7503,
+        "linearizedBaseContracts": [
+          7503
+        ],
+        "name": "KaiToCattributesDB",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 7484,
+            "name": "cattributes",
+            "nodeType": "VariableDeclaration",
+            "scope": 7503,
+            "src": "194:63:42",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_$_t_mapping$_t_string_memory_$_t_string_storage_$_$",
+              "typeString": "mapping(string => mapping(string => string))"
+            },
+            "typeName": {
+              "id": 7483,
+              "keyType": {
+                "id": 7479,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "202:6:42",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "194:44:42",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_$_t_mapping$_t_string_memory_$_t_string_storage_$_$",
+                "typeString": "mapping(string => mapping(string => string))"
+              },
+              "valueType": {
+                "id": 7482,
+                "keyType": {
+                  "id": 7480,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "220:6:42",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "212:25:42",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_string_memory_$_t_string_storage_$",
+                  "typeString": "mapping(string => string)"
+                },
+                "valueType": {
+                  "id": 7481,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "230:6:42",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 7501,
+              "nodeType": "Block",
+              "src": "924:55:42",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 7499,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "baseExpression": {
+                          "argumentTypes": null,
+                          "id": 7493,
+                          "name": "cattributes",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 7484,
+                          "src": "934:11:42",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_string_memory_$_t_mapping$_t_string_memory_$_t_string_storage_$_$",
+                            "typeString": "mapping(string memory => mapping(string memory => string storage ref))"
+                          }
+                        },
+                        "id": 7496,
+                        "indexExpression": {
+                          "argumentTypes": null,
+                          "id": 7494,
+                          "name": "_type",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 7486,
+                          "src": "946:5:42",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_string_memory_ptr",
+                            "typeString": "string memory"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "934:18:42",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_string_memory_$_t_string_storage_$",
+                          "typeString": "mapping(string memory => string storage ref)"
+                        }
+                      },
+                      "id": 7497,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 7495,
+                        "name": "_kai",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 7488,
+                        "src": "953:4:42",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "934:24:42",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage",
+                        "typeString": "string storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 7498,
+                      "name": "_cattribute",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 7490,
+                      "src": "961:11:42",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_memory_ptr",
+                        "typeString": "string memory"
+                      }
+                    },
+                    "src": "934:38:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage",
+                      "typeString": "string storage ref"
+                    }
+                  },
+                  "id": 7500,
+                  "nodeType": "ExpressionStatement",
+                  "src": "934:38:42"
+                }
+              ]
+            },
+            "documentation": "@author @ziweidream\n@notice mapping a gene in kai notation to its corresponding cattribute\n@dev https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md\n@param _type type of cattributes in small letters\n@param _kai kai notation of a gene in small letters\n@param _cattribute the corresponding cattribute of a gene in kai notation, in small letters",
+            "id": 7502,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "updateCattributes",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 7491,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 7486,
+                  "name": "_type",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7502,
+                  "src": "734:19:42",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 7485,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "734:6:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 7488,
+                  "name": "_kai",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7502,
+                  "src": "755:18:42",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 7487,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "755:6:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 7490,
+                  "name": "_cattribute",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 7502,
+                  "src": "775:25:42",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 7489,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "775:6:42",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "733:68:42"
+            },
+            "returnParameters": {
+              "id": 7492,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "924:0:42"
+            },
+            "scope": 7503,
+            "src": "707:272:42",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 7504,
+        "src": "159:822:42"
+      }
+    ],
+    "src": "0:981:42"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.10+commit.5a6ea5b1.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-08-01T22:46:13.281Z",
+  "devdoc": {
+    "author": "@ziweidream",
+    "methods": {
+      "updateCattributes(string,string,string)": {
+        "author": "@ziweidream",
+        "details": "https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md",
+        "params": {
+          "_cattribute": "the corresponding cattribute of a gene in kai notation, in small letters",
+          "_kai": "kai notation of a gene in small letters",
+          "_type": "type of cattributes in small letters"
+        }
+      }
+    },
+    "title": "This contract is a database storing a gene in kai notation and its corresponding cattribute"
+  },
+  "userdoc": {
+    "methods": {
+      "updateCattributes(string,string,string)": {
+        "notice": "mapping a gene in kai notation to its corresponding cattribute"
+      }
+    }
+  }
+}
