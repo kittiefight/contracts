@@ -1,14 +1,12 @@
 pragma solidity ^0.5.5;
 
-import "../../../authority/Owned.sol";
-
 /**
  * @title This contract is a database stroing a cryptokittie's gene in binary
  * and its correspoinding kai notation
  * @author @ziweidream
  */
 
-contract KaiValueDB is Owned {
+contract KaiValueDB {
     
      mapping(string => string) public kaiValue;
 
@@ -19,7 +17,7 @@ contract KaiValueDB is Owned {
      function fillKaiValue()
         public // temporarily set as public just for truffle test purpose
         //internal
-        onlyOwner
+        //onlySuperAdmin
       {
         kaiValue['00000'] = '1';
         kaiValue['00001'] = '2';

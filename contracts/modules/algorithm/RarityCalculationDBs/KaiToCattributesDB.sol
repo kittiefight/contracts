@@ -1,13 +1,11 @@
 pragma solidity ^0.5.5;
 
-import "../../../authority/Owned.sol";
-
 /**
  * @title This contract is a database storing a gene in kai notation and its corresponding cattribute
  * @author @ziweidream
  */
 
-contract KaiToCattributesDB is Owned {
+contract KaiToCattributesDB {
 
     mapping(string => mapping(string => string)) public cattributes;
 
@@ -22,7 +20,7 @@ contract KaiToCattributesDB is Owned {
     function updateCattributes(string memory _type, string memory _kai, string memory _cattribute)
         public // temporarily set as public just for truffle test purpose
         //internal
-        onlyOwner
+        //onlySuperAdmin
     {
         cattributes[_type][_kai] = _cattribute;
     }

@@ -86,7 +86,7 @@ let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   cronJob, escrow
 
 const kovanMedianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F'
-const kitties = [0, 1001, 1555108, 1267904, 44444, 55555, 6666];
+const kitties = [0, 1001, 1555108, 1267904, 454545, 333, 6666];
 
 gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING'];
 
@@ -413,11 +413,21 @@ contract('GameManager', (accounts) => {
     await gameCreation.listKittie(kitties[1], { from: accounts[1] }).should.be.rejected;
   })
 
-  it('list 4 kitties to the system', async () => {
-    for (let i = 1; i < 5; i++) {
+  it('list 3 kitties to the system', async () => {
+    for (let i = 1; i < 4; i++) {
       await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
         [kitties[i]]), { from: accounts[i] }).should.be.fulfilled;
     }
+  })
+
+  it('get correct amount of unmatched/listed kitties', async () => {
+    let listed = await scheduler.getListedKitties();
+    console.log('\n==== LISTED KITTIES: ',listed.length);
+  })
+
+  it('list 1 more kittie to the system', async () => {
+    await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
+      [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
   it('correctly creates 2 games', async () => {
@@ -443,13 +453,20 @@ contract('GameManager', (accounts) => {
     })
 
     //Assign variable to game that is going to be played in the test
-    gameDetails = newGameEvents[newGameEvents.length -1].returnValues
+    // gameDetails = newGameEvents[newGameEvents.length -1].returnValues
+    gameDetails = newGameEvents[0].returnValues
 
     let gameTimes = await getterDB.getGameTimes(gameDetails.gameId);
 
     gameDetails.endTime = gameTimes.endTime.toNumber();
 
     gameDetails.preStartTime = gameTimes.preStartTime.toNumber();
+  })
+
+  it('listed kitties array emptied', async () => {
+    let listed = await scheduler.getListedKitties();
+    console.log('\n==== LISTED KITTIES: ',listed.length);
+    listed.length.should.be.equal(0);
   })
 
   it('bettors can participate in a created game', async () => {
@@ -508,7 +525,7 @@ contract('GameManager', (accounts) => {
       
     while(block < gameDetails.preStartTime){
       block = await dateTime.getBlockTimeStamp();
-      await(1);
+      await(3);
     }
 
     let { gameId, playerRed, playerBlack } = gameDetails;
@@ -536,9 +553,10 @@ contract('GameManager', (accounts) => {
     assert.equal(events.length, 14);
 
 
-  })
+  })  
 
-  it('set defense level for both players', async () => { 
+  //This works but not inside contract
+  it.skip('set defense level for both players', async () => { 
 
     let { gameId, playerRed, playerBlack, kittieBlack, kittieRed } = gameDetails;
 
@@ -548,13 +566,14 @@ contract('GameManager', (accounts) => {
 
     //This works, with previous test uncommented
     let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
-    await betting.setOriginalDefenseLevel(gameId, playerBlack, defense);
+    await betting.setDefenseLevel(gameId, playerBlack, defense);
     console.log(`\n==== DEFENSE BLACK: ${defense}`);
 
     defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
-    await betting.setOriginalDefenseLevel(gameId, playerRed, defense);
+    await betting.setDefenseLevel(gameId, playerRed, defense);
     console.log(`\n==== DEFENSE RED: ${defense}`);
   })
+
 
   it('should move gameState to MAIN_GAME', async () => {
 
@@ -565,13 +584,13 @@ contract('GameManager', (accounts) => {
 
     await timeout(1);
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 99]), { from: playerRed }).should.be.fulfilled;
+      [gameId, 2456]), { from: playerRed }).should.be.fulfilled;
     console.log(`\n==== PLAYER RED STARTS`);
 
     await timeout(1);
 
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 100]), { from: playerBlack }).should.be.fulfilled;
+      [gameId, 1148]), { from: playerBlack }).should.be.fulfilled;
     console.log(`\n==== PLAYER BLACK STARTS`);
 
     await timeout(1);
@@ -585,6 +604,16 @@ contract('GameManager', (accounts) => {
 
     //Game starts
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
+  })
+
+  it('get defense level for both players', async () => { 
+    let { gameId, playerRed, playerBlack } = gameDetails;
+
+    let defense = await betting.defenseLevel(gameId, playerBlack);
+    console.log(`\n==== DEFENSE BLACK: ${defense}`);
+
+    defense = await betting.defenseLevel(gameId, playerRed);
+    console.log(`\n==== DEFENSE RED: ${defense}`);
   })
 
   it('kittie hell contracts is now owner of fighting kitties', async () => {
@@ -629,26 +658,6 @@ contract('GameManager', (accounts) => {
       await betting.fillBets(gameId, playerRed, 0)
       await betting.fillBets(gameId, playerBlack, 0)
     }
-    // await betting.bet(gameId, 10000, playerRed, playerBlack, 57, {from:accounts[8]});
-
-    // let attackType = await betting.getAttackType(gameId, playerRed, playerBlack, 57)
-    // console.log(attackType);
-
-    // let defenseLevelOpponent = await betting.reduceDefenseLevel.call(gameId, 10000, playerRed, playerBlack);
-    // console.log(defenseLevelOpponent.toNumber());
-
-    // if (defenseLevelOpponent.toNumber() === 0) {
-    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
-    // } else if(defenseLevelOpponent.toNumber() > 0 && isAttackBlocked(gameId, playerBlack)) {
-    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
-    // } else {
-    //   await betting.setDirectAttacksScored(gameId, playerRed, attackType.index.toString());
-    // }
-
-    // await betting.setLastBetTimestamp(gameId, playerRed, 1564354674);
-    // await betting.fillBets(gameId, playerRed, 10000);
-
-
   })
 
   it('should be able to make bet', async () => {
@@ -977,24 +986,27 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('check if loser kittie is dead', async () => {
+  it('check game kitties dead status', async () => {
     
-    let { gameId, playerBlack, kittieBlack, kittieRed, supporters } = gameDetails; 
+    let { playerBlack, kittieBlack, kittieRed, winners } = gameDetails; 
 
-    let loserKitty = gameDetails.loser === playerBlack ? kittieBlack : kittieRed;
-    await kittieHELL.scheduleKillKitty(loserKitty, 5) //Or how does he dies?
+    if( gameDetails.loser === playerBlack) {
+      loserKitty = kittieBlack;
+      winnerKitty = kittieRed;
+    }
+    else{
+      loserKitty = kittieRed;
+      winnerKitty = kittieBlack
+    }
 
     gameDetails.loserKitty = loserKitty;
 
-    await timeout(15);
-
-    // This will kill kitty, as cronjob will act
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: supporters[0]}).should.be.fulfilled;
-
+    //Loser Kittie Dead
     let isKittyDead = await kittieHELL.isKittyDead(loserKitty);
-
     isKittyDead.should.be.true;
+
+    winnerOwner = await cryptoKitties.ownerOf(winnerKitty);
+    winnerOwner.should.be.equal( winners.winner);
 
   })
 
@@ -1006,7 +1018,7 @@ contract('GameManager', (accounts) => {
     
     let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty);
 
-    console.log('Resurrection Cost: ',resurrectionCost.toString())
+    console.log('Resurrection Cost: ',resurrectionCost.toString(), 'KTY')
 
     await kittieFightToken.approve(kittieHELL.address, resurrectionCost, 
       { from: loser }).should.be.fulfilled;
@@ -1021,7 +1033,6 @@ contract('GameManager', (accounts) => {
   })
 
 })
-
 
 // original data based on 
 // https://api.cryptokitties.co/cattributes
