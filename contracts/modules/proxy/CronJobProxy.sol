@@ -35,9 +35,25 @@ contract CronJobProxy is ProxyBase {
 
     /**
      * @notice Executes up to maxJobsForOneRun scheduled jobs, if available
-     * @dev This can be executed by anyone to allow 3-d parties execute scheduled tasks even whithout other activity
+     * @dev This can be executed by admins, but since KFProxy can not use Guard, we need to do check manually
      */
-    function executeScheduledJobs() public {
+    function executeScheduledJobs() external {
+        address genericDB = getContract(CONTRACT_NAME_GENERIC_DB);
+        (bool success, bytes memory result) = genericDB.staticcall(abi.encodeWithSignature(
+            "getBoolStorage(string,bytes32)",
+            CONTRACT_NAME_ROLE_DB,
+            keccak256(abi.encodePacked("admin", msg.sender))
+        ));
+        require(success, 'Failed to load role');
+        bool hasRole = abi.decode(result, (bool));
+        require(hasRole, 'Sender has to be an admin');
+
+        _executeScheduledJobs();
+    }
+    /**
+     * @notice Executes up to maxJobsForOneRun scheduled jobs, if available
+     */
+    function _executeScheduledJobs() internal {
         address cronJob = getContract(CONTRACT_NAME_CRONJOB);
         //if(cronJob == address(0)) return; //this can not happen because of check in ContractManager
         for(uint256 i=0; i < maxJobsForOneRun; i++){

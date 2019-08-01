@@ -3,6 +3,7 @@ pragma solidity ^0.5.5;
 import "./libs/zos-lib/Initializable.sol";
 import "./modules/proxy/ProxyBase.sol";
 import "./modules/proxy/CronJobProxy.sol";
+import "./modules/proxy/FreezeInfo.sol";
 
 /**
  * @title Proxy contract is a main entry point for KittyFight contract system
@@ -34,6 +35,9 @@ contract KFProxy is
      * It's possible to use https://web3js.readthedocs.io/en/1.0/web3-eth-abi.html#encodefunctioncall to generate this
      */
     function execute(string calldata contractName, bytes calldata payload) external payable returns (bytes memory){
+        FreezeInfo freezeInfo = FreezeInfo(getContract(CONTRACT_NAME_FREEZE_INFO));
+        require(!freezeInfo.frozen(), 'System is frozen');
+
         address payable target = address(uint160(getContract(contractName)));
         //assert(target != address payable(0), 'Target contract is not registered'); //This check is already done in ContractManager
 
@@ -58,9 +62,12 @@ contract KFProxy is
         }
 
         (bool success, bytes memory result) = target.call.value(msg.value)(payloadWithSender);
-        require(success, 'Proxied call failed');
+        //require(success, 'Proxied call failed');
+        if(!success) assembly {
+            revert(add(result,32), result)
+        }
 
-        executeScheduledJobs();
+        _executeScheduledJobs();
 
         return result;
     }

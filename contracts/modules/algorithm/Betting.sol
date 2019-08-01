@@ -251,16 +251,16 @@ contract Betting is Proxied, Guard {
         lastBetTimestamp[_gameId][_player] = _lastBetTimestamp;
     }
 
-    // setDefenseLevel() is internal. Temporarily set as public for truffle test purpose.
    /**
     * @author @ziweidream
     * @notice record the current defense level of the given corner in a game with a specific gameId
     * @param _gameId the gameID of the game
     * @param _player the given corner in this game for whom the defense level is recorded
-    * @param _defenseLevel the current defense level of the given corner
     */
-    function setDefenseLevel(uint256 _gameId, address _player, uint256 _defenseLevel) public {
-        defenseLevel[_gameId][_player] = _defenseLevel;
+    function setDefenseLevel(uint256 _gameId, address _player, uint _defense) 
+        public        
+    {
+        defenseLevel[_gameId][_player] = _defense;
     }
 
     /**
@@ -407,16 +407,18 @@ contract Betting is Proxied, Guard {
         randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(1)), block.timestamp, block.difficulty, seed)))%100;
     }
 
-     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
    /**
     * @author @ziweidream
     * @notice generates a fight map for a game with a specific gameId, and calculates the original defense levels
     * of both corners in this game
     * @dev this function can only be called by the GameManager contract
+<<<<<<< HEAD
     * @param _gameId the gameID of the game
+=======
+    * @param _gameId the gameID of the game    
+>>>>>>> 254c03e9bcc9ccec95ba5c702b71f9f1cc42fe4c
     * @param _randomRed the random number generated when the Red corner presses the Button Bet
     * @param _randomBlack the random number generated when the Black corner presses the Button Bet
-    * @return the orginal defense level of both corners respectively
     */
     function startGame(
         uint256 _gameId,
@@ -424,10 +426,16 @@ contract Betting is Proxied, Guard {
         uint256 _randomBlack
         )
         public
+<<<<<<< HEAD
         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
         emit GameStarted(_gameId);
+=======
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        setFightMap(_gameId, _randomRed, _randomBlack);
+>>>>>>> 254c03e9bcc9ccec95ba5c702b71f9f1cc42fe4c
     }
 
     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed

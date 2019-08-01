@@ -1,10 +1,18 @@
-const RarityCalculator = artifacts.require('RarityCalculator')
+
+const RarityCalculator = artifacts.require('RarityCalculator');
+
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+const assert = chai.assert;
+chai.use(chaiAsPromised);
+
+let RarityCalculatorInst;
 
 
-module.exports = (deployer, network, accounts) => {
-
-  deployer.deploy(RarityCalculator, {from: accounts[0]})
-  .then(async(RarityCalculatorInst) => {
+it('deploys contract and make setups', async () => {
+    
+    RarityCalculatorInst = await RarityCalculator.deployed()
+    
     await RarityCalculatorInst.fillKaiValue()
 
     for (let i=0; i<32; i++) {
@@ -58,10 +66,7 @@ module.exports = (deployer, network, accounts) => {
 
     await RarityCalculatorInst.updateTotalKitties(1600000)
     await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
-
-  })
-};
-
+})
 
 // original data based on 
 // https://api.cryptokitties.co/cattributes
@@ -1044,4 +1049,3 @@ const FancyKitties = [
              1555657, 1560945, 1560376, 1554116,
              1555717, 1553405, 1550523, 1550507]
 ]
-

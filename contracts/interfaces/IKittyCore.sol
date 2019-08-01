@@ -1,9 +1,7 @@
 pragma solidity ^0.5.5;
 
+interface IKittyCore{
 
-/// @title Interface for contracts conforming to ERC-721: Non-Fungible Tokens
-/// @author Dieter Shirley <dete@axiomzen.co> (https://github.com/dete)
-interface ERC721 {
     // Required methods
     function totalSupply() external view returns (uint256 total);
     function balanceOf(address _owner) external view returns (uint256 balance);
@@ -25,4 +23,20 @@ interface ERC721 {
     // ERC-165 Compatibility (https://github.com/ethereum/EIPs/issues/165)
     function supportsInterface(bytes4 _interfaceID) external view returns (bool);
 
+    //Getting Genes
+    function getKitty(uint256 _id)
+        external
+        view
+        returns (
+        bool,
+        bool,
+        uint256,
+        uint256,
+        uint256,
+        uint256,
+        uint256,
+        uint256,
+        uint256,
+        uint256
+    );
 }
