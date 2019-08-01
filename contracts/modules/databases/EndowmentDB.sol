@@ -168,9 +168,9 @@ contract EndowmentDB is Proxied {
   {
 
     if (_kty_amount > 0){
-      uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
+      
       if (deductFunds){
-
+        uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
         require(actualFundsKTY >= _kty_amount, ERROR_INSUFFICIENT_FUNDS);
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amount));
 
@@ -182,9 +182,9 @@ contract EndowmentDB is Proxied {
     }
 
     if (_eth_amount > 0){
-      uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+      
       if (deductFunds){
-
+        uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
         require(actualFundsETH >= _eth_amount, ERROR_INSUFFICIENT_FUNDS);
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amount));
 
