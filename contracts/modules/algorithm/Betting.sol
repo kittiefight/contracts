@@ -412,11 +412,7 @@ contract Betting is Proxied, Guard {
     * @notice generates a fight map for a game with a specific gameId, and calculates the original defense levels
     * of both corners in this game
     * @dev this function can only be called by the GameManager contract
-<<<<<<< HEAD
     * @param _gameId the gameID of the game
-=======
-    * @param _gameId the gameID of the game    
->>>>>>> 254c03e9bcc9ccec95ba5c702b71f9f1cc42fe4c
     * @param _randomRed the random number generated when the Red corner presses the Button Bet
     * @param _randomBlack the random number generated when the Black corner presses the Button Bet
     */
@@ -426,16 +422,10 @@ contract Betting is Proxied, Guard {
         uint256 _randomBlack
         )
         public
-<<<<<<< HEAD
         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
         emit GameStarted(_gameId);
-=======
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    {
-        setFightMap(_gameId, _randomRed, _randomBlack);
->>>>>>> 254c03e9bcc9ccec95ba5c702b71f9f1cc42fe4c
     }
 
     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
