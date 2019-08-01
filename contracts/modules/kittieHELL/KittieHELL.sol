@@ -137,11 +137,8 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     onlyOwnedKitty(_kittyID)
     onlyNotGhostKitty(_kittyID)
     returns(uint) {
-        // kittieRedemptionFee is temporarily hardcoded until gameStore.sol is further developed to
-        // be able to return a valid number instead of 0
         uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
         return gameStore.getKittieRedemptionFee(gameId);
-	    // return block.timestamp.sub(kitties[_kittyID].deadAt).mul(kittieRedemptionFee);
 	}
 
      /**
