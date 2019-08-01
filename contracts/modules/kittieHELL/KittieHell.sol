@@ -18,7 +18,7 @@ import "../databases/GMGetterDB.sol";
  * @author @panos, @ugwu, @ziweidream
  * @notice This contract is able to lock kitties forever caution is advised
  */
-contract KittieHELL is BasicControls, Proxied, Guard {
+contract KittieHell is BasicControls, Proxied, Guard {
 
     using SafeMath for uint256;
 
@@ -75,7 +75,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
 
     function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
         public
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GM_SETTER_DB)
         onlyOwnedKitty(_kittyID)
         onlyNotKilledKitty(_kittyID)
     {

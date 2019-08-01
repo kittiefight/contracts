@@ -18,7 +18,7 @@ import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
-import "../kittieHELL/KittieHELL.sol";
+import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
 
 /**
@@ -169,8 +169,8 @@ contract GMGetterDB is Proxied {
     public view
     returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead, isPlaying, isGhost,) = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
-    deathTime = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).kittyDeathTime(kittieId);
+    (owner, isDead, isPlaying, isGhost,) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
+    deathTime = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).kittyDeathTime(kittieId);
     gameId = getGameOfKittie(kittieId);
     kittieHellExp = gameStore.getKittieExpirationTime(gameId);
   }

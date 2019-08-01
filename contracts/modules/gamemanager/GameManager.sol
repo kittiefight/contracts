@@ -34,7 +34,7 @@ import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../databases/ProfileDB.sol";
 import "../../libs/SafeMath.sol";
-import '../kittieHELL/KittieHELL.sol';
+import '../kittieHELL/KittieHell.sol';
 import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
@@ -50,7 +50,7 @@ contract GameManager is Proxied, Guard {
     Forfeiter public forfeiter;
     Betting public betting;
     HitsResolve public hitsResolve;
-    KittieHELL public kittieHELL;
+    KittieHell public kittieHELL;
     GameStore public gameStore;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
@@ -80,7 +80,7 @@ contract GameManager is Proxied, Guard {
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-        kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
 

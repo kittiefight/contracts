@@ -19,7 +19,7 @@ import "./GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
-import "../kittieHELL/KittieHELL.sol";
+import "../kittieHELL/KittieHell.sol";
 
 /**
  * @dev Stores game instances
@@ -69,15 +69,9 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (uint256 gameId)
   {
-    // Get the lastest item in the linkedlist.
-    // Note that 0 means the HEAD of the list always and direction(false)
-    //  indicates that we are going to the end of the list.
-    (,uint256 prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, false);
-    // And create new item with an incremental id.
-    // Note that we don't need to check any existance here, because
-    // exsistance of the previous item in the list already self-verifies.
-    gameId = prevGameId.add(1);
+    gameId = genericDB.getLinkedListSize(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME).add(1);
     genericDB.pushNodeToLinkedList(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
+    
 
     uint256 gamePrestartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
     uint256 gameEndTime = gameStartTime.add(gameVarAndFee.getGameDuration());
@@ -101,11 +95,11 @@ contract GMSetterDB is Proxied {
     // Set kittieIds to true, so we know that there are in a match
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
-    //TODO: Where to put this, as is protected, can only be called by GM
-    // KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, true);
-    // KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, true); 
+    
+    //TODO: not working
+    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, true);
+    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, true); 
 
-    return gameId;
   }
   
 
@@ -204,38 +198,6 @@ contract GMSetterDB is Proxied {
     }
   }
 
-  // /**
-  //  * @dev Updates the amount of bet for the given bettor in the given game by the given amount.
-  //  */
-  //  //DONE IN ENDOWMENTDB
-  // function updateBet(uint256 gameId, address bettor, uint256 amount) internal {
-  //   uint256 prevAmount = genericDB.getUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
-  //   );
-  //   genericDB.setUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(gameId, bettor, "betAmount")),
-  //     prevAmount.add(amount)
-  //   );
-  // }
-
-  // /**
-  //  * @dev Updates the total amount of bet in the given game and supported player
-  //  */
-  // function updateTotalBet(uint256 gameId, uint256 amount, address supportedPlayer) internal {
-  //   uint256 prevAmount = genericDB.getUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
-  //   );
-
-  //   genericDB.setUintStorage(
-  //     CONTRACT_NAME_GM_SETTER_DB,
-  //     keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount")),
-  //     prevAmount.add(amount)
-  //   );
-  // }
-
   /**
    * @dev Adds 1 minute to the game end time
    */
@@ -268,8 +230,8 @@ contract GMSetterDB is Proxied {
     ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), 0);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), 0);
-    // KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-    // KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
+    KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
+    KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
   }
 
   // function removeKittyStatus(uint gameId)
@@ -277,8 +239,8 @@ contract GMSetterDB is Proxied {
   //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
   // {
   //   ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-  //   KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-  //   KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
+  //   KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
+  //   KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
   // }
 
   /**
