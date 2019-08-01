@@ -67,7 +67,7 @@ contract Distribution is Proxied {
 
         require(winners[0] != address(0), 'No winner detected for this game');
 
-        (uint256 betAmount, address supportedPlayer,) = gmGetterDB.getSupporterInfo(gameId, claimer);
+        (uint256 betAmount, address supportedPlayer,,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
         // If its not the winning player or part of the bettors of the winning corner
         if(claimer != winners[0] && supportedPlayer != winners[0]) return (0,0);
@@ -83,8 +83,8 @@ contract Distribution is Proxied {
 
         //Other bettors winnings
         if (winningCategory == 3){
-            (uint256 betAmountTop,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);
-            (uint256 betAmountSecondTop,,) = gmGetterDB.getSupporterInfo(gameId, winners[2]);
+            (uint256 betAmountTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);
+            (uint256 betAmountSecondTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[2]);
 
             //get other supporters totalBets for winning side
             uint256 totalBets = gmGetterDB.getTotalBet(gameId, winners[0]);
