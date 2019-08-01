@@ -15,12 +15,15 @@ const BigNumber = web3.utils.BN;
   .should();  
 
 const KFProxy = artifacts.require('KFProxy')
+const Guard = artifacts.require('Guard')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB')
 const RoleDB = artifacts.require('RoleDB')
 const GMSetterDB = artifacts.require('GMSetterDB')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const GameManager = artifacts.require('GameManager')
+const GameStore = artifacts.require('GameStore')
+const GameCreation = artifacts.require('GameCreation')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
 const Distribution = artifacts.require('Distribution')
 const Forfeiter = artifacts.require('Forfeiter')
@@ -39,14 +42,16 @@ const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
+const FreezeInfo = artifacts.require('FreezeInfo');
+const CronJobTarget = artifacts.require('CronJobTarget');
 const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 
 //Contract instances
-let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
+let proxy, guard, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
   endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
-  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager,
-  cronJob, escrow
+  rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager, gameStore, gameCreation,
+  cronJob, escrow, freezeInfo, cronJobTarget
 
 
 const kittie1 = 1234
@@ -90,6 +95,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
   it('deploys contracts', async () => {
     // PROXY
     proxy = await KFProxy.new()
+    guard = await Guard.new()
 
     // DATABASES
     genericDB = await GenericDB.new()
@@ -102,6 +108,9 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
     // CRONJOB
     cronJob = await CronJob.new(genericDB.address)
+    freezeInfo = await FreezeInfo.new();
+    cronJobTarget= await CronJobTarget.new();
+
 
     // TOKENS
     superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
@@ -110,6 +119,8 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
     // MODULES
     gameManager = await GameManager.new()
+    gameStore = await GameStore.new()
+    gameCreation = await GameCreation.new()
     register = await Register.new()
     dateTime = await DateTime.new()
     gameVarAndFee = await GameVarAndFee.new(genericDB.address, randomAddress)
@@ -129,6 +140,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
   })
 
   it('adds contract addresses to contract manager', async () => {
+    await proxy.addContract('Guard', guard.address)
     await proxy.addContract('TimeContract', dateTime.address)
     await proxy.addContract('GenericDB', genericDB.address)
     await proxy.addContract('CryptoKitties', cryptoKitties.address);
@@ -149,7 +161,11 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     await proxy.addContract('GMSetterDB', setterDB.address)
     await proxy.addContract('GMGetterDB', getterDB.address)
     await proxy.addContract('GameManager', gameManager.address)
+    await proxy.addContract('GameStore', gameStore.address)
+    await proxy.addContract('GameCreation', gameCreation.address)
     await proxy.addContract('CronJob', cronJob.address)
+    await proxy.addContract('FreezeInfo', freezeInfo.address);
+    await proxy.addContract('CronJobTarget', cronJobTarget.address);
     await proxy.addContract('KittieHell', kittieHELL.address)
     await proxy.addContract('KittieHellDB', kittieHellDB.address)
   })
@@ -157,6 +173,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
   it('sets proxy in contracts', async () => {
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);
+    await guard.setProxy(proxy.address);
     await roleDB.setProxy(proxy.address);
     await setterDB.setProxy(proxy.address)
     await getterDB.setProxy(proxy.address)
@@ -171,13 +188,19 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     await rarityCalculator.setProxy(proxy.address)
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
+    await gameStore.setProxy(proxy.address)
+    await gameCreation.setProxy(proxy.address)
     await cronJob.setProxy(proxy.address)
+    await cronJobTarget.setProxy(proxy.address);
+    await freezeInfo.setProxy(proxy.address);
     await kittieHELL.setProxy(proxy.address)
     await kittieHellDB.setProxy(proxy.address)
   })
 
   it('initializes contract variables', async () => {
     await gameVarAndFee.initialize()
+    await gameStore.initialize()
+    await gameCreation.initialize()
     await forfeiter.initialize()
     await scheduler.initialize()
     await register.initialize()
@@ -239,9 +262,19 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
     // registers user to the system
   it('Register users', async () => {
-    await proxy.execute('Register', setMessage(register, 'register', [user1]), {from: user1}).should.be.fulfilled;
-    await proxy.execute('Register', setMessage(register, 'register', [bettor1]), {from: user1}).should.be.fulfilled;
+    //await proxy.execute('Register', setMessage(register, 'register', [user1]), {from: user1}).should.be.fulfilled;
+    //await proxy.execute('Register', setMessage(register, 'register', [bettor1]), {from: user1}).should.be.fulfilled;
+
+    await proxy.execute('Register', setMessage(register, 'register', []), {
+      from: user1
+    }).should.be.fulfilled;    
  
+    await proxy.execute('Register', setMessage(register, 'register', []), {
+      from: bettor1
+    }).should.be.fulfilled;    
+
+
+
   })
       
 
@@ -251,13 +284,16 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
     //send some kty to endowmentFund first
    await kittieFightToken.transfer(endowmentFund.address, 1000).should.be.fulfilled;
+   let endowmentFund_kty = await kittieFightToken.balanceOf(endowmentFund.address); 
+   console.log('endowmentFund_kty = ' + endowmentFund_kty);
 
    let add_amount = 10;
    endowmentFund.sendKTYtoEscrow(add_amount);
-   kty = await escrow.getBalanceKTY();   //console.log('escrow.getBalanceKTY() = ' + kty);
+   kty = await escrow.getBalanceKTY();   console.log('escrow.getBalanceKTY() = ' + kty);
    assert.equal(kty, add_amount);  
 
   });
+
 
   it('endowmentFund.sendETHtoEscrow() : add initial Eth to Escrow', async () => {
 
@@ -361,6 +397,8 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
 
   it('Replace Escrow with New Escrow', async () => {
+    let old_escrow_eth = await web3.eth.getBalance(escrow.address); 
+    let old_escrow_kty = await web3.eth.getBalance(escrow.address); 
 
     newEscrow = await Escrow.new()
 
@@ -368,33 +406,14 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
     await endowmentFund.initUpgradeEscrow(newEscrow.address);
 
+    let new_escrow_eth = await web3.eth.getBalance(newEscrow.address); 
+    let new_escrow_kty = await web3.eth.getBalance(newEscrow.address); 
+
+    assert.equal(old_escrow_eth, new_escrow_eth); 
+    assert.equal(old_escrow_kty, new_escrow_kty);
+
   });
 
-
-return;
-
-
-
-
-/*
-// no needed
-
-  it('Add ETH to endowmentFund', async () => {
-    
-    let sender_balance = await  web3.eth.getBalance(bettor1); //console.log('eth_pre =' + eth_pre);
-    let add_amount = 20;
-    assert(sender_balance >= add_amount, 'sender does not have balance');
-
-    let pre = await web3.eth.getBalance(endowmentFund.address); //console.log('eth_pre =' + pre);
-
-    // send some eth
-    let txHash = await web3.eth.sendTransaction({from: bettor1, to: endowmentFund.address, value: add_amount });
-
-    let post = await web3.eth.getBalance(endowmentFund.address); //console.log('eth_post =' + post);
-    assert.equal(post - pre, add_amount); 
-
-   });
-*/
 
 
 

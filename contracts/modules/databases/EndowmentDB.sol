@@ -168,23 +168,23 @@ contract EndowmentDB is Proxied {
   {
 
     if (_kty_amount > 0){
-      
+
+      uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
       if (deductFunds){
-        uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
+
         require(actualFundsKTY >= _kty_amount, ERROR_INSUFFICIENT_FUNDS);
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amount));
 
       }else{ // add
-
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.add(_kty_amount));
-
       }
     }
 
     if (_eth_amount > 0){
-      
+      uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+
       if (deductFunds){
-        uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+
         require(actualFundsETH >= _eth_amount, ERROR_INSUFFICIENT_FUNDS);
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amount));
 
@@ -356,11 +356,3 @@ contract EndowmentDB is Proxied {
   }
 }
 
-
-/**
-change log
-
-2019-07-27 09:50:51 
-function setHoneypotState( uint _gameId  .. was _potId as else where gameid is used
-
- */

@@ -60,15 +60,10 @@ contract EndowmentFund is Distribution, Guard {
         returns (uint) {
 
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
-        /*require(endowmentDB.allocateKTY(ktyAllocated),
-            'Error: endowmentDB.allocateKTY(ktyAllocated) failed');*/
+
 
         uint ethAllocated = gameVarAndFee.getEthPerGame();
-        /*require(endowmentDB.allocateETH(ethAllocated),
-            'Error: endowmentDB.allocateETH(ethAllocated) failed');*/
 
-        /*require(endowmentDB.allocate(ethAllocated, ktyAllocated),
-            'Error: endowmentDB.allocate(ethAllocated, ktyAllocated) failed');*/
 
         require(endowmentDB.updateEndowmentFund(ethAllocated, ktyAllocated, true),
             'Error: endowmentDB.updateEndowmentFund(ethAllocated, ktyAllocated, true) failed');
@@ -102,8 +97,8 @@ contract EndowmentFund is Distribution, Guard {
             /*require(endowmentDB.allocateKTY(winningsKTY),
                 'Error: endowmentDB.allocateKTY(winningsKTY) failed');*/
 
-        require(endowmentDB.updateEndowmentFund(0, winningsKTY, true),
-            'Error: endowmentDB.updateEndowmentFund(0, winningsKTY, true) failed');
+            require(endowmentDB.updateEndowmentFund(0, winningsKTY, true),
+                'Error: endowmentDB.updateEndowmentFund(0, winningsKTY, true) failed');
 
             transferKFTfromEscrow(msgSender, winningsKTY);
         }
@@ -397,24 +392,3 @@ contract EndowmentFund is Distribution, Guard {
 
 }
 
-/**
-Change log
-
-2019-07-26 11:17:05
-Aadded Guard to EndowmentFund
-Use getOriginalSender()insteads of msg.sender
-Replaced onlyOwner with onlySuperAdmin
-
-2019-07-26 11:51:59
-Improve getWithdrawalState() - just set staus when fund is withdrawn
-
-2019-07-26 12:01:49
-git push
-
-2019-07-27 10:09:34
-small change
-
-2019-07-30 11:20:56
-new HoneypotState "dissolved" added
-
-*/
