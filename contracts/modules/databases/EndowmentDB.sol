@@ -19,13 +19,13 @@ contract EndowmentDB is Proxied {
   bytes32 internal constant TABLE_NAME_CONTRIBUTION_KTY = "ContributionTableKTY";
   // TABLE_NAME_CONTRIBUTION_ETH defines a set of ETH contributors of a honeypot of EndowmentFund.
   bytes32 internal constant TABLE_NAME_CONTRIBUTION_ETH = "ContributionTableETH";
-  // VAR_KEY_ACTUAL_FUNDS_KTY 
+  // VAR_KEY_ACTUAL_FUNDS_KTY
   bytes32 internal constant VAR_KEY_ACTUAL_FUNDS_KTY = keccak256(abi.encodePacked("actualFundsKTY"));
-  // VAR_KEY_ACTUAL_FUNDS_ETH 
+  // VAR_KEY_ACTUAL_FUNDS_ETH
   bytes32 internal constant VAR_KEY_ACTUAL_FUNDS_ETH = keccak256(abi.encodePacked("actualFundsETH"));
-  // VAR_KEY_INGAME_FUNDS_KTY 
+  // VAR_KEY_INGAME_FUNDS_KTY
   bytes32 internal constant VAR_KEY_INGAME_FUNDS_KTY = keccak256(abi.encodePacked("ingameFundsKTY"));
-  // VAR_KEY_INGAME_FUNDS_ETH 
+  // VAR_KEY_INGAME_FUNDS_ETH
   bytes32 internal constant VAR_KEY_INGAME_FUNDS_ETH = keccak256(abi.encodePacked("ingameFundsETH"));
 
   string internal constant ERROR_DOES_NOT_EXIST = "Not exists";
@@ -41,6 +41,37 @@ contract EndowmentDB is Proxied {
     genericDB = _genericDB;
   }
 
+/*
+  function allocate(uint256 _eth_amountRequired, uint256 _kty_amountRequired)
+    external
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    returns (bool) {
+
+    // check actual funds KTY
+    uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
+    require(actualFundsKTY >= _kty_amountRequired, ERROR_INSUFFICIENT_FUNDS);
+    
+    // decrease actual funds
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amountRequired));
+
+    // increase ingame funds
+    uint ingameFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY);
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY, ingameFundsKTY.add(_kty_amountRequired));
+
+    // check actual funds ETH
+    uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+    require(actualFundsETH >= _eth_amountRequired, ERROR_INSUFFICIENT_FUNDS);
+    // decrease actual funds
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amountRequired));
+    // increase ingame funds
+    uint ingameFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH);
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH, ingameFundsETH.add(_eth_amountRequired));
+
+    return true;
+  }
+*/
+
+/*
   function allocateKTY(
     uint amountRequired
   )
@@ -76,6 +107,57 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH, ingameFunds.add(amountRequired));
     return true;
   }
+*/
+
+  function updateHoneyPotFund(
+    uint256 _gameId, uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
+  )
+    external
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    returns (bool)
+  {
+
+    if (_kty_amount > 0){
+
+      // get total Kty availabe in the HoneyPot
+      bytes32 honeyPotKtyTotalKey = keccak256(abi.encodePacked(_gameId, "ktyTotal"));
+      uint honeyPotKtyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey);
+
+      if (deductFunds){
+
+        require(honeyPotKtyTotal >= _kty_amount,
+          "Error: updateHoneyPotFund() insufficient KTY in HoneyPot");
+
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey, _kty_amount.sub(_eth_amount));
+
+      }else{ // add
+
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey, honeyPotKtyTotal.add(_kty_amount));
+
+      }
+    }
+
+    if (_eth_amount > 0){
+      // get total Eth availabe in the HoneyPot
+      bytes32 honeyPotEthTotalKey = keccak256(abi.encodePacked(_gameId, "ethTotal"));
+      uint honeyPotEthTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotEthTotalKey);
+
+      if (deductFunds){
+
+        require(honeyPotEthTotal >= _eth_amount,
+          "Error: updateHoneyPotFund() insufficient ETH in HoneyPot");
+
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotEthTotalKey, honeyPotEthTotal.sub(_eth_amount));
+
+      }else{ // add
+
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotEthTotalKey, honeyPotEthTotal.add(_eth_amount));
+
+      }
+    }
+
+    return true;
+  }
 
   function updateEndowmentFund(
     uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
@@ -85,23 +167,31 @@ contract EndowmentDB is Proxied {
     returns (bool)
   {
 
-    if (_kty_amount>0){
+    if (_kty_amount > 0){
       uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
       if (deductFunds){
+
         require(actualFundsKTY >= _kty_amount, ERROR_INSUFFICIENT_FUNDS);
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amount));
+
       }else{ // add
+
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.add(_kty_amount));
+
       }
     }
 
-    if (_eth_amount>0){
+    if (_eth_amount > 0){
       uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
       if (deductFunds){
+
         require(actualFundsETH >= _eth_amount, ERROR_INSUFFICIENT_FUNDS);
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amount));
+
       }else{ // add
+
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.add(_eth_amount));
+
       }
     }
     
@@ -163,6 +253,7 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "status")), status);
   }
 
+
   function contributeFunds(
     address account, uint gameId, uint ethContribution, uint ktyContribution
   ) external
@@ -203,6 +294,7 @@ contract EndowmentDB is Proxied {
 
   return true;
   }
+
 
 /**
  * @dev store the total debit by an a/c per game

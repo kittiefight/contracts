@@ -52,42 +52,29 @@ contract EndowmentFund is Distribution, Guard {
         dissolved
     }
 
-    struct Honeypot {
-        uint gameId;
-        HoneypotState state;
-        string forfeitReason;
-        uint dissolveTime;
-        uint gameEndTime;
-        uint createdTime;
-        uint ktyTotal;
-        uint ethTotal;
-    }
+    /**
+    * @dev check if enough funds present and maintains balance of tokens in DB
+    */
+    function generateHoneyPot() external onlyContract(CONTRACT_NAME_GAMECREATION)
+        //returns (uint, uint) {
+        returns (uint) {
 
-    function generateHoneyPot(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION) returns (uint, uint) {
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
-        require(endowmentDB.allocateKTY(ktyAllocated), 'Error: endowmentDB.allocateKTY(ktyAllocated) failed');
+        /*require(endowmentDB.allocateKTY(ktyAllocated),
+            'Error: endowmentDB.allocateKTY(ktyAllocated) failed');*/
+
         uint ethAllocated = gameVarAndFee.getEthPerGame();
-        require(endowmentDB.allocateETH(ethAllocated), 'Error: endowmentDB.allocateETH(ethAllocated) failed');
+        /*require(endowmentDB.allocateETH(ethAllocated),
+            'Error: endowmentDB.allocateETH(ethAllocated) failed');*/
 
-        uint potId = generatePotId();
+        /*require(endowmentDB.allocate(ethAllocated, ktyAllocated),
+            'Error: endowmentDB.allocate(ethAllocated, ktyAllocated) failed');*/
 
-        Honeypot memory honeypot;
-        // honeypot.gameId = potId;
-        honeypot.gameId = gameId;
-        honeypot.state = HoneypotState.created;
-        honeypot.createdTime = now;
-        honeypot.ktyTotal = ktyAllocated;
-        honeypot.ethTotal = ethAllocated;
+        require(endowmentDB.updateEndowmentFund(ethAllocated, ktyAllocated, true),
+            'Error: endowmentDB.updateEndowmentFund(ethAllocated, ktyAllocated, true) failed');
 
-        endowmentDB.createHoneypot(
-            honeypot.gameId,
-            uint(honeypot.state),
-            honeypot.createdTime,
-            honeypot.ktyTotal,
-            honeypot.ethTotal
-        );
 
-    return (potId, ethAllocated);
+    return (ethAllocated);
     }
 
     /**
@@ -95,23 +82,44 @@ contract EndowmentFund is Distribution, Guard {
     */
     function claim(uint256 _gameId) external payable {
         address payable msgSender = address(uint160(getOriginalSender()));
-        // status
+
+        // Honeypot status
         (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
         require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
 
-        // get the time when state changed to claming start and add to it the Expiration time
         require(now < claimTime, "Time to claim is over");
 
+        require(!getWithdrawalState(_gameId, msgSender), "already claimed");
+
         (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
+
+        // make sure enough funds in HoneyPot and update HoneyPot balance
+        require(endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true),
+            'Error: endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true) failed');
+
         if (winningsKTY > 0){
+
+            /*require(endowmentDB.allocateKTY(winningsKTY),
+                'Error: endowmentDB.allocateKTY(winningsKTY) failed');*/
+
+        require(endowmentDB.updateEndowmentFund(0, winningsKTY, true),
+            'Error: endowmentDB.updateEndowmentFund(0, winningsKTY, true) failed');
+
             transferKFTfromEscrow(msgSender, winningsKTY);
         }
 
         if (winningsETH > 0){
+
+            /*require(endowmentDB.allocateETH(winningsETH),
+                'Error: endowmentDB.allocateETH(winningsETH) failed');*/
+
+            require(endowmentDB.updateEndowmentFund(winningsETH, 0, true),
+                'Error: endowmentDB.updateEndowmentFund(winningsETH, 0, true) failed');
+
             transferETHfromEscrow(msgSender, winningsETH);
         }
 
-        // log debit of funds
+        // log tokens sent to an address
         endowmentDB.setTotalDebit(_gameId, msgSender, winningsETH, winningsKTY);
 
         emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
@@ -140,8 +148,6 @@ contract EndowmentFund is Distribution, Guard {
                                             abi.encodeWithSignature("scheduleDissolve(uint256)", _gameId)
                                             );
             emit Scheduled(scheduledJob, claimTime, _gameId);
-
-
         }
         endowmentDB.setHoneypotState(_gameId, _state, claimTime);
     }
@@ -169,21 +175,21 @@ contract EndowmentFund is Distribution, Guard {
         uint256 totalETHclaimed = winnerETH.add(topBettorETH).add(secondTopBettorETH);
         uint256 totalKTYclaimed = winnerKTY.add(topBettorKTY).add(secondTopBettorKTY);
 
-        // other supporter claims
-
+        // other supporter claims - not possible at the moment
 
         uint restETH = totalEthHoneyPot - totalETHclaimed;
         uint restKTY = totalKtyHoneyPot - totalKTYclaimed;
 
         if (restETH > 0){
             // send to whom? the honeypot tokens are already in escrow
+            // update DB. not possible at the moment as supporter info missing
         }
 
         if (restKTY > 0){
             // send to whom? the honeypot tokens are already in escrow
+            // update DB. not possible at the moment as supporter info missing
         }
         */
-        
     }
 
 

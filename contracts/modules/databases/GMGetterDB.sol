@@ -76,22 +76,6 @@ contract GMGetterDB is Proxied {
     );
   }
 
-  // function getHoneypot(uint256 gameId)
-  //   public view
-  //   returns(uint)
-  // {
-  //   return (genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId"))),
-  //     genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-  // }
-
-  // function getHoneypotInitialEth(uint256 gameId)
-  //   public view
-  //   returns(uint)
-  // {    
-    
-  // }
-
-
   function getGamePlayers(uint256 gameId)
     public view
     onlyExistentGame(gameId)
@@ -238,10 +222,9 @@ contract GMGetterDB is Proxied {
 
   function getHoneypotInfo(uint256 gameId)
     public view
-    returns(uint honeypotId, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal)
+    returns(uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal)
   {
     (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
-    honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
     initialEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
     (ethTotal, ktyTotal) = endowmentDB.getHoneypotTotal(gameId);
     ethByCorner[0] = getTotalBet(gameId, playerBlack);
