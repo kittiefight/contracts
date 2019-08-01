@@ -1753,10 +1753,11 @@ const kaiToCattributesData = [
   }
 ]
 
-// Samples of original data for fill in the db FancyKitties
+// Samples of original data for fill in the db FancyKitties for testing purpose
 // based on https://www.cryptokitties.co/catalogue/fancy-cats
 // Fancy kitties are selected based on the rank of generation (low to high).
-// Generally speaking, fancy kitties priced lower than $100 are not considered as valualbe fancy kitties.
+// For complete data set, please refer to sourceData/FancyKitties.js
+
 const FancyKitties = [
   [
     'Catamari',
@@ -1994,3 +1995,4 @@ const FancyKitties = [
     1550507
   ]
 ]
+
