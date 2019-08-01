@@ -181,7 +181,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     await forfeiter.initialize()
     await scheduler.initialize()
     await register.initialize()
-    //await gameManager.initialize()
+    await gameManager.initialize()
     await getterDB.initialize()
     await endowmentFund.initialize()
     await endowmentFund.initUpgradeEscrow(escrow.address)
@@ -238,7 +238,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
   })
 
     // registers user to the system
-  it('approves erc20 token transfer operation by endowment contract', async () => {
+  it('Register users', async () => {
     await proxy.execute('Register', setMessage(register, 'register', [user1]), {from: user1}).should.be.fulfilled;
     await proxy.execute('Register', setMessage(register, 'register', [bettor1]), {from: user1}).should.be.fulfilled;
  
