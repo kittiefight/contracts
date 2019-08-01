@@ -53,7 +53,7 @@ contract GameManager is Proxied, Guard {
     KittieHELL public kittieHELL;
     GameStore public gameStore;
  
-    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, KITTIE_HELL, CANCELLED}
+    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
     //EVENTS
     event NewSupporter(uint indexed gameId, address supporter, address indexed playerSupported);
