@@ -98,8 +98,6 @@ contract EndowmentFund is Distribution, Guard {
         require(endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true),
             'Error: endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true) failed');
 
-        // update inGame Fund?
-
         if (winningsKTY > 0){
             transferKFTfromEscrow(msgSender, winningsKTY);
         }
@@ -248,6 +246,8 @@ contract EndowmentFund is Distribution, Guard {
     function contributeETH(uint _gameId) external payable returns(bool) {
         require(address(escrow) != address(0), "escrow not initialized");
         address msgSender = getOriginalSender();
+
+        require(msg.value > 0, 'contributeETH() : msg.value is zero');
 
         // transfer ETH to Escrow
         if (!address(escrow).send(msg.value)){
