@@ -90,6 +90,68 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             let job = await this.cronJob.getJob(jobId);
             assert.equal(job[0].toString(), scheduledTime.toString(), 'Scheduled time for Job does not match');
         });
+        it('should delete job from the list', async () => {
+            let delay = 2*10;
+            let randomVal = 1+Math.round(Math.random()*99);
+            let originalValue = await this.cronJobTarget.value();
+            if(randomVal == originalValue) randomVal +=1;
+            let jobPayload = web3.eth.abi.encodeFunctionCall({name: 'setNonZeroValue', type: 'function', inputs: [{type: 'uint256',name: '_value'}]}, [randomVal]);
+
+            //Create Job
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(randomVal, delay).should.be.fulfilled;
+            let jobId = receipt.logs[0].args.scheduledJob;
+            let scheduledTime = receipt.logs[0].args.time;
+
+            //Check Job created
+            let job = await this.cronJob.getJob(jobId);
+            assert.equal(job[0].toString(), scheduledTime.toString(), 'Scheduled time for Job does not match');
+            assert.equal(job[1].toString(), "CronJobTarget", 'Target Contract for Job does not match');
+            assert.equal(job[2], jobPayload, 'Payload for Job does not match');
+
+            //Delete the job
+            evm.increaseTime(web3, Math.floor(delay/2));
+            receipt = await this.cronJobTarget.removeJob(jobId).should.be.fulfilled;
+
+            //Check Job NOT executed
+            evm.increaseTime(web3, delay);
+            await this.proxy.executeScheduledJobs();
+            let newValue = await this.cronJobTarget.value();
+            assert.equal(newValue.toString(), originalValue.toString(), 'Value should not be changed');
+        });
+        it('should reschedule job', async () => {
+            let delay = 2*10;
+            let randomVal = 1+Math.round(Math.random()*99);
+            let originalValue = await this.cronJobTarget.value();
+            if(randomVal == originalValue) randomVal +=1;
+            let jobPayload = web3.eth.abi.encodeFunctionCall({name: 'setNonZeroValue', type: 'function', inputs: [{type: 'uint256',name: '_value'}]}, [randomVal]);
+
+            //Create Job
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(randomVal, delay).should.be.fulfilled;
+            let jobId = receipt.logs[0].args.scheduledJob;
+            let scheduledTime = receipt.logs[0].args.time;
+
+            //Check Job created
+            let job = await this.cronJob.getJob(jobId);
+            assert.equal(job[0].toString(), scheduledTime.toString(), 'Scheduled time for Job does not match');
+            assert.equal(job[1].toString(), "CronJobTarget", 'Target Contract for Job does not match');
+            assert.equal(job[2], jobPayload, 'Payload for Job does not match');
+
+            //Reschedule the job
+            evm.increaseTime(web3, Math.floor(delay/2));
+            receipt = await this.cronJobTarget.rescheduleJob(jobId, 2*delay).should.be.fulfilled;
+
+            //Check Job NOT executed
+            evm.increaseTime(web3, delay);
+            await this.proxy.executeScheduledJobs();
+            let newValue = await this.cronJobTarget.value();
+            assert.equal(newValue.toString(), originalValue.toString(), 'Value should not be changed');
+
+            //Check new Job executed
+            evm.increaseTime(web3, delay*2);
+            await this.proxy.executeScheduledJobs();
+            newValue = await this.cronJobTarget.value();
+            assert.equal(newValue.toString(), String(randomVal), 'Value should  be changed');
+        });
     });
     describe('CronJob::ExecuteViaProxy', () => {
         it('should execute added job', async () => {
