@@ -25,7 +25,7 @@ import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
-import "../kittieHELL/KittieHELL.sol";
+import "../kittieHELL/KittieHell.sol";
 
 /**
  * @title KittieHellDB
@@ -36,7 +36,7 @@ contract KittieHellDB is Proxied, Guard {
     using SafeMath for uint256;
 
     GenericDB public genericDB;
-    KittieHELL public kittieHELL;
+    KittieHell public kittieHELL;
 
     bytes32 internal constant TABLE_KEY_KITTIEHELL = keccak256(abi.encodePacked("KittieHellTable"));
     bytes32 internal constant TABLE_NAME_GHOST = "GhostsList";
@@ -52,7 +52,7 @@ contract KittieHellDB is Proxied, Guard {
    }
 
     function setKittieHELL() public onlyOwner {
-      kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+      kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
     /**

@@ -52,7 +52,7 @@ const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
 const Escrow = artifacts.require('Escrow')
-const KittieHELL = artifacts.require('KittieHELL')
+const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
@@ -108,13 +108,14 @@ const GAME_TIMES = 120 //Scheduled games 1 min apart
 const KITTIE_HELL_EXPIRATION = 300
 const HONEY_POT_EXPIRATION = 180
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
+const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
 //Distribution Rates
 const WINNING_KITTIE = 35
 const TOP_BETTOR = 25
 const SECOND_RUNNER_UP = 10
 const OTHER_BETTORS = 15
 const ENDOWNMENT = 15
-const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
+
 
 const GameState = {
   WAITING: 0,
@@ -430,6 +431,7 @@ contract('GameManager', (accounts) => {
       [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
+  //Change here to select what game to play
   it('correctly creates 2 games', async () => {
     let newGameEvents = await gameCreation.getPastEvents("NewGame", { 
       fromBlock: 0, 
