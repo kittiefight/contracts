@@ -22,6 +22,7 @@
 pragma solidity ^0.5.5;
 import "../../libs/SafeMath.sol";
 import "../proxy/Proxied.sol";
+import "../../authority/Guard.sol";
 import "./Betting.sol";
 
 /**
@@ -32,7 +33,7 @@ import "./Betting.sol";
  * @author @ziweidream
  */
 
-contract HitsResolve is Proxied {
+contract HitsResolve is Proxied, Guard {
     using SafeMath for uint256;
 
     Betting public betting;
@@ -50,8 +51,8 @@ contract HitsResolve is Proxied {
      * @return The random number generated
      */
     function randomGen(uint256 seed) public view returns (uint256 randomNumber) {
-        seed++;
-        randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number-1), block.timestamp, block.difficulty, seed)))%100;
+        seed = seed.add(1);
+        randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(1)), block.timestamp, block.difficulty, seed)))%100;
         if (randomNumber == 100) {
             randomNumber = 99;
         }
@@ -83,7 +84,7 @@ contract HitsResolve is Proxied {
      */
     function calculateCurrentRandom(uint256 gameID, uint256 randomNum)
         public
-        // onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns (uint256 currentRandomNum)
     {
         uint256 seed = randomNum.add(currentRandom[gameID]);
@@ -113,21 +114,11 @@ contract HitsResolve is Proxied {
             hitTypeVals[6] = slash;
         }
 
-    // the commented out function assignLowValues() is the old version before update comment in issue#18
     /**
      * @author @ziweidream
      * @notice randomly assign values to Low Punch[1-100], Low Kick[101-200], and Low Thunder[201-300] hit types
      * @return set of random values assigned to low value hit types
      */
-    /*function assignLowValues(uint256 _gameID, uint256 _seed) public view returns (uint256 lowPunch, uint256 lowKick, uint256 lowThunder) {
-      uint256 nonce = currentRandom[_gameID];
-      uint256 seed1 = _seed.add(nonce).add(1);
-      uint256 seed2 = _seed.add(nonce).add(2);
-      uint256 seed3 = _seed.add(nonce).add(3);
-      lowPunch = randomGen(seed1).add(1);
-      lowKick = randomGen(seed2).add(101);
-      lowThunder = randomGen(seed3).add(201);
-    }*/
     function assignLowValues(uint256 _gameID, uint256 _seed) public view returns (uint256 lowPunch, uint256 lowKick, uint256 lowThunder) {
       uint256 nonce = currentRandom[_gameID];
       uint256 seed1 = _seed.add(nonce).add(1);
@@ -164,22 +155,11 @@ contract HitsResolve is Proxied {
       return (lowPunch, lowKick, lowThunder);
     }
 
-     // the commented out function assignHighValues() is the old version before update comment in issue#18
      /**
      * @author @ziweidream
      * @notice randomly assign values to Hard Punch[301-400], Hard Kick[401-500], and Hard Thunder[501-600] hit types
      * @return set of random values assigned to high value hit types
      */
-    /*function assignHighValues(uint256 _gameID, uint256 _seed) public view returns (uint256 hardPunch, uint256 hardKick, uint256 hardThunder) {
-      uint256 nonce = currentRandom[_gameID];
-      uint256 seed1 = _seed.add(nonce).add(1);
-      uint256 seed2 = _seed.add(nonce).add(2);
-      uint256 seed3 = _seed.add(nonce).add(3);
-      hardPunch = randomGen(seed1).add(301);
-      hardKick = randomGen(seed2).add(401);
-      hardThunder = randomGen(seed3).add(501);
-    }*/
-
     function assignHighValues(uint256 _gameID, uint256 _seed) public view returns (uint256 hardPunch, uint256 hardKick, uint256 hardThunder) {
       uint256 nonce = currentRandom[_gameID];
       uint256 seed1 = _seed.add(nonce).add(1);

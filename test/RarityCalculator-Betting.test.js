@@ -4,10 +4,14 @@ const assert = chai.assert
 chai.use(chaiAsPromised)
 
 const Proxy = artifacts.require('KFProxy')
+//const GenericDB = artifacts.require('GenericDB')
+//const RoleDB = artifacts.require('RoleDB')
 const RarityCalculator = artifacts.require('RarityCalculator')
 const Betting = artifacts.require('Betting')
 
 let ProxyInst
+//let GenericDBinst
+//let RoleDBinst
 let BettingInst
 let RarityCalculatorInst
 
@@ -33,12 +37,18 @@ const gene3 =
 
 before(async () => {
   ProxyInst = await Proxy.new()
+  //GenericDBinst = await GenericDB.new()
+  //RoleDBinst = await RoleDB.new(GenericDBinst.address)
   RarityCalculatorInst = await RarityCalculator.new()
   BettingInst = await Betting.new()
 
+  //await ProxyInst.addContract("GenericDB", GenericDBinst.address)
+  //await ProxyInst.addContract('RoleDB', RoleDBinst.address)
   await ProxyInst.addContract('RarityCalculator', RarityCalculatorInst.address)
   await ProxyInst.addContract('Betting', BettingInst.address)
 
+  //await GenericDBinst.setProxy(ProxyInst.address)
+  //await RoleDBinst.setProxy(ProxyInst.address)
   await RarityCalculatorInst.setProxy(ProxyInst.address)
   await BettingInst.setProxy(ProxyInst.address)
 

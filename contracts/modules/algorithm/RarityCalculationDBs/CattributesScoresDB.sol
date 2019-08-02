@@ -1,10 +1,13 @@
 pragma solidity ^0.5.5;
 
+import "../../proxy/Proxied.sol";
+import "../../../authority/Guard.sol";
+
 /**
  * @title This contract is a database stroing cattributes and each cattribute's score
  * @author @ziweidream
  */
-contract CattributesScoresDB {
+contract CattributesScoresDB is Proxied, Guard {
     /* This is the totoal number of all the kitties on CryptoKitties */
     uint256 totalKitties;
 

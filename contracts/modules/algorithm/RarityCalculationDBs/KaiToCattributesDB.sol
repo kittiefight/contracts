@@ -1,11 +1,14 @@
 pragma solidity ^0.5.5;
 
+import "../../proxy/Proxied.sol";
+import "../../../authority/Guard.sol";
+
 /**
  * @title This contract is a database storing a gene in kai notation and its corresponding cattribute
  * @author @ziweidream
  */
 
-contract KaiToCattributesDB {
+contract KaiToCattributesDB is Proxied, Guard {
 
     mapping(string => mapping(string => string)) public cattributes;
 
