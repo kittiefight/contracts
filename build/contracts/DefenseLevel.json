@@ -27,22 +27,22 @@
   "metadata": "{\"compiler\":{\"version\":\"0.5.10+commit.5a6ea5b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"name\":\"max\",\"type\":\"uint256\"},{\"name\":\"min\",\"type\":\"uint256\"},{\"name\":\"totalKitties\",\"type\":\"uint256\"}],\"name\":\"setDefenseLevelLimit\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"@ziweidream\",\"methods\":{\"setDefenseLevelLimit(uint256,uint256,uint256)\":{\"author\":\"@ziweidream\",\"details\":\"maximum and minimum scores of all types of cattributes are obtained from https://api.cryptokitties.co/cattributesexample of maximum and minimum scores of all types of cattributes       type\\t  max\\t   min pattern\\t357328\\t1754 eyes\\t261737\\t1845 mouth\\t239894\\t961 color3\\t231062\\t758 color2\\t208081\\t832 color1\\t197753\\t1381 body\\t178290\\t904 coloreyes\\t158208\\t740 sum \\t1832353\\t9175\",\"params\":{\"max\":\"the sum of the maximum score of all types of cattributes\",\"min\":\"the sum of the minimum score of all types of cattributes\",\"totalKitties\":\"the total number of cryptokitties on CryptoKitties\"}}},\"title\":\"This contract is responsible to set lower and upper limit of each defense level\"},\"userdoc\":{\"methods\":{\"setDefenseLevelLimit(uint256,uint256,uint256)\":{\"notice\":\"set the lower and upper limit of each defense level of a kitty\"}}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/DefenseLevel.sol\":\"DefenseLevel\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/libs/SafeMath.sol\":{\"keccak256\":\"0x27a05cbd57db38bfaf14437883be0e560a73e272be24222c092defbcedd14f97\",\"urls\":[\"bzzr://4200280d3801fbee3cf0157c39d026fb51f13efde24bc0f3da18ac3c62386d30\",\"dweb:/ipfs/QmRp22RnpmHaf1aGB9PRfsKXLXcKyMMQVPbiaqZX5Gb5EG\"]},\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/DefenseLevel.sol\":{\"keccak256\":\"0x6077bb9c70e23a01a86b407abf590665631e6869a56bdb30332d4f532a06ac9e\",\"urls\":[\"bzzr://6c9342f0b37e26ec13d77be7fd98b60bc131a295d0fa1d6b717fa975de5927c1\",\"dweb:/ipfs/QmeDC4TkUTfbSUsoUG8JskZNNrVpsTAmkzeFx4HDBeVbvm\"]}},\"version\":1}",
   "bytecode": "0x608060405234801561001057600080fd5b50610265806100206000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c80631578856314610030575b600080fd5b6100706004803603606081101561004657600080fd5b81019080803590602001909291908035906020019092919080359060200190929190505050610072565b005b6100ac8161009e6298968061009086886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000600401819055506100f0816100e26301312d006100d486886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b600060030181905550610134816101266302625a0061011886886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000600201819055506101788161016a630393870061015c86886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000600101819055506101bc816101ae6304c4b4006101a086886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000800181905550505050565b6000828211156101d557fe5b818303905092915050565b6000808314156101f35760009050610211565b600082840290508284828161020457fe5b041461020c57fe5b809150505b92915050565b60008082848161022357fe5b049050809150509291505056fea265627a7a72305820423f034c864d4c9445c9f79bf74954ca95c57f2abe057ecaf06ff085f9043c0864736f6c634300050a0032",
   "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80631578856314610030575b600080fd5b6100706004803603606081101561004657600080fd5b81019080803590602001909291908035906020019092919080359060200190929190505050610072565b005b6100ac8161009e6298968061009086886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000600401819055506100f0816100e26301312d006100d486886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b600060030181905550610134816101266302625a0061011886886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000600201819055506101788161016a630393870061015c86886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000600101819055506101bc816101ae6304c4b4006101a086886101c990919063ffffffff16565b6101e090919063ffffffff16565b61021790919063ffffffff16565b6000800181905550505050565b6000828211156101d557fe5b818303905092915050565b6000808314156101f35760009050610211565b600082840290508284828161020457fe5b041461020c57fe5b809150505b92915050565b60008082848161022357fe5b049050809150509291505056fea265627a7a72305820423f034c864d4c9445c9f79bf74954ca95c57f2abe057ecaf06ff085f9043c0864736f6c634300050a0032",
-  "sourceMap": "184:1806:40:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;184:1806:40;;;;;;;",
-  "deployedSourceMap": "184:1806:40:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;184:1806:40;;;;;;;;;;;;;;;;;;;1347:641;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;1347:641:40;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;1591:46;1624:12;1591:28;1610:8;1592:12;1600:3;1592;:7;;:12;;;;:::i;:::-;1591:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1559:17;:29;;:78;;;;1677:46;1710:12;1677:28;1696:8;1678:12;1686:3;1678;:7;;:12;;;;:::i;:::-;1677:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1645:17;:29;;:78;;;;1763:46;1796:12;1763:28;1782:8;1764:12;1772:3;1764;:7;;:12;;;;:::i;:::-;1763:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1731:17;:29;;:78;;;;1849:46;1882:12;1849:28;1868:8;1850:12;1858:3;1850;:7;;:12;;;;:::i;:::-;1849:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1817:17;:29;;:78;;;;1935:46;1968:12;1935:28;1954:8;1936:12;1944:3;1936;:7;;:12;;;;:::i;:::-;1935:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1903:17;:29;;:78;;;;1347:641;;;:::o;834:110:25:-;892:7;919:1;914;:6;;907:14;;;;938:1;934;:5;927:12;;834:110;;;;:::o;202:173::-;260:7;284:1;279;:6;275:35;;;302:1;295:8;;;;275:35;315:9;331:1;327;:5;315:17;;354:1;349;345;:5;;;;;;:10;338:18;;;;369:1;362:8;;;202:173;;;;;:::o;457:265::-;515:7;604:9;620:1;616;:5;;;;;;604:17;;716:1;709:8;;;457:265;;;;:::o",
+  "sourceMap": "184:1806:41:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;184:1806:41;;;;;;;",
+  "deployedSourceMap": "184:1806:41:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;184:1806:41;;;;;;;;;;;;;;;;;;;1347:641;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;1347:641:41;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;1591:46;1624:12;1591:28;1610:8;1592:12;1600:3;1592;:7;;:12;;;;:::i;:::-;1591:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1559:17;:29;;:78;;;;1677:46;1710:12;1677:28;1696:8;1678:12;1686:3;1678;:7;;:12;;;;:::i;:::-;1677:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1645:17;:29;;:78;;;;1763:46;1796:12;1763:28;1782:8;1764:12;1772:3;1764;:7;;:12;;;;:::i;:::-;1763:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1731:17;:29;;:78;;;;1849:46;1882:12;1849:28;1868:8;1850:12;1858:3;1850;:7;;:12;;;;:::i;:::-;1849:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1817:17;:29;;:78;;;;1935:46;1968:12;1935:28;1954:8;1936:12;1944:3;1936;:7;;:12;;;;:::i;:::-;1935:18;;:28;;;;:::i;:::-;:32;;:46;;;;:::i;:::-;1903:17;:29;;:78;;;;1347:641;;;:::o;834:110:25:-;892:7;919:1;914;:6;;907:14;;;;938:1;934;:5;927:12;;834:110;;;;:::o;202:173::-;260:7;284:1;279;:6;275:35;;;302:1;295:8;;;;275:35;315:9;331:1;327;:5;315:17;;354:1;349;345;:5;;;;;;:10;338:18;;;;369:1;362:8;;;202:173;;;;;:::o;457:265::-;515:7;604:9;620:1;616;:5;;;;;;604:17;;716:1;709:8;;;457:265;;;;:::o",
   "source": "pragma solidity ^0.5.5;\n\nimport \"../../../libs/SafeMath.sol\";\n\n/**\n * @title This contract is responsible to set lower and upper limit of each defense level\n * @author @ziweidream\n */\ncontract DefenseLevel {\n    using SafeMath for uint256;\n  \n    struct DefenseLevelLimit {\n        uint256 level1Limit;\n        uint256 level2Limit;\n        uint256 level3Limit;\n        uint256 level4Limit;\n        uint256 level5Limit;\n    }\n\n    DefenseLevelLimit internal defenseLevelLimit;\n\n    /**\n     * @author @ziweidream\n     * @notice set the lower and upper limit of each defense level of a kitty\n     * @param max the sum of the maximum score of all types of cattributes\n     * @param min the sum of the minimum score of all types of cattributes\n     * @param totalKitties the total number of cryptokitties on CryptoKitties\n     * @dev maximum and minimum scores of all types of cattributes are obtained from https://api.cryptokitties.co/cattributes\n     * @dev example of maximum and minimum scores of all types of cattributes\n     *        type\t  max\t   min\n            pattern\t357328\t1754\n              eyes\t261737\t1845\n              mouth\t239894\t961\n             color3\t231062\t758\n             color2\t208081\t832\n            color1\t197753\t1381\n               body\t178290\t904\n         coloreyes\t158208\t740\n               sum \t1832353\t9175\n     */\n    function setDefenseLevelLimit (uint256 max, uint256 min, uint256 totalKitties)\n        public // temporarily set as public just for truffle test purpose\n        // internal\n        //onlySuperAdmin\n      {\n      defenseLevelLimit.level5Limit = (max.sub(min)).mul(10000000).div(totalKitties);\n      defenseLevelLimit.level4Limit = (max.sub(min)).mul(20000000).div(totalKitties);\n      defenseLevelLimit.level3Limit = (max.sub(min)).mul(40000000).div(totalKitties);\n      defenseLevelLimit.level2Limit = (max.sub(min)).mul(60000000).div(totalKitties);\n      defenseLevelLimit.level1Limit = (max.sub(min)).mul(80000000).div(totalKitties);\n    }\n}",
   "sourcePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/DefenseLevel.sol",
   "ast": {
     "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/DefenseLevel.sol",
     "exportedSymbols": {
       "DefenseLevel": [
-        7455
+        7699
       ]
     },
-    "id": 7456,
+    "id": 7700,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 7347,
+        "id": 7591,
         "literals": [
           "solidity",
           "^",
@@ -50,16 +50,16 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:40"
+        "src": "0:23:41"
       },
       {
         "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/libs/SafeMath.sol",
         "file": "../../../libs/SafeMath.sol",
-        "id": 7348,
+        "id": 7592,
         "nodeType": "ImportDirective",
-        "scope": 7456,
+        "scope": 7700,
         "sourceUnit": 3401,
-        "src": "25:36:40",
+        "src": "25:36:41",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -69,34 +69,34 @@
         "contractKind": "contract",
         "documentation": "@title This contract is responsible to set lower and upper limit of each defense level\n@author @ziweidream",
         "fullyImplemented": true,
-        "id": 7455,
+        "id": 7699,
         "linearizedBaseContracts": [
-          7455
+          7699
         ],
         "name": "DefenseLevel",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "id": 7351,
+            "id": 7595,
             "libraryName": {
               "contractScope": null,
-              "id": 7349,
+              "id": 7593,
               "name": "SafeMath",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 3400,
-              "src": "218:8:40",
+              "src": "218:8:41",
               "typeDescriptions": {
                 "typeIdentifier": "t_contract$_SafeMath_$3400",
                 "typeString": "library SafeMath"
               }
             },
             "nodeType": "UsingForDirective",
-            "src": "212:27:40",
+            "src": "212:27:41",
             "typeName": {
-              "id": 7350,
+              "id": 7594,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "231:7:40",
+              "src": "231:7:41",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -105,15 +105,15 @@
           },
           {
             "canonicalName": "DefenseLevel.DefenseLevelLimit",
-            "id": 7362,
+            "id": 7606,
             "members": [
               {
                 "constant": false,
-                "id": 7353,
+                "id": 7597,
                 "name": "level1Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "282:19:40",
+                "scope": 7606,
+                "src": "282:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -121,10 +121,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7352,
+                  "id": 7596,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "282:7:40",
+                  "src": "282:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -135,11 +135,11 @@
               },
               {
                 "constant": false,
-                "id": 7355,
+                "id": 7599,
                 "name": "level2Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "311:19:40",
+                "scope": 7606,
+                "src": "311:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -147,10 +147,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7354,
+                  "id": 7598,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "311:7:40",
+                  "src": "311:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -161,11 +161,11 @@
               },
               {
                 "constant": false,
-                "id": 7357,
+                "id": 7601,
                 "name": "level3Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "340:19:40",
+                "scope": 7606,
+                "src": "340:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -173,10 +173,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7356,
+                  "id": 7600,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "340:7:40",
+                  "src": "340:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -187,11 +187,11 @@
               },
               {
                 "constant": false,
-                "id": 7359,
+                "id": 7603,
                 "name": "level4Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "369:19:40",
+                "scope": 7606,
+                "src": "369:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -199,10 +199,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7358,
+                  "id": 7602,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "369:7:40",
+                  "src": "369:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -213,11 +213,11 @@
               },
               {
                 "constant": false,
-                "id": 7361,
+                "id": 7605,
                 "name": "level5Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "398:19:40",
+                "scope": 7606,
+                "src": "398:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -225,10 +225,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7360,
+                  "id": 7604,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "398:7:40",
+                  "src": "398:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -240,32 +240,32 @@
             ],
             "name": "DefenseLevelLimit",
             "nodeType": "StructDefinition",
-            "scope": 7455,
-            "src": "247:177:40",
+            "scope": 7699,
+            "src": "247:177:41",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 7364,
+            "id": 7608,
             "name": "defenseLevelLimit",
             "nodeType": "VariableDeclaration",
-            "scope": 7455,
-            "src": "430:44:40",
+            "scope": 7699,
+            "src": "430:44:41",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+              "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
               "typeString": "struct DefenseLevel.DefenseLevelLimit"
             },
             "typeName": {
               "contractScope": null,
-              "id": 7363,
+              "id": 7607,
               "name": "DefenseLevelLimit",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 7362,
-              "src": "430:17:40",
+              "referencedDeclaration": 7606,
+              "src": "430:17:41",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage_ptr",
+                "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage_ptr",
                 "typeString": "struct DefenseLevel.DefenseLevelLimit"
               }
             },
@@ -274,14 +274,14 @@
           },
           {
             "body": {
-              "id": 7453,
+              "id": 7697,
               "nodeType": "Block",
-              "src": "1551:437:40",
+              "src": "1551:437:41",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7387,
+                    "id": 7631,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -290,26 +290,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7373,
+                        "id": 7617,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1559:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1559:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7375,
+                      "id": 7619,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level5Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7361,
-                      "src": "1559:29:40",
+                      "referencedDeclaration": 7605,
+                      "src": "1559:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -322,12 +322,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7385,
+                          "id": 7629,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1624:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1624:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -347,14 +347,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3130303030303030",
-                              "id": 7382,
+                              "id": 7626,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1610:8:40",
+                              "src": "1610:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_10000000_by_1",
@@ -378,12 +378,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7378,
+                                      "id": 7622,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1600:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1600:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -399,18 +399,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7376,
+                                      "id": 7620,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1592:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1592:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7377,
+                                    "id": 7621,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -418,13 +418,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1592:7:40",
+                                    "src": "1592:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7379,
+                                  "id": 7623,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -432,27 +432,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1592:12:40",
+                                  "src": "1592:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7380,
+                              "id": 7624,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1591:14:40",
+                              "src": "1591:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7381,
+                            "id": 7625,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -460,13 +460,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1591:18:40",
+                            "src": "1591:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7383,
+                          "id": 7627,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -474,13 +474,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1591:28:40",
+                          "src": "1591:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7384,
+                        "id": 7628,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -488,13 +488,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1591:32:40",
+                        "src": "1591:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7386,
+                      "id": 7630,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -502,26 +502,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1591:46:40",
+                      "src": "1591:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1559:78:40",
+                    "src": "1559:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7388,
+                  "id": 7632,
                   "nodeType": "ExpressionStatement",
-                  "src": "1559:78:40"
+                  "src": "1559:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7403,
+                    "id": 7647,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -530,26 +530,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7389,
+                        "id": 7633,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1645:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1645:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7391,
+                      "id": 7635,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level4Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7359,
-                      "src": "1645:29:40",
+                      "referencedDeclaration": 7603,
+                      "src": "1645:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -562,12 +562,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7401,
+                          "id": 7645,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1710:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1710:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -587,14 +587,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3230303030303030",
-                              "id": 7398,
+                              "id": 7642,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1696:8:40",
+                              "src": "1696:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_20000000_by_1",
@@ -618,12 +618,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7394,
+                                      "id": 7638,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1686:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1686:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -639,18 +639,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7392,
+                                      "id": 7636,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1678:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1678:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7393,
+                                    "id": 7637,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -658,13 +658,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1678:7:40",
+                                    "src": "1678:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7395,
+                                  "id": 7639,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -672,27 +672,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1678:12:40",
+                                  "src": "1678:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7396,
+                              "id": 7640,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1677:14:40",
+                              "src": "1677:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7397,
+                            "id": 7641,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -700,13 +700,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1677:18:40",
+                            "src": "1677:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7399,
+                          "id": 7643,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -714,13 +714,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1677:28:40",
+                          "src": "1677:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7400,
+                        "id": 7644,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -728,13 +728,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1677:32:40",
+                        "src": "1677:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7402,
+                      "id": 7646,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -742,26 +742,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1677:46:40",
+                      "src": "1677:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1645:78:40",
+                    "src": "1645:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7404,
+                  "id": 7648,
                   "nodeType": "ExpressionStatement",
-                  "src": "1645:78:40"
+                  "src": "1645:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7419,
+                    "id": 7663,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -770,26 +770,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7405,
+                        "id": 7649,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1731:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1731:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7407,
+                      "id": 7651,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level3Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7357,
-                      "src": "1731:29:40",
+                      "referencedDeclaration": 7601,
+                      "src": "1731:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -802,12 +802,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7417,
+                          "id": 7661,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1796:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1796:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -827,14 +827,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3430303030303030",
-                              "id": 7414,
+                              "id": 7658,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1782:8:40",
+                              "src": "1782:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_40000000_by_1",
@@ -858,12 +858,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7410,
+                                      "id": 7654,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1772:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1772:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -879,18 +879,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7408,
+                                      "id": 7652,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1764:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1764:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7409,
+                                    "id": 7653,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -898,13 +898,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1764:7:40",
+                                    "src": "1764:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7411,
+                                  "id": 7655,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -912,27 +912,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1764:12:40",
+                                  "src": "1764:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7412,
+                              "id": 7656,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1763:14:40",
+                              "src": "1763:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7413,
+                            "id": 7657,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -940,13 +940,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1763:18:40",
+                            "src": "1763:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7415,
+                          "id": 7659,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -954,13 +954,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1763:28:40",
+                          "src": "1763:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7416,
+                        "id": 7660,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -968,13 +968,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1763:32:40",
+                        "src": "1763:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7418,
+                      "id": 7662,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -982,26 +982,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1763:46:40",
+                      "src": "1763:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1731:78:40",
+                    "src": "1731:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7420,
+                  "id": 7664,
                   "nodeType": "ExpressionStatement",
-                  "src": "1731:78:40"
+                  "src": "1731:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7435,
+                    "id": 7679,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1010,26 +1010,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7421,
+                        "id": 7665,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1817:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1817:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7423,
+                      "id": 7667,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level2Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7355,
-                      "src": "1817:29:40",
+                      "referencedDeclaration": 7599,
+                      "src": "1817:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -1042,12 +1042,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7433,
+                          "id": 7677,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1882:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1882:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -1067,14 +1067,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3630303030303030",
-                              "id": 7430,
+                              "id": 7674,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1868:8:40",
+                              "src": "1868:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_60000000_by_1",
@@ -1098,12 +1098,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7426,
+                                      "id": 7670,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1858:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1858:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -1119,18 +1119,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7424,
+                                      "id": 7668,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1850:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1850:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7425,
+                                    "id": 7669,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -1138,13 +1138,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1850:7:40",
+                                    "src": "1850:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7427,
+                                  "id": 7671,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -1152,27 +1152,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1850:12:40",
+                                  "src": "1850:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7428,
+                              "id": 7672,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1849:14:40",
+                              "src": "1849:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7429,
+                            "id": 7673,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -1180,13 +1180,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1849:18:40",
+                            "src": "1849:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7431,
+                          "id": 7675,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1194,13 +1194,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1849:28:40",
+                          "src": "1849:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7432,
+                        "id": 7676,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1208,13 +1208,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1849:32:40",
+                        "src": "1849:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7434,
+                      "id": 7678,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1222,26 +1222,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1849:46:40",
+                      "src": "1849:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1817:78:40",
+                    "src": "1817:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7436,
+                  "id": 7680,
                   "nodeType": "ExpressionStatement",
-                  "src": "1817:78:40"
+                  "src": "1817:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7451,
+                    "id": 7695,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1250,26 +1250,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7437,
+                        "id": 7681,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1903:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1903:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7439,
+                      "id": 7683,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level1Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7353,
-                      "src": "1903:29:40",
+                      "referencedDeclaration": 7597,
+                      "src": "1903:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -1282,12 +1282,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7449,
+                          "id": 7693,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1968:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1968:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -1307,14 +1307,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3830303030303030",
-                              "id": 7446,
+                              "id": 7690,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1954:8:40",
+                              "src": "1954:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_80000000_by_1",
@@ -1338,12 +1338,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7442,
+                                      "id": 7686,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1944:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1944:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -1359,18 +1359,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7440,
+                                      "id": 7684,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1936:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1936:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7441,
+                                    "id": 7685,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -1378,13 +1378,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1936:7:40",
+                                    "src": "1936:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7443,
+                                  "id": 7687,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -1392,27 +1392,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1936:12:40",
+                                  "src": "1936:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7444,
+                              "id": 7688,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1935:14:40",
+                              "src": "1935:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7445,
+                            "id": 7689,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -1420,13 +1420,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1935:18:40",
+                            "src": "1935:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7447,
+                          "id": 7691,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -1434,13 +1434,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1935:28:40",
+                          "src": "1935:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7448,
+                        "id": 7692,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1448,13 +1448,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1935:32:40",
+                        "src": "1935:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7450,
+                      "id": 7694,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1462,42 +1462,42 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1935:46:40",
+                      "src": "1935:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1903:78:40",
+                    "src": "1903:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7452,
+                  "id": 7696,
                   "nodeType": "ExpressionStatement",
-                  "src": "1903:78:40"
+                  "src": "1903:78:41"
                 }
               ]
             },
             "documentation": "@author @ziweidream\n@notice set the lower and upper limit of each defense level of a kitty\n@param max the sum of the maximum score of all types of cattributes\n@param min the sum of the minimum score of all types of cattributes\n@param totalKitties the total number of cryptokitties on CryptoKitties\n@dev maximum and minimum scores of all types of cattributes are obtained from https://api.cryptokitties.co/cattributes\n@dev example of maximum and minimum scores of all types of cattributes\n       type\t  max\t   min\npattern\t357328\t1754\neyes\t261737\t1845\nmouth\t239894\t961\ncolor3\t231062\t758\ncolor2\t208081\t832\ncolor1\t197753\t1381\nbody\t178290\t904\ncoloreyes\t158208\t740\nsum \t1832353\t9175",
-            "id": 7454,
+            "id": 7698,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "setDefenseLevelLimit",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 7371,
+              "id": 7615,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7366,
+                  "id": 7610,
                   "name": "max",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7454,
-                  "src": "1378:11:40",
+                  "scope": 7698,
+                  "src": "1378:11:41",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1505,10 +1505,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7365,
+                    "id": 7609,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1378:7:40",
+                    "src": "1378:7:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1519,11 +1519,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 7368,
+                  "id": 7612,
                   "name": "min",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7454,
-                  "src": "1391:11:40",
+                  "scope": 7698,
+                  "src": "1391:11:41",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1531,10 +1531,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7367,
+                    "id": 7611,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1391:7:40",
+                    "src": "1391:7:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1545,11 +1545,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 7370,
+                  "id": 7614,
                   "name": "totalKitties",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7454,
-                  "src": "1404:20:40",
+                  "scope": 7698,
+                  "src": "1404:20:41",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1557,10 +1557,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7369,
+                    "id": 7613,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1404:7:40",
+                    "src": "1404:7:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1570,39 +1570,39 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1377:48:40"
+              "src": "1377:48:41"
             },
             "returnParameters": {
-              "id": 7372,
+              "id": 7616,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1551:0:40"
+              "src": "1551:0:41"
             },
-            "scope": 7455,
-            "src": "1347:641:40",
+            "scope": 7699,
+            "src": "1347:641:41",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 7456,
-        "src": "184:1806:40"
+        "scope": 7700,
+        "src": "184:1806:41"
       }
     ],
-    "src": "0:1990:40"
+    "src": "0:1990:41"
   },
   "legacyAST": {
     "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/modules/algorithm/RarityCalculationDBs/DefenseLevel.sol",
     "exportedSymbols": {
       "DefenseLevel": [
-        7455
+        7699
       ]
     },
-    "id": 7456,
+    "id": 7700,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 7347,
+        "id": 7591,
         "literals": [
           "solidity",
           "^",
@@ -1610,16 +1610,16 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:40"
+        "src": "0:23:41"
       },
       {
         "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/libs/SafeMath.sol",
         "file": "../../../libs/SafeMath.sol",
-        "id": 7348,
+        "id": 7592,
         "nodeType": "ImportDirective",
-        "scope": 7456,
+        "scope": 7700,
         "sourceUnit": 3401,
-        "src": "25:36:40",
+        "src": "25:36:41",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -1629,34 +1629,34 @@
         "contractKind": "contract",
         "documentation": "@title This contract is responsible to set lower and upper limit of each defense level\n@author @ziweidream",
         "fullyImplemented": true,
-        "id": 7455,
+        "id": 7699,
         "linearizedBaseContracts": [
-          7455
+          7699
         ],
         "name": "DefenseLevel",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "id": 7351,
+            "id": 7595,
             "libraryName": {
               "contractScope": null,
-              "id": 7349,
+              "id": 7593,
               "name": "SafeMath",
               "nodeType": "UserDefinedTypeName",
               "referencedDeclaration": 3400,
-              "src": "218:8:40",
+              "src": "218:8:41",
               "typeDescriptions": {
                 "typeIdentifier": "t_contract$_SafeMath_$3400",
                 "typeString": "library SafeMath"
               }
             },
             "nodeType": "UsingForDirective",
-            "src": "212:27:40",
+            "src": "212:27:41",
             "typeName": {
-              "id": 7350,
+              "id": 7594,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "231:7:40",
+              "src": "231:7:41",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -1665,15 +1665,15 @@
           },
           {
             "canonicalName": "DefenseLevel.DefenseLevelLimit",
-            "id": 7362,
+            "id": 7606,
             "members": [
               {
                 "constant": false,
-                "id": 7353,
+                "id": 7597,
                 "name": "level1Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "282:19:40",
+                "scope": 7606,
+                "src": "282:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1681,10 +1681,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7352,
+                  "id": 7596,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "282:7:40",
+                  "src": "282:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -1695,11 +1695,11 @@
               },
               {
                 "constant": false,
-                "id": 7355,
+                "id": 7599,
                 "name": "level2Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "311:19:40",
+                "scope": 7606,
+                "src": "311:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1707,10 +1707,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7354,
+                  "id": 7598,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "311:7:40",
+                  "src": "311:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -1721,11 +1721,11 @@
               },
               {
                 "constant": false,
-                "id": 7357,
+                "id": 7601,
                 "name": "level3Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "340:19:40",
+                "scope": 7606,
+                "src": "340:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1733,10 +1733,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7356,
+                  "id": 7600,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "340:7:40",
+                  "src": "340:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -1747,11 +1747,11 @@
               },
               {
                 "constant": false,
-                "id": 7359,
+                "id": 7603,
                 "name": "level4Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "369:19:40",
+                "scope": 7606,
+                "src": "369:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1759,10 +1759,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7358,
+                  "id": 7602,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "369:7:40",
+                  "src": "369:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -1773,11 +1773,11 @@
               },
               {
                 "constant": false,
-                "id": 7361,
+                "id": 7605,
                 "name": "level5Limit",
                 "nodeType": "VariableDeclaration",
-                "scope": 7362,
-                "src": "398:19:40",
+                "scope": 7606,
+                "src": "398:19:41",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1785,10 +1785,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 7360,
+                  "id": 7604,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "398:7:40",
+                  "src": "398:7:41",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -1800,32 +1800,32 @@
             ],
             "name": "DefenseLevelLimit",
             "nodeType": "StructDefinition",
-            "scope": 7455,
-            "src": "247:177:40",
+            "scope": 7699,
+            "src": "247:177:41",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 7364,
+            "id": 7608,
             "name": "defenseLevelLimit",
             "nodeType": "VariableDeclaration",
-            "scope": 7455,
-            "src": "430:44:40",
+            "scope": 7699,
+            "src": "430:44:41",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+              "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
               "typeString": "struct DefenseLevel.DefenseLevelLimit"
             },
             "typeName": {
               "contractScope": null,
-              "id": 7363,
+              "id": 7607,
               "name": "DefenseLevelLimit",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 7362,
-              "src": "430:17:40",
+              "referencedDeclaration": 7606,
+              "src": "430:17:41",
               "typeDescriptions": {
-                "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage_ptr",
+                "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage_ptr",
                 "typeString": "struct DefenseLevel.DefenseLevelLimit"
               }
             },
@@ -1834,14 +1834,14 @@
           },
           {
             "body": {
-              "id": 7453,
+              "id": 7697,
               "nodeType": "Block",
-              "src": "1551:437:40",
+              "src": "1551:437:41",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7387,
+                    "id": 7631,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1850,26 +1850,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7373,
+                        "id": 7617,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1559:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1559:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7375,
+                      "id": 7619,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level5Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7361,
-                      "src": "1559:29:40",
+                      "referencedDeclaration": 7605,
+                      "src": "1559:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -1882,12 +1882,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7385,
+                          "id": 7629,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1624:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1624:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -1907,14 +1907,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3130303030303030",
-                              "id": 7382,
+                              "id": 7626,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1610:8:40",
+                              "src": "1610:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_10000000_by_1",
@@ -1938,12 +1938,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7378,
+                                      "id": 7622,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1600:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1600:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -1959,18 +1959,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7376,
+                                      "id": 7620,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1592:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1592:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7377,
+                                    "id": 7621,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -1978,13 +1978,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1592:7:40",
+                                    "src": "1592:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7379,
+                                  "id": 7623,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -1992,27 +1992,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1592:12:40",
+                                  "src": "1592:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7380,
+                              "id": 7624,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1591:14:40",
+                              "src": "1591:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7381,
+                            "id": 7625,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -2020,13 +2020,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1591:18:40",
+                            "src": "1591:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7383,
+                          "id": 7627,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2034,13 +2034,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1591:28:40",
+                          "src": "1591:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7384,
+                        "id": 7628,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2048,13 +2048,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1591:32:40",
+                        "src": "1591:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7386,
+                      "id": 7630,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2062,26 +2062,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1591:46:40",
+                      "src": "1591:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1559:78:40",
+                    "src": "1559:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7388,
+                  "id": 7632,
                   "nodeType": "ExpressionStatement",
-                  "src": "1559:78:40"
+                  "src": "1559:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7403,
+                    "id": 7647,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2090,26 +2090,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7389,
+                        "id": 7633,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1645:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1645:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7391,
+                      "id": 7635,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level4Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7359,
-                      "src": "1645:29:40",
+                      "referencedDeclaration": 7603,
+                      "src": "1645:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -2122,12 +2122,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7401,
+                          "id": 7645,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1710:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1710:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2147,14 +2147,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3230303030303030",
-                              "id": 7398,
+                              "id": 7642,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1696:8:40",
+                              "src": "1696:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_20000000_by_1",
@@ -2178,12 +2178,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7394,
+                                      "id": 7638,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1686:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1686:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -2199,18 +2199,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7392,
+                                      "id": 7636,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1678:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1678:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7393,
+                                    "id": 7637,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -2218,13 +2218,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1678:7:40",
+                                    "src": "1678:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7395,
+                                  "id": 7639,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -2232,27 +2232,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1678:12:40",
+                                  "src": "1678:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7396,
+                              "id": 7640,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1677:14:40",
+                              "src": "1677:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7397,
+                            "id": 7641,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -2260,13 +2260,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1677:18:40",
+                            "src": "1677:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7399,
+                          "id": 7643,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2274,13 +2274,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1677:28:40",
+                          "src": "1677:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7400,
+                        "id": 7644,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2288,13 +2288,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1677:32:40",
+                        "src": "1677:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7402,
+                      "id": 7646,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2302,26 +2302,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1677:46:40",
+                      "src": "1677:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1645:78:40",
+                    "src": "1645:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7404,
+                  "id": 7648,
                   "nodeType": "ExpressionStatement",
-                  "src": "1645:78:40"
+                  "src": "1645:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7419,
+                    "id": 7663,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2330,26 +2330,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7405,
+                        "id": 7649,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1731:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1731:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7407,
+                      "id": 7651,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level3Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7357,
-                      "src": "1731:29:40",
+                      "referencedDeclaration": 7601,
+                      "src": "1731:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -2362,12 +2362,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7417,
+                          "id": 7661,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1796:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1796:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2387,14 +2387,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3430303030303030",
-                              "id": 7414,
+                              "id": 7658,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1782:8:40",
+                              "src": "1782:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_40000000_by_1",
@@ -2418,12 +2418,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7410,
+                                      "id": 7654,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1772:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1772:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -2439,18 +2439,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7408,
+                                      "id": 7652,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1764:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1764:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7409,
+                                    "id": 7653,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -2458,13 +2458,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1764:7:40",
+                                    "src": "1764:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7411,
+                                  "id": 7655,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -2472,27 +2472,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1764:12:40",
+                                  "src": "1764:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7412,
+                              "id": 7656,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1763:14:40",
+                              "src": "1763:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7413,
+                            "id": 7657,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -2500,13 +2500,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1763:18:40",
+                            "src": "1763:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7415,
+                          "id": 7659,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2514,13 +2514,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1763:28:40",
+                          "src": "1763:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7416,
+                        "id": 7660,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2528,13 +2528,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1763:32:40",
+                        "src": "1763:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7418,
+                      "id": 7662,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2542,26 +2542,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1763:46:40",
+                      "src": "1763:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1731:78:40",
+                    "src": "1731:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7420,
+                  "id": 7664,
                   "nodeType": "ExpressionStatement",
-                  "src": "1731:78:40"
+                  "src": "1731:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7435,
+                    "id": 7679,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2570,26 +2570,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7421,
+                        "id": 7665,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1817:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1817:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7423,
+                      "id": 7667,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level2Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7355,
-                      "src": "1817:29:40",
+                      "referencedDeclaration": 7599,
+                      "src": "1817:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -2602,12 +2602,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7433,
+                          "id": 7677,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1882:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1882:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2627,14 +2627,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3630303030303030",
-                              "id": 7430,
+                              "id": 7674,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1868:8:40",
+                              "src": "1868:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_60000000_by_1",
@@ -2658,12 +2658,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7426,
+                                      "id": 7670,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1858:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1858:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -2679,18 +2679,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7424,
+                                      "id": 7668,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1850:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1850:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7425,
+                                    "id": 7669,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -2698,13 +2698,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1850:7:40",
+                                    "src": "1850:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7427,
+                                  "id": 7671,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -2712,27 +2712,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1850:12:40",
+                                  "src": "1850:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7428,
+                              "id": 7672,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1849:14:40",
+                              "src": "1849:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7429,
+                            "id": 7673,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -2740,13 +2740,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1849:18:40",
+                            "src": "1849:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7431,
+                          "id": 7675,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2754,13 +2754,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1849:28:40",
+                          "src": "1849:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7432,
+                        "id": 7676,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2768,13 +2768,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1849:32:40",
+                        "src": "1849:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7434,
+                      "id": 7678,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2782,26 +2782,26 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1849:46:40",
+                      "src": "1849:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1817:78:40",
+                    "src": "1817:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7436,
+                  "id": 7680,
                   "nodeType": "ExpressionStatement",
-                  "src": "1817:78:40"
+                  "src": "1817:78:41"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 7451,
+                    "id": 7695,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2810,26 +2810,26 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 7437,
+                        "id": 7681,
                         "name": "defenseLevelLimit",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7364,
-                        "src": "1903:17:40",
+                        "referencedDeclaration": 7608,
+                        "src": "1903:17:41",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7362_storage",
+                          "typeIdentifier": "t_struct$_DefenseLevelLimit_$7606_storage",
                           "typeString": "struct DefenseLevel.DefenseLevelLimit storage ref"
                         }
                       },
-                      "id": 7439,
+                      "id": 7683,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "level1Limit",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 7353,
-                      "src": "1903:29:40",
+                      "referencedDeclaration": 7597,
+                      "src": "1903:29:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -2842,12 +2842,12 @@
                       "arguments": [
                         {
                           "argumentTypes": null,
-                          "id": 7449,
+                          "id": 7693,
                           "name": "totalKitties",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7370,
-                          "src": "1968:12:40",
+                          "referencedDeclaration": 7614,
+                          "src": "1968:12:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2867,14 +2867,14 @@
                             {
                               "argumentTypes": null,
                               "hexValue": "3830303030303030",
-                              "id": 7446,
+                              "id": 7690,
                               "isConstant": false,
                               "isLValue": false,
                               "isPure": true,
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "1954:8:40",
+                              "src": "1954:8:41",
                               "subdenomination": null,
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_80000000_by_1",
@@ -2898,12 +2898,12 @@
                                   "arguments": [
                                     {
                                       "argumentTypes": null,
-                                      "id": 7442,
+                                      "id": 7686,
                                       "name": "min",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7368,
-                                      "src": "1944:3:40",
+                                      "referencedDeclaration": 7612,
+                                      "src": "1944:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
@@ -2919,18 +2919,18 @@
                                     ],
                                     "expression": {
                                       "argumentTypes": null,
-                                      "id": 7440,
+                                      "id": 7684,
                                       "name": "max",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 7366,
-                                      "src": "1936:3:40",
+                                      "referencedDeclaration": 7610,
+                                      "src": "1936:3:41",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_uint256",
                                         "typeString": "uint256"
                                       }
                                     },
-                                    "id": 7441,
+                                    "id": 7685,
                                     "isConstant": false,
                                     "isLValue": false,
                                     "isPure": false,
@@ -2938,13 +2938,13 @@
                                     "memberName": "sub",
                                     "nodeType": "MemberAccess",
                                     "referencedDeclaration": 3375,
-                                    "src": "1936:7:40",
+                                    "src": "1936:7:41",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                                       "typeString": "function (uint256,uint256) pure returns (uint256)"
                                     }
                                   },
-                                  "id": 7443,
+                                  "id": 7687,
                                   "isConstant": false,
                                   "isLValue": false,
                                   "isPure": false,
@@ -2952,27 +2952,27 @@
                                   "lValueRequested": false,
                                   "names": [],
                                   "nodeType": "FunctionCall",
-                                  "src": "1936:12:40",
+                                  "src": "1936:12:41",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_uint256",
                                     "typeString": "uint256"
                                   }
                                 }
                               ],
-                              "id": 7444,
+                              "id": 7688,
                               "isConstant": false,
                               "isInlineArray": false,
                               "isLValue": false,
                               "isPure": false,
                               "lValueRequested": false,
                               "nodeType": "TupleExpression",
-                              "src": "1935:14:40",
+                              "src": "1935:14:41",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
                               }
                             },
-                            "id": 7445,
+                            "id": 7689,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": false,
@@ -2980,13 +2980,13 @@
                             "memberName": "mul",
                             "nodeType": "MemberAccess",
                             "referencedDeclaration": 3337,
-                            "src": "1935:18:40",
+                            "src": "1935:18:41",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                               "typeString": "function (uint256,uint256) pure returns (uint256)"
                             }
                           },
-                          "id": 7447,
+                          "id": 7691,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
@@ -2994,13 +2994,13 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "1935:28:40",
+                          "src": "1935:28:41",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "id": 7448,
+                        "id": 7692,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -3008,13 +3008,13 @@
                         "memberName": "div",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 3355,
-                        "src": "1935:32:40",
+                        "src": "1935:32:41",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
                           "typeString": "function (uint256,uint256) pure returns (uint256)"
                         }
                       },
-                      "id": 7450,
+                      "id": 7694,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -3022,42 +3022,42 @@
                       "lValueRequested": false,
                       "names": [],
                       "nodeType": "FunctionCall",
-                      "src": "1935:46:40",
+                      "src": "1935:46:41",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1903:78:40",
+                    "src": "1903:78:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     }
                   },
-                  "id": 7452,
+                  "id": 7696,
                   "nodeType": "ExpressionStatement",
-                  "src": "1903:78:40"
+                  "src": "1903:78:41"
                 }
               ]
             },
             "documentation": "@author @ziweidream\n@notice set the lower and upper limit of each defense level of a kitty\n@param max the sum of the maximum score of all types of cattributes\n@param min the sum of the minimum score of all types of cattributes\n@param totalKitties the total number of cryptokitties on CryptoKitties\n@dev maximum and minimum scores of all types of cattributes are obtained from https://api.cryptokitties.co/cattributes\n@dev example of maximum and minimum scores of all types of cattributes\n       type\t  max\t   min\npattern\t357328\t1754\neyes\t261737\t1845\nmouth\t239894\t961\ncolor3\t231062\t758\ncolor2\t208081\t832\ncolor1\t197753\t1381\nbody\t178290\t904\ncoloreyes\t158208\t740\nsum \t1832353\t9175",
-            "id": 7454,
+            "id": 7698,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "setDefenseLevelLimit",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 7371,
+              "id": 7615,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7366,
+                  "id": 7610,
                   "name": "max",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7454,
-                  "src": "1378:11:40",
+                  "scope": 7698,
+                  "src": "1378:11:41",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3065,10 +3065,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7365,
+                    "id": 7609,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1378:7:40",
+                    "src": "1378:7:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3079,11 +3079,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 7368,
+                  "id": 7612,
                   "name": "min",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7454,
-                  "src": "1391:11:40",
+                  "scope": 7698,
+                  "src": "1391:11:41",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3091,10 +3091,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7367,
+                    "id": 7611,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1391:7:40",
+                    "src": "1391:7:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3105,11 +3105,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 7370,
+                  "id": 7614,
                   "name": "totalKitties",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7454,
-                  "src": "1404:20:40",
+                  "scope": 7698,
+                  "src": "1404:20:41",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3117,10 +3117,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 7369,
+                    "id": 7613,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1404:7:40",
+                    "src": "1404:7:41",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3130,26 +3130,26 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1377:48:40"
+              "src": "1377:48:41"
             },
             "returnParameters": {
-              "id": 7372,
+              "id": 7616,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1551:0:40"
+              "src": "1551:0:41"
             },
-            "scope": 7455,
-            "src": "1347:641:40",
+            "scope": 7699,
+            "src": "1347:641:41",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 7456,
-        "src": "184:1806:40"
+        "scope": 7700,
+        "src": "184:1806:41"
       }
     ],
-    "src": "0:1990:40"
+    "src": "0:1990:41"
   },
   "compiler": {
     "name": "solc",
@@ -3157,7 +3157,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-01T22:46:13.279Z",
+  "updatedAt": "2019-08-02T23:07:11.155Z",
   "devdoc": {
     "author": "@ziweidream",
     "methods": {

@@ -62,7 +62,7 @@
   "bytecode": "0x6080604052336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610355806100536000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80638da5cb5b1461005157806397107d6d1461009b578063ec556889146100df578063f2fde38b14610129575b600080fd5b61005961016d565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6100dd600480360360208110156100b157600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610192565b005b6100e761022c565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61016b6004803603602081101561013f57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610252565b005b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146101e857fe5b80600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146102a857fe5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161461031d57806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505b5056fea265627a7a7230582082f448ec07492eb63be275fea67ebf342ae1ddd7da37dc3dea94651d99c2732664736f6c634300050a0032",
   "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c80638da5cb5b1461005157806397107d6d1461009b578063ec556889146100df578063f2fde38b14610129575b600080fd5b61005961016d565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6100dd600480360360208110156100b157600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610192565b005b6100e761022c565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61016b6004803603602081101561013f57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610252565b005b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146101e857fe5b80600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146102a857fe5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161461031d57806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505b5056fea265627a7a7230582082f448ec07492eb63be275fea67ebf342ae1ddd7da37dc3dea94651d99c2732664736f6c634300050a0032",
   "sourceMap": "136:1328:9:-;;;119:10:10;111:5;;:18;;;;;;;;;;;;;;;;;;136:1328:9;;;;;;",
-  "deployedSourceMap": "136:1328:9:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;136:1328:9;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;46:28:10;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;493:84:70;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;493:84:70;;;;;;;;;;;;;;;;;;;:::i;:::-;;396:22;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;222:157:10;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;222:157:10;;;;;;;;;;;;;;;;;;;:::i;:::-;;46:28;;;;;;;;;;;;;:::o;493:84:70:-;193:5:10;;;;;;;;;;;179:19;;:10;:19;;;172:27;;;;564:6:70;556:5;;:14;;;;;;;;;;;;;;;;;;493:84;:::o;396:22::-;;;;;;;;;;;;;:::o;222:157:10:-;193:5;;;;;;;;;;;179:19;;:10;:19;;;172:27;;;;328:1;308:22;;:8;:22;;;304:69;;354:8;346:5;;:16;;;;;;;;;;;;;;;;;;304:69;222:157;:::o",
+  "deployedSourceMap": "136:1328:9:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;136:1328:9;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;46:28:10;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;493:84:71;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;493:84:71;;;;;;;;;;;;;;;;;;;:::i;:::-;;396:22;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;222:157:10;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;222:157:10;;;;;;;;;;;;;;;;;;;:::i;:::-;;46:28;;;;;;;;;;;;;:::o;493:84:71:-;193:5:10;;;;;;;;;;;179:19;;:10;:19;;;172:27;;;;564:6:71;556:5;;:14;;;;;;;;;;;;;;;;;;493:84;:::o;396:22::-;;;;;;;;;;;;;:::o;222:157:10:-;193:5;;;;;;;;;;;179:19;;:10;:19;;;172:27;;;;328:1;308:22;;:8;:22;;;304:69;;354:8;346:5;;:16;;;;;;;;;;;;;;;;;;304:69;222:157;:::o",
   "source": "pragma solidity ^0.5.5;\n\nimport \"./SystemRoles.sol\";\nimport \"../modules/databases/RoleDB.sol\";\nimport \"../modules/proxy/Proxied.sol\";\n\n\ncontract Guard is Proxied, SystemRoles {\n  modifier onlySuperAdmin() {\n    assert(msg.sender != address(0));\n    require(checkRole(SUPER_ADMIN_ROLE), \"Only super admin\");\n    _;\n  }\n\n  modifier onlyAdmin() {\n    assert(msg.sender != address(0));\n    require(checkRole(ADMIN_ROLE), \"Only admin\");\n    _;\n  }\n\n  modifier onlyPlayer() {\n    assert(msg.sender != address(0));\n    require(checkRole(PLAYER_ROLE), \"Only player\");\n    _;\n  }\n\n  modifier onlyBettor() {\n    assert(msg.sender != address(0));\n    require(checkRole(BETTOR_ROLE), \"Only bettor\");\n    _;\n  }\n\n  function checkRole(string memory role) internal view returns (bool) {\n    return RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).hasRole(role, getOriginalSender());\n  }\n\n  function getOriginalSender() view internal returns(address){\n    if(msg.sender != address(proxy)) return msg.sender;\n    //Find out actual sender    \n    address sender;\n    assembly {\n        let ptr := sub(calldatasize, 20)  // Find out start position of the sender's address\n        mstore(0x20, 0)                   // Fill 32 bytes with 0\n        calldatacopy(0x2C, ptr, 20)       // Load 20 bytes of address to the end of cleared memory \n        sender := mload(0x20)             // Store address to solidity variable\n    }\n    assert(sender != address(0));\n    return sender;\n  }\n\n}\n",
   "sourcePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/authority/Guard.sol",
   "ast": {
@@ -103,7 +103,7 @@
         "id": 1561,
         "nodeType": "ImportDirective",
         "scope": 1698,
-        "sourceUnit": 13752,
+        "sourceUnit": 13996,
         "src": "53:41:9",
         "symbolAliases": [],
         "unitAlias": ""
@@ -114,7 +114,7 @@
         "id": 1562,
         "nodeType": "ImportDirective",
         "scope": 1698,
-        "sourceUnit": 19362,
+        "sourceUnit": 19637,
         "src": "95:38:9",
         "symbolAliases": [],
         "unitAlias": ""
@@ -128,10 +128,10 @@
               "id": 1563,
               "name": "Proxied",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 19361,
+              "referencedDeclaration": 19636,
               "src": "154:7:9",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Proxied_$19361",
+                "typeIdentifier": "t_contract$_Proxied_$19636",
                 "typeString": "contract Proxied"
               }
             },
@@ -161,8 +161,8 @@
         "contractDependencies": [
           1741,
           1756,
-          18837,
-          19361
+          19112,
+          19636
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -171,8 +171,8 @@
         "linearizedBaseContracts": [
           1697,
           1756,
-          19361,
-          18837,
+          19636,
+          19112,
           1741
         ],
         "name": "Guard",
@@ -207,7 +207,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "218:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -304,7 +304,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "211:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -416,10 +416,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "249:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -493,7 +493,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "355:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -590,7 +590,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "348:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -702,10 +702,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "386:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -779,7 +779,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "481:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -876,7 +876,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "474:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -988,10 +988,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "512:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1065,7 +1065,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "609:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -1162,7 +1162,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "602:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -1274,10 +1274,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "640:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1399,7 +1399,7 @@
                                 "name": "CONTRACT_NAME_ROLE_DB",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 18812,
+                                "referencedDeclaration": 19087,
                                 "src": "808:21:9",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_string_memory",
@@ -1420,10 +1420,10 @@
                                 "name": "proxy",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 19266,
+                                "referencedDeclaration": 19541,
                                 "src": "790:5:9",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_contract$_ProxyBase_$19560",
+                                  "typeIdentifier": "t_contract$_ProxyBase_$19835",
                                   "typeString": "contract ProxyBase"
                                 }
                               },
@@ -1467,10 +1467,10 @@
                           "name": "RoleDB",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 13751,
+                          "referencedDeclaration": 13995,
                           "src": "783:6:9",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_RoleDB_$13751_$",
+                            "typeIdentifier": "t_type$_t_contract$_RoleDB_$13995_$",
                             "typeString": "type(contract RoleDB)"
                           }
                         },
@@ -1484,7 +1484,7 @@
                         "nodeType": "FunctionCall",
                         "src": "783:48:9",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_RoleDB_$13751",
+                          "typeIdentifier": "t_contract$_RoleDB_$13995",
                           "typeString": "contract RoleDB"
                         }
                       },
@@ -1495,7 +1495,7 @@
                       "lValueRequested": false,
                       "memberName": "hasRole",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 13750,
+                      "referencedDeclaration": 13994,
                       "src": "783:56:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$_t_string_memory_ptr_$_t_address_$returns$_t_bool_$",
@@ -1628,7 +1628,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 19978,
+                        "referencedDeclaration": 20253,
                         "src": "943:3:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -1660,10 +1660,10 @@
                           "name": "proxy",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 19266,
+                          "referencedDeclaration": 19541,
                           "src": "965:5:9",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ProxyBase_$19560",
+                            "typeIdentifier": "t_contract$_ProxyBase_$19835",
                             "typeString": "contract ProxyBase"
                           }
                         }
@@ -1671,7 +1671,7 @@
                       "expression": {
                         "argumentTypes": [
                           {
-                            "typeIdentifier": "t_contract$_ProxyBase_$19560",
+                            "typeIdentifier": "t_contract$_ProxyBase_$19835",
                             "typeString": "contract ProxyBase"
                           }
                         ],
@@ -1721,7 +1721,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 19978,
+                        "referencedDeclaration": 20253,
                         "src": "980:3:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -1907,7 +1907,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "1409:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -2051,7 +2051,7 @@
         "id": 1561,
         "nodeType": "ImportDirective",
         "scope": 1698,
-        "sourceUnit": 13752,
+        "sourceUnit": 13996,
         "src": "53:41:9",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2062,7 +2062,7 @@
         "id": 1562,
         "nodeType": "ImportDirective",
         "scope": 1698,
-        "sourceUnit": 19362,
+        "sourceUnit": 19637,
         "src": "95:38:9",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2076,10 +2076,10 @@
               "id": 1563,
               "name": "Proxied",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 19361,
+              "referencedDeclaration": 19636,
               "src": "154:7:9",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Proxied_$19361",
+                "typeIdentifier": "t_contract$_Proxied_$19636",
                 "typeString": "contract Proxied"
               }
             },
@@ -2109,8 +2109,8 @@
         "contractDependencies": [
           1741,
           1756,
-          18837,
-          19361
+          19112,
+          19636
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -2119,8 +2119,8 @@
         "linearizedBaseContracts": [
           1697,
           1756,
-          19361,
-          18837,
+          19636,
+          19112,
           1741
         ],
         "name": "Guard",
@@ -2155,7 +2155,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "218:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -2252,7 +2252,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "211:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -2364,10 +2364,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "249:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2441,7 +2441,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "355:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -2538,7 +2538,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "348:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -2650,10 +2650,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "386:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2727,7 +2727,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "481:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -2824,7 +2824,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "474:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -2936,10 +2936,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "512:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -3013,7 +3013,7 @@
                             "name": "msg",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 19978,
+                            "referencedDeclaration": 20253,
                             "src": "609:3:9",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
@@ -3110,7 +3110,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "602:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -3222,10 +3222,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        19981,
-                        19982
+                        20256,
+                        20257
                       ],
-                      "referencedDeclaration": 19982,
+                      "referencedDeclaration": 20257,
                       "src": "640:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -3347,7 +3347,7 @@
                                 "name": "CONTRACT_NAME_ROLE_DB",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 18812,
+                                "referencedDeclaration": 19087,
                                 "src": "808:21:9",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_string_memory",
@@ -3368,10 +3368,10 @@
                                 "name": "proxy",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 19266,
+                                "referencedDeclaration": 19541,
                                 "src": "790:5:9",
                                 "typeDescriptions": {
-                                  "typeIdentifier": "t_contract$_ProxyBase_$19560",
+                                  "typeIdentifier": "t_contract$_ProxyBase_$19835",
                                   "typeString": "contract ProxyBase"
                                 }
                               },
@@ -3415,10 +3415,10 @@
                           "name": "RoleDB",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 13751,
+                          "referencedDeclaration": 13995,
                           "src": "783:6:9",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_RoleDB_$13751_$",
+                            "typeIdentifier": "t_type$_t_contract$_RoleDB_$13995_$",
                             "typeString": "type(contract RoleDB)"
                           }
                         },
@@ -3432,7 +3432,7 @@
                         "nodeType": "FunctionCall",
                         "src": "783:48:9",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_RoleDB_$13751",
+                          "typeIdentifier": "t_contract$_RoleDB_$13995",
                           "typeString": "contract RoleDB"
                         }
                       },
@@ -3443,7 +3443,7 @@
                       "lValueRequested": false,
                       "memberName": "hasRole",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 13750,
+                      "referencedDeclaration": 13994,
                       "src": "783:56:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$_t_string_memory_ptr_$_t_address_$returns$_t_bool_$",
@@ -3576,7 +3576,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 19978,
+                        "referencedDeclaration": 20253,
                         "src": "943:3:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -3608,10 +3608,10 @@
                           "name": "proxy",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 19266,
+                          "referencedDeclaration": 19541,
                           "src": "965:5:9",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_ProxyBase_$19560",
+                            "typeIdentifier": "t_contract$_ProxyBase_$19835",
                             "typeString": "contract ProxyBase"
                           }
                         }
@@ -3619,7 +3619,7 @@
                       "expression": {
                         "argumentTypes": [
                           {
-                            "typeIdentifier": "t_contract$_ProxyBase_$19560",
+                            "typeIdentifier": "t_contract$_ProxyBase_$19835",
                             "typeString": "contract ProxyBase"
                           }
                         ],
@@ -3669,7 +3669,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 19978,
+                        "referencedDeclaration": 20253,
                         "src": "980:3:9",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -3855,7 +3855,7 @@
                       "name": "assert",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 19967,
+                      "referencedDeclaration": 20242,
                       "src": "1409:6:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_assert_pure$_t_bool_$returns$__$",
@@ -3967,7 +3967,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-01T22:46:13.114Z",
+  "updatedAt": "2019-08-02T23:07:10.978Z",
   "devdoc": {
     "methods": {}
   },
