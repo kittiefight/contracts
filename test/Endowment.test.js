@@ -1,12 +1,24 @@
+/*
 const BigNumber = web3.utils.BN;
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
   .should();
+*/
+
+const BigNumber = require('bn.js');
+require('chai')
+  .use(require('chai-shallow-deep-equal'))
+  //.use(require('chai-bignumber')(BigNumber))
+  .use(require('chai-bn')(BigNumber))
+  .use(require('chai-as-promised'))
+  .should();
+
+
 
 const KFProxy = artifacts.require('KFProxy')
-const Guard = artifacts.require('Guard')
+//const Guard = artifacts.require('Guard')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB')
 const RoleDB = artifacts.require('RoleDB')
@@ -131,12 +143,12 @@ function formatDate(timestamp)
     return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
-contract('GameManager', (accounts) => {
+contract('Endowment', (accounts) => {
 
   it('deploys contracts', async () => {
     // PROXY
     proxy = await KFProxy.new()
-    guard = await Guard.new()
+    //guard = await Guard.new()
 
     // DATABASES
     genericDB = await GenericDB.new()
@@ -181,7 +193,7 @@ contract('GameManager', (accounts) => {
   })
 
   it('adds contract addresses to contract manager', async () => {
-    await proxy.addContract('Guard', guard.address)
+    //await proxy.addContract('Guard', guard.address)
     await proxy.addContract('TimeContract', dateTime.address)
     await proxy.addContract('GenericDB', genericDB.address)
     await proxy.addContract('CryptoKitties', cryptoKitties.address);
@@ -213,7 +225,7 @@ contract('GameManager', (accounts) => {
   })
 
   it('sets proxy in contracts', async () => {
-    await guard.setProxy(proxy.address);
+    //await guard.setProxy(proxy.address);
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);
     await roleDB.setProxy(proxy.address);
@@ -283,13 +295,13 @@ contract('GameManager', (accounts) => {
   it('add KTY to endowment', async () => {    
     await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT).should.be.fulfilled;
     let endowmentFund_kty = await kittieFightToken.balanceOf(endowmentFund.address); 
-    console.log('balanceOf(endowmentFund.address) = ' + endowmentFund_kty);
+    //console.log('balanceOf(endowmentFund.address) = ' + endowmentFund_kty);
   })
 
   it('send KTY to escrow from endowment', async () => {    
     await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
     let balanceKTY = await escrow.getBalanceKTY();
-    console.log(' escrow.getBalanceKTY() = ' + balanceKTY);
+    //console.log(' escrow.getBalanceKTY() = ' + balanceKTY);
     balanceKTY.toString().should.be.equal(INITIAL_KTY_ENDOWMENT.toString());
   })
 
@@ -298,7 +310,7 @@ contract('GameManager', (accounts) => {
       await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
 
       let balanceETH = await escrow.getBalanceETH();
-      console.log(' escrow.getBalanceETH() = ' + balanceETH);
+      //console.log(' escrow.getBalanceETH() = ' + balanceETH);
       balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
   })
 
@@ -331,10 +343,16 @@ contract('GameManager', (accounts) => {
     getVar.toString().should.be.equal(LISTING_FEE.toString());
 
     // this works
-    //console.log('\n==== GAME FEE: \n', 'getListingFee=', getVar.toString(), '\nLISTING_FEE=', LISTING_FEE.toString());
+    console.log('\n==== GAME FEE: \n', 'getListingFee=', getVar.toString(), '\nLISTING_FEE=', LISTING_FEE.toString());
 
     // does not work - toNumber gives "Error: Number can only safely store up to 53 bits"
     // console.log('\n==== GAME FEE: (toNumber) \n', 'getVar=',getVar.toNumber(), '\nLISTING_FEE=',LISTING_FEE.toNumber());
+
+    let listingFee_1 = parseFloat(LISTING_FEE);
+    let listingFee_2 = parseFloat(await gameVarAndFee.getListingFee());
+
+    assert.equal(listingFee_1, listingFee_2);
+
   })
 
   it('registers user to the system', async () => {
@@ -369,7 +387,7 @@ contract('GameManager', (accounts) => {
   it('endowment fund and ecsrow funds before kitty listing', async () => {  
     
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
-    preListing_ed_kth = endowmentBalance.endowmentBalanceKTY;
+    preListing_ed_kth = new BigNumber(endowmentBalance.endowmentBalanceKTY);
     preListing_ed_eth = endowmentBalance.endowmentBalanceETH;
 
     preListing_es_kth = await escrow.getBalanceKTY(); 
@@ -390,18 +408,39 @@ contract('GameManager', (accounts) => {
     console.log('\n==== FUNDS IN ENDOWMENT (pre listing):', '\n Kty=', preListing_ed_kth.toString(), '\n Eth=', preListing_ed_eth.toString());
     
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
-    let endowmentBalanceKTY = endowmentBalance.endowmentBalanceKTY;
-    let endowmentBalanceETH = endowmentBalance.endowmentBalanceETH;
+    let endowmentBalanceKTY = new BigNumber(endowmentBalance.endowmentBalanceKTY);
+    let endowmentBalanceETH = new BigNumber(endowmentBalance.endowmentBalanceETH);
     console.log('\n==== FUNDS IN ENDOWMENT (post listing):', '\n Kty=', endowmentBalanceKTY.toString(), '\n Eth=', endowmentBalanceETH.toString());
+
+    //let ed_added_kty = parseFloat(endowmentBalanceKTY) - parseFloat(preListing_ed_kth);
+    let ed_added_kty = endowmentBalanceKTY.minus(preListing_ed_kth);
+    
+
+    // since 3 listed ed_added_kty = 3 * listing fee
+    //let listingFee_3 = parseFloat(LISTING_FEE * 3);
+    //assert.equal(ed_added_kty, listingFee_3); // listing only needs kth not eth
+
+    let listingFee_3 = LISTING_FEE.multipliedBy(3);    
+    assert(listingFee_3.isEqualTo(ed_added_kty), true);
 
     // escrow
     console.log('\n==== FUNDS IN ESCROW (pre listing):', '\n Kty=', preListing_es_kth.toString(), '\n Eth=', preListing_es_eth.toString());
     
-    let postListing_es_kth = await escrow.getBalanceKTY(); 
-    let postListing_es_eth = await escrow.getBalanceETH(); 
+    let postListing_es_kth = new BigNumber(await escrow.getBalanceKTY()); 
+    let postListing_es_eth = new BigNumber(await escrow.getBalanceETH()); 
     console.log('\n==== FUNDS IN ESCROW (post listing):', '\n Kty=', postListing_es_kth.toString(), '\n Eth=', postListing_es_eth.toString());
 
+    // since kty is transafed to escrow
+    //let es_added_kty = parseFloat(postListing_es_kth) - parseFloat(preListing_es_kth);
+    let es_added_kty = postListing_es_kth.minus(preListing_es_kth);
+    assert(listingFee_3.isEqualTo(es_added_kty), true);
+    //assert.equal(es_added_kty, listingFee_3);
+
   })
+
+//let ed_added_eth = parseFloat(endowmentBalanceETH) - parseFloat(preListing_ed_eth);
+
+return
 
   var preListing_ed_kth = 0;
   var preListing_ed_eth = 0;
@@ -420,7 +459,6 @@ contract('GameManager', (accounts) => {
     console.log('\n==== FUNDS IN ENDOWMENT:', '\n Kty=', endowmentBalanceKTY.toString(), '\n Eth=', endowmentBalanceETH.toString());
 
   })
-
 
   var preGameCreation_ed_kth = 0;
   var preGameCreation_ed_eth = 0;
