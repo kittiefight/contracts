@@ -363,6 +363,20 @@ contract('GameManager', (accounts) => {
     hasRole.should.be.true;
   })
 
+  var preListing_ed_kth = 0;
+  var preListing_ed_eth = 0;
+  var preListing_es_kth = 0;
+  var preListing_es_eth = 0;
+  it('endowment fund and ecsrow funds before kitty listing', async () => {  // vikram
+    
+    let endowmentBalance = await endowmentDB.getEndowmentBalance();
+    preListing_ed_kth = endowmentBalance.endowmentBalanceKTY;
+    preListing_ed_eth = endowmentBalance.endowmentBalanceETH;
+
+    preListing_es_kth = await escrow.getBalanceKTY(); 
+    preListing_es_eth = await escrow.getBalanceETH(); 
+
+  })
 
   it('list 3 kitties to the system', async () => {
     for (let i = 1; i < 4; i++) {
@@ -371,14 +385,31 @@ contract('GameManager', (accounts) => {
     }
   })
 
-  it('check escrow fund and required funds to start one game', async () => {  // vikram
+  it('check if listing fee added to endowment fund and ecsrow funds ', async () => {  // vikram
+
+    // endowment
+    console.log('\n==== FUNDS IN ENDOWMENT (pre listing):', '\n Kty=', preListing_ed_kth.toString(), '\n Eth=', preListing_ed_eth.toString());
+    
+    let endowmentBalance = await endowmentDB.getEndowmentBalance();
+    let endowmentBalanceKTY = endowmentBalance.endowmentBalanceKTY;
+    let endowmentBalanceETH = endowmentBalance.endowmentBalanceETH;
+    console.log('\n==== FUNDS IN ENDOWMENT (post listing):', '\n Kty=', endowmentBalanceKTY.toString(), '\n Eth=', endowmentBalanceETH.toString());
+
+    // escrow
+    console.log('\n==== FUNDS IN ESCROW (pre listing):', '\n Kty=', preListing_es_kth.toString(), '\n Eth=', preListing_es_eth.toString());
+    
+    let postListing_es_kth = await escrow.getBalanceKTY(); 
+    let postListing_es_eth = await escrow.getBalanceETH(); 
+    console.log('\n==== FUNDS IN ESCROW (post listing):', '\n Kty=', postListing_es_kth.toString(), '\n Eth=', postListing_es_eth.toString());
+
+  })
+
+
+  it('check endowment fund and required funds to start one game', async () => {  // vikram
     
     let reqKtyPerGame = await gameVarAndFee.getTokensPerGame();  
     let reqEthPerGame = await gameVarAndFee.getEthPerGame();
     console.log('\n==== TokensPerGame - EthPerGame:', '\n Kty=', reqKtyPerGame.toString(), '\n Eth=', reqEthPerGame.toString());
-
-    //console.log('\n==== GAME FEE:', '\n Kty=', reqKtyPerGame.toString(), '\n Eth=', reqEthPerGame.toString());
-
 
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
     let endowmentBalanceKTY = endowmentBalance.endowmentBalanceKTY;
@@ -387,14 +418,19 @@ contract('GameManager', (accounts) => {
 
   })
 
-  
+
 
   it('list 1 more kittie to the system', async () => {
+
+    let endowmentBalance = await endowmentDB.getEndowmentBalance();
+    let endowmentBalanceKTY = endowmentBalance.endowmentBalanceKTY;
+    let endowmentBalanceETH = endowmentBalance.endowmentBalanceETH;
+    console.log('\n==== FUNDS IN ENDOWMENT before adding 4th kitty :', '\n Kty=', endowmentBalanceKTY.toString(), '\n Eth=', endowmentBalanceETH.toString());
+
+
     await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
       [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
-
-
 
   it('correctly creates 2 games', async () => {
     let newGameEvents = await gameCreation.getPastEvents("NewGame", { 
@@ -417,6 +453,15 @@ contract('GameManager', (accounts) => {
       console.log('    End Time:', formatDate(gameInfo.endTime));
       console.log('========================\n')
     })
+
+
+
+    // verify ED and Escrow status
+
+    // all listing, bets , participate fee amount should be accounted
+
+    //return;
+
 
     //Assign variable to game that is going to be played in the test
     // gameDetails = newGameEvents[newGameEvents.length -1].returnValues
