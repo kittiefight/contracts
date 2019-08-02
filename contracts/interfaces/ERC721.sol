@@ -24,4 +24,5 @@ interface ERC721 {
 
     // ERC-165 Compatibility (https://github.com/ethereum/EIPs/issues/165)
     function supportsInterface(bytes4 _interfaceID) external view returns (bool);
+
 }
