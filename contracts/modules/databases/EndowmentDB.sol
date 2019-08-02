@@ -198,6 +198,12 @@ contract EndowmentDB is Proxied {
     return true;
   }
 
+  function getEndowmentBalance() public view
+  returns (uint256 endowmentBalanceKTY, uint256 endowmentBalanceETH)  {
+    endowmentBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
+    endowmentBalanceETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+  }
+
   function createHoneypot(
     uint gameId,
     uint state,
