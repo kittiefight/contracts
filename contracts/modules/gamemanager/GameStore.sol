@@ -50,6 +50,10 @@ contract GameStore is Proxied {
         return gameSettings[gameId].distributionRates;
     }
 
+    function getKittieExpirationTime(uint gameId) public view returns(uint){
+        return  gameSettings[gameId].kittieHellExpirationTime;
+    }
+
     function getKittieRedemptionFee(uint gameId) public view returns(uint){
         return  gameSettings[gameId].redemptionFee;
     }

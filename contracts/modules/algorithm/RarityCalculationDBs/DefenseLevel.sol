@@ -1,13 +1,12 @@
 pragma solidity ^0.5.5;
 
-import "../../../authority/Owned.sol";
 import "../../../libs/SafeMath.sol";
 
 /**
  * @title This contract is responsible to set lower and upper limit of each defense level
  * @author @ziweidream
  */
-contract DefenseLevel is Owned {
+contract DefenseLevel {
     using SafeMath for uint256;
   
     struct DefenseLevelLimit {
@@ -42,7 +41,7 @@ contract DefenseLevel is Owned {
     function setDefenseLevelLimit (uint256 max, uint256 min, uint256 totalKitties)
         public // temporarily set as public just for truffle test purpose
         // internal
-        onlyOwner
+        //onlySuperAdmin
       {
       defenseLevelLimit.level5Limit = (max.sub(min)).mul(10000000).div(totalKitties);
       defenseLevelLimit.level4Limit = (max.sub(min)).mul(20000000).div(totalKitties);

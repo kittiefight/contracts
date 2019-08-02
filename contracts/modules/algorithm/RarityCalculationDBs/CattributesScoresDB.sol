@@ -1,18 +1,19 @@
 pragma solidity ^0.5.5;
 
-import "../../../authority/Owned.sol";
-
 /**
  * @title This contract is a database stroing cattributes and each cattribute's score
  * @author @ziweidream
  */
-contract CattributesScoresDB is Owned {
+contract CattributesScoresDB {
     /* This is the totoal number of all the kitties on CryptoKitties */
     uint256 totalKitties;
 
     mapping(string => uint) public CattributesScores;
 
-    function updateTotalKitties(uint256 _totalKitties) public onlyOwner {
+    function updateTotalKitties(uint256 _totalKitties)
+        public
+        //onlySuperAdmin
+    {
         totalKitties = _totalKitties;
     }
 
@@ -27,7 +28,7 @@ contract CattributesScoresDB is Owned {
     function updateCattributesScores(string memory _name, uint _score)
         public  // temporarily set as public just for truffle test purpose
         // internal
-        onlyOwner
+        //onlySuperAdmin
     {
         CattributesScores[_name] = _score;
     }

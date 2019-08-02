@@ -80,10 +80,18 @@ contract("GameVarAndFee", ([creator, randomAddress, newProxy]) => {
     });
 
     it("correctly sets multiple variable in DB using proxy", async () => {
+      let names = ['gamePrestart', 'requiredNumberMatches'];
+
+      let bytesNames = [];
+      for (i = 0; i < names.length; i++) {
+        bytesNames.push(web3.utils.asciiToHex(names[i]));
+      }
+
       let message = web3.eth.abi.encodeFunctionCall(
         GameVarAndFee.abi.find((f) => { return f.name == 'setMultipleValues'; }),
-        [['gamePrestart', 'requiredNumberMatches'], [120, 20]]
+        [bytesNames, [120, 20]]
       );
+
       await this.proxy.execute(CONTRACT_NAME_GAMEVARANDFEE, message, {
         from: creator
       }).should.be.fulfilled;

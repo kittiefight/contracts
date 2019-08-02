@@ -34,9 +34,9 @@ import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../databases/ProfileDB.sol";
 import "../../libs/SafeMath.sol";
-import '../kittieHELL/KittieHELL.sol';
+import '../kittieHELL/KittieHell.sol';
 import '../../authority/Guard.sol';
-import "../../interfaces/IKittyCore.sol";
+import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 
 contract GameManager is Proxied, Guard {
@@ -50,12 +50,10 @@ contract GameManager is Proxied, Guard {
     Forfeiter public forfeiter;
     Betting public betting;
     HitsResolve public hitsResolve;
-    ProfileDB public profileDB;
-    KittieHELL public kittieHELL;
-    IKittyCore public cryptoKitties;
+    KittieHell public kittieHELL;
     GameStore public gameStore;
  
-    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, KITTIE_HELL, CANCELLED}
+    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
     //EVENTS
     event NewSupporter(uint indexed gameId, address supporter, address indexed playerSupported);
@@ -64,7 +62,7 @@ contract GameManager is Proxied, Guard {
     event GameEnded(uint indexed gameId, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
 
     modifier onlyGamePlayer(uint gameId, address player) {
-        require(profileDB.getCivicId(player) > 0);
+        require(ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(player) > 0);
         require(gmGetterDB.isPlayer(gameId, player));
         _;
     }
@@ -82,8 +80,7 @@ contract GameManager is Proxied, Guard {
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-        profileDB = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB));
-        kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
 
@@ -150,15 +147,12 @@ contract GameManager is Proxied, Guard {
 
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
-
-        // (,,,,,,,,,uint genes) = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId); // TODO: check why it fails here
-
-        //uint genes = 621602280461119273000377613714842202937902730777750890758407393079864686;
         
         gameStore.start(gameId, player,randomNum);
-            
-        //uint defenseLevel = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes);
-        // betting.setOriginalDefenseLevel(gameId, player, defenseLevel);
+
+        // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        betting.setDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
@@ -168,9 +162,9 @@ contract GameManager is Proxied, Guard {
 
         //Both Players Hit start
         if (gameStore.didHitStart(gameId, opponentPlayer)){
-
             //Call betting to set fight map
-            betting.startGame(gameId, gameStore.getRandom(gameId, opponentPlayer), randomNum);
+            betting.startGame(gameId, randomNum, gameStore.getRandom(gameId, opponentPlayer));
+
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
             endowmentFund.updateHoneyPotState(gameId, 3);
@@ -191,7 +185,7 @@ contract GameManager is Proxied, Guard {
         //each time 1 minute before game ends
         if(gameEndTime.sub(now) <= 5) {
             //get initial jackpot, need endowment to send this when creating honeypot
-            (,uint initialEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
+            (,,uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
             uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
             if(currentJackpotEth < initialEth.mul(10)){
@@ -220,7 +214,7 @@ contract GameManager is Proxied, Guard {
         require(gameState == uint(eGameState.MAIN_GAME));
         
         address sender = getOriginalSender();
-        (, address supportedPlayer, bool payedFee) = gmGetterDB.getSupporterInfo(gameId, sender);
+        (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
 
         require(payedFee); //Needs to call participate first if false
         
@@ -259,7 +253,8 @@ contract GameManager is Proxied, Guard {
 
         if ( endTime <= now){
             gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
-            gmSetterDB.removeKittiesInGame(gameId);
+                 
+            // gmSetterDB.removeKittyStatus(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
         }
     }
@@ -291,7 +286,7 @@ contract GameManager is Proxied, Guard {
         //If there is a tie in point, define by total eth bet
         else
         {
-            (,,,uint[2] memory ethByCorner,) = gmGetterDB.getHoneypotInfo(gameId);
+            (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
             if(ethByCorner[0] > ethByCorner[0] ){
                winner = playerBlack;
                 loser = playerRed;
@@ -307,8 +302,7 @@ contract GameManager is Proxied, Guard {
             gameStore.getSecondTopBettor(gameId, winner));
 
         //Release winner's Kittie
-        // TODO: UPDATE FUNCTION NAME
-        kittieHELL.releaseKitty(gmGetterDB.getKittieInGame(gameId, winner));
+        kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
 
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser));
