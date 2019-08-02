@@ -41,73 +41,11 @@ contract EndowmentDB is Proxied {
     genericDB = _genericDB;
   }
 
-/*
-  function allocate(uint256 _eth_amountRequired, uint256 _kty_amountRequired)
-    external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    returns (bool) {
-
-    // check actual funds KTY
-    uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
-    require(actualFundsKTY >= _kty_amountRequired, ERROR_INSUFFICIENT_FUNDS);
-    
-    // decrease actual funds
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amountRequired));
-
-    // increase ingame funds
-    uint ingameFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY);
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY, ingameFundsKTY.add(_kty_amountRequired));
-
-    // check actual funds ETH
-    uint actualFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
-    require(actualFundsETH >= _eth_amountRequired, ERROR_INSUFFICIENT_FUNDS);
-    // decrease actual funds
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amountRequired));
-    // increase ingame funds
-    uint ingameFundsETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH);
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH, ingameFundsETH.add(_eth_amountRequired));
-
-    return true;
+  function getHoneyPotBalance(uint256 _gameId) public view
+  returns (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH)  {
+    honeyPotBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
+    honeyPotBalanceETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
   }
-*/
-
-/*
-  function allocateKTY(
-    uint amountRequired
-  )
-    external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    returns (bool)
-  {
-    // check actual funds
-    uint actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
-    require(actualFunds >= amountRequired, ERROR_INSUFFICIENT_FUNDS);
-    // decrease actual funds
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFunds.sub(amountRequired));
-    // increase ingame funds
-    uint ingameFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY);
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_KTY, ingameFunds.add(amountRequired));
-    return true;
-  }
-
-  function allocateETH(
-    uint amountRequired
-  )
-    external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    returns (bool)
-  {
-    // check actual funds
-    uint actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
-    require(actualFunds >= amountRequired, ERROR_INSUFFICIENT_FUNDS);
-    // decrease actual funds
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFunds.sub(amountRequired));
-    // increase ingame funds
-    uint ingameFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH);
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_INGAME_FUNDS_ETH, ingameFunds.add(amountRequired));
-    return true;
-  }
-*/
 
   function updateHoneyPotFund(
     uint256 _gameId, uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
@@ -172,11 +110,14 @@ contract EndowmentDB is Proxied {
       uint actualFundsKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
       if (deductFunds){
 
-        require(actualFundsKTY >= _kty_amount, ERROR_INSUFFICIENT_FUNDS);
+        require(actualFundsKTY >= _kty_amount,
+          'INSUFFICIENT KTY in Endowment. 1564656805056');
+
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.sub(_kty_amount));
 
       }else{ // add
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY, actualFundsKTY.add(_kty_amount));
+
       }
     }
 
@@ -185,7 +126,9 @@ contract EndowmentDB is Proxied {
 
       if (deductFunds){
 
-        require(actualFundsETH >= _eth_amount, ERROR_INSUFFICIENT_FUNDS);
+        require(actualFundsETH >= _eth_amount,
+          'INSUFFICIENT ETH in Endowment. 1564656589937');
+
         genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.sub(_eth_amount));
 
       }else{ // add
@@ -194,7 +137,7 @@ contract EndowmentDB is Proxied {
 
       }
     }
-    
+
     return true;
   }
 
@@ -259,53 +202,9 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "status")), status);
   }
 
-
-  function contributeFunds(
-    address account, uint gameId, uint ethContribution, uint ktyContribution
-  ) external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    // onlyExistingProfile(account)
-    // onlyExistingHoneypot(gameId)
-    returns (bool) {
-
-    if (ethContribution > 0) {
-      // add account into list of ETH participants of honeypot
-      // bytes32 ethContributionKey = keccak256(abi.encodePacked(gameId, TABLE_NAME_CONTRIBUTION_ETH));
-      // genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, ethContributionKey, account);
-
-      // set new balance of the honeypot of endowment fund
-      bytes32 ethTotalKey = keccak256(abi.encodePacked(gameId, "ethTotal"));
-      uint ethTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalKey);
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalKey, ethTotal.add(ethContribution));
-
-      // now set account's balance within a game in endowment fund
-      // bytes32 ethBalanceKey = keccak256(abi.encodePacked(gameId, account, "ethBalance"));
-      // uint ethBalance = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethBalanceKey);
-      // genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethBalanceKey, ethBalance.add(ethContribution));
-    }
-
-    if (ktyContribution > 0) {
-      // genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_ENDOWMENT_DB, TABLE_NAME_CONTRIBUTION_KTY, account);
-
-      // set new balance of the KTY in the endowment fund contract
-      bytes32 ktyTotalKey = keccak256(abi.encodePacked("ktyTotal"));
-      uint ktyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalKey);
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalKey, ktyTotal.add(ktyContribution));
-
-      // now set account's balance within a game in the endowment fund contract
-      // bytes32 ktyBalanceKey = keccak256(abi.encodePacked(account, "ktyBalance"));
-      // uint ktyBalance = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyBalanceKey);
-      // genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyBalanceKey, ktyBalance.add(ktyContribution));
-    }
-
-  return true;
-  }
-
-
 /**
  * @dev store the total debit by an a/c per game
  */
-  //function debitFunds(
   function setTotalDebit(
     uint _gameId, address _account, uint _eth_amount, uint _kty_amount
   ) external
