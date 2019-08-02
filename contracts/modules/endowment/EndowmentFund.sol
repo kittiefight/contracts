@@ -174,58 +174,6 @@ contract EndowmentFund is Distribution, Guard {
         // change state to dissolved
         endowmentDB.dissolveHoneypot(_gameId, uint(HoneypotState.dissolved));
 
-
-        // ingame amount adjustment
-
-        /*
-        // total in honey pot - claimed
-        (uint256 totalEthHoneyPot, uint256 totalKtyHoneyPot) = endowmentDB.getHoneypotTotal(_gameId);
-
-        // get the winners and the amount they have claimed
-        (address winner, address topBettor, address secondTopBettor) = gmGetterDB.getWinners(_gameId);
-        winner = address(uint160(winner));
-
-        (uint256 winnerETH, uint256 winnerKTY) = getWinnerShare(_gameId, address(uint160(winner)));
-        (uint256 topBettorETH, uint256 topBettorKTY) = getWinnerShare(_gameId, address(uint160(topBettor)));
-        (uint256 secondTopBettorETH, uint256 secondTopBettorKTY) = getWinnerShare(_gameId, address(uint160(secondTopBettor)));
-
-        uint256 totalETHclaimed = winnerETH.add(topBettorETH).add(secondTopBettorETH);
-        uint256 totalKTYclaimed = winnerKTY.add(topBettorKTY).add(secondTopBettorKTY);
-
-        // other supporter claims - not possible at the moment
-
-        uint restETH = totalEthHoneyPot - totalETHclaimed;
-        uint restKTY = totalKtyHoneyPot - totalKTYclaimed;
-
-        if (restETH > 0){
-            // send to whom? the honeypot tokens are already in escrow
-            // update DB. not possible at the moment as supporter info missing
-        }
-
-        if (restKTY > 0){
-            // send to whom? the honeypot tokens are already in escrow
-            // update DB. not possible at the moment as supporter info missing
-        }
-        */
-    }
-
-
-    /** @notice  Returns a fresh unique identifier.
-    *
-    * @dev the generation scheme uses three components.
-    * First, the blockhash of the previous block.
-    * Second, the deployed address.
-    * Third, the next value of the counter.
-    * This ensure that identifiers are unique across all contracts
-    * following this scheme, and that future identifiers are
-    * unpredictable.
-    *
-    * @return a 32-byte unique identifier.
-    */
-    function generatePotId() internal returns (uint potId) {
-    return uint(keccak256(
-        abi.encodePacked(blockhash(block.number - 1), address(this), ++potRequestCount)
-        ));
     }
 
     /**
@@ -236,14 +184,13 @@ contract EndowmentFund is Distribution, Guard {
         onlySuperAdmin
     {
 
-        //* save gas - not very essential
+        /*/ not very essential
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
         //*/
 
         require(_kty_amount > 0,
             "Error: _kty_amount is zero");
-        
 
         require(kittieFightToken.transfer(address(escrow), _kty_amount),
             "Error: Transfer of KTY to Escrow failed");
@@ -260,7 +207,7 @@ contract EndowmentFund is Distribution, Guard {
     function sendETHtoEscrow() external payable {
         address msgSender = getOriginalSender();
 
-        /* save gas
+        /* save gas not very essential
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
         */
@@ -288,10 +235,6 @@ contract EndowmentFund is Distribution, Guard {
             return false;
         }
 
-        // update DB
-        /*require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
-            'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');*/
-
         endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
 
         emit SentKTYtoEscrow(_sender, _kty_amount, address(escrow));
@@ -310,10 +253,6 @@ contract EndowmentFund is Distribution, Guard {
         if (!address(escrow).send(msg.value)){
             return false;
         }
-
-        // update DB
-        /*require(endowmentDB.contributeFunds(msgSender, _gameId, msg.value, 0),
-            'Error: endowmentDB.contributeFunds(msgSender, _gameId, msg.value, 0) failed');*/
 
         endowmentDB.updateHoneyPotFund(_gameId, 0, msg.value, false);
         endowmentDB.updateEndowmentFund(0, msg.value, false);
@@ -409,13 +348,11 @@ contract EndowmentFund is Distribution, Guard {
      * deploy new Endowment
      * set owner of escrow to new Endowment adrress using endowment.transferEscrowOwnership(new Endowment adrress)
      * than set the new Endowment adrress in proxy
-     */
+     * /
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
     }
-
-
-
+    */
 
 }
 
