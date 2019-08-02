@@ -910,7 +910,7 @@ contract('GameManager', (accounts) => {
     // SECOND TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
     console.log('Second Top Bettor withdrew funds? ', withdrawalState)
 
     // OTHER BETTOR CLAIMING
