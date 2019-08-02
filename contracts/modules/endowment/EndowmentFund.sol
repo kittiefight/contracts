@@ -114,6 +114,25 @@ contract EndowmentFund is Distribution, Guard {
         emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
     }
 
+    /**
+    * only for testing
+    */
+    function claim_dummy() external payable {
+        address payable msgSender = address(uint160(getOriginalSender()));
+
+        uint256 winningsETH = 1;
+        uint256 winningsKTY = 100;
+
+        if (winningsKTY > 0){
+            transferKFTfromEscrow(msgSender, winningsKTY);
+        }
+
+        if (winningsETH > 0){
+            transferETHfromEscrow(msgSender, winningsETH);
+        }
+
+    }
+
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
         (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
         return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts
