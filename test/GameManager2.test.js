@@ -250,6 +250,7 @@ contract('GameManager', (accounts) => {
     await kittieHellDB.setKittieHELL()
     await kittieHELL.initialize()
     await hitsResolve.initialize()
+    await betting.initialize()
   })
 
   it('mint some kitties for the test addresses', async () => {
@@ -469,7 +470,7 @@ contract('GameManager', (accounts) => {
       
     while(block < gameDetails.preStartTime){
       block = await dateTime.getBlockTimeStamp();
-      await(3);
+      await timeout(3);
     }
 
     let { gameId, playerRed, playerBlack } = gameDetails;
@@ -604,11 +605,13 @@ contract('GameManager', (accounts) => {
     }
   })
 
-  it('should be able to make bet', async () => {
+  it('players should be able to make bets', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.MAIN_GAME)
+
+    let betDetails;
 
     for (let i = 6; i < 18; i++) {
       // let supportedPlayer = i < 10 ? playerRed : playerBlack;
@@ -621,17 +624,32 @@ contract('GameManager', (accounts) => {
         (redBetStore.has(bettor)) ?
           redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
           redBetStore.set(bettor, betAmount)
-          console.log('\n==== NEW BET FOR RED', 'Amount:', betAmount, 'ETH, bettor:', bettor);
+          console.log('\n==== NEW BET FOR RED ====');
       } else {
         (blackBetStore.has(bettor)) ?
           blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
           blackBetStore.set(bettor, betAmount)
-          console.log('\n==== NEW BET FOR BLACK', 'Amount:', betAmount, 'ETH, bettor:', bettor);
+          console.log('\n==== NEW BET FOR BLACK ====');
       }     
       
 
       await proxy.execute('GameManager', setMessage(gameManager, 'bet',
         [gameId, randomValue()]), { from: bettor, value: web3.utils.toWei(String(betAmount)) }).should.be.fulfilled;
+
+      let betEvents = await betting.getPastEvents('BetPlaced', {
+        //filter: {bettor}, 
+        fromBlock: 0, 
+        toBlock: "latest" 
+      })
+
+      betDetails = betEvents[betEvents.length -1].returnValues;
+
+      console.log('Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
+      // console.log('Bettor:', betDetails._bettor);
+      console.log('Attack Hash:', betDetails.attackHash);
+      console.log('Attack Type:', betDetails.attackType);
+      console.log('Defense Level:', betDetails.defenseLevelSupportedPlayer);
+      console.log('Opponent Defense:', betDetails.defenseLevelOpponent);
 
       totalBetAmount  = totalBetAmount + betAmount;
       await timeout(1);
@@ -705,7 +723,7 @@ contract('GameManager', (accounts) => {
       
     while(block < gameDetails.endTime){
       block = await dateTime.getBlockTimeStamp();
-      await(1);
+      await timeout(1);
     } 
 
     let { gameId } = gameDetails;  
@@ -962,7 +980,7 @@ contract('GameManager', (accounts) => {
     
     let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty);
 
-    console.log('Resurrection Cost: ',resurrectionCost.toString(), 'KTY')
+    console.log('Resurrection Cost: ',String(web3.utils.fromWei(resurrectionCost.toString())), 'KTY')
 
     await kittieFightToken.approve(endowmentFund.address, resurrectionCost, 
       { from: loser }).should.be.fulfilled;  
