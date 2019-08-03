@@ -22,7 +22,7 @@ contract RoleDB is Proxied {
     string calldata contractName,
     string calldata role,
     address account
-  ) 
+  )
     external onlyContract(contractName)
   {
     require(account != address(0), "0x0 address!");

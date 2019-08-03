@@ -18,7 +18,7 @@ import "../databases/GMGetterDB.sol";
  * @author @panos, @ugwu, @ziweidream
  * @notice This contract is able to lock kitties forever caution is advised
  */
-contract KittieHELL is BasicControls, Proxied, Guard {
+contract KittieHell is BasicControls, Proxied, Guard {
 
     using SafeMath for uint256;
 
@@ -75,7 +75,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
 
     function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
         public
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GM_SETTER_DB)
         onlyOwnedKitty(_kittyID)
         onlyNotKilledKitty(_kittyID)
     {
@@ -137,11 +137,8 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     onlyOwnedKitty(_kittyID)
     onlyNotGhostKitty(_kittyID)
     returns(uint) {
-        // kittieRedemptionFee is temporarily hardcoded until gameStore.sol is further developed to
-        // be able to return a valid number instead of 0
         uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
         return gameStore.getKittieRedemptionFee(gameId);
-	    // return block.timestamp.sub(kitties[_kittyID].deadAt).mul(kittieRedemptionFee);
 	}
 
      /**

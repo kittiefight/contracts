@@ -30,7 +30,6 @@ import "../../GameVarAndFee.sol";
 import "../endowment/EndowmentFund.sol";
 import "./Scheduler.sol";
 import "../../libs/SafeMath.sol";
-import '../kittieHELL/KittieHELL.sol';
 import '../../authority/Guard.sol';
 import "../../interfaces/IKittyCore.sol";
 import "./GameStore.sol";
@@ -46,8 +45,6 @@ contract GameCreation is Proxied, Guard {
     Scheduler public scheduler;
     IKittyCore public cryptoKitties;
     GameStore public gameStore;
- 
-    
 
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);

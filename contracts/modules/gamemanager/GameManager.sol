@@ -34,7 +34,7 @@ import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../databases/ProfileDB.sol";
 import "../../libs/SafeMath.sol";
-import '../kittieHELL/KittieHELL.sol';
+import '../kittieHELL/KittieHell.sol';
 import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
@@ -50,7 +50,7 @@ contract GameManager is Proxied, Guard {
     Forfeiter public forfeiter;
     Betting public betting;
     HitsResolve public hitsResolve;
-    KittieHELL public kittieHELL;
+    KittieHell public kittieHELL;
     GameStore public gameStore;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
@@ -80,7 +80,7 @@ contract GameManager is Proxied, Guard {
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
-        kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
 
@@ -185,7 +185,7 @@ contract GameManager is Proxied, Guard {
         //each time 1 minute before game ends
         if(gameEndTime.sub(now) <= 5) {
             //get initial jackpot, need endowment to send this when creating honeypot
-            (,uint initialEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
+            (,,uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
             uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
 
             if(currentJackpotEth < initialEth.mul(10)){
@@ -253,8 +253,8 @@ contract GameManager is Proxied, Guard {
 
         if ( endTime <= now){
             gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
-            //KittieHell needs kittie gameId
-            //gmSetterDB.removeKittiesInGame(gameId);
+                 
+            // gmSetterDB.removeKittyStatus(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
         }
     }
@@ -286,7 +286,7 @@ contract GameManager is Proxied, Guard {
         //If there is a tie in point, define by total eth bet
         else
         {
-            (,,,uint[2] memory ethByCorner,) = gmGetterDB.getHoneypotInfo(gameId);
+            (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
             if(ethByCorner[0] > ethByCorner[0] ){
                winner = playerBlack;
                 loser = playerRed;
