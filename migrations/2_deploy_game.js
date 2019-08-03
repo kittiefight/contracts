@@ -18,10 +18,10 @@ const Register = artifacts.require("Register");
 const EndowmentFund = artifacts.require("EndowmentFund");
 const EndowmentDB = artifacts.require("EndowmentDB");
 const Escrow = artifacts.require("Escrow");
-const KittieHELL = artifacts.require("KittieHELL");
+const KittieHell = artifacts.require("KittieHell");
 const KittieHellDB = artifacts.require("KittieHellDB");
 const SuperDaoToken = artifacts.require("MockERC20Token");
-const KittieFightToken = artifacts.require("MockERC20Token");
+const KittieFightToken = artifacts.require("KittieFightToken");
 const CryptoKitties = artifacts.require("MockERC721Token");
 const CronJob = artifacts.require("CronJob");
 const GuardImplementor = artifacts.require("GuardImplementor");
@@ -64,7 +64,7 @@ module.exports = (deployer, network, accounts) => {
   deployer.deploy(HitsResolve);
   deployer.deploy(Scheduler);
   deployer.deploy(EndowmentFund);
-  deployer.deploy(KittieHELL);
+  deployer.deploy(KittieHell);
   deployer.deploy(Escrow);
   deployer
     .deploy(RarityCalculator, { from: accounts[0] })

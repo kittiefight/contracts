@@ -25,7 +25,7 @@ const jRegister = require('../build/contracts/Register.json')
 const jEndowmentFund = require('../build/contracts/EndowmentFund.json')
 const jEndowmentDB = require('../build/contracts/EndowmentDB.json')
 const jEscrow = require('../build/contracts/Escrow.json')
-const jKittieHELL = require('../build/contracts/KittieHELL.json')
+const jKittieHell = require('../build/contracts/KittieHell.json')
 const jKittieHellDB = require('../build/contracts/KittieHellDB.json')
 const jCronJob = require('../build/contracts/CronJob.json')
 const jFreezeInfo = require('../build/contracts/FreezeInfo.json')
@@ -52,7 +52,7 @@ const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
 const Escrow = artifacts.require('Escrow')
-const KittieHELL = artifacts.require('KittieHell')
+const KittieHell = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('KittieFightToken');
@@ -197,7 +197,7 @@ contract('GameManager', (accounts) => {
     // rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
     // // rarityCalculator = await RarityCalculator.new()
     // endowmentFund = await EndowmentFund.new()
-    // kittieHELL = await KittieHELL.new()
+    // kittieHell = await KittieHell.new()
 
     // //ESCROW
     // escrow = await Escrow.new()
@@ -228,7 +228,7 @@ contract('GameManager', (accounts) => {
     hitsResolve = await HitsResolve.at(jHitsResolve.networks["999"].address);
     rarityCalculator = await RarityCalculator.at(jRarityCalculator.networks["999"].address);
     endowmentFund = await EndowmentFund.at(jEndowmentFund.networks["999"].address);
-    kittieHELL = await KittieHELL.at(jKittieHELL.networks["999"].address);
+    kittieHell = await KittieHell.at(jKittieHell.networks["999"].address);
     escrow = await Escrow.at(jEscrow.networks["999"].address);
 
 
@@ -261,7 +261,7 @@ contract('GameManager', (accounts) => {
     await proxy.addContract('CronJob', cronJob.address)
     await proxy.addContract('FreezeInfo', freezeInfo.address);
     await proxy.addContract('CronJobTarget', cronJobTarget.address);
-    await proxy.addContract('KittieHell', kittieHELL.address)
+    await proxy.addContract('KittieHell', kittieHell.address)
     await proxy.addContract('KittieHellDB', kittieHellDB.address)
     
 
@@ -286,7 +286,7 @@ contract('GameManager', (accounts) => {
     await gameStore.setProxy(proxy.address)
     await gameCreation.setProxy(proxy.address)
     await cronJob.setProxy(proxy.address)
-    await kittieHELL.setProxy(proxy.address)
+    await kittieHell.setProxy(proxy.address)
     await kittieHellDB.setProxy(proxy.address)
     await cronJobTarget.setProxy(proxy.address);
     await freezeInfo.setProxy(proxy.address);
@@ -306,7 +306,7 @@ contract('GameManager', (accounts) => {
     await endowmentFund.initialize()
     await endowmentFund.initUpgradeEscrow(escrow.address)
     await kittieHellDB.setKittieHELL()
-    await kittieHELL.initialize()
+    await kittieHell.initialize()
     await hitsResolve.initialize()
   })
 
@@ -318,7 +318,7 @@ contract('GameManager', (accounts) => {
 
   it('approve transfer operation', async () => {
     for (let i = 1; i < 5; i++) {
-      await cryptoKitties.approve(kittieHELL.address, kitties[i], { from: accounts[i] }).should.be.fulfilled;
+      await cryptoKitties.approve(kittieHell.address, kitties[i], { from: accounts[i] }).should.be.fulfilled;
     }
   })
 
@@ -623,10 +623,10 @@ contract('GameManager', (accounts) => {
 
     //Red Kitty
     let owner = await cryptoKitties.ownerOf(kittieRed);
-    owner.should.be.equal(kittieHELL.address)
+    owner.should.be.equal(kittieHell.address)
     //Black kitty
     owner = await cryptoKitties.ownerOf(kittieBlack);
-    owner.should.be.equal(kittieHELL.address)
+    owner.should.be.equal(kittieHell.address)
   })
 
   it('escrow contract should have KTY funds from fees', async () => {
@@ -1004,7 +1004,7 @@ contract('GameManager', (accounts) => {
     gameDetails.loserKitty = loserKitty;
 
     //Loser Kittie Dead
-    let isKittyDead = await kittieHELL.isKittyDead(loserKitty);
+    let isKittyDead = await kittieHell.isKittyDead(loserKitty);
     isKittyDead.should.be.true;
 
     winnerOwner = await cryptoKitties.ownerOf(winnerKitty);
@@ -1018,14 +1018,14 @@ contract('GameManager', (accounts) => {
     
     let { loserKitty, loser } = gameDetails; 
     
-    let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty);
+    let resurrectionCost = await kittieHell.getResurrectionCost(loserKitty);
 
     console.log('Resurrection Cost: ',resurrectionCost.toString(), 'KTY')
 
     await kittieFightToken.approve(endowmentFund.address, resurrectionCost, 
       { from: loser }).should.be.fulfilled;  
 
-    await proxy.execute('KittieHell', setMessage(kittieHELL, 'payForResurrection',
+    await proxy.execute('KittieHell', setMessage(kittieHell, 'payForResurrection',
       [loserKitty]), { from: loser }).should.be.fulfilled;
 
     let owner = await cryptoKitties.ownerOf(loserKitty)
