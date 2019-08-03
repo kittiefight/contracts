@@ -7,115 +7,24 @@ chai.use(chaiAsPromised);
 const Proxy = artifacts.require('KFProxy')
 const HitsResolve = artifacts.require('HitsResolve')
 const Betting = artifacts.require('Betting')
-//const FreezeInfo = artifacts.require('FreezeInfo')
-//const GameManager = artifacts.require('GameManager')
-//const GenericDB = artifacts.require('GenericDB')
-//const RoleDB = artifacts.require('RoleDB')
-//const Register = artifacts.require('Register')
-//const ProfileDB = artifacts.require('ProfileDB')
-//const GMSetterDB = artifacts.require('GMSetterDB')
-//const GMGetterDB = artifacts.require('GMGetterDB')
-//const EndowmentFund = artifacts.require('EndowmentFund')
-//const EndowmentDB = artifacts.require('EndowmentDB')
-//const Forfeiter = artifacts.require('Forfeiter')
-//const KittieHELL = artifacts.require('KittieHell')
-//const GameStore = artifacts.require('GameStore')
-//const CryptoKitties = artifacts.require('MockERC721Token')
-//const KittieFightToken = artifacts.require('MockERC20Token')
-//const SuperDaoToken = artifacts.require('MockERC20Token')
-//const GameVarAndFee = artifacts.require('GameVarAndFee')
-//const CronJob = artifacts.require('CronJob');
-//const CONTRACT_NAME_GAMEMANAGER = 'GameManager'
-//const CONTRACT_NAME_REGISTER = 'Register'
 
 let ProxyInst
 let HitsResolveInst
 let BettingInst
-//let FreezeInfoInst
-//let GameManagerInst
-//let GenericDBinst
-//let RoleDBinst
-//let RegisterInst
-//let ProfileDBinst
-//let GMSetterDBinst
-//let GMGetterDBinst
-//let EndowmentFundInst
-//let EndowmentDBinst
-//let ForfeiterInst
-//let KittieHELLinst
-//let GameStoreinst
-//let GameVarAndFeeInst
-//let CronJobInst
-//let cryptoKitties
-//let kittieFightToken
-//let superDaoToken
 
 before(async () => {
     ProxyInst = await Proxy.new()
     HitsResolveInst = await HitsResolve.new()
     BettingInst = await Betting.new()
-    //FreezeInfoInst = await FreezeInfo.new()
-    //GameManagerInst = await GameManager.new()
-    //GenericDBinst = await GenericDB.new()
-    //RoleDBinst = await RoleDB.new(GenericDBinst.address)
-    //RegisterInst = await Register.new()
-    //ProfileDBinst = await ProfileDB.new(GenericDBinst.address)
-    //GMSetterDBinst = await GMSetterDB.new(GenericDBinst.address)
-    //GMGetterDBinst = await GMGetterDB.new(GenericDBinst.address)
-    //EndowmentFundInst = await EndowmentFund.new()
-    //EndowmentDBinst = await EndowmentDB.new(GenericDBinst.address)
-    //ForfeiterInst = await Forfeiter.new()
-    //KittieHELLinst = await KittieHELL.new()
-    //GameStoreinst = await GameStore.new()
-    //GameVarAndFeeInst = await GameVarAndFee.new(GenericDBinst.address)
-    //CronJobInst = await CronJob.new(GMGetterDBinst.address)
-    //cryptoKitties = await CryptoKitties.new()
-    //kittieFightToken = await KittieFightToken.new(100000)
-    //superDaoToken = await SuperDaoToken.new(100000)
 
     await ProxyInst.addContract("HitsResolve", HitsResolveInst.address)
     await ProxyInst.addContract("Betting", BettingInst.address)
-    /*await ProxyInst.addContract('FreezeInfo', FreezeInfoInst.address)
-    await ProxyInst.addContract("GameManager", GameManagerInst.address)
-    await ProxyInst.addContract("GenericDB", GenericDBinst.address)
-    await ProxyInst.addContract("RoleDB", RoleDBinst.address)
-    await ProxyInst.addContract("Register", RegisterInst.address)
-    await ProxyInst.addContract("ProfileDB", ProfileDBinst.address)
-    await ProxyInst.addContract("GMSetterDB", GMSetterDBinst.address)
-    await ProxyInst.addContract("GMGetterDB", GMGetterDBinst.address)
-    await ProxyInst.addContract("EndowmentFund", EndowmentFundInst.address)
-    await ProxyInst.addContract("EndowmentDB", EndowmentDBinst.address)
-    await ProxyInst.addContract("Forfeiter", ForfeiterInst.address)
-    await ProxyInst.addContract("KittieHell", KittieHELLinst.address)
-    await ProxyInst.addContract("GameStore", GameManagerInst.address)
-    await ProxyInst.addContract("GameVarAndFee", GameVarAndFeeInst.address)
-    await ProxyInst.addContract("CronJob", CronJobInst.address)
-    await ProxyInst.addContract("CryptoKitties", cryptoKitties.address)
-    await ProxyInst.addContract("KittieFightToken", kittieFightToken.address)
-    await ProxyInst.addContract("SuperDAOToken", superDaoToken.address)*/
   
     await BettingInst.setProxy(ProxyInst.address)
     await HitsResolveInst.setProxy(ProxyInst.address)
-  //  await FreezeInfoInst.setProxy(ProxyInst.address)
-  //  await GameManagerInst.setProxy(ProxyInst.address)
-  //  await GenericDBinst.setProxy(ProxyInst.address)
-  //  await RoleDBinst.setProxy(ProxyInst.address)
-  //  await RegisterInst.setProxy(ProxyInst.address)
-  //  await ProfileDBinst.setProxy(ProxyInst.address)
-  //  await GMSetterDBinst.setProxy(ProxyInst.address)
-  //  await GMGetterDBinst.setProxy(ProxyInst.address)
-  //  await EndowmentFundInst.setProxy(ProxyInst.address)
-  //  await EndowmentDBinst.setProxy(ProxyInst.address)
-  //  await ForfeiterInst.setProxy(ProxyInst.address)
-  //  await KittieHELLinst.setProxy(ProxyInst.address)
-  //  await GameStoreinst.setProxy(ProxyInst.address)
-  //  await GameVarAndFeeInst.setProxy(ProxyInst.address)
-  //  await CronJobInst.setProxy(ProxyInst.address) 
-
+  
     await HitsResolveInst.initialize()
-   // await GameManagerInst.initialize()
-   // await RegisterInst.initialize()
-   // await GMSetterDBinst.initialize()
+
 })
 
 contract('HitsResolve', (accounts) => {
@@ -135,26 +44,6 @@ contract('HitsResolve', (accounts) => {
 })
 
 it('is able to calculate the most current random variable', async () => {
-  /*let messageBettor = web3.eth.abi.encodeFunctionCall(
-    RegisterInst.abi.find(f => {
-      return f.name == 'register'
-    }),
-    []
-  )
-  await ProxyInst.execute(CONTRACT_NAME_REGISTER, messageBettor, {
-    from: accounts[0]
-  })
-
-  let arg1 = 1
-  let arg2 = 88 
-  let message = web3.eth.abi.encodeFunctionCall(
-    GameManagerInst.abi.find(f => {
-      return f.name == 'bet'
-    }),
-    [arg1, arg2]
-  )
-  await ProxyInst.execute(CONTRACT_NAME_GAMEMANAGER, message) */
-
   const res = await HitsResolveInst.calculateCurrentRandom.call(1, 88)
   const mostCurrentRandom = res.toNumber()
   assert.isNumber(mostCurrentRandom)
