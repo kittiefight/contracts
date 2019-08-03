@@ -1,12 +1,15 @@
 pragma solidity ^0.5.5;
 
+import "../../proxy/Proxied.sol";
+import "../../../authority/Guard.sol";
+
 /**
  * @title This contract is a database stroing a cryptokittie's gene in binary
  * and its correspoinding kai notation
  * @author @ziweidream
  */
 
-contract KaiValueDB {
+contract KaiValueDB is Proxied, Guard {
     
      mapping(string => string) public kaiValue;
 
@@ -17,7 +20,7 @@ contract KaiValueDB {
      function fillKaiValue()
         public // temporarily set as public just for truffle test purpose
         //internal
-        //onlySuperAdmin
+        onlySuperAdmin
       {
         kaiValue['00000'] = '1';
         kaiValue['00001'] = '2';

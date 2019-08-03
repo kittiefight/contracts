@@ -1,14 +1,16 @@
 pragma solidity ^0.5.5;
 
 import "../../../libs/SafeMath.sol";
+import "../../proxy/Proxied.sol";
+import "../../../authority/Guard.sol";
 
 /**
  * @title This contract is responsible to set lower and upper limit of each defense level
  * @author @ziweidream
  */
-contract DefenseLevel {
+contract DefenseLevel is Proxied, Guard {
     using SafeMath for uint256;
-  
+
     struct DefenseLevelLimit {
         uint256 level1Limit;
         uint256 level2Limit;
@@ -41,7 +43,7 @@ contract DefenseLevel {
     function setDefenseLevelLimit (uint256 max, uint256 min, uint256 totalKitties)
         public // temporarily set as public just for truffle test purpose
         // internal
-        //onlySuperAdmin
+        onlySuperAdmin
       {
       defenseLevelLimit.level5Limit = (max.sub(min)).mul(10000000).div(totalKitties);
       defenseLevelLimit.level4Limit = (max.sub(min)).mul(20000000).div(totalKitties);
