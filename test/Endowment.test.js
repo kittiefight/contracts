@@ -362,17 +362,17 @@ contract('Endowment', (accounts) => {
     hasRole.should.be.true;
   })
 
+  var preListing_ed_kty = 0;
   var preListing_ed_eth = 0;
-  var preListing_ed_eth = 0;
-  var preListing_es_eth = 0;
+  var preListing_es_kty = 0;
   var preListing_es_eth = 0;
   it('endowment fund and ecsrow funds before kitty listing', async () => {  
     
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
-    preListing_ed_eth = endowmentBalance.endowmentBalanceKTY;
+    preListing_ed_kty = endowmentBalance.endowmentBalanceKTY;
     preListing_ed_eth = endowmentBalance.endowmentBalanceETH;
 
-    preListing_es_eth = await escrow.getBalanceKTY(); 
+    preListing_es_kty = await escrow.getBalanceKTY(); 
     preListing_es_eth = await escrow.getBalanceETH(); 
 
   })
@@ -387,12 +387,16 @@ contract('Endowment', (accounts) => {
   it('check if listing fee added to endowment fund and ecsrow funds', async () => {  
 
     // endowment
-    console.log('\n==== FUNDS IN ENDOWMENT (pre listing):', '\n Kty=', preListing_ed_eth.toString(), '\n Eth=', preListing_ed_eth.toString());
+    console.log('\n==== FUNDS IN ENDOWMENT (pre listing):', 
+                '\n Kty=', preListing_ed_eth.toString(), 
+                '\n Eth=', preListing_ed_eth.toString());
     
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
     let endowmentBalanceKTY = endowmentBalance.endowmentBalanceKTY;
     let endowmentBalanceETH = endowmentBalance.endowmentBalanceETH;
-    console.log('\n==== FUNDS IN ENDOWMENT (post listing):', '\n Kty=', endowmentBalanceKTY.toString(), '\n Eth=', endowmentBalanceETH.toString());
+    console.log('\n==== FUNDS IN ENDOWMENT (post listing):', 
+                '\n Kty=', endowmentBalanceKTY.toString(), 
+                '\n Eth=', endowmentBalanceETH.toString());
 
     let ed_added_kty = endowmentBalanceKTY.sub(preListing_ed_eth);
 
@@ -401,33 +405,36 @@ contract('Endowment', (accounts) => {
     listingFee_3.should.be.a.bignumber.that.equals(ed_added_kty);
 
     // escrow
-    console.log('\n==== FUNDS IN ESCROW (pre listing):', '\n Kty=', preListing_es_eth.toString(), '\n Eth=', preListing_es_eth.toString());
+    console.log('\n==== FUNDS IN ESCROW (pre listing):', 
+                '\n Kty=', preListing_es_kty.toString(), 
+                '\n Eth=', preListing_es_eth.toString());
     
-    let postListing_es_eth = await escrow.getBalanceKTY(); 
+    let postListing_es_kty = await escrow.getBalanceKTY(); 
     let postListing_es_eth = await escrow.getBalanceETH(); 
-    console.log('\n==== FUNDS IN ESCROW (post listing):', '\n Kty=', postListing_es_eth.toString(), '\n Eth=', postListing_es_eth.toString());
+    console.log('\n==== FUNDS IN ESCROW (post listing):', 
+                '\n Kty=', postListing_es_eth.toString(), 
+                '\n Eth=', postListing_es_eth.toString());
 
     // since kty is transafed to escrow
-    let es_added_kty = postListing_es_eth.sub(preListing_es_eth);
+    let es_added_kty = postListing_es_kty.sub(preListing_es_kty);
     listingFee_3.should.be.a.bignumber.that.equals(es_added_kty);
 
   })
-
-  var preListing_ed_eth = 0;
-  var preListing_ed_eth = 0;
-  var preListing_es_eth = 0;
-  var preListing_es_eth = 0;
 
   it('check if endowment fund has required funds to start game', async () => {  
     
     let reqKtyPerGame = await gameVarAndFee.getTokensPerGame();  
     let reqEthPerGame = await gameVarAndFee.getEthPerGame();
-    console.log('\n==== TokensPerGame - EthPerGame:', '\n Kty=', reqKtyPerGame.toString(), '\n Eth=', reqEthPerGame.toString());
+    console.log('\n==== TokensPerGame - EthPerGame:', 
+                '\n Kty=', reqKtyPerGame.toString(), 
+                '\n Eth=', reqEthPerGame.toString());
 
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
     let endowmentBalanceKTY = endowmentBalance.endowmentBalanceKTY;
     let endowmentBalanceETH = endowmentBalance.endowmentBalanceETH;
-    console.log('\n==== FUNDS IN ENDOWMENT:', '\n Kty=', endowmentBalanceKTY.toString(), '\n Eth=', endowmentBalanceETH.toString());
+    console.log('\n==== FUNDS IN ENDOWMENT:', 
+                '\n Kty=', endowmentBalanceKTY.toString(), 
+                '\n Eth=', endowmentBalanceETH.toString());
 
     endowmentBalanceKTY.should.be.a.bignumber.that.gte(reqKtyPerGame);
     endowmentBalanceETH.should.be.a.bignumber.that.gte(reqEthPerGame);
@@ -440,26 +447,32 @@ contract('Endowment', (accounts) => {
       [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
+  var pre_ed_kty = 0;
+  var pre_ed_eth = 0;
+  var pre_es_kty = 0;
+  var pre_es_eth = 0;
 
-  it('Check honeypot, endowment funds after game creation', async () => {
+  it('Status of endowment, escrow BEFORE game creation', async () => {
 
-    var preGameCreation_ed_eth = 0;
-    var preGameCreation_ed_eth = 0;
-    var preGameCreation_es_eth = 0;
-    var preGameCreation_es_eth = 0;
 
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
-    preGameCreation_ed_eth = endowmentBalance.endowmentBalanceKTY;
-    preGameCreation_ed_eth = endowmentBalance.endowmentBalanceETH;
+    pre_ed_kty = endowmentBalance.endowmentBalanceKTY;
+    pre_ed_eth = endowmentBalance.endowmentBalanceETH;
     console.log('\n==== FUNDS IN ENDOWMENT before creating game :', 
-                '\n Kty=', preGameCreation_ed_eth.toString(), 
-                '\n Eth=', preGameCreation_ed_eth.toString());
+                '\n Kty=', pre_ed_kty.toString(), 
+                '\n Eth=', pre_ed_eth.toString());
 
-    preGameCreation_es_eth = await escrow.getBalanceKTY(); 
-    preGameCreation_es_eth = await escrow.getBalanceETH(); 
+    pre_es_kty = await escrow.getBalanceKTY(); 
+    pre_es_eth = await escrow.getBalanceETH(); 
     console.log('\n==== FUNDS IN ESCROW before creating game :', 
-                '\n Kty=', preGameCreation_es_eth.toString(), 
-                '\n Eth=', preGameCreation_es_eth.toString());
+                '\n Kty=', pre_es_kty.toString(), 
+                '\n Eth=', pre_es_eth.toString());
+  })
+
+  var hp_total_kty = 0;
+  var hp_total_eth = 0;
+  var counter = 0;
+  it('Create Game', async () => {
 
     // to create honeypot
     let kty_required_forNewGame = await gameVarAndFee.getTokensPerGame();
@@ -469,25 +482,12 @@ contract('Endowment', (accounts) => {
       fromBlock: 0, 
       toBlock: "latest" 
     });
-    // assert.equal(newGameEvents.length, 2);
-
-    let honeyPotBalance, honeyPotBalanceKTY, honeyPotBalanceETH;
-    let endowmentBalance, post_ed_eth, post_ed_eth, ed_used_eth, ed_used_eth
-    let es_eth, es_eth, es_eth_diff
-    let counter = 0;
-    let ed_eth_deducted, ed_eth_deducted;
 
     newGameEvents.map(async (e) => {
       let gameInfo = await getterDB.getGameTimes(e.returnValues.gameId);
       counter++;
       console.log('\n==== NEW GAME CREATED ===');
       console.log('    GameId ', e.returnValues.gameId)
-      /*console.log('    Red Fighter ', e.returnValues.kittieRed)
-      console.log('    Black Fighter ', e.returnValues.kittieBlack)
-      console.log('    Start Time ', formatDate(e.returnValues.gameStartTime))
-      console.log('    Prestart Time:', formatDate(gameInfo.preStartTime));
-      console.log('    End Time:', formatDate(gameInfo.endTime));
-      console.log('========================\n')*/
 
       // honeypot fund
       honeyPotBalance = await endowmentDB.getHoneyPotBalance(e.returnValues.gameId);
@@ -501,49 +501,56 @@ contract('Endowment', (accounts) => {
       honeyPotBalanceKTY.should.be.a.bignumber.that.eq(kty_required_forNewGame);
       honeyPotBalanceETH.should.be.a.bignumber.that.eq(eth_required_forNewGame);
 
-      //await timeout(1);
-
-      //  endowment
-      endowmentBalance = await endowmentDB.getEndowmentBalance();
-      post_ed_eth = endowmentBalance.endowmentBalanceKTY;
-      post_ed_eth = endowmentBalance.endowmentBalanceETH;
-      console.log('\n==== FUNDS IN ENDOWMENT post creation of GameId='+e.returnValues.gameId, 
-                  '\n Kty=', post_ed_eth.toString(),
-                  '\n Eth=', post_ed_eth.toString());
-
-      // honeypot amount is deducted from endowment fund
-      ed_used_eth = post_ed_eth.sub(pre_ed_eth);
-      ed_used_eth.should.be.a.bignumber.that.eq(kty_required_forNewGame.mul(new BigNumber(counter)));
-
-        // eth
-      ed_used_eth = post_ed_eth.sub(pre_ed_eth);   
-      ed_eth_deducted.should.be.a.bignumber.that.eq(eth_required_forNewGame.mul(new BigNumber(counter)));
-
-      //await timeout(1);
-
-      // escrow status: increase of listig fee kty of 1 kitty 
-      es_eth = await escrow.getBalanceKTY(); 
-      es_eth = await escrow.getBalanceETH(); 
-      console.log('\n==== FUNDS IN ESCROW post creation of GameId='+e.returnValues.gameId, '\n Kty=', es_eth.toString(), '\n Eth=', es_eth.toString());
-      
-      es_eth_diff = es_eth.sub(preGameCreation_es_eth);
-      es_eth_diff.should.be.a.bignumber.that.eq(LISTING_FEE);
-
-      //await timeout(1); 
+      hp_total_kty = new BigNumber(hp_total_kty).add(honeyPotBalanceKTY);
+      hp_total_eth = new BigNumber(hp_total_eth).add(honeyPotBalanceETH);
 
     })
-
-
 
     //Assign variable to game that is going to be played in the test
     // gameDetails = newGameEvents[newGameEvents.length -1].returnValues
     gameDetails = newGameEvents[0].returnValues
 
     let gameTimes = await getterDB.getGameTimes(gameDetails.gameId);
-
     gameDetails.endTime = gameTimes.endTime.toNumber();
-
     gameDetails.preStartTime = gameTimes.preStartTime.toNumber();
+  })
+
+  // Post game creation //
+  it('Status of endowment, escrow before POST game creation', async () => {
+
+      //  endowment
+      endowmentBalance = await endowmentDB.getEndowmentBalance();
+      let post_ed_kty = endowmentBalance.endowmentBalanceKTY;
+      let post_ed_eth = endowmentBalance.endowmentBalanceETH;
+      let ed_kty_diff = post_ed_kty.sub(pre_ed_kty);      
+      let ed_eth_diff = post_ed_eth.sub(pre_ed_eth);
+      
+      let kty_used_in_game = kty_required_forNewGame.mul(new BigNumber(counter));
+      let eth_used_in_game = eth_required_forNewGame.mul(new BigNumber(counter));
+  
+      console.log('\n==== FUNDS IN ENDOWMENT post creation of Game', 
+                  '\n Kty=', post_ed_kty.toString(),
+                  '\n Eth=', post_ed_eth.toString(),
+                  '\n Kty used from Endowment=', ed_kty_diff.toString(),
+                  '\n Kty Game needed=', kty_used_in_game.toString(),
+                  '\n Eth used from Endowment=', ed_kty_diff.toString(),
+                  '\n Eth Game needed=', eth_used_in_game.toString(),
+                  );
+
+      // honeypot amount is deducted from endowment fund
+      ed_kty_diff.should.be.a.bignumber.that.eq(kty_used_in_game);
+      ed_eth_diff.should.be.a.bignumber.that.eq(eth_used_in_game);
+
+      // escrow status: 
+      post_es_kty = await escrow.getBalanceKTY(); 
+      post_es_eth = await escrow.getBalanceETH(); 
+      console.log('\n==== FUNDS IN ESCROW post creation of GameId='+e.returnValues.gameId, 
+                  '\n Kty=', post_es_kty.toString(), 
+                  '\n Eth=', post_es_eth.toString());
+      
+      es_eth_diff = post_es_eth.sub(pre_es_eth); 
+      es_eth_diff.should.be.a.bignumber.that.eq(0); // as escrow is not used
+
   })
 
   // claim check
