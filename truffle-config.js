@@ -67,7 +67,7 @@ module.exports = {
       gas: 0xfffffffffff, // <-- Use this high gas value
       gasPrice: 0x01 // <-- Use this low gas price
     }
-  }/*,
+  },
   mocha: {
     enableTimeouts: false,
     useColors: true,
@@ -76,5 +76,5 @@ module.exports = {
       currency: "USD",
       gasPrice: 21
     }
-  }*/
+  }
 };
