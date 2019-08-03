@@ -443,6 +443,7 @@ contract Betting is Proxied, Guard {
     * depending on the effect of each bet placed by the given corner in a game with a specific gameId
     * @dev this function can only be called by the GameManager contract
     * @param _gameId the gameID of the game
+    * @param _bettor the address of the bettor who placed the bet
     * @param _lastBetAmount the last bet ether amount placed by the supported player in the game
     * @param _supportedPlayer the address of the supported player in the game
     * @param _opponentPlayer the address of the opponent player in the game
@@ -453,26 +454,18 @@ contract Betting is Proxied, Guard {
     */
     function bet(
         uint256 _gameId,
+        address _bettor,
         uint256 _lastBetAmount,
         address _supportedPlayer,
         address _opponentPlayer,
         uint256 _randomNum)
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
-        returns (
-            string memory attackType,
-            bytes32 attackHash,
-            uint256 defenseLevelSupportedPlayer,
-            uint256 defenseLevelOpponent
-        )
     {
-        uint256 index;
+        (string memory attackType, bytes32 attackHash, uint256 index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
 
-        (attackType, attackHash, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
+        uint256 defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
 
-        defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
-
-        uint numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
+        uint256 numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
 
         if (defenseLevelOpponent > 0 && numberOfBets > 3) {
            defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
@@ -489,9 +482,18 @@ contract Betting is Proxied, Guard {
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
 
-        defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
+        uint256 defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
 
-        emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelSupportedPlayer, defenseLevelOpponent);
+        emit BetPlaced(
+            _gameId,
+            _bettor,
+            _lastBetAmount,
+            _supportedPlayer,
+            attackHash,
+            attackType,
+            defenseLevelSupportedPlayer,
+            defenseLevelOpponent
+            );
     }
 
     event GameStarted(uint256 indexed _gameId);
@@ -500,8 +502,9 @@ contract Betting is Proxied, Guard {
 
     event BetPlaced(
         uint256 indexed _gameId,
-        address indexed _supportedPlyer,
+        address indexed _bettor,
         uint256 _lastBetAmount,
+        address indexed _supportedPlyer,
         bytes32 attackHash,
         string attackType,
         uint256 defenseLevelSupportedPlayer,
