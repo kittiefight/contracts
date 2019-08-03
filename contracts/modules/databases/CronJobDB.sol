@@ -79,6 +79,7 @@ contract CronJobDB is Proxied {
     /**
      * @notice Returns a job, with specified id
      * @param jobId Job to view
+     * @return (time, callee, data) Time of the job, target contract, message to the contract
      */
     function getJob(uint256 jobId) view public returns(uint256, string memory, bytes memory) {
         require(genericDB.doesNodeExist(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId), ERROR_DOES_NOT_EXIST);

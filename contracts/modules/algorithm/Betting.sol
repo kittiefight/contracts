@@ -36,7 +36,7 @@ contract Betting is Proxied, Guard {
 
     RarityCalculator public RarityCalculatorInst;
 
-    function initialize() public {
+    function initialize() public onlyOwner {
         RarityCalculatorInst = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
     }
 
@@ -102,7 +102,9 @@ contract Betting is Proxied, Guard {
           address _player,
           uint256 index
           )
-          public {
+          public //temporarily set as public just for truffle testing purpose
+          //internal
+          {
             directAttacksScored[_gameId][_player][index] = directAttacksScored[_gameId][_player][index].add(1);
           }
 
@@ -119,7 +121,9 @@ contract Betting is Proxied, Guard {
           address _player,
           uint256 index
           )
-          public {
+          public // temporarily set as public just for truffle testing purpose
+          //internal
+          {
             blockedAttacksScored[_gameId][_player][index] = blockedAttacksScored[_gameId][_player][index].add(1);
           }
 
@@ -196,7 +200,10 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game for whom the individual bet ether amount is recorded
     * @param _betAmount the ether amount of the bet placed by the given corner
     */
-    function fillBets(uint256 _gameId, address _player, uint256 _betAmount) public {
+    function fillBets(uint256 _gameId, address _player, uint256 _betAmount)
+        public  // temporarily set as public just for truffle testing purpose
+        //internal
+    {
       bets[_gameId][_player].push(_betAmount);
     }
 
@@ -247,7 +254,10 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game whose last bet timestamp is recorded
     * @param _lastBetTimestamp the timestamp of the last bet placed by the given corner in the game
     */
-    function setLastBetTimestamp(uint256 _gameId, address _player, uint256 _lastBetTimestamp) public {
+    function setLastBetTimestamp(uint256 _gameId, address _player, uint256 _lastBetTimestamp)
+    public //temporarily set as public just for truffle testing purpose
+        //internal
+    {
         lastBetTimestamp[_gameId][_player] = _lastBetTimestamp;
     }
 
@@ -263,12 +273,22 @@ contract Betting is Proxied, Guard {
         defenseLevel[_gameId][_player] = _defense;
     }
 
-    // function setOriginalDefenseLevel(uint256 _gameId, address _player, uint _defense) 
-    //     public
-    // {
-    //     uint defense = RarityCalculatorInst.getDefenseLevel(_kittieId, _geneKittie);
-    //     defenseLevel[_gameId][_player] = defense;
-    // }
+    /**
+    * @author @ziweidream
+    * @notice record the original defense level of the given corner in a game with a specific gameId
+    * @dev this function is only called by GameManager contract
+    * @param _gameId the gameID of the game
+    * @param _player the address of the given corner in this game for whom the defense level is recorded
+    * @param _originalDefenseLevel the original defense level of the given corner, which is calculated in
+    * the function startGame() in GameManager
+    */
+    function setOriginalDefenseLevel(uint256 _gameId, address _player, uint256 _originalDefenseLevel)
+        public
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        setDefenseLevel(_gameId, _player, _originalDefenseLevel);
+    }
+
 
    /**
     * @author @ziweidream
@@ -374,7 +394,8 @@ contract Betting is Proxied, Guard {
         address _supportedPlayer,
         address _opponentPlayer
         )
-        public
+        public  // temporarily set as public just for truffle test purpose
+        //internal
         returns (
           uint256 defenseLevelOpponent
         )
@@ -416,6 +437,7 @@ contract Betting is Proxied, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
+        emit GameStarted(_gameId);
     }
 
     // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
@@ -476,15 +498,7 @@ contract Betting is Proxied, Guard {
         emit BetPlaced(_gameId, _supportedPlayer, _lastBetAmount, attackHash, attackType, defenseLevelSupportedPlayer, defenseLevelOpponent);
     }
 
-    event GameStarted(
-        uint256 indexed _gameId,
-        uint256 indexed _kittieIdSupportedPlayer,
-        uint256 _originalDefenseLevelSupportedPlayer,
-        address _supportedPlayer,
-        uint256 indexed _kittieIdOpponent,
-        uint256 _originalDefenseLevelOpponent,
-        address _opponentPlayer
-        );
+    event GameStarted(uint256 indexed _gameId);
 
     event FightMapGenerated(uint256 indexed _gameId);
 

@@ -55,7 +55,7 @@ const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
-const KittieFightToken = artifacts.require('MockERC20Token');
+const KittieFightToken = artifacts.require('KittieFightToken');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
@@ -968,7 +968,7 @@ contract('GameManager', (accounts) => {
     // SECOND TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
     console.log('Second Top Bettor withdrew funds? ', withdrawalState)
 
     // OTHER BETTOR CLAIMING
@@ -1022,8 +1022,8 @@ contract('GameManager', (accounts) => {
 
     console.log('Resurrection Cost: ',resurrectionCost.toString(), 'KTY')
 
-    await kittieFightToken.approve(kittieHELL.address, resurrectionCost, 
-      { from: loser }).should.be.fulfilled;
+    await kittieFightToken.approve(endowmentFund.address, resurrectionCost, 
+      { from: loser }).should.be.fulfilled;  
 
     await proxy.execute('KittieHell', setMessage(kittieHELL, 'payForResurrection',
       [loserKitty]), { from: loser }).should.be.fulfilled;
