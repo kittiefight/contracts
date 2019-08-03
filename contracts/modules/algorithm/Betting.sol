@@ -460,6 +460,7 @@ contract Betting is Proxied, Guard {
         address _opponentPlayer,
         uint256 _randomNum)
         public
+        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         (string memory attackType, bytes32 attackHash, uint256 index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
 
