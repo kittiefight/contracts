@@ -23,7 +23,7 @@ contract KaiToCattributesDB is Proxied, Guard {
     function updateCattributes(string memory _type, string memory _kai, string memory _cattribute)
         public // temporarily set as public just for truffle test purpose
         //internal
-        //onlySuperAdmin
+        onlySuperAdmin
     {
         cattributes[_type][_kai] = _cattribute;
     }

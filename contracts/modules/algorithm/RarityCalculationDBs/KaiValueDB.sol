@@ -20,7 +20,7 @@ contract KaiValueDB is Proxied, Guard {
      function fillKaiValue()
         public // temporarily set as public just for truffle test purpose
         //internal
-        //onlySuperAdmin
+        onlySuperAdmin
       {
         kaiValue['00000'] = '1';
         kaiValue['00001'] = '2';

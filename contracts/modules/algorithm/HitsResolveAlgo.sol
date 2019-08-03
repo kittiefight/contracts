@@ -73,7 +73,7 @@ contract HitsResolve is Proxied, Guard {
         return n;
     }
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) 
     /**
      * @author @ziweidream
      * @notice combine random input from bets with previous combined output (currentRandom number)

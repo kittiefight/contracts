@@ -1,5 +1,5 @@
 const SafeMath = artifacts.require('libs/SafeMath');
-const KittieHELL = artifacts.require('KittieHELL');
+const KittieHELL = artifacts.require('KittieHell');
 //const KittieFIGHTToken = artifacts.require('KittieFIGHTToken');
 const ContractManager = artifacts.require('ContractManager');
 const KittyCoreMock = artifacts.require('KittyCore');

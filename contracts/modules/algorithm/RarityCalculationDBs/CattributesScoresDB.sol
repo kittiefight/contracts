@@ -15,7 +15,7 @@ contract CattributesScoresDB is Proxied, Guard {
 
     function updateTotalKitties(uint256 _totalKitties)
         public
-        //onlySuperAdmin
+        onlySuperAdmin
     {
         totalKitties = _totalKitties;
     }
@@ -31,7 +31,7 @@ contract CattributesScoresDB is Proxied, Guard {
     function updateCattributesScores(string memory _name, uint _score)
         public  // temporarily set as public just for truffle test purpose
         // internal
-        //onlySuperAdmin
+        onlySuperAdmin
     {
         CattributesScores[_name] = _score;
     }

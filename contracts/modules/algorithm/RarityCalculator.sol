@@ -43,7 +43,7 @@ import "./RarityCalculationDBs/FancyKitties.sol";
 contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties {
     using SafeMath for uint256;
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER)
     /**
      * @author @ziweidream
      * @notice calculate the defense level of a kitty

@@ -34,12 +34,6 @@ import "./RarityCalculator.sol";
 contract Betting is Proxied, Guard {
     using SafeMath for uint256;
 
-    RarityCalculator public RarityCalculatorInst;
-
-    function initialize() public onlyOwner {
-        RarityCalculatorInst = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
-    }
-
     ///fight map for a game with a specific gameId
      struct HitType {
         bytes32 hash;
@@ -420,7 +414,7 @@ contract Betting is Proxied, Guard {
         randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(1)), block.timestamp, block.difficulty, seed)))%100;
     }
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) 
    /**
     * @author @ziweidream
     * @notice generates a fight map for a game with a specific gameId, and calculates the original defense levels
@@ -442,7 +436,7 @@ contract Betting is Proxied, Guard {
         emit GameStarted(_gameId);
     }
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER)
    /**
     * @author @ziweidream
     * @notice determines the attack type, attackHash, and current opponent defense level partially
