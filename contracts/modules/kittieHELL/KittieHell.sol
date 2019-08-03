@@ -166,6 +166,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         require(tokenAmount > 0);
         endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
         releaseKitty(_kittyID);
+        kitties[_kittyID].dead = false;
         emit KittyResurrected(_kittyID);
         return true;
     }
