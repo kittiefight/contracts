@@ -36,7 +36,7 @@ contract Betting is Proxied, Guard {
 
     RarityCalculator public RarityCalculatorInst;
 
-    function initialize() public {
+    function initialize() public onlyOwner {
         RarityCalculatorInst = RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR));
     }
 
@@ -102,7 +102,9 @@ contract Betting is Proxied, Guard {
           address _player,
           uint256 index
           )
-          public {
+          public //temporarily set as public just for truffle testing purpose
+          //internal
+          {
             directAttacksScored[_gameId][_player][index] = directAttacksScored[_gameId][_player][index].add(1);
           }
 
@@ -119,7 +121,9 @@ contract Betting is Proxied, Guard {
           address _player,
           uint256 index
           )
-          public {
+          public // temporarily set as public just for truffle testing purpose
+          //internal
+          {
             blockedAttacksScored[_gameId][_player][index] = blockedAttacksScored[_gameId][_player][index].add(1);
           }
 
@@ -196,7 +200,10 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game for whom the individual bet ether amount is recorded
     * @param _betAmount the ether amount of the bet placed by the given corner
     */
-    function fillBets(uint256 _gameId, address _player, uint256 _betAmount) public {
+    function fillBets(uint256 _gameId, address _player, uint256 _betAmount)
+        public  // temporarily set as public just for truffle testing purpose
+        //internal
+    {
       bets[_gameId][_player].push(_betAmount);
     }
 
@@ -247,7 +254,10 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game whose last bet timestamp is recorded
     * @param _lastBetTimestamp the timestamp of the last bet placed by the given corner in the game
     */
-    function setLastBetTimestamp(uint256 _gameId, address _player, uint256 _lastBetTimestamp) public {
+    function setLastBetTimestamp(uint256 _gameId, address _player, uint256 _lastBetTimestamp)
+    public //temporarily set as public just for truffle testing purpose
+        //internal
+    {
         lastBetTimestamp[_gameId][_player] = _lastBetTimestamp;
     }
 
@@ -384,7 +394,8 @@ contract Betting is Proxied, Guard {
         address _supportedPlayer,
         address _opponentPlayer
         )
-        public
+        public  // temporarily set as public just for truffle test purpose
+        //internal
         returns (
           uint256 defenseLevelOpponent
         )
