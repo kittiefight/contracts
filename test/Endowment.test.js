@@ -398,7 +398,7 @@ contract('Endowment', (accounts) => {
                 '\n Kty=', endowmentBalanceKTY.toString(), 
                 '\n Eth=', endowmentBalanceETH.toString());
 
-    let ed_added_kty = endowmentBalanceKTY.sub(preListing_ed_eth);
+    let ed_added_kty = endowmentBalanceKTY.sub(preListing_ed_kty);
 
     // since 3 listed ed_added_kty = 3 * listing fee
     let listingFee_3 = LISTING_FEE.mul(new BigNumber(3)); 
@@ -421,6 +421,9 @@ contract('Endowment', (accounts) => {
 
   })
 
+
+
+
   it('check if endowment fund has required funds to start game', async () => {  
     
     let reqKtyPerGame = await gameVarAndFee.getTokensPerGame();  
@@ -441,19 +444,11 @@ contract('Endowment', (accounts) => {
 
   })
 
-  it('list 1 more kittie to the system', async () => {
-
-    await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
-      [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
-  })
-
   var pre_ed_kty = 0;
   var pre_ed_eth = 0;
   var pre_es_kty = 0;
-  var pre_es_eth = 0;
-
+  var pre_es_eth = 0;  
   it('Status of endowment, escrow BEFORE game creation', async () => {
-
 
     let endowmentBalance = await endowmentDB.getEndowmentBalance();
     pre_ed_kty = endowmentBalance.endowmentBalanceKTY;
@@ -467,16 +462,27 @@ contract('Endowment', (accounts) => {
     console.log('\n==== FUNDS IN ESCROW before creating game :', 
                 '\n Kty=', pre_es_kty.toString(), 
                 '\n Eth=', pre_es_eth.toString());
+    
+    // adding the kitty will add to endownment and escrow Kty value
+    pre_ed_kty = pre_ed_kty.add(LISTING_FEE);
+    pre_es_kty = pre_es_kty.add(LISTING_FEE);
+
+    // add 1 more kitty and this will trigger Game fight creation
+    await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
+      [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
+
   })
 
   var hp_total_kty = 0;
   var hp_total_eth = 0;
   var counter = 0;
-  it('Create Game', async () => {
+  var kty_required_forNewGame = 0;
+  var eth_required_forNewGame = 0;
+  it('Post Game Creation ', async () => {
 
     // to create honeypot
-    let kty_required_forNewGame = await gameVarAndFee.getTokensPerGame();
-    let eth_required_forNewGame = await gameVarAndFee.getEthPerGame();
+    kty_required_forNewGame = await gameVarAndFee.getTokensPerGame();
+    eth_required_forNewGame = await gameVarAndFee.getEthPerGame();
 
     let newGameEvents = await gameCreation.getPastEvents("NewGame", { 
       fromBlock: 0, 
@@ -486,8 +492,8 @@ contract('Endowment', (accounts) => {
     newGameEvents.map(async (e) => {
       let gameInfo = await getterDB.getGameTimes(e.returnValues.gameId);
       counter++;
-      console.log('\n==== NEW GAME CREATED ===');
-      console.log('    GameId ', e.returnValues.gameId)
+      /*console.log('\n==== NEW GAME CREATED ===');
+      console.log('    GameId ', e.returnValues.gameId)*/
 
       // honeypot fund
       honeyPotBalance = await endowmentDB.getHoneyPotBalance(e.returnValues.gameId);
@@ -522,19 +528,21 @@ contract('Endowment', (accounts) => {
       endowmentBalance = await endowmentDB.getEndowmentBalance();
       let post_ed_kty = endowmentBalance.endowmentBalanceKTY;
       let post_ed_eth = endowmentBalance.endowmentBalanceETH;
-      let ed_kty_diff = post_ed_kty.sub(pre_ed_kty);      
-      let ed_eth_diff = post_ed_eth.sub(pre_ed_eth);
+      let ed_kty_diff = pre_ed_kty.sub(post_ed_kty);      
+      let ed_eth_diff = pre_ed_eth.sub(post_ed_eth);
       
       let kty_used_in_game = kty_required_forNewGame.mul(new BigNumber(counter));
       let eth_used_in_game = eth_required_forNewGame.mul(new BigNumber(counter));
   
       console.log('\n==== FUNDS IN ENDOWMENT post creation of Game', 
-                  '\n Kty=', post_ed_kty.toString(),
-                  '\n Eth=', post_ed_eth.toString(),
-                  '\n Kty used from Endowment=', ed_kty_diff.toString(),
-                  '\n Kty Game needed=', kty_used_in_game.toString(),
-                  '\n Eth used from Endowment=', ed_kty_diff.toString(),
-                  '\n Eth Game needed=', eth_used_in_game.toString(),
+                  '\n Kty required in Game(s)=', kty_used_in_game.toString(),
+                  '\n Kty total in HoneyPot(s)=', hp_total_kty.toString(),
+                  '\n Kty descreased in Endowment=', ed_kty_diff.toString(),
+                  '\n Kty in Endowment after deduction=', post_ed_kty.toString(),
+                  '\n Eth required in Game(s)=', eth_used_in_game.toString(),
+                  '\n Eth total in HoneyPot(s)=', hp_total_kty.toString(),
+                  '\n Eth descreased in Endowment=', ed_kty_diff.toString(),
+                  '\n Eth in Endowment afterdeduction =', post_ed_eth.toString()
                   );
 
       // honeypot amount is deducted from endowment fund
@@ -544,38 +552,48 @@ contract('Endowment', (accounts) => {
       // escrow status: 
       post_es_kty = await escrow.getBalanceKTY(); 
       post_es_eth = await escrow.getBalanceETH(); 
-      console.log('\n==== FUNDS IN ESCROW post creation of GameId='+e.returnValues.gameId, 
+      console.log('\n==== FUNDS IN ESCROW post creation of Game', 
                   '\n Kty=', post_es_kty.toString(), 
                   '\n Eth=', post_es_eth.toString());
       
       es_eth_diff = post_es_eth.sub(pre_es_eth); 
-      es_eth_diff.should.be.a.bignumber.that.eq(0); // as escrow is not used
+      es_eth_diff.should.be.a.bignumber.that.eq(new BigNumber(0)); // as escrow is not used
 
   })
 
   // claim check
   it('Call Dummy claim to check if payment work', async () => {
 
-    let sender_balance_kty = await kittieFightToken.balanceOf(accounts[0]); 
-    let sender_balance_eth = await  web3.eth.getBalance(accounts[0]);
+    let claimer_balance_kty_pre = await kittieFightToken.balanceOf(accounts[0]); 
+    let claimer_balance_eth_pre = await  web3.eth.getBalance(accounts[0]);
 
     await endowmentFund.claim_dummy({from: accounts[0]});
 
-    let sender_balance_kty_post = await kittieFightToken.balanceOf(accounts[0]); 
-    let sender_balance_eth_post = await  web3.eth.getBalance(accounts[0]);
+    let claimer_balance_kty_post = await kittieFightToken.balanceOf(accounts[0]); 
+    let claimer_balance_eth_post = await  web3.eth.getBalance(accounts[0]);
 
-    console.log('\n==== CLAIMER BALANCE (pre):', '\n Kty=', sender_balance_kty.toString(), '\n Eth=', sender_balance_eth.toString());
-    console.log('\n==== CLAIMER BALANCE (post):', '\n Kty=', sender_balance_kty_post.toString(), '\n Eth=', sender_balance_eth_post.toString());
+    console.log('\n==== CLAIMER BALANCE (pre):', '\n Kty=', claimer_balance_kty_pre.toString(), '\n Eth=', claimer_balance_eth_pre.toString());
+    console.log('\n==== CLAIMER BALANCE (post):', '\n Kty=', claimer_balance_kty_post.toString(), '\n Eth=', claimer_balance_eth_post.toString());
 
+    /*
+    // uint256 winningsETH = 1;  uint256 winningsKTY = 100; // from contracts/modules/endowment/EndowmentFund.sol    
+    let winningsKTY =  new BigNumber(100);
+    let winningsETH = new BigNumber(1); 
+
+    claimer_balance_kty_post = new BigNumber(claimer_balance_kty_post)
+    claimer_balance_kty_pre = new BigNumber(claimer_balance_kty_pre)
+    claimer_balance_eth_post = new BigNumber(claimer_balance_eth_post)
+    claimer_balance_eth_pre = new BigNumber(claimer_balance_eth_pre)
+    
+    let diff_kty = claimer_balance_kty_post.sub(claimer_balance_kty_pre);
+    diff_kty.should.be.a.bignumber.that.eq(winningsKTY);
+
+    let diff_eth = claimer_balance_eth_post.sub(claimer_balance_eth_pre);
+    diff_eth.should.be.a.bignumber.that.eq(winningsETH);
+    */
   })
 
   return;
-
-  it('listed kitties array emptied', async () => {
-    let listed = await scheduler.getListedKitties();
-    console.log('\n==== LISTED KITTIES: ',listed.length);
-    listed.length.should.be.equal(0);
-  })
 
   it('bettors can participate in a created game', async () => {
 
