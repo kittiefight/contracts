@@ -104,7 +104,7 @@ const GameState = {
   CANCELLED: 6
 }
 
-let gameDetails;
+var gameDetails;
 
 // BETTING
 let redBetStore = new Map()
@@ -572,8 +572,13 @@ contract('Endowment', (accounts) => {
     let claimer_balance_kty_post = await kittieFightToken.balanceOf(accounts[0]); 
     let claimer_balance_eth_post = await  web3.eth.getBalance(accounts[0]);
 
-    console.log('\n==== CLAIMER BALANCE (pre):', '\n Kty=', claimer_balance_kty_pre.toString(), '\n Eth=', claimer_balance_eth_pre.toString());
-    console.log('\n==== CLAIMER BALANCE (post):', '\n Kty=', claimer_balance_kty_post.toString(), '\n Eth=', claimer_balance_eth_post.toString());
+    console.log('\n==== CLAIMER BALANCE (pre):', 
+                '\n Kty=', claimer_balance_kty_pre.toString(), 
+                '\n Eth=', claimer_balance_eth_pre.toString());
+
+    console.log('\n==== CLAIMER BALANCE (post) : 100 wie kty, 1 wei eth added:', 
+                '\n Kty=', claimer_balance_kty_post.toString(), 
+                '\n Eth=', claimer_balance_eth_post.toString());
 
     /*
     // uint256 winningsETH = 1;  uint256 winningsKTY = 100; // from contracts/modules/endowment/EndowmentFund.sol    
@@ -593,6 +598,51 @@ contract('Endowment', (accounts) => {
     */
   })
 
+  it('Test: function Claim()', async () => {
+
+      // create a dummy honypot
+    let gameId = 55;
+    let claimer = accounts[0];
+    let ethAllocated = await endowmentFund.generateHoneyPot(gameId);
+
+      // can not claim as state not HoneypotState.claiming
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: claimer }).should.be.rejected;
+
+      // set state to 'claiming' i.e. 5
+    await endowmentFund.setHoneypotState(gameId, 5, 0);
+
+    // can not claim as claim time is zero
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: claimer }).should.be.rejected;
+
+    // set claim time over
+    var date = new Date(); var now_timestamp = date.getTime(); 
+    await endowmentFund.setHoneypotState(gameId, 5, now_timestamp + 10);
+
+    // can not clain as claim time is over
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: claimer }).should.be.rejected;
+
+    // set claimer as already claimed
+    await endowmentFund.setTotalDebit(gameId, claimer, 1, 1);
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: claimer }).should.be.rejected;
+
+
+
+
+  }) 
+  
+  // updateHoneyPotState
+  
+  
+  
+  
+  
+  
+  
+  
   return;
 
   it('bettors can participate in a created game', async () => {
@@ -612,7 +662,6 @@ contract('Endowment', (accounts) => {
     //New Supporter added
     let events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 1);
-
 
     //Cannot support the opponent too
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
