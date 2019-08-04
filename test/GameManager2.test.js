@@ -73,7 +73,7 @@ const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 20 // 20 secs for quick test
+const GAME_PRESTART = 45 // 45 secs for quick test
 const GAME_DURATION = 60 // games last 0.5 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
@@ -167,8 +167,8 @@ contract('GameManager', (accounts) => {
     scheduler = await Scheduler.new()
     betting = await Betting.new()
     hitsResolve = await HitsResolve.new()
-    rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
-    // rarityCalculator = await RarityCalculator.new()
+    // rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
+    rarityCalculator = await RarityCalculator.new()
     endowmentFund = await EndowmentFund.new()
     kittieHELL = await KittieHELL.new()
 
@@ -236,7 +236,7 @@ contract('GameManager', (accounts) => {
   })
 
   it('initializes contract variables', async () => {
-    await gameVarAndFee.initialize()
+    // await gameVarAndFee.initialize()
     await gameStore.initialize()
     await gameCreation.initialize()
     await forfeiter.initialize()
@@ -246,11 +246,17 @@ contract('GameManager', (accounts) => {
     await getterDB.initialize()
     await setterDB.initialize()
     await endowmentFund.initialize()
-    await endowmentFund.initUpgradeEscrow(escrow.address)
     await kittieHellDB.setKittieHELL()
     await kittieHELL.initialize()
     await hitsResolve.initialize()
-    await betting.initialize()
+  })
+
+  it('sets super admin address', async() => {
+    await register.addSuperAdmin(accounts[0])
+  })
+
+  it('initialize escrow upgrade', async() => {
+    await endowmentFund.initUpgradeEscrow(escrow.address)
   })
 
   it('mint some kitties for the test addresses', async () => {
@@ -500,25 +506,62 @@ contract('GameManager', (accounts) => {
 
   })  
 
-  //This works but not inside contract
-  it.skip('set defense level for both players', async () => { 
+  it.skip('fill rarity databases', async () => { 
 
-    let { gameId, playerRed, playerBlack, kittieBlack, kittieRed } = gameDetails;
+    await rarityCalculator.fillKaiValue()
 
-    const gene1 = '512955438081049600613224346938352058409509756310147795204209859701881294'
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
+    }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
+    }
 
-    const gene2 = '24171491821178068054575826800486891805334952029503890331493652557302916'
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
+    }
 
-    //This works, with previous test uncommented
-    let defense = await rarityCalculator.getDefenseLevel.call(kittieBlack, gene1);
-    await betting.setDefenseLevel(gameId, playerBlack, defense);
-    console.log(`\n==== DEFENSE BLACK: ${defense}`);
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
+    }
 
-    defense = await rarityCalculator.getDefenseLevel.call(kittieRed, gene2);
-    await betting.setDefenseLevel(gameId, playerRed, defense);
-    console.log(`\n==== DEFENSE RED: ${defense}`);
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
+    }
+
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
+    }
+
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
+    }
+
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
+    }
+
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
+    }
+
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
+    }
+
+    for (let j=0; j<cattributesData.length; j++) {
+        await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
+    }
+
+    for (let m=0; m<FancyKitties.length; m++) {
+      for (let n=1; n<FancyKitties[m].length; n++) {
+        await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
+      }
+    } 
+
+    await rarityCalculator.updateTotalKitties(1600000)
+    await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
   })
-
 
   it('should move gameState to MAIN_GAME', async () => {
 
@@ -637,7 +680,7 @@ contract('GameManager', (accounts) => {
         [gameId, randomValue()]), { from: bettor, value: web3.utils.toWei(String(betAmount)) }).should.be.fulfilled;
 
       let betEvents = await betting.getPastEvents('BetPlaced', {
-        //filter: {bettor}, 
+        filter: {gameId},
         fromBlock: 0, 
         toBlock: "latest" 
       })

@@ -1,9 +1,16 @@
 const RarityCalculator = artifacts.require('RarityCalculator')
+const KFProxy = artifacts.require('KFProxy')
+const GenericDB = artifacts.require('GenericDB');
+const Register = artifacts.require('Register')
+const RoleDB = artifacts.require('RoleDB')
 
 
 module.exports = (deployer, network, accounts) => {
-
-  deployer.deploy(RarityCalculator, {from: accounts[0]})
+  deployer.deploy(KFProxy)
+  .then(() => deployer.deploy(GenericDB))
+  .then(() => deployer.deploy(Register))
+  .then(() => deployer.deploy(RoleDB, GenericDB.address))
+  
   .then(async(RarityCalculatorInst) => {
     await RarityCalculatorInst.fillKaiValue()
 
