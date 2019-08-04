@@ -461,21 +461,31 @@ contract Betting is Proxied, Guard {
         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns (bool)
     {
-        (string memory attackType, bytes32 attackHash, uint256 index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
+        string memory attackType;
+        bytes32 attackHash;
+        uint256 index;
+        uint256 defenseLevelOpponent;
+        uint256 numberOfBets;
+        bool isBlocked;
 
-        uint256 defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
+        (attackType, attackHash, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
 
-        uint256 numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
+        defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
+
+        numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
 
         if (defenseLevelOpponent > 0 && numberOfBets > 3) {
            defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
         }
 
         if (defenseLevelOpponent == 0) {
+            isBlocked = false;
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
         } else if(defenseLevelOpponent > 0 && isAttackBlocked(_gameId, _opponentPlayer)) {
+            isBlocked = true;
             setBlockedAttacksScored(_gameId, _supportedPlayer, index);
         } else {
+            isBlocked = false;
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
         }
 
@@ -490,7 +500,7 @@ contract Betting is Proxied, Guard {
             _lastBetAmount,
             _supportedPlayer,
             attackHash,
-            attackType,
+            isBlocked,
             defenseLevelSupportedPlayer,
             defenseLevelOpponent
             );
@@ -507,7 +517,7 @@ contract Betting is Proxied, Guard {
         uint256 _lastBetAmount,
         address indexed _supportedPlyer,
         bytes32 attackHash,
-        string attackType,
+        bool isBlocked,
         uint256 defenseLevelSupportedPlayer,
         uint256 defenseLevelOpponent);
 }
