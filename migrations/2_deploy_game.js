@@ -50,6 +50,7 @@ const INITIAL_ETH_ENDOWMENT = new BigNumber(
 
 
 module.exports = (deployer, network, accounts) => {
+  if (network === 'test') return;
 
   let medianizer;
 
