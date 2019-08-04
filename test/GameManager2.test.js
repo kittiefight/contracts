@@ -535,8 +535,12 @@ contract('GameManager', (accounts) => {
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
 
+  //Temporal set manual defense level
   it('get defense level for both players', async () => { 
     let { gameId, playerRed, playerBlack } = gameDetails;
+
+    await betting.setDefenseLevel(gameId, playerRed, 4).should.be.fulfilled;
+    await betting.setDefenseLevel(gameId, playerBlack, 5).should.be.fulfilled;
 
     let defense = await betting.defenseLevel(gameId, playerBlack);
     console.log(`\n==== DEFENSE BLACK: ${defense}`);
@@ -574,7 +578,6 @@ contract('GameManager', (accounts) => {
       attack = await betting.fightMap(gameId, i)
       console.log(`Name: ${attack.attack}`);
       console.log(`Hash: ${attack.hash}\n`);
-      await timeout(1);
     }
     console.log('=================\n')
   })
@@ -597,23 +600,30 @@ contract('GameManager', (accounts) => {
 
     let betDetails;
 
+    let opponentRed = await getterDB.getOpponent(gameId, playerRed);
+      console.log('\n==== OPPONENT RED: ', opponentRed);
+      let opponentBlack = await getterDB.getOpponent(gameId, playerBlack);
+      console.log('\n==== OPPONENT BLACK: ', opponentBlack);
+
     for (let i = 6; i < 18; i++) {
       // let supportedPlayer = i < 10 ? playerRed : playerBlack;
       let betAmount = randomValue()
       let bettor = accounts[i]
       let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[i])
       let supportedPlayer = supporterInfo.supportedPlayer;
+      let player;
 
       if (supportedPlayer == playerRed) {
+        player = 'RED';
         (redBetStore.has(bettor)) ?
           redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
           redBetStore.set(bettor, betAmount)
-          console.log('\n==== NEW BET FOR RED ====');
+          
       } else {
+        player = 'BLACK';
         (blackBetStore.has(bettor)) ?
           blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
           blackBetStore.set(bettor, betAmount)
-          console.log('\n==== NEW BET FOR BLACK ====');
       }     
       
 
@@ -625,15 +635,18 @@ contract('GameManager', (accounts) => {
         fromBlock: 0, 
         toBlock: "latest" 
       })
+      
 
       betDetails = betEvents[betEvents.length -1].returnValues;
-
+      console.log(`\n==== NEW BET FOR ${player} ====`);
       console.log('Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
       console.log('Bettor:', betDetails._bettor);
       console.log('Attack Hash:', betDetails.attackHash);
-      console.log('Attack Type:', betDetails.attackType);
-      console.log('Defense Level:', betDetails.defenseLevelSupportedPlayer);
+      console.log('Blocked?:', betDetails.isBlocked);
+      console.log(`Defense ${player}:`, betDetails.defenseLevelSupportedPlayer);
       console.log('Opponent Defense:', betDetails.defenseLevelOpponent);
+
+      
 
       totalBetAmount  = totalBetAmount + betAmount;
       await timeout(1);
