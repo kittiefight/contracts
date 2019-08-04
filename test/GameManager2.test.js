@@ -34,13 +34,12 @@ const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 
-// const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
 const ERC20_TOKEN_SUPPLY = new BigNumber(
   web3.utils.toWei("100000000", "ether") //100 Million
 );
 
 const TOKENS_FOR_USERS = new BigNumber(
-  web3.utils.toWei("5000", "ether") //100 Million
+  web3.utils.toWei("5000", "ether") //5.000 KTY 
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
@@ -50,6 +49,7 @@ const INITIAL_KTY_ENDOWMENT = new BigNumber(
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
   web3.utils.toWei("1000", "ether") //1.000 ETH
 );
+
 
 //Contract instances
 let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
@@ -132,53 +132,52 @@ function formatDate(timestamp)
 
 contract('GameManager', (accounts) => {
 
-  it('deploys contracts', async () => {
+  it('instantiate contracts', async () => {
+
     // PROXY
-    proxy = await KFProxy.new()
+    proxy = await KFProxy.deployed()
 
     // DATABASES
-    genericDB = await GenericDB.new()
-    profileDB = await ProfileDB.new(genericDB.address);
-    roleDB = await RoleDB.new(genericDB.address);
-    endowmentDB = await EndowmentDB.new(genericDB.address)
-    getterDB = await GMGetterDB.new(genericDB.address)
-    setterDB = await GMSetterDB.new(genericDB.address)
-    kittieHellDB = await KittieHellDB.new(genericDB.address)
+    genericDB = await GenericDB.deployed()
+    profileDB = await ProfileDB.deployed();
+    roleDB = await RoleDB.deployed();
+    endowmentDB = await EndowmentDB.deployed()
+    getterDB = await GMGetterDB.deployed()
+    setterDB = await GMSetterDB.deployed()
+    kittieHellDB = await KittieHellDB.deployed()
 
     // CRONJOB
-    cronJob = await CronJob.new(genericDB.address)
-    freezeInfo = await FreezeInfo.new();
-    cronJobTarget= await CronJobTarget.new();
+    cronJob = await CronJob.deployed()
+    freezeInfo = await FreezeInfo.deployed();
+    cronJobTarget= await CronJobTarget.deployed();
 
 
     // TOKENS
-    superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
-    kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
-    cryptoKitties = await CryptoKitties.new();
+    superDaoToken = await SuperDaoToken.deployed();
+    kittieFightToken = await KittieFightToken.deployed();
+    cryptoKitties = await CryptoKitties.deployed();
 
     // MODULES
-    gameManager = await GameManager.new()
-    gameStore = await GameStore.new()
-    gameCreation = await GameCreation.new()
-    register = await Register.new()
-    dateTime = await DateTime.new()
-    gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
-    forfeiter = await Forfeiter.new()
-    scheduler = await Scheduler.new()
-    betting = await Betting.new()
-    hitsResolve = await HitsResolve.new()
-    // rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
-    rarityCalculator = await RarityCalculator.new()
-    endowmentFund = await EndowmentFund.new()
-    kittieHELL = await KittieHELL.new()
+    gameManager = await GameManager.deployed()
+    gameStore = await GameStore.deployed()
+    gameCreation = await GameCreation.deployed()
+    register = await Register.deployed()
+    dateTime = await DateTime.deployed()
+    gameVarAndFee = await GameVarAndFee.deployed()
+    forfeiter = await Forfeiter.deployed()
+    scheduler = await Scheduler.deployed()
+    betting = await Betting.deployed()
+    hitsResolve = await HitsResolve.deployed()
+    rarityCalculator = await RarityCalculator.deployed()
+    endowmentFund = await EndowmentFund.deployed()
+    kittieHELL = await KittieHELL.deployed()
 
     //ESCROW
-    escrow = await Escrow.new()
-    await escrow.transferOwnership(endowmentFund.address).should.be.fulfilled
+    escrow = await Escrow.deployed()
 
   })
 
-  it('adds contract addresses to contract manager', async () => {
+  it.skip('adds contract addresses to contract manager', async () => {
     await proxy.addContract('TimeContract', dateTime.address)
     await proxy.addContract('GenericDB', genericDB.address)
     await proxy.addContract('CryptoKitties', cryptoKitties.address);
@@ -209,7 +208,7 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('sets proxy in contracts', async () => {
+  it.skip('sets proxy in contracts', async () => {
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);
     await roleDB.setProxy(proxy.address);
@@ -235,8 +234,7 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('initializes contract variables', async () => {
-    // await gameVarAndFee.initialize()
+  it.skip('initializes contract variables', async () => {
     await gameStore.initialize()
     await gameCreation.initialize()
     await forfeiter.initialize()
@@ -251,11 +249,11 @@ contract('GameManager', (accounts) => {
     await hitsResolve.initialize()
   })
 
-  it('sets super admin address', async() => {
+  it.skip('sets super admin address', async() => {
     await register.addSuperAdmin(accounts[0])
   })
 
-  it('initialize escrow upgrade', async() => {
+  it.skip('initialize escrow upgrade', async() => {
     await endowmentFund.initUpgradeEscrow(escrow.address)
   })
 
@@ -283,10 +281,10 @@ contract('GameManager', (accounts) => {
     }
   })
 
-  it('initialize endowment/escrow funds', async () => {    
-      await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT).should.be.fulfilled;
-      await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
-      await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+  it('correct initial endowment/escrow funds', async () => {    
+      // await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT).should.be.fulfilled;
+      // await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+      // await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
 
       let balanceKTY = await escrow.getBalanceKTY();
       let balanceETH = await escrow.getBalanceETH();
@@ -506,63 +504,6 @@ contract('GameManager', (accounts) => {
 
   })  
 
-  it.skip('fill rarity databases', async () => { 
-
-    await rarityCalculator.fillKaiValue()
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
-    }
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
-    }
-
-    for (let j=0; j<cattributesData.length; j++) {
-        await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
-    }
-
-    for (let m=0; m<FancyKitties.length; m++) {
-      for (let n=1; n<FancyKitties[m].length; n++) {
-        await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-      }
-    } 
-
-    await rarityCalculator.updateTotalKitties(1600000)
-    await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
-  })
-
   it('should move gameState to MAIN_GAME', async () => {
 
     let { gameId, playerRed, playerBlack } = gameDetails
@@ -758,6 +699,16 @@ contract('GameManager', (accounts) => {
     await timeout(1);
   })
 
+  it('get final defense level for both players', async () => { 
+    let { gameId, playerRed, playerBlack } = gameDetails;
+
+    let defense = await betting.defenseLevel(gameId, playerBlack);
+    console.log(`\n==== DEFENSE BLACK: ${defense}`);
+
+    defense = await betting.defenseLevel(gameId, playerRed);
+    console.log(`\n==== DEFENSE RED: ${defense}`);
+  })
+
   it('game ends', async () => {
     
     console.log('\n==== WAITING FOR GAME OVER')
@@ -766,7 +717,7 @@ contract('GameManager', (accounts) => {
       
     while(block < gameDetails.endTime){
       block = await dateTime.getBlockTimeStamp();
-      await timeout(1);
+      await timeout(2);
     } 
 
     let { gameId } = gameDetails;  

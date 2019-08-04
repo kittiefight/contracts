@@ -237,7 +237,7 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
 
         // check underperforming game if one minut
-        checkPerformance(gameId);
+        //checkPerformance(gameId);
 
         //Check if game has ended
         gameEnd(gameId);
