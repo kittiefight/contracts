@@ -645,7 +645,7 @@ contract('GameManager', (accounts) => {
       betDetails = betEvents[betEvents.length -1].returnValues;
 
       console.log('Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
-      // console.log('Bettor:', betDetails._bettor);
+      console.log('Bettor:', betDetails._bettor);
       console.log('Attack Hash:', betDetails.attackHash);
       console.log('Attack Type:', betDetails.attackType);
       console.log('Defense Level:', betDetails.defenseLevelSupportedPlayer);
