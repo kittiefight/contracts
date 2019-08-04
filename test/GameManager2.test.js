@@ -703,10 +703,10 @@ contract('GameManager', (accounts) => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     let defense = await betting.defenseLevel(gameId, playerBlack);
-    console.log(`\n==== DEFENSE BLACK: ${defense}`);
+    console.log(`\n==== FINAL DEFENSE BLACK: ${defense}`);
 
     defense = await betting.defenseLevel(gameId, playerRed);
-    console.log(`\n==== DEFENSE RED: ${defense}`);
+    console.log(`\n==== FINAL DEFENSE RED: ${defense}`);
   })
 
   it('game ends', async () => {

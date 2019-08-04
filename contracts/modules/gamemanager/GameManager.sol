@@ -183,10 +183,9 @@ contract GameManager is Proxied, Guard {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
 
         //each time 1 minute before game ends
-        if(gameEndTime.sub(now) <= 5) {
+        if(gameEndTime.sub(5) <= now) {
             //get initial jackpot, need endowment to send this when creating honeypot
-            (,,uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
-            uint currentJackpotEth = endowmentDB.getHoneypotTotalETH(gameId);
+            (,,uint initialEth, uint currentJackpotEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
 
             if(currentJackpotEth < initialEth.mul(10)){
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
@@ -237,7 +236,7 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
 
         // check underperforming game if one minut
-        //checkPerformance(gameId);
+        checkPerformance(gameId);
 
         //Check if game has ended
         gameEnd(gameId);
