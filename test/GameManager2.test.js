@@ -55,11 +55,10 @@ const GameState = {
   MAIN_GAME: 2,
   GAME_OVER: 3,
   CLAIMING: 4,
-  KITTIE_HELL: 5,
-  CANCELLED: 6
+  CANCELLED: 5
 }
 
-// ======== GAME VARS AND FEES ================ //
+// ================ GAME VARS AND FEES ================ //
 const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
 const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
@@ -80,7 +79,7 @@ const TOP_BETTOR = 25
 const SECOND_RUNNER_UP = 10
 const OTHER_BETTORS = 15
 const ENDOWNMENT = 15
-// ============================================== //
+// =================================================== //
 
 //If you change endowment initial tokens, need to change deployment file too
 
@@ -605,7 +604,6 @@ contract('GameManager', (accounts) => {
       console.log('\n==== OPPONENT BLACK: ', opponentBlack);
 
     for (let i = 6; i < 18; i++) {
-      // let supportedPlayer = i < 10 ? playerRed : playerBlack;
       let betAmount = randomValue()
       let bettor = accounts[i]
       let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[i])
@@ -633,8 +631,7 @@ contract('GameManager', (accounts) => {
         filter: {gameId},
         fromBlock: 0, 
         toBlock: "latest" 
-      })
-      
+      })      
 
       betDetails = betEvents[betEvents.length -1].returnValues;
       console.log(`\n==== NEW BET FOR ${player} ====`);
@@ -646,12 +643,10 @@ contract('GameManager', (accounts) => {
       console.log('Defense Opponent:', betDetails.defenseLevelOpponent);
 
       let lastBetTimestamp = await betting.lastBetTimestamp(gameId,supportedPlayer);
-      console.log('Timestamp last Bet: ',lastBetTimestamp.toString());
-
-      
+      console.log('Timestamp last Bet: ',lastBetTimestamp.toString());      
 
       totalBetAmount  = totalBetAmount + betAmount;
-      await timeout(1);
+      await timeout(Math.floor(Math.random() * 7) + 1);
     }
   }) 
 
@@ -1002,6 +997,56 @@ contract('GameManager', (accounts) => {
     owner.should.be.equal(loser);
 
   })
+
+  it('game 2 should be cancelled ', async () => {
+    console.log('\n==== WAITING FOR PREGAME TIME OF GAME 2')
+
+    let block = await dateTime.getBlockTimeStamp();
+    console.log('\nblocktime: ', formatDate(block))
+
+    let gameTimes = await getterDB.getGameTimes(2);
+    let gamePlayers = await getterDB.getGamePlayers(2);
+
+    while(block.toNumber() < gameTimes.preStartTime.toNumber()){
+      block = await dateTime.getBlockTimeStamp();
+      await timeout(3);
+    }
+
+    block = await dateTime.getBlockTimeStamp();
+    console.log('\nblocktime: ', formatDate(block))
+
+    //This will trigger Forfeiter
+    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [2, gamePlayers.playerBlack]), { from: accounts[18] }).should.be.fulfilled;
+
+      //Show supporters
+    let redSupporters = await getterDB.getSupporters(2, gamePlayers.playerRed);
+    console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
+
+    let blackSupporters = await getterDB.getSupporters(2, gamePlayers.playerBlack);
+    console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
+
+    // let condition = await forfeiter.checkAmountSupporters.call(2, blackSupporters, redSupporters, gameTimes.preStartTime);
+    // console.log('Forfeiter response: ',condition)
+    
+    let newState = await getterDB.getGameState(2)
+    console.log('\n==== NEW STATE: ', gameStates[newState.toNumber()])
+
+    let cancelledEvents = await forfeiter.getPastEvents('GameCancelled', {
+      fromBlock: 0, 
+      toBlock: "latest" 
+    })
+
+    cancelledEvents.map(e => {
+      console.log('Event Cancelled: ')
+      console.log('GameId: ', e.returnValues.gameId)
+      console.log('Reason: ', e.returnValues.reason)
+    })
+
+    
+
+
+  }) 
 
 })
 
