@@ -469,7 +469,7 @@ contract('GameManager', (accounts) => {
   it('should move gameState to PRE_GAME', async () => {
     console.log('\n==== WAITING FOR PREGAME TIME')
 
-    let block = await dateTime.getBlockTimeStamp();
+    let block = await dateTime.getBlockTimeStamp() + 3600;
 
       
     while(block < gameDetails.preStartTime){
@@ -713,7 +713,7 @@ contract('GameManager', (accounts) => {
     
     console.log('\n==== WAITING FOR GAME OVER')
 
-    let block = await dateTime.getBlockTimeStamp();
+    let block = await dateTime.getBlockTimeStamp() + 3600;
       
     while(block < gameDetails.endTime){
       block = await dateTime.getBlockTimeStamp();
