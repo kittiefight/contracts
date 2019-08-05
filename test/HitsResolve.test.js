@@ -5,23 +5,26 @@ const assert = chai.assert;
 chai.use(chaiAsPromised);
 
 const Proxy = artifacts.require('KFProxy')
-const HitsResolve = artifacts.require('HitsResolve');
+const HitsResolve = artifacts.require('HitsResolve')
 const Betting = artifacts.require('Betting')
 
 let ProxyInst
-let HitsResolveInst;
+let HitsResolveInst
 let BettingInst
 
 before(async () => {
     ProxyInst = await Proxy.new()
     HitsResolveInst = await HitsResolve.new()
     BettingInst = await Betting.new()
+
     await ProxyInst.addContract("HitsResolve", HitsResolveInst.address)
     await ProxyInst.addContract("Betting", BettingInst.address)
-
+  
     await BettingInst.setProxy(ProxyInst.address)
     await HitsResolveInst.setProxy(ProxyInst.address)
-    HitsResolveInst.initialize()
+  
+    await HitsResolveInst.initialize()
+
 })
 
 contract('HitsResolve', (accounts) => {

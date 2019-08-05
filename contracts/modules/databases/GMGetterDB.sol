@@ -18,7 +18,7 @@ import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
-import "../kittieHELL/KittieHELL.sol";
+import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
 
 /**
@@ -167,11 +167,12 @@ contract GMGetterDB is Proxied {
 
   function getFighterByKittieID(uint256 kittieId)
     public view
-    returns (address owner, bool isDead, bool isGhost, bool isPlaying, uint gameId)
+    returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead, isPlaying, isGhost,) = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
-
+    (owner, isDead, isPlaying, isGhost,) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
+    deathTime = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).kittyDeathTime(kittieId);
     gameId = getGameOfKittie(kittieId);
+    kittieHellExp = gameStore.getKittieExpirationTime(gameId);
   }
 
   /**
@@ -222,13 +223,17 @@ contract GMGetterDB is Proxied {
 
   function getHoneypotInfo(uint256 gameId)
     public view
-    returns(uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal)
+    returns(uint honeypotId, uint status, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal, uint expTime)
   {
     (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
+    honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
     initialEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-    (ethTotal, ktyTotal) = endowmentDB.getHoneypotTotal(gameId);
+    (ktyTotal, ethTotal) = endowmentDB.getHoneyPotBalance(gameId);
+    //ethTotal = endowmentDB.getHoneypotTotalETH(gameId);
     ethByCorner[0] = getTotalBet(gameId, playerBlack);
     ethByCorner[1] = getTotalBet(gameId, playerRed);
+    //ktyTotal = endowmentDB.getHoneypotTotalKTY(gameId);
+    (status, expTime) = endowmentDB.getHoneypotState(gameId);
   }
 
   function getMyInfo(uint256 gameId)

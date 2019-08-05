@@ -43,6 +43,7 @@ import "./RarityCalculationDBs/FancyKitties.sol";
 contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties {
     using SafeMath for uint256;
 
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER)
     /**
      * @author @ziweidream
      * @notice calculate the defense level of a kitty
@@ -91,6 +92,10 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
       return defenseLevel;
     }
 
+    /**
+     * @author @ziweidream
+     * @dev determine whether a kittie with a specific kittieId is a valuable fancy kittie
+     */
     function isFancy(uint256 _kittieId)
         public // temporarily set as public just for truffle test purpose
         // internal

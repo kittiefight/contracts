@@ -4,10 +4,25 @@ const assert = chai.assert
 chai.use(chaiAsPromised)
 
 const Proxy = artifacts.require('KFProxy')
+const GenericDB = artifacts.require('GenericDB')
+const RoleDB = artifacts.require('RoleDB')
+const ProfileDB = artifacts.require('ProfileDB')
+const Register = artifacts.require('Register')
+const CryptoKitties = artifacts.require('MockERC721Token')
+const KittieFightToken = artifacts.require('MockERC20Token')
+const SuperDaoToken = artifacts.require('MockERC20Token')
 const RarityCalculator = artifacts.require('RarityCalculator')
 const Betting = artifacts.require('Betting')
 
+
 let ProxyInst
+let GenericDBinst
+let RoleDBinst
+let ProfileDBinst
+let RegisterInst
+let cryptoKitties
+let SuperDaoTokenInst
+let KittieFightTokenInst
 let BettingInst
 let RarityCalculatorInst
 
@@ -31,120 +46,141 @@ const kittie3 = 1267904
 const gene3 =
   '290372710203698797209297887795752417072070342201768110150904359522134138'
 
-before(async () => {
-  ProxyInst = await Proxy.new()
-  RarityCalculatorInst = await RarityCalculator.new()
-  BettingInst = await Betting.new()
-
-  await ProxyInst.addContract('RarityCalculator', RarityCalculatorInst.address)
-  await ProxyInst.addContract('Betting', BettingInst.address)
-
-  await RarityCalculatorInst.setProxy(ProxyInst.address)
-  await BettingInst.setProxy(ProxyInst.address)
-
-  await BettingInst.initialize()
-
-  await RarityCalculatorInst.fillKaiValue()
-  await RarityCalculatorInst.updateTotalKitties(1600000)
-  await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'body',
-      Object.keys(kaiToCattributesData[0].body.kai)[i],
-      Object.values(kaiToCattributesData[0].body.kai)[i]
-    )
-  }
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'pattern',
-      Object.keys(kaiToCattributesData[1].pattern.kai)[i],
-      Object.values(kaiToCattributesData[1].pattern.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'coloreyes',
-      Object.keys(kaiToCattributesData[2].coloreyes.kai)[i],
-      Object.values(kaiToCattributesData[2].coloreyes.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'eyes',
-      Object.keys(kaiToCattributesData[3].eyes.kai)[i],
-      Object.values(kaiToCattributesData[3].eyes.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'color1',
-      Object.keys(kaiToCattributesData[4].color1.kai)[i],
-      Object.values(kaiToCattributesData[4].color1.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'color2',
-      Object.keys(kaiToCattributesData[5].color2.kai)[i],
-      Object.values(kaiToCattributesData[5].color2.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'color3',
-      Object.keys(kaiToCattributesData[6].color3.kai)[i],
-      Object.values(kaiToCattributesData[6].color3.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'wild',
-      Object.keys(kaiToCattributesData[7].wild.kai)[i],
-      Object.values(kaiToCattributesData[7].wild.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'mouth',
-      Object.keys(kaiToCattributesData[8].mouth.kai)[i],
-      Object.values(kaiToCattributesData[8].mouth.kai)[i]
-    )
-  }
-
-  for (let i = 0; i < 32; i++) {
-    await RarityCalculatorInst.updateCattributes(
-      'environment',
-      Object.keys(kaiToCattributesData[9].environment.kai)[i],
-      Object.values(kaiToCattributesData[9].environment.kai)[i]
-    )
-  }
-
-  for (let j = 0; j < cattributesData.length; j++) {
-    await RarityCalculatorInst.updateCattributesScores(
-      cattributesData[j].description,
-      Number(cattributesData[j].total)
-    )
-  }
-
-  for (let m = 0; m < FancyKitties.length; m++) {
-    for (let n = 1; n < FancyKitties[m].length; n++) {
-      await RarityCalculatorInst.updateFancyKittiesList(
-        FancyKitties[m][n],
-        FancyKitties[m][0]
-      )
-    }
-  }
-})
 
 contract('RarityCalculator', accounts => {
+  before(async () => {
+    ProxyInst = await Proxy.new()
+    GenericDBinst = await GenericDB.new()
+    RoleDBinst = await RoleDB.new(GenericDBinst.address)
+    ProfileDBinst = await ProfileDB.new(GenericDBinst.address)
+    RegisterInst = await Register.new()
+    cryptoKitties = await CryptoKitties.new()
+    SuperDaoTokenInst = await SuperDaoToken.new(100000)
+    KittieFightTokenInst = await KittieFightToken.new(100000)
+    RarityCalculatorInst = await RarityCalculator.new()
+    BettingInst = await Betting.new()
+  
+    await ProxyInst.addContract("GenericDB", GenericDBinst.address)
+    await ProxyInst.addContract('RoleDB', RoleDBinst.address)
+    await ProxyInst.addContract('ProfileDB', ProfileDBinst.address)
+    await ProxyInst.addContract('Register', RegisterInst.address)
+    await ProxyInst.addContract('CryptoKitties', cryptoKitties.address)
+    await ProxyInst.addContract('SuperDAOToken', SuperDaoTokenInst.address)
+    await ProxyInst.addContract('KittieFightToken', KittieFightTokenInst.address)
+    await ProxyInst.addContract('RarityCalculator', RarityCalculatorInst.address)
+    await ProxyInst.addContract('Betting', BettingInst.address)
+  
+    await GenericDBinst.setProxy(ProxyInst.address)
+    await RoleDBinst.setProxy(ProxyInst.address)
+    await RoleDBinst.setProxy(ProxyInst.address)
+    await ProfileDBinst.setProxy(ProxyInst.address)
+    await RegisterInst.setProxy(ProxyInst.address)
+    await RarityCalculatorInst.setProxy(ProxyInst.address)
+    await BettingInst.setProxy(ProxyInst.address)
+  
+    await RegisterInst.initialize()
+    await RegisterInst.addSuperAdmin(accounts[0])
+  
+    await RarityCalculatorInst.fillKaiValue()
+    await RarityCalculatorInst.updateTotalKitties(1600000)
+    await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'body',
+        Object.keys(kaiToCattributesData[0].body.kai)[i],
+        Object.values(kaiToCattributesData[0].body.kai)[i]
+      )
+    }
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'pattern',
+        Object.keys(kaiToCattributesData[1].pattern.kai)[i],
+        Object.values(kaiToCattributesData[1].pattern.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'coloreyes',
+        Object.keys(kaiToCattributesData[2].coloreyes.kai)[i],
+        Object.values(kaiToCattributesData[2].coloreyes.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'eyes',
+        Object.keys(kaiToCattributesData[3].eyes.kai)[i],
+        Object.values(kaiToCattributesData[3].eyes.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'color1',
+        Object.keys(kaiToCattributesData[4].color1.kai)[i],
+        Object.values(kaiToCattributesData[4].color1.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'color2',
+        Object.keys(kaiToCattributesData[5].color2.kai)[i],
+        Object.values(kaiToCattributesData[5].color2.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'color3',
+        Object.keys(kaiToCattributesData[6].color3.kai)[i],
+        Object.values(kaiToCattributesData[6].color3.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'wild',
+        Object.keys(kaiToCattributesData[7].wild.kai)[i],
+        Object.values(kaiToCattributesData[7].wild.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'mouth',
+        Object.keys(kaiToCattributesData[8].mouth.kai)[i],
+        Object.values(kaiToCattributesData[8].mouth.kai)[i]
+      )
+    }
+  
+    for (let i = 0; i < 32; i++) {
+      await RarityCalculatorInst.updateCattributes(
+        'environment',
+        Object.keys(kaiToCattributesData[9].environment.kai)[i],
+        Object.values(kaiToCattributesData[9].environment.kai)[i]
+      )
+    }
+  
+    for (let j = 0; j < cattributesData.length; j++) {
+      await RarityCalculatorInst.updateCattributesScores(
+        cattributesData[j].description,
+        Number(cattributesData[j].total)
+      )
+    }
+  
+    for (let m = 0; m < FancyKitties.length; m++) {
+      for (let n = 1; n < FancyKitties[m].length; n++) {
+        await RarityCalculatorInst.updateFancyKittiesList(
+          FancyKitties[m][n],
+          FancyKitties[m][0]
+        )
+      }
+    }
+  })
+  
   it('is able to convert the genome of a kitty to binary', async () => {
     await RarityCalculatorInst.getDominantGeneBinary(kittie1, gene1)
     const kittie1BodyGeneBinary = await RarityCalculatorInst.kittiesDominantGeneBinary.call(
@@ -427,8 +463,6 @@ contract('RarityCalculator', accounts => {
   })
 
   it('is able to calculate the rarity of the cattributes of a kittie', async () => {
-    // await RarityCalculatorInst.updateTotalKitties(1600000)
-
     await RarityCalculatorInst.getDominantGeneBinary(kittie1, gene1)
     await RarityCalculatorInst.binaryToKai(kittie1)
     await RarityCalculatorInst.kaiToCattribute(kittie1)
@@ -473,372 +507,6 @@ contract('RarityCalculator', accounts => {
   })
 })
 
-contract('Betting', accounts => {
-  it('is able to set fight map for a game with a specific gameId', async () => {
-    await BettingInst.setFightMap(123, 34, 89)
-
-    const res0 = await BettingInst.fightMap.call(123, 0)
-    const res1 = await BettingInst.fightMap.call(123, 1)
-    const res2 = await BettingInst.fightMap.call(123, 2)
-    const res3 = await BettingInst.fightMap.call(123, 3)
-    const res4 = await BettingInst.fightMap.call(123, 4)
-    const res5 = await BettingInst.fightMap.call(123, 5)
-    const res6 = await BettingInst.fightMap.call(123, 6)
-
-    assert.equal(res0.attack, 'lowPunch')
-    assert.equal(res1.attack, 'lowKick')
-    assert.equal(res2.attack, 'lowThunder')
-    assert.equal(res3.attack, 'hardPunch')
-    assert.equal(res4.attack, 'hardKick')
-    assert.equal(res5.attack, 'hardThunder')
-    assert.equal(res6.attack, 'slash')
-  })
-
-  it('is able to record the total number of direct attacks of each hitType of the given corner in a game with sepcific gameId', async () => {
-    await BettingInst.setDirectAttacksScored(123, accounts[0], 1)
-    await BettingInst.setDirectAttacksScored(123, accounts[0], 5)
-    await BettingInst.setDirectAttacksScored(123, accounts[0], 6)
-    await BettingInst.setDirectAttacksScored(123, accounts[0], 6)
-    const res0 = await BettingInst.directAttacksScored.call(123, accounts[0], 0)
-    const res1 = await BettingInst.directAttacksScored.call(123, accounts[0], 1)
-    const res2 = await BettingInst.directAttacksScored.call(123, accounts[0], 2)
-    const res3 = await BettingInst.directAttacksScored.call(123, accounts[0], 3)
-    const res4 = await BettingInst.directAttacksScored.call(123, accounts[0], 4)
-    const res5 = await BettingInst.directAttacksScored.call(123, accounts[0], 5)
-    const res6 = await BettingInst.directAttacksScored.call(123, accounts[0], 6)
-    const numLowPunch = res0.toNumber()
-    const numLowKick = res1.toNumber()
-    const numLowThunder = res2.toNumber()
-    const numHardPunch = res3.toNumber()
-    const numHardKick = res4.toNumber()
-    const numHardThuner = res5.toNumber()
-    const numSlash = res6.toNumber()
-    assert.equal(numLowPunch, 0)
-    assert.equal(numLowKick, 1)
-    assert.equal(numLowThunder, 0)
-    assert.equal(numHardPunch, 0)
-    assert.equal(numHardKick, 0)
-    assert.equal(numHardThuner, 1)
-    assert.equal(numSlash, 2)
-  })
-
-  it('is able to record the total number of blocked attacks of each hitType of the given corner in a game with sepcific gameId', async () => {
-    await BettingInst.setBlockedAttacksScored(123, accounts[0], 1)
-    await BettingInst.setBlockedAttacksScored(123, accounts[0], 3)
-    await BettingInst.setBlockedAttacksScored(123, accounts[0], 5)
-    await BettingInst.setBlockedAttacksScored(123, accounts[0], 6)
-    await BettingInst.setBlockedAttacksScored(123, accounts[0], 6)
-    const res0 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      0
-    )
-    const res1 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      1
-    )
-    const res2 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      2
-    )
-    const res3 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      3
-    )
-    const res4 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      4
-    )
-    const res5 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      5
-    )
-    const res6 = await BettingInst.blockedAttacksScored.call(
-      123,
-      accounts[0],
-      6
-    )
-    const numLowPunch = res0.toNumber()
-    const numLowKick = res1.toNumber()
-    const numLowThunder = res2.toNumber()
-    const numHardPunch = res3.toNumber()
-    const numHardKick = res4.toNumber()
-    const numHardThuner = res5.toNumber()
-    const numSlash = res6.toNumber()
-    assert.equal(numLowPunch, 0)
-    assert.equal(numLowKick, 1)
-    assert.equal(numLowThunder, 0)
-    assert.equal(numHardPunch, 1)
-    assert.equal(numHardKick, 0)
-    assert.equal(numHardThuner, 1)
-    assert.equal(numSlash, 2)
-  })
-
-  it('is able to get the total number of direct attacks of each hitType of the given corner in a game with sepcific gameId', async () => {
-    const res = await BettingInst.getDirectAttacksScored(123, accounts[0])
-
-    const numLowPunch = res[0].toNumber()
-    const numLowKick = res[1].toNumber()
-    const numLowThunder = res[2].toNumber()
-    const numHardPunch = res[3].toNumber()
-    const numHardKick = res[4].toNumber()
-    const numHardThuner = res[5].toNumber()
-    const numSlash = res[6].toNumber()
-    assert.equal(numLowPunch, 0)
-    assert.equal(numLowKick, 1)
-    assert.equal(numLowThunder, 0)
-    assert.equal(numHardPunch, 0)
-    assert.equal(numHardKick, 0)
-    assert.equal(numHardThuner, 1)
-    assert.equal(numSlash, 2)
-  })
-
-  it('is able to get the total number of blocked attacks of each hitType of the given corner in a game with sepcific gameId', async () => {
-    const res = await BettingInst.getBlockedAttacksScored(123, accounts[0])
-
-    const numLowPunch = res[0].toNumber()
-    const numLowKick = res[1].toNumber()
-    const numLowThunder = res[2].toNumber()
-    const numHardPunch = res[3].toNumber()
-    const numHardKick = res[4].toNumber()
-    const numHardThuner = res[5].toNumber()
-    const numSlash = res[6].toNumber()
-    assert.equal(numLowPunch, 0)
-    assert.equal(numLowKick, 1)
-    assert.equal(numLowThunder, 0)
-    assert.equal(numHardPunch, 1)
-    assert.equal(numHardKick, 0)
-    assert.equal(numHardThuner, 1)
-    assert.equal(numSlash, 2)
-  })
-
-  it('is able to record the bet amount of each individual bet of the given corner of a game with a specific gameId', async () => {
-    await BettingInst.fillBets(123, accounts[0], 2)
-    const res = await BettingInst.bets.call(123, accounts[0], 0)
-    const bet = res.toNumber()
-    assert.equal(bet, 2)
-  })
-
-  it('is able to get last 4 bet amount of the given corner of a game with a specific gameId', async () => {
-    await BettingInst.fillBets(123, accounts[0], 3)
-    await BettingInst.fillBets(123, accounts[0], 4)
-    await BettingInst.fillBets(123, accounts[0], 5)
-    await BettingInst.fillBets(123, accounts[0], 6)
-    await BettingInst.fillBets(123, accounts[0], 7)
-    const {
-      lastBet4,
-      lastBet3,
-      lastBet2,
-      lastBet1
-    } = await BettingInst.getLastFourBets(123, accounts[0])
-    assert.equal(lastBet4.toNumber(), 4)
-    assert.equal(lastBet3.toNumber(), 5)
-    assert.equal(lastBet2.toNumber(), 6)
-    assert.equal(lastBet1.toNumber(), 7)
-  })
-
-  it('is able to record the last bet timestamp for the given corner in a game with a specific gameId', async () => {
-    const now = Math.floor(new Date().getTime() / 1000)
-    await BettingInst.setLastBetTimestamp(123, accounts[0], now)
-    const res = await BettingInst.lastBetTimestamp.call(123, accounts[0])
-    const lastBetTimeStamp = res.toNumber()
-    assert.isNumber(lastBetTimeStamp)
-  })
-
-  it('randomly selects attack types from low values column bet ether amount is lower than previous bet', async () => {
-    // const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
-    const { attackType, index } = await BettingInst.getAttackType.call(
-      123,
-      accounts[0],
-      1,
-      308
-    )
-    const indexLowVal = index.toNumber()
-    assert.oneOf(attackType, ['lowPunch', 'lowKick', 'lowThunder'])
-    assert.isAtMost(indexLowVal, 2)
-  })
-
-  it('randomly selects attack types from high values column if the bet ether amount is higher than previous bet', async () => {
-    // const {lastBet1, lastBet2, lastBet3, lastBet4, lastBet5} = await BettingInst.getLastFiveBets(123, accounts[0])
-    const { attackType, index } = await BettingInst.getAttackType.call(
-      123,
-      accounts[0],
-      9,
-      888
-    )
-    const indexHardVal = index.toNumber()
-    assert.oneOf(attackType, ['hardPunch', 'hardKick', 'hardThunder', 'slash'])
-    assert.isAtLeast(indexHardVal, 3)
-  })
-
-  it('is able to determine whether the attack type is blocked or direct', async () => {
-    const now = Math.floor(new Date().getTime() / 1000)
-    await BettingInst.setLastBetTimestamp(123, accounts[1], now)
-    await sleep(2000)
-    const isBlocked = await BettingInst.isAttackBlocked.call(123, accounts[1])
-    assert.isTrue(isBlocked)
-  })
-
-  it('is able to set and store the current defense level of the given corner in a game', async () => {
-    await BettingInst.setDefenseLevel(123, accounts[0], 3)
-    const defenseLevel = await BettingInst.defenseLevel.call(123, accounts[0])
-    assert.equal(defenseLevel, 3)
-  })
-
-  it('is able to reduce the defense level of the opponent if each of the last 5 bets from the attacker was consecutively bigger than the previous one', async () => {
-    // if the defense level of the opponent player is higher than 0, then it is reduced if the conditions for reduction are true.
-    await BettingInst.setDefenseLevel(123, accounts[1], 2)
-    await BettingInst.fillBets(123, accounts[0], 10)
-    await BettingInst.fillBets(123, accounts[0], 11)
-    await BettingInst.fillBets(123, accounts[0], 12)
-    await BettingInst.fillBets(123, accounts[0], 13)
-    await BettingInst.fillBets(123, accounts[0], 14)
-    await BettingInst.reduceDefenseLevel(123, 16, accounts[0], accounts[1])
-    const defenseLevelOppoent = await BettingInst.defenseLevel.call(
-      123,
-      accounts[1]
-    )
-    assert.equal(defenseLevelOppoent, 1)
-  })
-
-  it('is not able to reduce the defense level of the opponent player if the defense level of the opponent player is already 0, even when the conditions for reduction are true. ', async () => {
-    // if the defense level of the opponent player is already 0, then it stays at 0, even when the conditions for reduction are true.
-    await BettingInst.setDefenseLevel(207, accounts[6], 0)
-    await BettingInst.fillBets(207, accounts[7], 10)
-    await BettingInst.fillBets(207, accounts[7], 11)
-    await BettingInst.fillBets(207, accounts[7], 12)
-    await BettingInst.fillBets(207, accounts[7], 13)
-    await BettingInst.fillBets(207, accounts[7], 14)
-    try {
-      await BettingInst.reduceDefenseLevel(207, 16, accounts[7], accounts[6])
-    } catch (error) {
-      errorMessage = error.toString()
-    }
-    assert.include(errorMessage, 'Defense level is already zero')
-  })
-
-  it('is able to calculate the original defense level of both corners in a game via the function startGame()', async () => {
-    const resStart = await BettingInst.startGame.call(
-      22, // gameId
-      kittie1, // kittie belonging to the supported player
-      gene1, // gene of kittie1
-      accounts[0], // supported player
-      kittie3, // kittie belonging to the opponent player
-      gene3, // gene of kittie3
-      accounts[1], // opponent player
-      78, // random number generated by the red corner
-      99 // random number generated by the black corner
-    )
-
-    const originalDefenseLevelSupportedPlayer = resStart.originalDefenseLevelSupportedPlayer.toNumber()
-    console.log(originalDefenseLevelSupportedPlayer)
-    const originalDefenseLevelOpponent = resStart.originalDefenseLevelOpponent.toNumber()
-    console.log(originalDefenseLevelOpponent)
-
-    assert.isAtLeast(originalDefenseLevelSupportedPlayer, 1)
-    assert.isAtMost(originalDefenseLevelSupportedPlayer, 6)
-    assert.isAtLeast(originalDefenseLevelOpponent, 1)
-    assert.isAtMost(originalDefenseLevelOpponent, 6)
-  })
-
-  it('is able to store the original defense level of both corners in a game via the function startGame()', async () => {
-    await BettingInst.startGame(
-      333, // gameId
-      kittie1, // kittie belonging to the supported player
-      gene1, // gene of kittie1
-      accounts[0], // supported player
-      kittie3, // kittie belonging to the opponent player
-      gene3, // gene of kittie3
-      accounts[1], // opponent player
-      423, // random number generated by the red corner
-      855 // random number generated by the black corner
-    )
-    const defenseLevelSupportedPlayerStoredBN = await BettingInst.defenseLevel.call(
-      333,
-      accounts[0]
-    )
-    const defenseLevelSupportedPlayerStored = defenseLevelSupportedPlayerStoredBN.toNumber()
-    console.log(defenseLevelSupportedPlayerStored)
-    const defenseLevelOpponentStoredBN = await BettingInst.defenseLevel.call(
-      333,
-      accounts[1]
-    )
-    const defenseLevelOpponentStored = defenseLevelOpponentStoredBN.toNumber()
-    console.log(defenseLevelOpponentStored)
-
-    // we know that kittie1 has an original defnese level of 6, and kittie3 has an original defense level of 4,
-    // based on the environment setup in this Truffle test. Since the supported player's kittie is
-    // kittie1, it must have a original defense level of 6. The same rationale goes to the opponent's defense
-    // level of 4 resulted from kittie3 in this test
-
-    assert.equal(defenseLevelSupportedPlayerStored, 6)
-    assert.equal(defenseLevelOpponentStored, 4)
-  })
-
-  it('is able to generate a fight map for a game via the function startGame()', async () => {
-    await BettingInst.startGame(
-      27, // gameId
-      kittie1, // kittie belonging to the supported player
-      gene1, // gene of kittie1
-      accounts[0], // supported player
-      kittie3, // kittie belonging to the opponent player
-      gene3, // gene of kittie3
-      accounts[1], // opponent player
-      750, // random number generated by the red corner
-      930 // random number generated by the black corner
-    )
-
-    const res00 = await BettingInst.fightMap.call(27, 0)
-    const res01 = await BettingInst.fightMap.call(27, 1)
-    const res02 = await BettingInst.fightMap.call(27, 2)
-    const res03 = await BettingInst.fightMap.call(27, 3)
-    const res04 = await BettingInst.fightMap.call(27, 4)
-    const res05 = await BettingInst.fightMap.call(27, 5)
-    const res06 = await BettingInst.fightMap.call(27, 6)
-
-    assert.equal(res00.attack, 'lowPunch')
-    assert.equal(res01.attack, 'lowKick')
-    assert.equal(res02.attack, 'lowThunder')
-    assert.equal(res03.attack, 'hardPunch')
-    assert.equal(res04.attack, 'hardKick')
-    assert.equal(res05.attack, 'hardThunder')
-    assert.equal(res06.attack, 'slash')
-  })
-
-  it('calculates and returns attack type, attackHash, and current opponent defense level due to each bet placed by the given corner in a game', async () => {
-    const resBet = await BettingInst.bet.call(
-      123, // gameId
-      18, // bet amount
-      accounts[0], // supporting player
-      accounts[1], // opponent player
-      92 // random number generated by front end
-    )
-
-    const currentDefenseLevelSupportedPlayer = resBet.defenseLevelSupportedPlayer.toNumber()
-    const currentDefenseLevelOpponent = resBet.defenseLevelOpponent.toNumber()
-    assert.oneOf(resBet.attackType, [
-      'hardPunch',
-      'hardKick',
-      'hardThunder',
-      'slash'
-    ])
-    assert.isAtLeast(currentDefenseLevelSupportedPlayer, 0)
-    assert.isAtMost(currentDefenseLevelSupportedPlayer, 6)
-    assert.equal(currentDefenseLevelOpponent, 0)
-  })
-
-  it('is able to generate a random number between 0 and 100', async () => {
-    const res = await BettingInst.randomGen(398)
-    const randomNumber = res.toNumber()
-    assert.isAtLeast(randomNumber, 0)
-    assert.isAtMost(randomNumber, 100)
-  })
-})
 
 // original data based on
 // https://api.cryptokitties.co/cattributes
@@ -1753,10 +1421,11 @@ const kaiToCattributesData = [
   }
 ]
 
-// Samples of original data for fill in the db FancyKitties
+// Samples of original data for fill in the db FancyKitties for testing purpose
 // based on https://www.cryptokitties.co/catalogue/fancy-cats
 // Fancy kitties are selected based on the rank of generation (low to high).
-// Generally speaking, fancy kitties priced lower than $100 are not considered as valualbe fancy kitties.
+// For complete data set, please refer to sourceData/FancyKitties.js
+
 const FancyKitties = [
   [
     'Catamari',
@@ -1994,3 +1663,4 @@ const FancyKitties = [
     1550507
   ]
 ]
+

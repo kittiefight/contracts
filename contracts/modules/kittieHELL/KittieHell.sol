@@ -10,6 +10,7 @@ import "../../interfaces/ERC20Standard.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "../databases/GMGetterDB.sol";
+import "../endowment/EndowmentFund.sol";
 
 
 /**
@@ -18,7 +19,7 @@ import "../databases/GMGetterDB.sol";
  * @author @panos, @ugwu, @ziweidream
  * @notice This contract is able to lock kitties forever caution is advised
  */
-contract KittieHELL is BasicControls, Proxied, Guard {
+contract KittieHell is BasicControls, Proxied, Guard {
 
     using SafeMath for uint256;
 
@@ -28,6 +29,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     GameVarAndFee public gameVarAndFee;
     GameStore public gameStore;
     GMGetterDB public gmGetterDB;
+    EndowmentFund public endowmentFund;
 
     uint256 public scheduledJob;
 
@@ -49,9 +51,9 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+        endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
     }
 
-    // onlyContract(CONTRACT_NAME_GAMEMANAGER) is temporarily commented out
     /**
      * @author @ugwu @ziweidream
      * @notice transfer the ownership of a kittie to this contract
@@ -75,7 +77,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
 
     function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
         public
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GM_SETTER_DB)
         onlyOwnedKitty(_kittyID)
         onlyNotKilledKitty(_kittyID)
     {
@@ -110,6 +112,8 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;
+        uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
+        scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
     }
@@ -137,11 +141,8 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     onlyOwnedKitty(_kittyID)
     onlyNotGhostKitty(_kittyID)
     returns(uint) {
-        // kittieRedemptionFee is temporarily hardcoded until gameStore.sol is further developed to
-        // be able to return a valid number instead of 0
         uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
         return gameStore.getKittieRedemptionFee(gameId);
-	    // return block.timestamp.sub(kitties[_kittyID].deadAt).mul(kittieRedemptionFee);
 	}
 
      /**
@@ -163,8 +164,9 @@ contract KittieHELL is BasicControls, Proxied, Guard {
     returns (bool) {
         uint256 tokenAmount = getResurrectionCost(_kittyID);
         require(tokenAmount > 0);
-        kittieFightToken.transferFrom(kitties[_kittyID].owner, proxy.getContract('EndowmentFund'), tokenAmount);
+        endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
         releaseKitty(_kittyID);
+        kitties[_kittyID].dead = false;
         emit KittyResurrected(_kittyID);
         return true;
     }
@@ -201,7 +203,7 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         releaseKitty(_kittyID);
     }
 
-    function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay) 
+    function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay)
         public
         returns(bool)
     {
@@ -225,7 +227,8 @@ contract KittieHELL is BasicControls, Proxied, Guard {
         onlyContract(CONTRACT_NAME_CRONJOB)
         returns (bool)
     {
-        uint kittieExpiry = gameVarAndFee.getKittieExpiry();
+        uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
+        uint kittieExpiry = gameStore.getKittieExpirationTime(gameId);
 	    require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
         kitties[_kittyID].ghost = true;
         cryptoKitties.transfer(proxy.getContract("KittieHellDB"), _kittyID);

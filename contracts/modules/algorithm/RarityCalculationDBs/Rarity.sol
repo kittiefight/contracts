@@ -18,13 +18,13 @@ contract Rarity is KittiesCattributesDB, CattributesScoresDB {
      * @return the rarity of a kittie as an integer
      */
 
-    function calculateRarity(uint256 kittieId) 
+    function calculateRarity(uint256 kittieId)
        public // temporarily set as public just for truffle testing purpose. should be internal
        //internal
-       view 
-       returns (uint256 rarity) 
+       view
+       returns (uint256 rarity)
     {
-       rarity = (CattributesScores[kittiesDominantCattributes[kittieId][0]]
+      rarity = (CattributesScores[kittiesDominantCattributes[kittieId][0]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][1]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][2]]
                 + CattributesScores[kittiesDominantCattributes[kittieId][3]]

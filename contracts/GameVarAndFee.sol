@@ -67,11 +67,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         genericDB = _genericDB;
     }
 
-    /// @notice for testing only
-    function initialize() external onlyOwner {
-        RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).addRole(CONTRACT_NAME_GAMEVARANDFEE, "super_admin", msg.sender);
-    }
-
     // ----- SETTERS ------
 
     /// @dev set one variable at a time

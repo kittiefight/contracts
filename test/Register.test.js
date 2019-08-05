@@ -11,6 +11,7 @@ const ProfileDB = artifacts.require('ProfileDB');
 const RoleDB = artifacts.require('RoleDB');
 const Register = artifacts.require('Register');
 const Proxy = artifacts.require('KFProxy');
+const FreezeInfo = artifacts.require('FreezeInfo');
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('MockERC20Token');
 const CryptoKitties = artifacts.require('MockERC721Token');
@@ -24,6 +25,7 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     this.profileDB = await ProfileDB.new(this.genericDB.address);
     this.roleDB = await RoleDB.new(this.genericDB.address);
     this.proxy = await Proxy.new();
+    this.freezeInfo = await FreezeInfo.new();
     this.cronJob = await CronJob.new(this.genericDB.address);
     this.register = await Register.new();
     this.superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
@@ -38,11 +40,13 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     await this.proxy.addContract('ProfileDB', this.profileDB.address);
     await this.proxy.addContract('RoleDB', this.roleDB.address);
     await this.proxy.addContract('Register', this.register.address);
+    await this.proxy.addContract('FreezeInfo', this.freezeInfo.address);
 
     await this.genericDB.setProxy(this.proxy.address);
     await this.profileDB.setProxy(this.proxy.address);
     await this.roleDB.setProxy(this.proxy.address);
     await this.register.setProxy(this.proxy.address);
+    await this.freezeInfo.setProxy(this.proxy.address);
     await this.register.initialize();
   });
 
@@ -77,8 +81,6 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     const kittie3 = 23134;
 
     beforeEach(async () => {
-      // Fake the proxy contract to be able to make calls directly to Register contract
-      await this.register.setProxy(creator);
       // Mint some kitties for the test addresses
       await this.cryptoKitties.mint(user1, kittie1).should.be.fulfilled;
       await this.cryptoKitties.mint(user2, kittie2).should.be.fulfilled;
@@ -103,7 +105,12 @@ contract('Register', ([creator, user1, user2, unauthorizedUser, randomAddress]) 
     });
 
     it('registers user', async () => {
-      await this.register.register(user1).should.be.fulfilled;
+      let call = web3.eth.abi.encodeFunctionCall(
+        this.register.abi.find(fn => fn.name === 'register'),
+        []
+      );
+      await this.proxy.execute(this.register.address, call, {from: user1}).should.be.fulfilled;
+      // await this.register.register(user1).should.be.fulfilled;
       let doesExist = await this.profileDB.doesProfileExist(user1);
       let hasRole = await this.roleDB.hasRole('bettor', user1);
       doesExist.should.be.true;

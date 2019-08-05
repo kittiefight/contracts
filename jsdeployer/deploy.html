@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KittieFight Deploy</title>
+    <meta charset="UTF-8">
+    <script src="jquery.min.js"></script>
+    <script type="text/javascript" src="web3.min.js"></script>
+    <script type="text/javascript" src="deploy.js"></script>
+    <link rel="stylesheet" href="style.css" type='text/css'/>
+</head>
+<body>
+<h1>KittieFight Deploy</h1>
+
+<div class="error" id="errormsg"></div>
+<h2>0. Load contracts</h2>
+<form id="loadContractsForm">
+    <h3>Main contracts</h3>
+    <label>KFProxy ABI:
+        <textarea id="KFProxy_ABI" readonly class="abi"></textarea>
+    </label>
+    <label>GenericDB ABI:
+        <textarea id="GenericDB_ABI" readonly  class="abi"></textarea>
+    </label>
+    <label>FreezeInfo ABI:
+        <textarea id="FreezeInfo_ABI" readonly  class="abi"></textarea>
+    </label>
+    <label>CronJob ABI:
+        <textarea id="CronJob_ABI" readonly  class="abi"></textarea>
+    </label>
+    <h3>Test contracts</h3>
+    <label>ProxiedTest ABI:
+        <textarea id="ProxiedTest_ABI" readonly  class="abi"></textarea>
+    </label>
+</form>
+
+<form id="publishAndConfigureForm">
+    <h3>Main contracts deploy</h3>
+    <input type="button" id="deployMainContracts" value="Deploy Main contracts" disabled>
+    <table id="mainContractsDeployTable" class="actionTable">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Main contracts setup</h3>
+    <input type="button" id="setupMainContracts" value="Setup Main contracts" disabled>
+    <table id="mainContractsSetupTable" class="actionTable">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Test contracts deploy</h3>
+    <input type="button" id="deployTestContracts" value="Deploy Test contracts" disabled>
+    <table id="testContractsDeployTable" class="actionTable">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+
+    <h3>Test contracts setup</h3>
+    <input type="button" id="setupTestContracts" value="Setup Test contracts" disabled>
+    <table id="testContractsSetupTable" class="actionTable">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</form>
+
+<form id="prepareCallForm">
+    <div>
+        <label>Target contract name: <input type="text" name="targetContract"></label>
+        <label>Target function: <input type="text" name="targetFunction"></label>
+    </div>
+    <table>
+        <thead>
+            <th>Argument</th>
+            <th>Value</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0</td>
+                <td><input type="text" name="arg_0"></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td><input type="text" name="arg_1"></td>
+            </tr>
+        </tbody>
+    </table>
+    <input type="button" id="generatePayload" value="Generate Payload">
+    <div><label>Payload
+        <textarea name="payload" style="width: 100%; height: 3em;"></textarea>
+    </label></div>
+    <div><label>Message value: <input type="number" name="messageValue"> ETH</label></div>
+    <input type="button" id="sendCall" value="Send Call">
+</form>
+
+
+
+</body>
+</html>

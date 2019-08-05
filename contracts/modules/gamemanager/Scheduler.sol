@@ -92,8 +92,6 @@ contract Scheduler is Proxied {
         kittyList.push(newKitty);
 
         if ((gameVarAndFee.getRequiredNumberMatches().mul(2)) == kittyList.length) {
-        // temporary hardcoded for test, unable to setVarAndFee from test due to proxy issue (out of gas)
-        //if (4 == kittyList.length) {
             matchKitties();
         }
     }

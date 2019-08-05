@@ -1,65 +1,274 @@
+const BigNumber = web3.utils.BN;
+const KFProxy = artifacts.require('KFProxy')
+const GenericDB = artifacts.require('GenericDB');
+const ProfileDB = artifacts.require('ProfileDB')
+const RoleDB = artifacts.require('RoleDB')
+const GMSetterDB = artifacts.require('GMSetterDB')
+const GMGetterDB = artifacts.require('GMGetterDB')
+const GameManager = artifacts.require('GameManager')
+const GameStore = artifacts.require('GameStore')
+const GameCreation = artifacts.require('GameCreation')
+const GameVarAndFee = artifacts.require('GameVarAndFee')
+const Forfeiter = artifacts.require('Forfeiter')
+const DateTime = artifacts.require('DateTime')
+const Scheduler = artifacts.require('Scheduler')
+const Betting = artifacts.require('Betting')
+const HitsResolve = artifacts.require('HitsResolve')
 const RarityCalculator = artifacts.require('RarityCalculator')
+const Register = artifacts.require('Register')
+const EndowmentFund = artifacts.require('EndowmentFund')
+const EndowmentDB = artifacts.require('EndowmentDB')
+const Escrow = artifacts.require('Escrow')
+const KittieHELL = artifacts.require('KittieHell')
+const KittieHellDB = artifacts.require('KittieHellDB')
+const SuperDaoToken = artifacts.require('MockERC20Token');
+const KittieFightToken = artifacts.require('KittieFightToken');
+const CryptoKitties = artifacts.require('MockERC721Token');
+const CronJob = artifacts.require('CronJob');
+const FreezeInfo = artifacts.require('FreezeInfo');
+const CronJobTarget = artifacts.require('CronJobTarget');
+
+// const medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B' //Mainnet
+// const medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3' //Rinkeby
+// const medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan
+
+const ERC20_TOKEN_SUPPLY = new BigNumber(
+  web3.utils.toWei("100000000", "ether") //100 Million
+);
+
+const TOKENS_FOR_USERS = new BigNumber(
+  web3.utils.toWei("5000", "ether") //100 Million
+);
+
+const INITIAL_KTY_ENDOWMENT = new BigNumber(
+  web3.utils.toWei("50000", "ether") //50.000 KTY
+);
+
+const INITIAL_ETH_ENDOWMENT = new BigNumber(
+  web3.utils.toWei("1000", "ether") //1.000 ETH
+);
 
 
 module.exports = (deployer, network, accounts) => {
 
-  deployer.deploy(RarityCalculator, {from: accounts[0]})
-  .then(async(RarityCalculatorInst) => {
-    await RarityCalculatorInst.fillKaiValue()
+  let medianizer;
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
-    }
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
-    }
+  if ( network === 'mainnet' ) medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
+  else if ( network === 'rinkeby' ) medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
+  else medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan and other networks
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
-    }
+  
+  deployer.deploy(GenericDB)
+  .then(() => deployer.deploy(ProfileDB, GenericDB.address))
+  .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
+  .then(() => deployer.deploy(GMGetterDB, GenericDB.address))
+  .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
+  .then(() => deployer.deploy(GameVarAndFee, GenericDB.address, medianizer))
+  .then(() => deployer.deploy(KittieHellDB, GenericDB.address))
+  .then(() => deployer.deploy(RoleDB, GenericDB.address))
+  .then(() => deployer.deploy(CronJob, GenericDB.address))
+  .then(() => deployer.deploy(FreezeInfo))
+  .then(() => deployer.deploy(CronJobTarget))
+  .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
+  .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+  .then(() => deployer.deploy(CryptoKitties))
+  .then(() => deployer.deploy(GameManager))
+  .then(() => deployer.deploy(GameStore))
+  .then(() => deployer.deploy(GameCreation))
+  .then(() => deployer.deploy(Register))
+  .then(() => deployer.deploy(DateTime))
+  .then(() => deployer.deploy(Forfeiter))
+  .then(() => deployer.deploy(Scheduler))
+  .then(() => deployer.deploy(Betting))
+  .then(() => deployer.deploy(HitsResolve))
+  .then(() => deployer.deploy(RarityCalculator))
+  .then(() => deployer.deploy(EndowmentFund))
+  .then(() => deployer.deploy(KittieHELL))
+  .then(() => deployer.deploy(Escrow))
+  .then(async(escrow) => {
+    await escrow.transferOwnership(EndowmentFund.address) 
+  })
+  .then(() => deployer.deploy(KFProxy))
+  .then(async(proxy) => {
+    console.log('\nAdding contract names to proxy...');
+    await proxy.addContract('TimeContract', DateTime.address)
+    await proxy.addContract('GenericDB', GenericDB.address)
+    await proxy.addContract('CryptoKitties', CryptoKitties.address);
+    await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
+    await proxy.addContract('KittieFightToken', KittieFightToken.address);
+    await proxy.addContract('ProfileDB', ProfileDB.address);
+    await proxy.addContract('RoleDB', RoleDB.address);
+    await proxy.addContract('Register', Register.address)
+    await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
+    await proxy.addContract('EndowmentFund', EndowmentFund.address)
+    await proxy.addContract('EndowmentDB', EndowmentDB.address)
+    await proxy.addContract('Forfeiter', Forfeiter.address)
+    await proxy.addContract('Scheduler', Scheduler.address)
+    await proxy.addContract('Betting', Betting.address)
+    await proxy.addContract('HitsResolve', HitsResolve.address)
+    await proxy.addContract('RarityCalculator', RarityCalculator.address)
+    await proxy.addContract('GMSetterDB', GMSetterDB.address)
+    await proxy.addContract('GMGetterDB', GMGetterDB.address)
+    await proxy.addContract('GameManager', GameManager.address)
+    await proxy.addContract('GameStore', GameStore.address)
+    await proxy.addContract('GameCreation', GameCreation.address)
+    await proxy.addContract('CronJob', CronJob.address)
+    await proxy.addContract('FreezeInfo', FreezeInfo.address);
+    await proxy.addContract('CronJobTarget', CronJobTarget.address);
+    await proxy.addContract('KittieHell', KittieHELL.address)
+    await proxy.addContract('KittieHellDB', KittieHellDB.address)
+  })
+  .then(async() => {
+    console.log('\nGetting contract instances...');
+    // PROXY
+    proxy = await KFProxy.deployed()
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
-    }
+    // DATABASES
+    genericDB = await GenericDB.deployed()
+    profileDB = await ProfileDB.deployed();
+    roleDB = await RoleDB.deployed();
+    endowmentDB = await EndowmentDB.deployed()
+    getterDB = await GMGetterDB.deployed()
+    setterDB = await GMSetterDB.deployed()
+    kittieHellDB = await KittieHellDB.deployed()
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
-    }
+    // CRONJOB
+    cronJob = await CronJob.deployed()
+    freezeInfo = await FreezeInfo.deployed();
+    cronJobTarget= await CronJobTarget.deployed();
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
-    }
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
-    }
+    // TOKENS
+    superDaoToken = await SuperDaoToken.deployed();
+    kittieFightToken = await KittieFightToken.deployed();
+    cryptoKitties = await CryptoKitties.deployed();
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
-    }
+    // MODULES
+    gameManager = await GameManager.deployed()
+    gameStore = await GameStore.deployed()
+    gameCreation = await GameCreation.deployed()
+    register = await Register.deployed()
+    dateTime = await DateTime.deployed()
+    gameVarAndFee = await GameVarAndFee.deployed()
+    forfeiter = await Forfeiter.deployed()
+    scheduler = await Scheduler.deployed()
+    betting = await Betting.deployed()
+    hitsResolve = await HitsResolve.deployed()
+    rarityCalculator = await RarityCalculator.deployed()
+    endowmentFund = await EndowmentFund.deployed()
+    kittieHELL = await KittieHELL.deployed()
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
-    }
+    //ESCROW
+    escrow = await Escrow.deployed()
+    
 
-    for (let i=0; i<32; i++) {
-        await RarityCalculatorInst.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
-    }
+    console.log('\nSetting Proxy...');
+    await genericDB.setProxy(proxy.address)
+    await profileDB.setProxy(proxy.address);
+    await roleDB.setProxy(proxy.address);
+    await setterDB.setProxy(proxy.address)
+    await getterDB.setProxy(proxy.address)
+    await endowmentFund.setProxy(proxy.address)
+    await endowmentDB.setProxy(proxy.address)
+    await gameVarAndFee.setProxy(proxy.address)
+    await forfeiter.setProxy(proxy.address)
+    await scheduler.setProxy(proxy.address)
+    await betting.setProxy(proxy.address)
+    await hitsResolve.setProxy(proxy.address)
+    await rarityCalculator.setProxy(proxy.address)
+    await register.setProxy(proxy.address)
+    await gameManager.setProxy(proxy.address)
+    await gameStore.setProxy(proxy.address)
+    await gameCreation.setProxy(proxy.address)
+    await cronJob.setProxy(proxy.address)
+    await kittieHELL.setProxy(proxy.address)
+    await kittieHellDB.setProxy(proxy.address)
+    await cronJobTarget.setProxy(proxy.address);
+    await freezeInfo.setProxy(proxy.address);
 
-    for (let j=0; j<cattributesData.length; j++) {
-        await RarityCalculatorInst.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
-    }
+    console.log('\nInitializing contracts...');
+    await gameStore.initialize()
+    await gameCreation.initialize()
+    await forfeiter.initialize()
+    await scheduler.initialize()
+    await register.initialize()
+    await gameManager.initialize()
+    await getterDB.initialize()
+    await setterDB.initialize()
+    await endowmentFund.initialize()    
+    await kittieHellDB.setKittieHELL()
+    await kittieHELL.initialize()
+    await hitsResolve.initialize()
 
-    for (let m=0; m<FancyKitties.length; m++) {
-      for (let n=1; n<FancyKitties[m].length; n++) {
-        await RarityCalculatorInst.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-      }
-    } 
+    console.log('\nAdding Super Admin...');
+    await register.addSuperAdmin(accounts[0])
 
-    await RarityCalculatorInst.updateTotalKitties(1600000)
-    await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
+    console.log('\nUpgrading Escrow...');
+    await endowmentFund.initUpgradeEscrow(escrow.address)
+    await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
+    await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+    await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+    
+    //Temporary set manual defense level for testing
+    // console.log('\nRarity Calculator Setup...');
+    // await rarityCalculator.fillKaiValue()
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
+    // }
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
+    // }
+
+    // for (let i=0; i<32; i++) {
+    //     await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
+    // }
+
+    // for (let j=0; j<cattributesData.length; j++) {
+    //     await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
+    // }
+
+    // for (let m=0; m<FancyKitties.length; m++) {
+    //   for (let n=1; n<FancyKitties[m].length; n++) {
+    //     await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
+    //   }
+    // } 
+
+    // await rarityCalculator.updateTotalKitties(1600000)
+    // await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
   })
+ 
+
+
 };
 
 

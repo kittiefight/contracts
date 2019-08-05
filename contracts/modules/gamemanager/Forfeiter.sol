@@ -18,7 +18,7 @@ import "./GameStore.sol";
 import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
-import '../kittieHELL/KittieHELL.sol';
+import '../kittieHELL/KittieHell.sol';
 
 
 /**
@@ -26,7 +26,6 @@ import '../kittieHELL/KittieHELL.sol';
  * @notice This contracts safeguards any game instances against any unintended outcomes
  * @author wafflemakr
  */
- // TODO: check GameManager implementation, update API calls, and figure out how to test.
 contract Forfeiter is Proxied {
 
   GameStore public gameStore;
@@ -34,7 +33,7 @@ contract Forfeiter is Proxied {
   GMGetterDB public gmGetterDB;
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
-  KittieHELL public kittieHELL;
+  KittieHell public kittieHELL;
 
   uint256 public constant UNDERSUPPORTED = 0;
   uint256 public constant KITTIE_LEFT = 1;
@@ -52,7 +51,7 @@ contract Forfeiter is Proxied {
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
-    kittieHELL = KittieHELL(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+    kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
   }
 
   /**
