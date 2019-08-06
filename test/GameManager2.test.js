@@ -919,8 +919,11 @@ contract('GameManager', (accounts) => {
     balance = Number(web3.utils.fromWei(balance.toString()));   
   
     // WINNER CLAIMING
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.winner }).should.be.fulfilled;
+    await proxy.execute(
+            'EndowmentFund', 
+            setMessage( endowmentFund, 'claim', [gameId] ),
+            { from: winners.winner }
+          ).should.be.fulfilled;
 
     /*
     let withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);

@@ -211,7 +211,7 @@ contract EndowmentFund is Distribution, Guard {
     function sendETHtoEscrow() external payable {
         address msgSender = getOriginalSender();
 
-        /* save gas not very essential
+        /* not very essential
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
         */
@@ -232,7 +232,7 @@ contract EndowmentFund is Distribution, Guard {
      */
     function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
 
-        //require(address(escrow) != address(0), "escrow not initialized"); // save gas - not very essential
+        //require(address(escrow) != address(0), "escrow not initialized"); //  not very essential
 
         // do transfer of KTY
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
@@ -280,7 +280,8 @@ contract EndowmentFund is Distribution, Guard {
     * @dev transfer Escrow ETH funds
     */
     function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount)
-    public onlySuperAdmin
+    //public onlySuperAdmin
+    private
     returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
@@ -299,7 +300,8 @@ contract EndowmentFund is Distribution, Guard {
     * @dev transfer Escrow KFT funds
     */
     function transferKTYfromEscrow(address payable _someAddress, uint256 _kty_amount)
-    public onlySuperAdmin
+    //public  onlySuperAdmin
+    private
     returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
 
