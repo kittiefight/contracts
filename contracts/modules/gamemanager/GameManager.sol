@@ -287,7 +287,7 @@ contract GameManager is Proxied, Guard {
         else
         {
             (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
-            if(ethByCorner[0] > ethByCorner[0] ){
+            if(ethByCorner[0] > ethByCorner[1] ){
                winner = playerBlack;
                 loser = playerRed;
             }
