@@ -346,7 +346,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
 
   }); 
    
-  it('endowmentFund.transferKFTfromEscrow() : Escrow send Eth to given address', async () => {
+  it('endowmentFund.transferKTYfromEscrow() : Escrow send Eth to given address', async () => {
 
     let sender_balance = await kittieFightToken.balanceOf(escrow.address); //console.log('sender_balance =' + sender_balance);
     let add_amount = 10;
@@ -355,7 +355,7 @@ contract('EndowmentFund', ([creator, user1, user2, user3, user4, bettor1, bettor
     let pre = await kittieFightToken.balanceOf(bettor1);
 
     // send some eth
-    endowmentFund.transferKFTfromEscrow(bettor1, add_amount);
+    endowmentFund.transferKTYfromEscrow(bettor1, add_amount);
 
     let post = await kittieFightToken.balanceOf(bettor1); //console.log('escrow post =' + post);
     assert.equal(post - pre, add_amount);

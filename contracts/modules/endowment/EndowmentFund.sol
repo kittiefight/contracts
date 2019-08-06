@@ -58,7 +58,7 @@ contract EndowmentFund is Distribution, Guard {
         address payable msgSender = address(uint160(getOriginalSender()));
         uint256 winningsETH = 1;
         uint256 winningsKTY = 100;
-        if (winningsKTY > 0){transferKFTfromEscrow(msgSender, winningsKTY);}
+        if (winningsKTY > 0){transferKTYfromEscrow(msgSender, winningsKTY);}
         if (winningsETH > 0){transferETHfromEscrow(msgSender, winningsETH);}
     }
 
@@ -124,7 +124,7 @@ contract EndowmentFund is Distribution, Guard {
             'Error: endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true) failed');
 
         if (winningsKTY > 0){
-            transferKFTfromEscrow(msgSender, winningsKTY);
+            transferKTYfromEscrow(msgSender, winningsKTY);
         }
 
         if (winningsETH > 0){
@@ -298,7 +298,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount)
+    function transferKTYfromEscrow(address payable _someAddress, uint256 _kty_amount)
     public onlySuperAdmin
     returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
