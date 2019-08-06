@@ -177,6 +177,29 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             value = await this.cronJobTarget.value();
             assert.equal(value, randomVal, 'Value should aready be set');
         });
+        it('should execute added job by id', async () => {
+            let delay = 10;
+            let randomVal = 1+Math.round(Math.random()*99);
+            //Create Job
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(randomVal, delay).should.be.fulfilled;
+            let jobId = receipt.logs[0].args.scheduledJob;
+            let scheduledTime = receipt.logs[0].args.time;
+            //Check Job created
+            let job = await this.cronJob.getJob(jobId);
+            assert.equal(job[0].toString(), scheduledTime.toString(), 'Scheduled time for Job does not match');
+            let value = await this.cronJobTarget.value();
+            assert.equal(value, 0, 'Value should not be set yet');
+            // console.log('Before increase time: ', (await web3.eth.getBlock(web3.eth.blockNumber)).timestamp);
+            // console.log('Current value:', (await this.cronJobTarget.value()).toString());
+            //Fast-forward time & execute
+            evm.increaseTime(web3, delay+1);
+            receipt = await this.proxy.executeJob(jobId);
+            //Check job is done
+            // console.log('After increase time: ', (await web3.eth.getBlock(web3.eth.blockNumber)).timestamp);
+            // console.log('Current value:', (await this.cronJobTarget.value()).toString());
+            value = await this.cronJobTarget.value();
+            assert.equal(value, randomVal, 'Value should aready be set');
+        });
 
 
     });
