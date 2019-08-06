@@ -925,7 +925,6 @@ contract('GameManager', (accounts) => {
             { from: winners.winner }
           ).should.be.fulfilled;
 
-    /*
     let withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);
     console.log('\nWinner withdrew funds? ', withdrawalState)
 
@@ -969,7 +968,6 @@ contract('GameManager', (accounts) => {
     });
 
     claims.length.should.be.equal(4);
-  */
 
   })
 
