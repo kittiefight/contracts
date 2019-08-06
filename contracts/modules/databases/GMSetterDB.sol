@@ -230,8 +230,8 @@ contract GMSetterDB is Proxied {
     ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), 0);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), 0);
-    KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-    KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
+    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
+    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
   }
 
   // function removeKittyStatus(uint gameId)

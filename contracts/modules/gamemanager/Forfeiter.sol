@@ -96,10 +96,10 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId, string memory reason) internal {
-    // (,,uint256 kittyBlack,
-    //   uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    // kittieHELL.releaseKittyForfeiter(kittyRed);
-    // kittieHELL.releaseKittyForfeiter(kittyBlack);
+    (address playerBlack, address playerRed, uint256 kittyBlack,
+      uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+    if (ckc.ownerOf(kittyBlack) != playerBlack) kittieHELL.releaseKittyForfeiter(kittyBlack);
+    if (ckc.ownerOf(kittyRed) != playerRed) kittieHELL.releaseKittyForfeiter(kittyRed);
     gameManager.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }

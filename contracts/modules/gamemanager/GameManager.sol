@@ -110,9 +110,11 @@ contract GameManager is Proxied, Guard {
         
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
+        (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+
         if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
 
-        (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+        gameState = gmGetterDB.getGameState(gameId);
 
         //Update state if reached prestart time
         //Include check game state because it can be called from the bet function
@@ -120,8 +122,7 @@ contract GameManager is Proxied, Guard {
             gmSetterDB.updateGameState(gameId, uint(eGameState.PRE_GAME));
             emit GameStateChanged(gameId, eGameState.WAITING, eGameState.PRE_GAME);
         }
-            
-        
+
         emit NewSupporter(gameId, supporter, playerToSupport);
         
         return true;
@@ -210,7 +211,7 @@ contract GameManager is Proxied, Guard {
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == uint(eGameState.MAIN_GAME));
+        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running anymore");
         
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
@@ -320,15 +321,15 @@ contract GameManager is Proxied, Guard {
      * @dev Cancels the game before the game starts
      */
     function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
-        // uint gameState = gmGetterDB.getGameState(gameId);
-        // require(gameState == uint(eGameState.WAITING) ||
-        //         gameState == uint(eGameState.PRE_GAME), "Error cancelling game");
+        uint gameState = gmGetterDB.getGameState(gameId);
+        require(gameState == uint(eGameState.WAITING) ||
+                gameState == uint(eGameState.PRE_GAME));
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
         //Set to forfeited
         endowmentFund.updateHoneyPotState(gameId, 4);
-        // gmSetterDB.removeKittiesInGame(gameId);
+        gmSetterDB.removeKittiesInGame(gameId);
 
     }
 }
