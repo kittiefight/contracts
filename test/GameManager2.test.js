@@ -1,9 +1,19 @@
+/*
 const BigNumber = web3.utils.BN;
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
-  .should();
+  .should();*/
+
+  const BigNumber = require('bn.js');
+  require('chai')
+    .use(require('chai-shallow-deep-equal'))
+    .use(require('chai-bn')(BigNumber))
+    .use(require('chai-as-promised'))
+    .should();
+  
+
 
 const KFProxy = artifacts.require('KFProxy')
 const GenericDB = artifacts.require('GenericDB');
@@ -119,7 +129,7 @@ function randomValue() {
 }
 
 function timeout(s) {
-  // console.log(`~~~ Timeout for ${s} seconds`);
+  //increaseBlockTime.advanceTimeAndBlock(s);
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
@@ -472,6 +482,7 @@ contract('GameManager', (accounts) => {
     while(block < gameDetails.preStartTime){
       block = await dateTime.getBlockTimeStamp();
       await timeout(3);
+      //console.log('post timeout(3); current block time = ' + formatDate(block));
     }
 
     let { gameId, playerRed, playerBlack } = gameDetails;
@@ -910,6 +921,8 @@ contract('GameManager', (accounts) => {
     // WINNER CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
     [gameId]), { from: winners.winner }).should.be.fulfilled;
+
+    /*
     let withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);
     console.log('\nWinner withdrew funds? ', withdrawalState)
 
@@ -953,7 +966,7 @@ contract('GameManager', (accounts) => {
     });
 
     claims.length.should.be.equal(4);
-
+  */
 
   })
 
