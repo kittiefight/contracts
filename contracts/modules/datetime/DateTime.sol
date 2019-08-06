@@ -70,7 +70,7 @@ contract DateTime {
     function _daysToDate(uint _days) internal pure returns (uint year, uint month, uint day) {
         int __days = int(_days);
 
-        int L = __days + 68569 + OFFSET19700101;
+        int L = __days + 68569 + 3600 + OFFSET19700101;
         int N = 4 * L / 146097;
         L = L - (146097 * N + 3) / 4;
         int _year = 4000 * (L + 1) / 1461001;

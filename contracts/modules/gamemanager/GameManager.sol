@@ -110,7 +110,7 @@ contract GameManager is Proxied, Guard {
         
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
-        if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
+        if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
 
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
@@ -151,8 +151,8 @@ contract GameManager is Proxied, Guard {
         gameStore.start(gameId, player,randomNum);
 
         // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
-        uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
-        betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
+        // uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        // betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
@@ -320,15 +320,15 @@ contract GameManager is Proxied, Guard {
      * @dev Cancels the game before the game starts
      */
     function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
-        uint gameState = gmGetterDB.getGameState(gameId);
-        require(gameState == uint(eGameState.WAITING) ||
-                gameState == uint(eGameState.PRE_GAME));
+        // uint gameState = gmGetterDB.getGameState(gameId);
+        // require(gameState == uint(eGameState.WAITING) ||
+        //         gameState == uint(eGameState.PRE_GAME), "Error cancelling game");
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
         //Set to forfeited
         endowmentFund.updateHoneyPotState(gameId, 4);
-        gmSetterDB.removeKittiesInGame(gameId);
+        // gmSetterDB.removeKittiesInGame(gameId);
 
     }
 }

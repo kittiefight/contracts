@@ -381,7 +381,6 @@ contract Betting is Proxied, Guard {
     * whose last 5 bets ether amount are compared
     * @param _opponentPlayer the address of the opponent player in this game
     * whose defense level is reduced if contidions stated above are met
-    * @return the defense level of the opponent player in the game
     */
      function reduceDefenseLevel(
         uint256 _gameId,
@@ -391,17 +390,14 @@ contract Betting is Proxied, Guard {
         )
         public  // temporarily set as public just for truffle test purpose
         //internal
-        returns (
-          uint256 defenseLevelOpponent
-        )
         {
         require(defenseLevel[_gameId][_opponentPlayer] > 0, "Defense level is already zero");
+        uint256 defenseLevelOpponent;
         (uint256 lastBet4, uint256 lastBet3, uint256 lastBet2, uint256 lastBet1) = getLastFourBets(_gameId, _supportedPlayer);
         if (_lastBetAmount > lastBet1 && lastBet1 > lastBet2 && lastBet2 > lastBet3 && lastBet3 > lastBet4) {
             defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer].sub(1);
             setDefenseLevel(_gameId, _opponentPlayer, defenseLevelOpponent);
         }
-        return defenseLevelOpponent;
     }
 
     /**
@@ -461,28 +457,40 @@ contract Betting is Proxied, Guard {
         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns (bool)
     {
-        (string memory attackType, bytes32 attackHash, uint256 index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
+        string memory attackType;
+        bytes32 attackHash;
+        uint256 index;
+        uint256 defenseLevelSupportedPlayer;
+        uint256 defenseLevelOpponent;
+        uint256 numberOfBets;
+        bool isBlocked;
 
-        uint256 defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
+        (attackType, attackHash, index) = getAttackType(_gameId, _supportedPlayer, _lastBetAmount, _randomNum);
 
-        uint256 numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
+        defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
+
+        numberOfBets = getNumberOfBets(_gameId, _supportedPlayer);
 
         if (defenseLevelOpponent > 0 && numberOfBets > 3) {
-           defenseLevelOpponent = reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
+           reduceDefenseLevel(_gameId, _lastBetAmount, _supportedPlayer, _opponentPlayer);
         }
 
         if (defenseLevelOpponent == 0) {
+            isBlocked = false;
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
         } else if(defenseLevelOpponent > 0 && isAttackBlocked(_gameId, _opponentPlayer)) {
+            isBlocked = true;
             setBlockedAttacksScored(_gameId, _supportedPlayer, index);
         } else {
+            isBlocked = false;
             setDirectAttacksScored(_gameId, _supportedPlayer, index);
         }
 
         setLastBetTimestamp(_gameId, _supportedPlayer, now);
         fillBets(_gameId, _supportedPlayer, _lastBetAmount);
 
-        uint256 defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
+        defenseLevelSupportedPlayer = defenseLevel[_gameId][_supportedPlayer];
+        defenseLevelOpponent = defenseLevel[_gameId][_opponentPlayer];
 
         emit BetPlaced(
             _gameId,
@@ -490,7 +498,7 @@ contract Betting is Proxied, Guard {
             _lastBetAmount,
             _supportedPlayer,
             attackHash,
-            attackType,
+            isBlocked,
             defenseLevelSupportedPlayer,
             defenseLevelOpponent
             );
@@ -507,7 +515,7 @@ contract Betting is Proxied, Guard {
         uint256 _lastBetAmount,
         address indexed _supportedPlyer,
         bytes32 attackHash,
-        string attackType,
+        bool isBlocked,
         uint256 defenseLevelSupportedPlayer,
         uint256 defenseLevelOpponent);
 }

@@ -96,10 +96,10 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId, string memory reason) internal {
-    (,,uint256 kittyBlack,
-      uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    kittieHELL.releaseKittyForfeiter(kittyRed);
-    kittieHELL.releaseKittyForfeiter(kittyBlack);
+    // (,,uint256 kittyBlack,
+    //   uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+    // kittieHELL.releaseKittyForfeiter(kittyRed);
+    // kittieHELL.releaseKittyForfeiter(kittyBlack);
     gameManager.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }
@@ -148,9 +148,13 @@ contract Forfeiter is Proxied {
   {
     if (gamePreStartTime <= now) {
       uint minSupporters = gameVarAndFee.getMinimumContributors(); //TODO: should call getterDB as vars and fees are locked
-      if(!(supportersBlack >= minSupporters) || !(supportersRed >= minSupporters))
+      if(supportersBlack < minSupporters || supportersRed < minSupporters){
         forfeitGame(gameId, "Undersupported");
+        return false;
+      }
     }
+
+    return true;
   }
 
   /**
