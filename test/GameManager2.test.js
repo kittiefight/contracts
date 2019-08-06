@@ -474,6 +474,7 @@ contract('GameManager', (accounts) => {
       
     while(block < gameDetails.preStartTime){
       block = await dateTime.getBlockTimeStamp();
+      console.log('\nblocktime: ', formatDate(block))
       await timeout(3);
     }
 
