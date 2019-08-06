@@ -915,8 +915,9 @@ contract('GameManager', (accounts) => {
     let winners = await getterDB.getWinners(gameId);
     let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);     
 
-    let balance = await kittieFightToken.balanceOf(winners.winner)
-    balance = Number(web3.utils.fromWei(balance.toString()));   
+    /*let balance = await kittieFightToken.balanceOf(winners.winner)
+    balance = Number(web3.utils.fromWei(balance.toString()));   */
+    let winnerBalaceKTY_pre = await kittieFightToken.balanceOf(winners.winner)
   
     // WINNER CLAIMING
     await proxy.execute(
@@ -935,12 +936,19 @@ contract('GameManager', (accounts) => {
     });
     claims.length.should.be.equal(1);
 
+    /*
     let newBalance = await kittieFightToken.balanceOf(winners.winner)
     // balance.should.be.equal(newBalance.add(winnerShare.winningsKTY))
     newBalance = Number(web3.utils.fromWei(newBalance.toString()));
     let winningsKTY = Number(web3.utils.fromWei(winnerShare.winningsKTY.toString()));
-
     newBalance.should.be.equal(balance + winningsKTY);
+    */
+    
+    let winnerBalaceKTY_post = await kittieFightToken.balanceOf(winners.winner)
+    let diffKTY = winnerBalaceKTY_post.sub(winnerBalaceKTY_pre)
+    diffKTY.should.be.a.bignumber.that.eq(winnerShare.winningsKTY);
+
+    
 
     // TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
@@ -968,7 +976,7 @@ contract('GameManager', (accounts) => {
     });
 
     claims.length.should.be.equal(4);
-
+    
   })
 
   it('check game kitties dead status', async () => {
