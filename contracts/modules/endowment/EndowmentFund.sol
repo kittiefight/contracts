@@ -52,29 +52,6 @@ contract EndowmentFund is Distribution, Guard {
         dissolved
     }
 
-
-/**********************************Testing related functions - must be removed ************************************ */
-    function claim_dummy() external payable {
-        address payable msgSender = address(uint160(getOriginalSender()));
-        uint256 winningsETH = 1;
-        uint256 winningsKTY = 100;
-        if (winningsKTY > 0){transferKTYfromEscrow(msgSender, winningsKTY);}
-        if (winningsETH > 0){transferETHfromEscrow(msgSender, winningsETH);}
-    }
-
-    function setHoneypotState(uint _gameId, uint state, uint256 claimTime) public {
-        endowmentDB.setHoneypotState(_gameId, state, claimTime);
-    }
-
-    function setTotalDebit(uint _gameId, address _account, uint _eth_amount, uint _kty_amount) public {
-        endowmentDB.setTotalDebit(_gameId, _account, _eth_amount, _kty_amount);
-    }
-
-
-
-/************************************************************************************** */
-
-
     /**
     * @dev check if enough funds present and maintains balance of tokens in DB
     */
@@ -188,11 +165,6 @@ contract EndowmentFund is Distribution, Guard {
         onlySuperAdmin
     {
 
-        /*/ not very essential
-        require(address(escrow) != address(0),
-            "Error: escrow not initialized");
-        //*/
-
         require(_kty_amount > 0,
             "Error: _kty_amount is zero");
 
@@ -280,7 +252,6 @@ contract EndowmentFund is Distribution, Guard {
     * @dev transfer Escrow ETH funds
     */
     function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount)
-    //public onlySuperAdmin
     private
     returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
@@ -300,7 +271,6 @@ contract EndowmentFund is Distribution, Guard {
     * @dev transfer Escrow KFT funds
     */
     function transferKTYfromEscrow(address payable _someAddress, uint256 _kty_amount)
-    //public  onlySuperAdmin
     private
     returns(bool){
         require(address(_someAddress) != address(0), "_someAddress not set");
@@ -356,11 +326,11 @@ contract EndowmentFund is Distribution, Guard {
      * deploy new Endowment
      * set owner of escrow to new Endowment adrress using endowment.transferEscrowOwnership(new Endowment adrress)
      * than set the new Endowment adrress in proxy
-     * /
+     */
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
     }
-    */
+    
 
 }
 
