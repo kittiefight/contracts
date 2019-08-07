@@ -952,20 +952,20 @@ contract('GameManager', (accounts) => {
 
     // TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+      [gameId]), { from: winners.topBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
     console.log('Top Bettor withdrew funds? ', withdrawalState)
 
 
     // SECOND TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
+      [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
     console.log('Second Top Bettor withdrew funds? ', withdrawalState)
 
     // OTHER BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: supporters[1]}).should.be.fulfilled;
+      [gameId]), { from: supporters[1]}).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[1]);
     console.log('Other Bettor withdrew funds? ', withdrawalState)
 
