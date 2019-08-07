@@ -194,6 +194,15 @@ contract('Betting', accounts => {
       assert.equal(lastBet2.toNumber(), 6)
       assert.equal(lastBet1.toNumber(), 7)
     })
+
+    it('is able to get the last bet amount of the given corner of a game with a specific gameId', async () => {
+      const lastBet = await BettingInst.getLastBet(123, accounts[0])
+      assert.equal(lastBet.toNumber(), 7)
+
+      // if the given corner never places a bet in this game before, the last bet amount returned is 0
+      const lastBetOpponent = await BettingInst.getLastBet(123, accounts[1])
+      assert.equal(lastBetOpponent.toNumber(), 0)
+    })
   
     it('is able to record the last bet timestamp for the given corner in a game with a specific gameId', async () => {
       const now = Math.floor(new Date().getTime() / 1000)

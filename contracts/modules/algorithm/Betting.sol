@@ -217,14 +217,13 @@ contract Betting is Proxied, Guard {
         num = bets[_gameId][_player].length;
     }
 
-    // get last 5 bet amount of the given corner
    /**
     * @author @ziweidream
     * @notice get the ether amount of the last 5 bets placed by the given corner in a game
     * with a specific gameId
     * @dev lastBet1 is the last bet, lastBet2 is the second last bet, and so forth
     * @param _gameId the gameID of the game
-    * @param _player the given corner in this game whose individual bet ether amount is recorded
+    * @param _player the given corner in this game whose last 4 bets amount are displayed
     * @return the last 5 bet ether amount by the given corner in a game
     */
     function getLastFourBets(uint256 _gameId, address _player)
@@ -239,6 +238,28 @@ contract Betting is Proxied, Guard {
       lastBet2 = bets[_gameId][_player][arrLength.sub(2)];
       lastBet1 = bets[_gameId][_player][arrLength.sub(1)];
   }
+
+    /**
+    * @author @ziweidream
+    * @notice get the ether amount of the last bet placed by the given corner in a game
+    * with a specific gameId
+    * @dev if the given corner has never placed a bet in this game yet, the last bet amount is 0
+    * @param _gameId the gameID of the game
+    * @param _player the given corner in this game whose last bet ether amount is displayed
+    * @return the last bet ether amount by the given corner in a game
+    */
+    function getLastBet(uint256 _gameId, address _player)
+        public
+        view
+        returns(uint256 lastBet)
+    {
+        uint256 arrLen = bets[_gameId][_player].length;
+        if (arrLen == 0 ) {
+            lastBet = 0;
+        } else {
+            lastBet = bets[_gameId][_player][arrLen.sub(1)];
+        }
+    }
 
     // setLastBetTimestamp() is internal. Temporarily set as public for truffle test purpose.
     /**
@@ -268,7 +289,7 @@ contract Betting is Proxied, Guard {
         defenseLevel[_gameId][_player] = _defense;
     }
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) until GameManager.sol is furhter defined/developed
+    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) 
     /**
     * @author @ziweidream
     * @notice record the original defense level of the given corner in a game with a specific gameId
@@ -307,7 +328,7 @@ contract Betting is Proxied, Guard {
             bytes32 attackHash,
             uint256 index
         ){
-        (,,,uint256 prevBetAmount) = getLastFourBets(_gameId, _supportedPlayer);
+        uint256 prevBetAmount = getLastBet(_gameId, _supportedPlayer);
         // lower ether than previous bet? one attack is chosen randomly from lowAttacksColumn
         if (_lastBetAmount <= prevBetAmount) {
             uint256 diceLowValues = randomGen(_randomNum);

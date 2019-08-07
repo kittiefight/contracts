@@ -474,6 +474,7 @@ contract('GameManager', (accounts) => {
       
     while(block < gameDetails.preStartTime){
       block = await dateTime.getBlockTimeStamp();
+      console.log('\nblocktime: ', formatDate(block))
       await timeout(3);
     }
 
@@ -743,7 +744,7 @@ contract('GameManager', (accounts) => {
     
     console.log('\n==== WAITING FOR GAME OVER')
 
-    let block = await dateTime.getBlockTimeStamp();
+    let block = await dateTime.getBlockTimeStamp() + 3600;
       
     while(block < gameDetails.endTime){
       block = await dateTime.getBlockTimeStamp();
