@@ -18,7 +18,7 @@ import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
-import "../kittieHELL/KittieHell.sol";
+//import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
 
 /**
@@ -164,7 +164,7 @@ contract GMGetterDB is Proxied {
 
 
   // === FRONTEND GETTERS ===
-
+/* temporary disable this - pash7ka
   function getFighterByKittieID(uint256 kittieId)
     public view
     returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
@@ -174,7 +174,7 @@ contract GMGetterDB is Proxied {
     gameId = getGameOfKittie(kittieId);
     kittieHellExp = gameStore.getKittieExpirationTime(gameId);
   }
-
+*/
   /**
    * @dev Returns the total amount of bet of the given bettor
    * and the player supported by that bettor in the game given.
