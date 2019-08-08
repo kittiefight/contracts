@@ -122,11 +122,10 @@ function timeout(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
-function formatDate(timestamp)
-{
-    let date = new Date(null);
-    date.setSeconds(timestamp);
-    return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+function formatDate(timestamp) {
+  let date = new Date(null);
+  date.setSeconds(timestamp);
+  return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
 contract('GameManager', (accounts) => {
@@ -148,7 +147,7 @@ contract('GameManager', (accounts) => {
     // CRONJOB
     cronJob = await CronJob.deployed()
     freezeInfo = await FreezeInfo.deployed();
-    cronJobTarget= await CronJobTarget.deployed();
+    cronJobTarget = await CronJobTarget.deployed();
 
 
     // TOKENS
@@ -203,7 +202,7 @@ contract('GameManager', (accounts) => {
     await proxy.addContract('CronJobTarget', cronJobTarget.address);
     await proxy.addContract('KittieHell', kittieHELL.address)
     await proxy.addContract('KittieHellDB', kittieHellDB.address)
-    
+
 
   })
 
@@ -248,11 +247,11 @@ contract('GameManager', (accounts) => {
     await hitsResolve.initialize()
   })
 
-  it.skip('sets super admin address', async() => {
+  it.skip('sets super admin address', async () => {
     await register.addSuperAdmin(accounts[0])
   })
 
-  it.skip('initialize escrow upgrade', async() => {
+  it.skip('initialize escrow upgrade', async () => {
     await endowmentFund.initUpgradeEscrow(escrow.address)
   })
 
@@ -281,11 +280,11 @@ contract('GameManager', (accounts) => {
   })
 
   it('correct initial endowment/escrow funds', async () => {
-      let balanceKTY = await escrow.getBalanceKTY();
-      let balanceETH = await escrow.getBalanceETH();
+    let balanceKTY = await escrow.getBalanceKTY();
+    let balanceETH = await escrow.getBalanceETH();
 
-      balanceKTY.toString().should.be.equal(INITIAL_KTY_ENDOWMENT.toString());
-      balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
+    balanceKTY.toString().should.be.equal(INITIAL_KTY_ENDOWMENT.toString());
+    balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
   })
 
   it('Set game vars and fees correctly', async () => {
@@ -365,7 +364,7 @@ contract('GameManager', (accounts) => {
 
   it('get correct amount of unmatched/listed kitties', async () => {
     let listed = await scheduler.getListedKitties();
-    console.log('\n==== LISTED KITTIES: ',listed.length);
+    console.log('\n==== LISTED KITTIES: ', listed.length);
   })
 
   it('list 1 more kittie to the system', async () => {
@@ -376,17 +375,17 @@ contract('GameManager', (accounts) => {
   //Change here to select what game to play
   //Currently playing first game created
   it('correctly creates 2 games', async () => {
-    let newGameEvents = await gameCreation.getPastEvents("NewGame", { 
-      fromBlock: 0, 
-      toBlock: "latest" 
+    let newGameEvents = await gameCreation.getPastEvents("NewGame", {
+      fromBlock: 0,
+      toBlock: "latest"
     });
     // assert.equal(newGameEvents.length, 2);
 
-    
+
 
     newGameEvents.map(async (e) => {
       let gameInfo = await getterDB.getGameTimes(e.returnValues.gameId);
-    
+
       console.log('\n==== NEW GAME CREATED ===');
       console.log('    GameId ', e.returnValues.gameId)
       console.log('    Red Fighter ', e.returnValues.kittieRed)
@@ -410,7 +409,7 @@ contract('GameManager', (accounts) => {
 
   it('listed kitties array emptied', async () => {
     let listed = await scheduler.getListedKitties();
-    console.log('\n==== LISTED KITTIES: ',listed.length);
+    console.log('\n==== LISTED KITTIES: ', listed.length);
     listed.length.should.be.equal(0);
   })
 
@@ -418,7 +417,7 @@ contract('GameManager', (accounts) => {
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
-    console.log(`\n==== PLAYING GAME ${gameId} ===`);    
+    console.log(`\n==== PLAYING GAME ${gameId} ===`);
 
     let currentState = await getterDB.getGameState(gameId)
     console.log('\n==== NEW GAME STATE: ', gameStates[currentState.toNumber()])
@@ -440,24 +439,18 @@ contract('GameManager', (accounts) => {
 
     let players = [playerRed, playerBlack];
 
-    // adds more supporters for player red
+    // adds bettors with random supported player
     for (let i = 6; i < 18; i++) {
       let index = Math.floor(Math.random() * 2)
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
         [gameId, players[index]]), { from: accounts[i] }).should.be.fulfilled;
     }
 
-    // // adds more supporters for player red
-    // for (let i = 12; i < 18; i++) {
-    //   await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-    //     [gameId, playerBlack]), { from: accounts[i] }).should.be.fulfilled;
-    // }
-
     //Check NewSupporter events
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 13);
 
-    
+
   })
 
   it('player cant start a game before reaching PRE_GAME', async () => {
@@ -467,18 +460,20 @@ contract('GameManager', (accounts) => {
   })
 
   it('should move gameState to PRE_GAME', async () => {
-    console.log('\n==== WAITING FOR PREGAME TIME')
+
+    let { gameId, playerRed, playerBlack, preStartTime } = gameDetails;
+    console.log('\n==== WAITING FOR PREGAME TIME: ', formatDate(preStartTime))
 
     let block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
-      
-    while(block < gameDetails.preStartTime){
+
+    while (block < preStartTime) {
       block = await dateTime.getBlockTimeStamp();
       console.log('\nblocktime: ', formatDate(block))
       await timeout(3);
     }
 
-    let { gameId, playerRed, playerBlack } = gameDetails;
+
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.WAITING)
@@ -505,7 +500,7 @@ contract('GameManager', (accounts) => {
     assert.equal(events.length, 14);
 
 
-  })  
+  })
 
   it('should move gameState to MAIN_GAME', async () => {
 
@@ -539,7 +534,7 @@ contract('GameManager', (accounts) => {
   })
 
   //Temporal set manual defense level
-  it('get defense level for both players', async () => { 
+  it('get defense level for both players', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     await betting.setDefenseLevel(gameId, playerRed, 4).should.be.fulfilled;
@@ -585,8 +580,8 @@ contract('GameManager', (accounts) => {
     console.log('=================\n')
   })
 
-  it('initializing last 5 bets (temporal)', async () => { 
-    
+  it.skip('initializing last 5 bets (temporal)', async () => {
+
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     for (let i = 0; i < 5; i++) {
@@ -627,7 +622,7 @@ contract('GameManager', (accounts) => {
         (redBetStore.has(bettor)) ?
           redBetStore.set(bettor, redBetStore.get(bettor) + betAmount) :
           redBetStore.set(bettor, betAmount)
-          
+
       } else {
         player = 'BLACK';
         //This line make bets in black be incremental
@@ -636,19 +631,19 @@ contract('GameManager', (accounts) => {
         (blackBetStore.has(bettor)) ?
           blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
           blackBetStore.set(bettor, betAmount)
-      }     
-      
+      }
+
 
       await proxy.execute('GameManager', setMessage(gameManager, 'bet',
         [gameId, randomValue()]), { from: bettor, value: web3.utils.toWei(String(betAmount)) }).should.be.fulfilled;
 
       let betEvents = await betting.getPastEvents('BetPlaced', {
-        filter: {gameId},
-        fromBlock: 0, 
-        toBlock: "latest" 
-      })      
+        filter: { gameId },
+        fromBlock: 0,
+        toBlock: "latest"
+      })
 
-      betDetails = betEvents[betEvents.length -1].returnValues;
+      betDetails = betEvents[betEvents.length - 1].returnValues;
       console.log(`\n==== NEW BET FOR ${player} ====`);
       console.log(' Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
       console.log(' Bettor:', betDetails._bettor);
@@ -657,21 +652,21 @@ contract('GameManager', (accounts) => {
       console.log(` Defense ${player}:`, betDetails.defenseLevelSupportedPlayer);
       console.log(' Defense Opponent:', betDetails.defenseLevelOpponent);
 
-      let lastBetTimestamp = await betting.lastBetTimestamp(gameId,supportedPlayer);
-      console.log(' Timestamp last Bet: ',formatDate(lastBetTimestamp));      
+      let lastBetTimestamp = await betting.lastBetTimestamp(gameId, supportedPlayer);
+      console.log(' Timestamp last Bet: ', formatDate(lastBetTimestamp));
 
-      totalBetAmount  = totalBetAmount + betAmount;
+      totalBetAmount = totalBetAmount + betAmount;
       await timeout(Math.floor(Math.random() * 5) + 1);
     }
 
     //Log all bets    
     console.log('\nBets Black: ', betsBlack)
     console.log('Bets Red: ', betsRed)
-  }) 
+  })
 
   it('correctly adds all bets for each corner', async () => {
     let block = await dateTime.getBlockTimeStamp();
-      console.log('\nblocktime: ', formatDate(block))
+    console.log('\nblocktime: ', formatDate(block))
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -683,7 +678,7 @@ contract('GameManager', (accounts) => {
 
     actualTotalBet.toString().should.be.equal(String(web3.utils.toWei(String(totalBetAmount))));
     await timeout(1);
-  })  
+  })
 
   //TODO: Check top bettors calculation, as it sometimes return same address
   // for top and secondTop
@@ -714,7 +709,7 @@ contract('GameManager', (accounts) => {
     console.log('\n-==== BLACK TOP BETTORS ====')
     console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
     await timeout(1);
-    
+
     redTopBettor.should.be.equal(redSorted[0])
     redSecondTopBettor.should.be.equal(redSorted[1])
     blackTopBettor.should.be.equal(blackSorted[0])
@@ -730,7 +725,7 @@ contract('GameManager', (accounts) => {
     await timeout(1);
   })
 
-  it('get final defense level for both players', async () => { 
+  it('get final defense level for both players', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     let defense = await betting.defenseLevel(gameId, playerBlack);
@@ -741,21 +736,25 @@ contract('GameManager', (accounts) => {
   })
 
   it('game ends', async () => {
-    
-    console.log('\n==== WAITING FOR GAME OVER')
 
-    let block = await dateTime.getBlockTimeStamp() + 3600;
-      
-    while(block < gameDetails.endTime){
+    let { gameId, endTime } = gameDetails;
+
+    console.log('\n==== WAITING FOR GAME OVER: ', formatDate(endTime))
+
+    let block = await dateTime.getBlockTimeStamp();
+    console.log('\nblocktime: ', formatDate(block))
+
+    while (block < endTime) {
       block = await dateTime.getBlockTimeStamp();
-      await timeout(2);
-    } 
+      console.log('\nblocktime: ', formatDate(block))
+      await timeout(3);
+    }
 
-    let { gameId } = gameDetails;  
+
 
     await proxy.execute('GameManager', setMessage(gameManager, 'bet',
       [gameId, randomValue()]), { from: accounts[7], value: web3.utils.toWei('1') }).should.be.fulfilled;
-    
+
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(3);
 
@@ -766,44 +765,44 @@ contract('GameManager', (accounts) => {
 
     await timeout(1);
 
-   
+
   })
 
   it('can call finalize game', async () => {
-    
+
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     await proxy.execute('GameManager', setMessage(gameManager, 'finalize',
-    [gameId, randomValue()]), { from: accounts[10] }).should.be.fulfilled;
+      [gameId, randomValue()]), { from: accounts[10] }).should.be.fulfilled;
 
     let gameEnd = await gameManager.getPastEvents('GameEnded', {
-      filter: {gameId},
+      filter: { gameId },
       fromBlock: 0,
       toBlock: 'latest'
     })
-    
-    let {pointsBlack, pointsRed, loser} = gameEnd[0].returnValues;
+
+    let { pointsBlack, pointsRed, loser } = gameEnd[0].returnValues;
 
     let winners = await getterDB.getWinners(gameId);
 
     gameDetails.winners = winners;
     gameDetails.loser = loser;
 
-    let corner = (winners.winner === playerBlack) ? "Black Corner":"Red Corner"
+    let corner = (winners.winner === playerBlack) ? "Black Corner" : "Red Corner"
 
     console.log(`\n==== WINNER: ${corner} ==== `)
     console.log(`   Winner: ${winners.winner}   `);
     console.log(`   TopBettor: ${winners.topBettor}   `)
     console.log(`   SecondTopBettor: ${winners.secondTopBettor}   `)
     console.log('')
-    console.log(`   Points Black: ${pointsBlack/100}   `);
-    console.log(`   Point Red: ${pointsRed/100}   `);
+    console.log(`   Points Black: ${pointsBlack / 100}   `);
+    console.log(`   Point Red: ${pointsRed / 100}   `);
     console.log('=======================\n')
 
     await timeout(1);
-    
+
   })
-  
+
   it('correct honeypot info', async () => {
 
     let { gameId } = gameDetails;
@@ -818,7 +817,7 @@ contract('GameManager', (accounts) => {
 
     //1 ether from the last bet that ended game
     honeyPotInfo.ethTotal.toString().should.be.equal(
-      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount+1)))))
+      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount + 1)))))
     )
 
     await timeout(1);
@@ -836,7 +835,7 @@ contract('GameManager', (accounts) => {
     console.log('\n==== HONEYPOT STATE: ', potStates[potState.state.toNumber()]);
 
     await timeout(1);
- 
+
   })
 
   it('show distribution details', async () => {
@@ -846,7 +845,7 @@ contract('GameManager', (accounts) => {
     let rates = await gameStore.getDistributionRates(gameId);
 
     console.log('\n==== DISTRIBUTION STRUCTURE ==== \n');
-    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);  
+    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
     console.log(` WINNER SHARE: ${rates[0].toString()} %`);
     console.log('    ETH: ', web3.utils.fromWei(winnerShare.winningsETH.toString()));
     console.log('    KTY: ', web3.utils.fromWei(winnerShare.winningsKTY.toString()));
@@ -860,79 +859,79 @@ contract('GameManager', (accounts) => {
     console.log('    KTY: ', web3.utils.fromWei(secondTopShare.winningsKTY.toString()))
     let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
     console.log(`  ENDOWMENT SHARE: ${rates[4].toString()} %`);
-    console.log('    ETH: ',  web3.utils.fromWei(endowmentShare.winningsETH.toString()));
-    console.log('    KTY: ',  web3.utils.fromWei(endowmentShare.winningsKTY.toString()));
-    
-    let bettors = await gameManager.getPastEvents("NewSupporter", { 
-      filter: {gameId}, 
-      fromBlock: 0, 
-      toBlock: "latest" 
+    console.log('    ETH: ', web3.utils.fromWei(endowmentShare.winningsETH.toString()));
+    console.log('    KTY: ', web3.utils.fromWei(endowmentShare.winningsKTY.toString()));
+
+    let bettors = await gameManager.getPastEvents("NewSupporter", {
+      filter: { gameId },
+      fromBlock: 0,
+      toBlock: "latest"
     });
 
-    
+
 
     //Get list of other bettors
     supporters = bettors
-      .map(e => e.returnValues) 
+      .map(e => e.returnValues)
       .filter(e => e.playerSupported === winners.winner)
       .filter(e => e.supporter !== winners.topBettor)
       .filter(e => e.supporter !== winners.secondTopBettor)
-      .map( e => e.supporter) 
-    
+      .map(e => e.supporter)
+
     gameDetails.supporters = supporters;
 
     console.log(`\n  OTHER BETTORS SHARE: ${rates[3].toString()} %`);
-    console.log('   List: ', supporters) 
-    for(let i=0; i<supporters.length; i++){
-      let share = await endowmentFund.getWinnerShare(gameId, supporters[i]);      
+    console.log('   List: ', supporters)
+    for (let i = 0; i < supporters.length; i++) {
+      let share = await endowmentFund.getWinnerShare(gameId, supporters[i]);
       // let supporterInfo = await getterDB.getSupporterInfo(gameId, supporters[i]);
       console.log(`\n  Bettor ${supporters[i]}: `);
       // console.log('    Amount Bet:', web3.utils.fromWei( supporterInfo.betAmount.toString()), 'ETH')      
       console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
       console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
     }
-    
+
     await timeout(1);
-    
+
     //Get list of losers
     let losers = bettors
-      .map(e => e.returnValues) 
+      .map(e => e.returnValues)
       .filter(e => e.playerSupported !== winners.winner)
-    
+
     gameDetails.losers = losers;
 
     // //Bettor from Black Corner
     let opponentShare = await endowmentFund.getWinnerShare(gameId, losers[0].supporter);
     opponentShare.winningsETH.toString().should.be.equal('0');
 
- 
+
   })
 
   it('winners can claim their share', async () => {
-    let { gameId, supporters } = gameDetails;    
+    let { gameId, supporters } = gameDetails;
 
     let block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
 
     let potState = await endowmentDB.getHoneypotState(gameId);
-    console.log('\n==== HONEYPOT DISSOLUTION TIME: ',formatDate(potState.claimTime.toNumber()))
+    console.log('\n==== HONEYPOT DISSOLUTION TIME: ', formatDate(potState.claimTime.toNumber()))
 
     let winners = await getterDB.getWinners(gameId);
-    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);     
+    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
 
     let balance = await kittieFightToken.balanceOf(winners.winner)
-    balance = Number(web3.utils.fromWei(balance.toString()));   
-  
+    balance = Number(web3.utils.fromWei(balance.toString()));
+
     // WINNER CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.winner }).should.be.fulfilled;
-    let withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);
+      [gameId]), { from: winners.winner }).should.be.fulfilled;
+    let withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.winner);
     console.log('\nWinner withdrew funds? ', withdrawalState)
 
-    let claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
-      filter: {gameId}, 
-      fromBlock: 0, 
-      toBlock: "latest" 
+    let claims = await endowmentFund.getPastEvents('WinnerClaimed', {
+      filter: { gameId },
+      fromBlock: 0,
+      toBlock: "latest"
     });
     claims.length.should.be.equal(1);
 
@@ -945,27 +944,27 @@ contract('GameManager', (accounts) => {
 
     // TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.topBettor }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
+      [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
     console.log('Top Bettor withdrew funds? ', withdrawalState)
 
 
     // SECOND TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
+      [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
     console.log('Second Top Bettor withdrew funds? ', withdrawalState)
 
     // OTHER BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: supporters[1]}).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[1]);
+      [gameId]), { from: supporters[1] }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
     console.log('Other Bettor withdrew funds? ', withdrawalState)
 
-    claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
-      filter: {gameId}, 
-      fromBlock: 0, 
-      toBlock: "latest" 
+    claims = await endowmentFund.getPastEvents('WinnerClaimed', {
+      filter: { gameId },
+      fromBlock: 0,
+      toBlock: "latest"
     });
 
     claims.length.should.be.equal(4);
@@ -974,14 +973,14 @@ contract('GameManager', (accounts) => {
   })
 
   it('check game kitties dead status', async () => {
-    
-    let { playerBlack, kittieBlack, kittieRed, winners } = gameDetails; 
 
-    if( gameDetails.loser === playerBlack) {
+    let { playerBlack, kittieBlack, kittieRed, winners } = gameDetails;
+
+    if (gameDetails.loser === playerBlack) {
       loserKitty = kittieBlack;
       winnerKitty = kittieRed;
     }
-    else{
+    else {
       loserKitty = kittieRed;
       winnerKitty = kittieBlack
     }
@@ -993,22 +992,22 @@ contract('GameManager', (accounts) => {
     isKittyDead.should.be.true;
 
     winnerOwner = await cryptoKitties.ownerOf(winnerKitty);
-    winnerOwner.should.be.equal( winners.winner);
+    winnerOwner.should.be.equal(winners.winner);
 
   })
 
   it('pay for resurrection', async () => {
 
     console.log('\n==== KITTIE HELL: ')
-    
-    let { loserKitty, loser } = gameDetails; 
-    
+
+    let { loserKitty, loser } = gameDetails;
+
     let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty);
 
-    console.log('Resurrection Cost: ',String(web3.utils.fromWei(resurrectionCost.toString())), 'KTY')
+    console.log('Resurrection Cost: ', String(web3.utils.fromWei(resurrectionCost.toString())), 'KTY')
 
-    await kittieFightToken.approve(endowmentFund.address, resurrectionCost, 
-      { from: loser }).should.be.fulfilled;  
+    await kittieFightToken.approve(endowmentFund.address, resurrectionCost,
+      { from: loser }).should.be.fulfilled;
 
     await proxy.execute('KittieHell', setMessage(kittieHELL, 'payForResurrection',
       [loserKitty]), { from: loser }).should.be.fulfilled;
@@ -1028,7 +1027,7 @@ contract('GameManager', (accounts) => {
     let gameTimes = await getterDB.getGameTimes(2);
     let gamePlayers = await getterDB.getGamePlayers(2);
 
-    while(block.toNumber() < gameTimes.preStartTime.toNumber()){
+    while (block.toNumber() < gameTimes.preStartTime.toNumber()) {
       block = await dateTime.getBlockTimeStamp();
       await timeout(3);
     }
@@ -1044,9 +1043,15 @@ contract('GameManager', (accounts) => {
     console.log('\n==== HONEYPOT STATE: ', potStates[potState.state.toNumber()]);
 
     let cancelledEvents = await forfeiter.getPastEvents('GameCancelled', {
-      fromBlock: 0, 
-      toBlock: "latest" 
+      fromBlock: 0,
+      toBlock: "latest"
     })
+
+    let redSupporters = await getterDB.getSupporters(2, gamePlayers.playerRed);
+    console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
+
+    let blackSupporters = await getterDB.getSupporters(2, gamePlayers.playerBlack);
+    console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
 
     cancelledEvents.length.should.be.equal(1);
 
@@ -1061,11 +1066,11 @@ contract('GameManager', (accounts) => {
 
     newState.toNumber().should.be.equal(5)
 
-    //This should not get fulfilled
+    //Game cancelled, no more participants added
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [2, gamePlayers.playerBlack]), { from: accounts[17] }).should.not.be.fulfilled;
 
-  }) 
+  })
 
 })
 
@@ -1560,494 +1565,494 @@ const cattributesData = [
 // https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md
 
 const kaiToCattributesData = [
-    {
-      body: {
-        genes: "0-3",
-        name: "Fur",
-        code: "FU",
-        kai: {
-          "1": "savannah",
-          "2": "selkirk",
-          "3": "chantilly",
-          "4": "birman",
-          "5": "koladiviya",
-          "6": "bobtail",
-          "7": "manul",
-          "8": "pixiebob",
-          "9": "siberian",
-          a: "cymric",
-          b: "chartreux",
-          c: "himalayan",
-          d: "munchkin",
-          e: "sphynx",
-          f: "ragamuffin",
-          g: "ragdoll",
-          h: "norwegianforest",
-          i: "mekong",
-          j: "highlander",
-          k: "balinese",
-          m: "lynx",
-          n: "mainecoon",
-          o: "laperm",
-          p: "persian",
-          q: "fox",
-          r: "kurilian",
-          s: "toyger",
-          t: "manx",
-          u: "lykoi",
-          v: "burmilla",
-          w: "liger",
-          x: "",
-        },
+  {
+    body: {
+      genes: "0-3",
+      name: "Fur",
+      code: "FU",
+      kai: {
+        "1": "savannah",
+        "2": "selkirk",
+        "3": "chantilly",
+        "4": "birman",
+        "5": "koladiviya",
+        "6": "bobtail",
+        "7": "manul",
+        "8": "pixiebob",
+        "9": "siberian",
+        a: "cymric",
+        b: "chartreux",
+        c: "himalayan",
+        d: "munchkin",
+        e: "sphynx",
+        f: "ragamuffin",
+        g: "ragdoll",
+        h: "norwegianforest",
+        i: "mekong",
+        j: "highlander",
+        k: "balinese",
+        m: "lynx",
+        n: "mainecoon",
+        o: "laperm",
+        p: "persian",
+        q: "fox",
+        r: "kurilian",
+        s: "toyger",
+        t: "manx",
+        u: "lykoi",
+        v: "burmilla",
+        w: "liger",
+        x: "",
       },
     },
-    {
-      pattern: {
-        genes: "4-7",
-        name: "Pattern",
-        code: "PA",
-        kai: {
-          "1": "vigilante",
-          "2": "tiger",
-          "3": "rascal",
-          "4": "ganado",
-          "5": "leopard",
-          "6": "camo",
-          "7": "rorschach",
-          "8": "spangled",
-          "9": "calicool",
-          a: "luckystripe",
-          b: "amur",
-          c: "jaguar",
-          d: "spock",
-          e: "mittens",
-          f: "totesbasic",
-          g: "totesbasic",
-          h: "splat",
-          i: "thunderstruck",
-          j: "dippedcone",
-          k: "highsociety",
-          m: "tigerpunk",
-          n: "henna",
-          o: "arcreactor",
-          p: "totesbasic",
-          q: "scorpius",
-          r: "razzledazzle",
-          s: "hotrod",
-          t: "allyouneed",
-          u: "avatar",
-          v: "gyre",
-          w: "moonrise",
-          x: "",
-        },
+  },
+  {
+    pattern: {
+      genes: "4-7",
+      name: "Pattern",
+      code: "PA",
+      kai: {
+        "1": "vigilante",
+        "2": "tiger",
+        "3": "rascal",
+        "4": "ganado",
+        "5": "leopard",
+        "6": "camo",
+        "7": "rorschach",
+        "8": "spangled",
+        "9": "calicool",
+        a: "luckystripe",
+        b: "amur",
+        c: "jaguar",
+        d: "spock",
+        e: "mittens",
+        f: "totesbasic",
+        g: "totesbasic",
+        h: "splat",
+        i: "thunderstruck",
+        j: "dippedcone",
+        k: "highsociety",
+        m: "tigerpunk",
+        n: "henna",
+        o: "arcreactor",
+        p: "totesbasic",
+        q: "scorpius",
+        r: "razzledazzle",
+        s: "hotrod",
+        t: "allyouneed",
+        u: "avatar",
+        v: "gyre",
+        w: "moonrise",
+        x: "",
       },
     },
-    {
-      coloreyes: {
-        genes: "8-11",
-        name: "Eye Color",
-        code: "EC",
-        kai: {
-          "1": "thundergrey",
-          "2": "gold",
-          "3": "topaz",
-          "4": "mintgreen",
-          "5": "isotope",
-          "6": "sizzurp",
-          "7": "chestnut",
-          "8": "strawberry",
-          "9": "sapphire",
-          a: "forgetmenot",
-          b: "dahlia",
-          c: "coralsunrise",
-          d: "olive",
-          e: "doridnudibranch",
-          f: "parakeet",
-          g: "cyan",
-          h: "pumpkin",
-          i: "limegreen",
-          j: "bridesmaid",
-          k: "bubblegum",
-          m: "twilightsparkle",
-          n: "palejade",
-          o: "pinefresh",
-          p: "eclipse",
-          q: "babypuke",
-          r: "downbythebay",
-          s: "autumnmoon",
-          t: "oasis",
-          u: "gemini",
-          v: "dioscuri",
-          w: "kaleidoscope",
-          x: "",
-        },
+  },
+  {
+    coloreyes: {
+      genes: "8-11",
+      name: "Eye Color",
+      code: "EC",
+      kai: {
+        "1": "thundergrey",
+        "2": "gold",
+        "3": "topaz",
+        "4": "mintgreen",
+        "5": "isotope",
+        "6": "sizzurp",
+        "7": "chestnut",
+        "8": "strawberry",
+        "9": "sapphire",
+        a: "forgetmenot",
+        b: "dahlia",
+        c: "coralsunrise",
+        d: "olive",
+        e: "doridnudibranch",
+        f: "parakeet",
+        g: "cyan",
+        h: "pumpkin",
+        i: "limegreen",
+        j: "bridesmaid",
+        k: "bubblegum",
+        m: "twilightsparkle",
+        n: "palejade",
+        o: "pinefresh",
+        p: "eclipse",
+        q: "babypuke",
+        r: "downbythebay",
+        s: "autumnmoon",
+        t: "oasis",
+        u: "gemini",
+        v: "dioscuri",
+        w: "kaleidoscope",
+        x: "",
       },
     },
-    {
-      eyes: {
-        genes: "12-15",
-        name: "Eye Shape",
-        code: "ES",
-        kai: {
-          "1": "swarley",
-          "2": "wonky",
-          "3": "serpent",
-          "4": "googly",
-          "5": "otaku",
-          "6": "simple",
-          "7": "crazy",
-          "8": "thicccbrowz",
-          "9": "caffeine",
-          a: "wowza",
-          b: "baddate",
-          c: "asif",
-          d: "chronic",
-          e: "slyboots",
-          f: "wiley",
-          g: "stunned",
-          h: "chameleon",
-          i: "alien",
-          j: "fabulous",
-          k: "raisedbrow",
-          m: "tendertears",
-          n: "hacker",
-          o: "sass",
-          p: "sweetmeloncakes",
-          q: "oceanid",
-          r: "wingtips",
-          s: "firedup",
-          t: "buzzed",
-          u: "bornwithit",
-          v: "candyshoppe",
-          w: "drama",
-          x: "",
-        },
+  },
+  {
+    eyes: {
+      genes: "12-15",
+      name: "Eye Shape",
+      code: "ES",
+      kai: {
+        "1": "swarley",
+        "2": "wonky",
+        "3": "serpent",
+        "4": "googly",
+        "5": "otaku",
+        "6": "simple",
+        "7": "crazy",
+        "8": "thicccbrowz",
+        "9": "caffeine",
+        a: "wowza",
+        b: "baddate",
+        c: "asif",
+        d: "chronic",
+        e: "slyboots",
+        f: "wiley",
+        g: "stunned",
+        h: "chameleon",
+        i: "alien",
+        j: "fabulous",
+        k: "raisedbrow",
+        m: "tendertears",
+        n: "hacker",
+        o: "sass",
+        p: "sweetmeloncakes",
+        q: "oceanid",
+        r: "wingtips",
+        s: "firedup",
+        t: "buzzed",
+        u: "bornwithit",
+        v: "candyshoppe",
+        w: "drama",
+        x: "",
       },
     },
-    {
-      color1: {
-        genes: "16-19",
-        name: "Base Color",
-        code: "BC",
-        kai: {
-          "1": "shadowgrey",
-          "2": "salmon",
-          "3": "meowgarine",
-          "4": "orangesoda",
-          "5": "cottoncandy",
-          "6": "mauveover",
-          "7": "aquamarine",
-          "8": "nachocheez",
-          "9": "harbourfog",
-          a: "cinderella",
-          b: "greymatter",
-          c: "tundra",
-          d: "brownies",
-          e: "dragonfruit",
-          f: "hintomint",
-          g: "bananacream",
-          h: "cloudwhite",
-          i: "cornflower",
-          j: "oldlace",
-          k: "koala",
-          m: "lavender",
-          n: "glacier",
-          o: "redvelvet",
-          p: "verdigris",
-          q: "icicle",
-          r: "onyx",
-          s: "hyacinth",
-          t: "martian",
-          u: "hotcocoa",
-          v: "shamrock",
-          w: "firstblush",
-          x: "",
-        },
+  },
+  {
+    color1: {
+      genes: "16-19",
+      name: "Base Color",
+      code: "BC",
+      kai: {
+        "1": "shadowgrey",
+        "2": "salmon",
+        "3": "meowgarine",
+        "4": "orangesoda",
+        "5": "cottoncandy",
+        "6": "mauveover",
+        "7": "aquamarine",
+        "8": "nachocheez",
+        "9": "harbourfog",
+        a: "cinderella",
+        b: "greymatter",
+        c: "tundra",
+        d: "brownies",
+        e: "dragonfruit",
+        f: "hintomint",
+        g: "bananacream",
+        h: "cloudwhite",
+        i: "cornflower",
+        j: "oldlace",
+        k: "koala",
+        m: "lavender",
+        n: "glacier",
+        o: "redvelvet",
+        p: "verdigris",
+        q: "icicle",
+        r: "onyx",
+        s: "hyacinth",
+        t: "martian",
+        u: "hotcocoa",
+        v: "shamrock",
+        w: "firstblush",
+        x: "",
       },
     },
-    {
-      color2: {
-        genes: "20-23",
-        name: "Highlight Color",
-        code: "HC",
-        kai: {
-          "1": "cyborg",
-          "2": "springcrocus",
-          "3": "egyptiankohl",
-          "4": "poisonberry",
-          "5": "lilac",
-          "6": "apricot",
-          "7": "royalpurple",
-          "8": "padparadscha",
-          "9": "swampgreen",
-          a: "violet",
-          b: "scarlet",
-          c: "barkbrown",
-          d: "coffee",
-          e: "lemonade",
-          f: "chocolate",
-          g: "butterscotch",
-          h: "ooze",
-          i: "safetyvest",
-          j: "turtleback",
-          k: "rosequartz",
-          m: "wolfgrey",
-          n: "cerulian",
-          o: "skyblue",
-          p: "garnet",
-          q: "peppermint",
-          r: "universe",
-          s: "royalblue",
-          t: "mertail",
-          u: "inflatablepool",
-          v: "pearl",
-          w: "prairierose",
-          x: "",
-        },
+  },
+  {
+    color2: {
+      genes: "20-23",
+      name: "Highlight Color",
+      code: "HC",
+      kai: {
+        "1": "cyborg",
+        "2": "springcrocus",
+        "3": "egyptiankohl",
+        "4": "poisonberry",
+        "5": "lilac",
+        "6": "apricot",
+        "7": "royalpurple",
+        "8": "padparadscha",
+        "9": "swampgreen",
+        a: "violet",
+        b: "scarlet",
+        c: "barkbrown",
+        d: "coffee",
+        e: "lemonade",
+        f: "chocolate",
+        g: "butterscotch",
+        h: "ooze",
+        i: "safetyvest",
+        j: "turtleback",
+        k: "rosequartz",
+        m: "wolfgrey",
+        n: "cerulian",
+        o: "skyblue",
+        p: "garnet",
+        q: "peppermint",
+        r: "universe",
+        s: "royalblue",
+        t: "mertail",
+        u: "inflatablepool",
+        v: "pearl",
+        w: "prairierose",
+        x: "",
       },
     },
-    {
-      color3: {
-        genes: "24-27",
-        name: "Accent Color",
-        code: "AC",
-        kai: {
-          "1": "belleblue",
-          "2": "sandalwood",
-          "3": "peach",
-          "4": "icy",
-          "5": "granitegrey",
-          "6": "cashewmilk",
-          "7": "kittencream",
-          "8": "emeraldgreen",
-          "9": "kalahari",
-          a: "shale",
-          b: "purplehaze",
-          c: "hanauma",
-          d: "azaleablush",
-          e: "missmuffett",
-          f: "morningglory",
-          g: "frosting",
-          h: "daffodil",
-          i: "flamingo",
-          j: "buttercup",
-          k: "bloodred",
-          m: "atlantis",
-          n: "summerbonnet",
-          o: "periwinkle",
-          p: "patrickstarfish",
-          q: "seafoam",
-          r: "cobalt",
-          s: "mallowflower",
-          t: "mintmacaron",
-          u: "sully",
-          v: "fallspice",
-          w: "dreamboat",
-          x: "",
-        },
+  },
+  {
+    color3: {
+      genes: "24-27",
+      name: "Accent Color",
+      code: "AC",
+      kai: {
+        "1": "belleblue",
+        "2": "sandalwood",
+        "3": "peach",
+        "4": "icy",
+        "5": "granitegrey",
+        "6": "cashewmilk",
+        "7": "kittencream",
+        "8": "emeraldgreen",
+        "9": "kalahari",
+        a: "shale",
+        b: "purplehaze",
+        c: "hanauma",
+        d: "azaleablush",
+        e: "missmuffett",
+        f: "morningglory",
+        g: "frosting",
+        h: "daffodil",
+        i: "flamingo",
+        j: "buttercup",
+        k: "bloodred",
+        m: "atlantis",
+        n: "summerbonnet",
+        o: "periwinkle",
+        p: "patrickstarfish",
+        q: "seafoam",
+        r: "cobalt",
+        s: "mallowflower",
+        t: "mintmacaron",
+        u: "sully",
+        v: "fallspice",
+        w: "dreamboat",
+        x: "",
       },
     },
-    {
-      wild: {
-        genes: "28-31",
-        name: "Wild",
-        code: "WE",
-        kai: {
-          "1": "",
-          "2": "",
-          "3": "",
-          "4": "",
-          "5": "",
-          "6": "",
-          "7": "",
-          "8": "",
-          "9": "",
-          a: "",
-          b: "",
-          c: "",
-          d: "",
-          e: "",
-          f: "",
-          g: "",
-          h: "littlefoot",
-          i: "elk",
-          j: "ducky",
-          k: "trioculus",
-          m: "daemonwings",
-          n: "featherbrain",
-          o: "flapflap",
-          p: "daemonhorns",
-          q: "dragontail",
-          r: "aflutter",
-          s: "foghornpawhorn",
-          t: "unicorn",
-          u: "dragonwings",
-          v: "alicorn",
-          w: "wyrm",
-          x: "",
-        },
+  },
+  {
+    wild: {
+      genes: "28-31",
+      name: "Wild",
+      code: "WE",
+      kai: {
+        "1": "",
+        "2": "",
+        "3": "",
+        "4": "",
+        "5": "",
+        "6": "",
+        "7": "",
+        "8": "",
+        "9": "",
+        a: "",
+        b: "",
+        c: "",
+        d: "",
+        e: "",
+        f: "",
+        g: "",
+        h: "littlefoot",
+        i: "elk",
+        j: "ducky",
+        k: "trioculus",
+        m: "daemonwings",
+        n: "featherbrain",
+        o: "flapflap",
+        p: "daemonhorns",
+        q: "dragontail",
+        r: "aflutter",
+        s: "foghornpawhorn",
+        t: "unicorn",
+        u: "dragonwings",
+        v: "alicorn",
+        w: "wyrm",
+        x: "",
       },
     },
-    {
-      mouth: {
-        genes: "32-35",
-        name: "Mouth",
-        code: "MO",
-        kai: {
-          "1": "whixtensions",
-          "2": "wasntme",
-          "3": "wuvme",
-          "4": "gerbil",
-          "5": "confuzzled",
-          "6": "impish",
-          "7": "belch",
-          "8": "rollercoaster",
-          "9": "beard",
-          a: "pouty",
-          b: "saycheese",
-          c: "grim",
-          d: "fangtastic",
-          e: "moue",
-          f: "happygokitty",
-          g: "soserious",
-          h: "cheeky",
-          i: "starstruck",
-          j: "samwise",
-          k: "ruhroh",
-          m: "dali",
-          n: "grimace",
-          o: "majestic",
-          p: "tongue",
-          q: "yokel",
-          r: "topoftheworld",
-          s: "neckbeard",
-          t: "satiated",
-          u: "walrus",
-          v: "struck",
-          w: "delite",
-          x: "",
-        },
+  },
+  {
+    mouth: {
+      genes: "32-35",
+      name: "Mouth",
+      code: "MO",
+      kai: {
+        "1": "whixtensions",
+        "2": "wasntme",
+        "3": "wuvme",
+        "4": "gerbil",
+        "5": "confuzzled",
+        "6": "impish",
+        "7": "belch",
+        "8": "rollercoaster",
+        "9": "beard",
+        a: "pouty",
+        b: "saycheese",
+        c: "grim",
+        d: "fangtastic",
+        e: "moue",
+        f: "happygokitty",
+        g: "soserious",
+        h: "cheeky",
+        i: "starstruck",
+        j: "samwise",
+        k: "ruhroh",
+        m: "dali",
+        n: "grimace",
+        o: "majestic",
+        p: "tongue",
+        q: "yokel",
+        r: "topoftheworld",
+        s: "neckbeard",
+        t: "satiated",
+        u: "walrus",
+        v: "struck",
+        w: "delite",
+        x: "",
       },
     },
-    {
-      environment: {
-        genes: "36-39",
-        name: "Environment",
-        code: "EN",
-        kai: {
-          "1": "",
-          "2": "",
-          "3": "",
-          "4": "",
-          "5": "",
-          "6": "",
-          "7": "",
-          "8": "",
-          "9": "",
-          a: "",
-          b: "",
-          c: "",
-          d: "",
-          e: "",
-          f: "",
-          g: "",
-          h: "salty",
-          i: "dune",
-          j: "juju",
-          k: "tinybox",
-          m: "myparade",
-          n: "finalfrontier",
-          o: "metime",
-          p: "drift",
-          q: "secretgarden",
-          r: "frozen",
-          s: "roadtogold",
-          t: "jacked",
-          u: "floorislava",
-          v: "prism",
-          w: "junglebook",
-          x: "",
-        },
+  },
+  {
+    environment: {
+      genes: "36-39",
+      name: "Environment",
+      code: "EN",
+      kai: {
+        "1": "",
+        "2": "",
+        "3": "",
+        "4": "",
+        "5": "",
+        "6": "",
+        "7": "",
+        "8": "",
+        "9": "",
+        a: "",
+        b: "",
+        c: "",
+        d: "",
+        e: "",
+        f: "",
+        g: "",
+        h: "salty",
+        i: "dune",
+        j: "juju",
+        k: "tinybox",
+        m: "myparade",
+        n: "finalfrontier",
+        o: "metime",
+        p: "drift",
+        q: "secretgarden",
+        r: "frozen",
+        s: "roadtogold",
+        t: "jacked",
+        u: "floorislava",
+        v: "prism",
+        w: "junglebook",
+        x: "",
       },
     },
-    {
-      secret: {
-        genes: "40-43",
-        name: "Secret Y Gene",
-        code: "SE",
-        kai: {},
-      },
+  },
+  {
+    secret: {
+      genes: "40-43",
+      name: "Secret Y Gene",
+      code: "SE",
+      kai: {},
     },
-    {
-      prestige: { genes: "44-47", name: "Purrstige", code: "PU", kai: {} },
-    },
-  ]
+  },
+  {
+    prestige: { genes: "44-47", name: "Purrstige", code: "PU", kai: {} },
+  },
+]
 
 // Samples of original data for fill in the db FancyKitties
 // based on https://www.cryptokitties.co/catalogue/fancy-cats
 // Fancy kitties are selected based on the rank of generation (low to high).
 // Generally speaking, fancy kitties priced lower than $100 are not considered as valualbe fancy kitties.
 const FancyKitties = [
-        
-  ['Catamari', 1642629, 1642657, 1641933, 1642019, 
-            1646755, 1639921, 1643320, 1646438, 
-            1649667, 1645264, 1643775, 1644114,
-            1640134, 1647228, 1643862, 1647294, 
-            1641007, 1646945, 1646255, 1642591, 
-            1644179, 1643528, 1647854, 1649527,
-            1646945, 1643862, 1640134, 1641704, 
-            1649527, 1641007, 1643252, 1644544,
-            1647485, 1649133, 1649632, 1640061],
+
+  ['Catamari', 1642629, 1642657, 1641933, 1642019,
+    1646755, 1639921, 1643320, 1646438,
+    1649667, 1645264, 1643775, 1644114,
+    1640134, 1647228, 1643862, 1647294,
+    1641007, 1646945, 1646255, 1642591,
+    1644179, 1643528, 1647854, 1649527,
+    1646945, 1643862, 1640134, 1641704,
+    1649527, 1641007, 1643252, 1644544,
+    1647485, 1649133, 1649632, 1640061],
 
 
   ['Magmeow', 1631726, 1634450, 1632058, 1631206,
-            1631875, 1629596, 1635110, 1633445,
-            1634369, 1632890, 1631778, 1634504,
-            1635234, 1634504, 1631965, 1632890,
-            1635110, 1634369, 1632233, 1635107,
-            1632190, 1630243, 1634301, 1633445,
-            1632841, 1631778, 1632233, 1633445,
-            1635107, 1635234, 1635028, 1633281,
-            1635449, 1633501, 1633378, 1633885],
+    1631875, 1629596, 1635110, 1633445,
+    1634369, 1632890, 1631778, 1634504,
+    1635234, 1634504, 1631965, 1632890,
+    1635110, 1634369, 1632233, 1635107,
+    1632190, 1630243, 1634301, 1633445,
+    1632841, 1631778, 1632233, 1633445,
+    1635107, 1635234, 1635028, 1633281,
+    1635449, 1633501, 1633378, 1633885],
 
   ['Kitijira', 1616077, 1626771, 1624378, 1621802,
-            1620498, 1620920, 1620827, 1622099,
-            1620131, 1625850, 1627335, 1621018,
-            1621802, 1619371, 1622012, 1628854,
-            1621378, 1619639, 1621078, 1618937,
-            1622779, 1623096, 1621843, 1622632,
-            1620432, 1619639, 1622012, 1621078,
-            1619371, 1616707, 1628854, 1621843,
-            1621907, 1623096, 1623973, 1618937,
-            1621078, 1620578, 1621508, 1624223,
-            1621330, 1622707, 1619208, 1628279,
-            1625513, 1627029, 1620855, 1621197],
+    1620498, 1620920, 1620827, 1622099,
+    1620131, 1625850, 1627335, 1621018,
+    1621802, 1619371, 1622012, 1628854,
+    1621378, 1619639, 1621078, 1618937,
+    1622779, 1623096, 1621843, 1622632,
+    1620432, 1619639, 1622012, 1621078,
+    1619371, 1616707, 1628854, 1621843,
+    1621907, 1623096, 1623973, 1618937,
+    1621078, 1620578, 1621508, 1624223,
+    1621330, 1622707, 1619208, 1628279,
+    1625513, 1627029, 1620855, 1621197],
 
   ['Whisper', 1600063, 1598628, 1595078, 1598372,
-           1596604, 1610037, 1602063, 1597556,
-           1597306, 1605931, 1606998, 1607247,
-           1606998, 1607247, 1598164, 1600894,
-           1597556, 1597306, 1610037, 1601338,
-           1599641, 1598638, 1600664, 1599655,
-           1597774, 1601113, 1600664, 1604885,
-           1598748, 1599655, 1600074, 1600727,
-           1599641, 1598638, 1602861, 1605716],
+    1596604, 1610037, 1602063, 1597556,
+    1597306, 1605931, 1606998, 1607247,
+    1606998, 1607247, 1598164, 1600894,
+    1597556, 1597306, 1610037, 1601338,
+    1599641, 1598638, 1600664, 1599655,
+    1597774, 1601113, 1600664, 1604885,
+    1598748, 1599655, 1600074, 1600727,
+    1599641, 1598638, 1602861, 1605716],
 
   ['Krakitten', 1549620, 1551317, 1549815, 1566316,
-             1551090, 1549243, 1551803, 1552014,
-             1554967, 1549707, 1550485, 1550517,
-             1550517, 1560149, 1550554, 1549707,
-             1555405, 1560460, 1549243, 1566316,
-             1551090, 1554967, 1563186, 1549402,
-             1555405, 1560376, 1555375, 1555108,
-             1554116, 1551753, 1551012, 1555717,
-             1553405, 1560593, 1555566, 1566504,
-             1560696, 1560593, 1560945, 1550568,
-             1554116, 1566504, 1551753, 1553323,
-             1555108, 1560376, 1555375, 1550523,
-             1555108, 1563428, 1564177, 1551401,
-             1555657, 1560945, 1560376, 1554116,
-             1555717, 1553405, 1550523, 1550507]
+    1551090, 1549243, 1551803, 1552014,
+    1554967, 1549707, 1550485, 1550517,
+    1550517, 1560149, 1550554, 1549707,
+    1555405, 1560460, 1549243, 1566316,
+    1551090, 1554967, 1563186, 1549402,
+    1555405, 1560376, 1555375, 1555108,
+    1554116, 1551753, 1551012, 1555717,
+    1553405, 1560593, 1555566, 1566504,
+    1560696, 1560593, 1560945, 1550568,
+    1554116, 1566504, 1551753, 1553323,
+    1555108, 1560376, 1555375, 1550523,
+    1555108, 1563428, 1564177, 1551401,
+    1555657, 1560945, 1560376, 1554116,
+    1555717, 1553405, 1550523, 1550507]
 ]
 
 
