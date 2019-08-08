@@ -60,6 +60,7 @@ contract GameManager is Proxied, Guard {
     event PressStart(uint indexed gameId, address player);
     event GameStateChanged(uint indexed gameId, eGameState old_state, eGameState new_state);
     event GameEnded(uint indexed gameId, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
+    event GameExtended(uint indexed gameId, uint newEndTime);
 
     modifier onlyGamePlayer(uint gameId, address player) {
         require(ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(player) > 0);
@@ -110,9 +111,11 @@ contract GameManager is Proxied, Guard {
         
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
-        if (gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
-
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+
+        if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
+
+        gameState = gmGetterDB.getGameState(gameId);
 
         //Update state if reached prestart time
         //Include check game state because it can be called from the bet function
@@ -120,8 +123,7 @@ contract GameManager is Proxied, Guard {
             gmSetterDB.updateGameState(gameId, uint(eGameState.PRE_GAME));
             emit GameStateChanged(gameId, eGameState.WAITING, eGameState.PRE_GAME);
         }
-            
-        
+
         emit NewSupporter(gameId, supporter, playerToSupport);
         
         return true;
@@ -151,8 +153,8 @@ contract GameManager is Proxied, Guard {
         gameStore.start(gameId, player,randomNum);
 
         // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
-        uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
-        betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
+        // uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        // betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
         require(kittieHELL.acquireKitty(kittieId, player));
 
@@ -189,6 +191,7 @@ contract GameManager is Proxied, Guard {
 
             if(currentJackpotEth < initialEth.mul(10)){
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
+                emit GameExtended(gameId, gameEndTime.add(60));
             }
         }
     }
@@ -210,7 +213,7 @@ contract GameManager is Proxied, Guard {
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == uint(eGameState.MAIN_GAME));
+        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running anymore");
         
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
@@ -286,7 +289,7 @@ contract GameManager is Proxied, Guard {
         else
         {
             (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
-            if(ethByCorner[0] > ethByCorner[0] ){
+            if(ethByCorner[0] > ethByCorner[1] ){
                winner = playerBlack;
                 loser = playerRed;
             }

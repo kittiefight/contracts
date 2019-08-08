@@ -208,7 +208,7 @@ contract HitsResolve is Proxied, Guard {
       if (rand == 0) {
           slash = randomGen(seed).add(601);
       } else if (rand == 1) {
-          slash = randomGen(seed);
+          slash = randomGen(seed).add(1);
       }
     }
 

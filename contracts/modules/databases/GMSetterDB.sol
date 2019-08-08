@@ -230,8 +230,8 @@ contract GMSetterDB is Proxied {
     ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), 0);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), 0);
-    KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-    KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
+    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
+    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
   }
 
   // function removeKittyStatus(uint gameId)
@@ -278,17 +278,22 @@ contract GMSetterDB is Proxied {
     onlyExistentGame(_gameId)
   {
 
-        address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
-        (uint256 bettorTotal,,,) = gmGetterDB.getSupporterInfo(_gameId, _account);
-        (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
-
-        if (bettorTotal > topBettorEth){
-            gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
-            gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
-        } else {
-            address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
-            (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
-            if (bettorTotal > secondTopBettorEth){
-                gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
-    }   }   }
+    address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
+    (uint256 bettorTotal,,,) = gmGetterDB.getSupporterInfo(_gameId, _account);
+    (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
+    
+    if (bettorTotal > topBettorEth){
+      //If topBettor is already the account, dont update
+      if(topBettor != _account){
+        gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
+        gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
+      }
+    } else {
+      address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
+      (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
+      if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
+          gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
+      }
+    }
+  }
 }
