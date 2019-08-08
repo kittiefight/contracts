@@ -148,12 +148,18 @@ contract CronJob is CronJobDB {
         if(nextJob == 0) return (false, 0);
         (uint256 time, /*uint16 nonce*/) = parseJobID(nextJob);
         if(time > now) return (false, 0);
-        /*(bool success, bytes memory result) = */ executeJob(nextJob);
+        /*(bool success, bytes memory result) = */ _executeJob(nextJob);
         removeJob(nextJob);
         return (true, nextJob);
     }
 
-    function executeJob(uint256 jobId) internal returns(bool, bytes memory){
+    function executeJobManually(uint256 jobId) external onlyOwner returns(bool, bytes memory){
+        return _executeJob(jobId);
+    }
+    function executeJob(uint256 jobId) external onlyProxy returns(bool, bytes memory){
+        return _executeJob(jobId);
+    }
+    function _executeJob(uint256 jobId) internal returns(bool, bytes memory){
         (uint256 time, string memory contractName, bytes memory data) = getJob(jobId);
         assert(time <= now);
         address contractAddress = proxy.getContract(contractName);

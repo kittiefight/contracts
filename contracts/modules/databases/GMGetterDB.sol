@@ -172,7 +172,6 @@ contract GMGetterDB is Proxied {
 
 
   // === FRONTEND GETTERS ===
-
   function getFighterByKittieID(uint256 kittieId)
     public view
     returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)

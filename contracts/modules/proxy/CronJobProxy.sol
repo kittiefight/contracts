@@ -50,6 +50,24 @@ contract CronJobProxy is ProxyBase {
 
         _executeScheduledJobs();
     }
+    function executeJob(uint256 jobId) external returns(bytes memory) {
+        address genericDB = getContract(CONTRACT_NAME_GENERIC_DB);
+        (bool success, bytes memory result) = genericDB.staticcall(abi.encodeWithSignature(
+            "getBoolStorage(string,bytes32)",
+            CONTRACT_NAME_ROLE_DB,
+            keccak256(abi.encodePacked("admin", msg.sender))
+        ));
+        require(success, 'Failed to load role');
+        bool hasRole = abi.decode(result, (bool));
+        require(hasRole, 'Sender has to be an admin');
+
+        address cronJob = getContract(CONTRACT_NAME_CRONJOB);
+        (success, result) = cronJob.call(abi.encodeWithSignature('executeJob(uint256)', jobId));
+        require(success, 'Execute call failed');
+        return result;
+    }
+
+
     /**
      * @notice Executes up to maxJobsForOneRun scheduled jobs, if available
      */
