@@ -65,7 +65,7 @@ const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
 const GAME_PRESTART = 60 // 60 secs for quick test
-const GAME_DURATION = 150 // games last  2.5 min
+const GAME_DURATION = 120 // games last  2 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
 const GAME_TIMES = 120 //Scheduled games 2 min apart
@@ -469,11 +469,8 @@ contract('GameManager', (accounts) => {
 
     while (block < preStartTime) {
       block = await dateTime.getBlockTimeStamp();
-      console.log('\nblocktime: ', formatDate(block))
       await timeout(3);
     }
-
-
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.WAITING)
@@ -578,16 +575,6 @@ contract('GameManager', (accounts) => {
       console.log(`Hash: ${attack.hash}\n`);
     }
     console.log('=================\n')
-  })
-
-  it.skip('initializing last 5 bets (temporal)', async () => {
-
-    let { gameId, playerRed, playerBlack } = gameDetails;
-
-    for (let i = 0; i < 5; i++) {
-      await betting.fillBets(gameId, playerRed, 0)
-      await betting.fillBets(gameId, playerBlack, 0)
-    }
   })
 
   it('players should be able to make bets', async () => {
@@ -746,11 +733,8 @@ contract('GameManager', (accounts) => {
 
     while (block < endTime) {
       block = await dateTime.getBlockTimeStamp();
-      console.log('\nblocktime: ', formatDate(block))
       await timeout(3);
     }
-
-
 
     await proxy.execute('GameManager', setMessage(gameManager, 'bet',
       [gameId, randomValue()]), { from: accounts[7], value: web3.utils.toWei('1') }).should.be.fulfilled;

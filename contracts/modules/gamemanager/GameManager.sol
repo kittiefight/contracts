@@ -60,6 +60,7 @@ contract GameManager is Proxied, Guard {
     event PressStart(uint indexed gameId, address player);
     event GameStateChanged(uint indexed gameId, eGameState old_state, eGameState new_state);
     event GameEnded(uint indexed gameId, address indexed winner, address indexed loser, uint pointsBlack, uint pointsRed);
+    event GameExtended(uint indexed gameId, uint newEndTime);
 
     modifier onlyGamePlayer(uint gameId, address player) {
         require(ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(player) > 0);
@@ -190,6 +191,7 @@ contract GameManager is Proxied, Guard {
 
             if(currentJackpotEth < initialEth.mul(10)){
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
+                emit GameExtended(gameId, gameEndTime.add(60));
             }
         }
     }
