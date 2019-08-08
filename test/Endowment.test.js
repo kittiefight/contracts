@@ -809,8 +809,8 @@ it('show distribution details', async () => {
 
   let rates = await gameStore.getDistributionRates(gameId);
 
-  let totalClaim_kty = new BigNumber(0) 
-  let totalClaim_eth = new BigNumber(0) 
+  /*let totalClaim_kty = new BigNumber(0) 
+  let totalClaim_eth = new BigNumber(0) */
 
   console.log('\n==== DISTRIBUTION STRUCTURE ==== \n');
 
@@ -818,22 +818,22 @@ it('show distribution details', async () => {
   console.log(` WINNER [${winners.winner}] SHARE: ${rates[0].toString()} %`);
   console.log('    ETH: ', web3.utils.fromWei(winnerShare.winningsETH.toString()));
   console.log('    KTY: ', web3.utils.fromWei(winnerShare.winningsKTY.toString()));
-  totalClaim_kty.add(winnerShare.winningsKTY)
-  totalClaim_eth.add(winnerShare.winningsETH)
+  /*totalClaim_kty.add(winnerShare.winningsKTY)
+  totalClaim_eth.add(winnerShare.winningsETH)*/
 
   let topShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
   console.log(`  TOP BETTOR [${winners.topBettor}] SHARE: ${rates[1].toString()} %`);
   console.log('    ETH: ', web3.utils.fromWei(topShare.winningsETH.toString()));
   console.log('    KTY: ', web3.utils.fromWei(topShare.winningsKTY.toString()));
-  totalClaim_kty.add(topShare.winningsKTY)
-  totalClaim_eth.add(topShare.winningsETH)
+  /*totalClaim_kty.add(topShare.winningsKTY)
+  totalClaim_eth.add(topShare.winningsETH)*/
 
   let secondTopShare = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
   console.log(`  SECOND TOP BETTOR [${winners.secondTopBettor}] SHARE: ${rates[2].toString()} %`);
   console.log('    ETH: ', web3.utils.fromWei(secondTopShare.winningsETH.toString()));
   console.log('    KTY: ', web3.utils.fromWei(secondTopShare.winningsKTY.toString()))
-  totalClaim_kty.add(secondTopShare.winningsKTY)
-  totalClaim_eth.add(secondTopShare.winningsETH)
+  /*totalClaim_kty.add(secondTopShare.winningsKTY)
+  totalClaim_eth.add(secondTopShare.winningsETH)*/
 
   let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
   console.log(`  ENDOWMENT SHARE: ${rates[4].toString()} %`);
@@ -857,10 +857,10 @@ it('show distribution details', async () => {
   
   gameDetails.supporters = supporters;
 
-  console.log('\n==== Sub total of upcoming claim by: winner, topbettor, secondTopShare:\n    KTY=',
-            web3.utils.fromWei(totalClaim_kty).toString(), ' | in wei=', totalClaim_kty.toString(),
-            ' | ETH=', web3.utils.fromWei(totalClaim_eth).toString(), ' | in wei=', totalClaim_eth.toString()
-              );
+  /*console.log('\n==== Sub total of upcoming claim by: winner, topbettor, secondTopShare:\n    KTY=',
+            web3.utils.fromWei(totalClaim_kty).toString()
+            ' | ETH=', web3.utils.fromWei(totalClaim_eth).toString()
+  );*/
 
   console.log(`\n  OTHER BETTORS SHARE: ${rates[3].toString()} %`);
   console.log('   List: ', supporters) 
@@ -870,23 +870,29 @@ it('show distribution details', async () => {
     console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
     console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
 
-    totalClaim_kty.add(share.winningsKTY)
-    totalClaim_eth.add(share.winningsETH) 
+    /*totalClaim_kty.add(share.winningsKTY)
+    totalClaim_eth.add(share.winningsETH) */
   }
   
-
+/*
   console.log('\n==== TOTAL CLAIM that will be initiated :\n    KTY=', 
               web3.utils.fromWei(totalClaim_kty).toString(), 
               ', ETH=', web3.utils.fromWei(totalClaim_eth).toString())
+*/
 
-  let honeyPotBalance = await endowmentDB.getHoneyPotBalance(gameId);
-  let honeyPotBalanceKTY = honeyPotBalance.honeyPotBalanceKTY;
-  let honeyPotBalanceETH = honeyPotBalance.honeyPotBalanceETH;
+let honeyPotBalance = await endowmentDB.getHoneyPotBalance(gameId);
+let honeyPotBalanceKTY = honeyPotBalance.honeyPotBalanceKTY;
+let honeyPotBalanceETH = honeyPotBalance.honeyPotBalanceETH;
 
-  console.log('\n     Total amount in honeypot:\n    KTY=', 
-              web3.utils.fromWei(honeyPotBalanceKTY).toString(), 
-              ', ETH=', web3.utils.fromWei(honeyPotBalanceETH).toString())
-  
+/*console.log('\n     Total amount in honeypot:\n    KTY=', 
+            web3.utils.fromWei(honeyPotBalanceKTY).toString(), 
+            ', ETH=', web3.utils.fromWei(honeyPotBalanceETH).toString())*/
+console.log(`\n==== HONEPOT INFO ==== `)
+console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotBalanceETH.toString())}   `);
+console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotBalanceKTY.toString())}   `);
+console.log('=======================\n')
+          
+
   //Get list of losers
   let losers = bettors
     .map(e => e.returnValues) 
@@ -903,7 +909,7 @@ it('show distribution details', async () => {
 
 
 it('winners can claim their share', async () => {
-  let { gameId, supporters } = gameDetails;    
+  let { gameId } = gameDetails;    
 
   let block = await dateTime.getBlockTimeStamp();
   console.log('\nblocktime: ', formatDate(block))
@@ -918,11 +924,9 @@ it('winners can claim their share', async () => {
   let withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);
   if (!withdrawalState){
     // WINNER CLAIMING
-    await proxy.execute(
-      'EndowmentFund', setMessage( endowmentFund, 'claim', [gameId] ),
-      { from: winners.winner }
-    ).should.be.fulfilled;
-    await timeout(1)    
+    await proxy.execute('EndowmentFund', setMessage( endowmentFund, 'claim', [gameId] ),
+      { from: winners.winner }).should.be.fulfilled;
+    await timeout(2)
     withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.winner);
     console.log('\nWinner ['+winners.winner+'] withdrew funds? ', withdrawalState)
 
@@ -939,199 +943,143 @@ it('winners can claim their share', async () => {
   
   let winnerBalaceKTY_post = await kittieFightToken.balanceOf(winners.winner)
   let diffKTY = winnerBalaceKTY_post.sub(winnerBalaceKTY_pre)
-  diffKTY.should.be.a.bignumber.that.eq(winnerShare.winningsKTY); // winner received the KTY
+  console.log('  ... received =',  web3.utils.fromWei(diffKTY).toString());
 
-  await timeout(1)
-  /*
-  withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
-  if (!withdrawalState){
-    // TOP BETTOR CLAIMING
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: winners.topBettor }).should.be.fulfilled; 
-
-      withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
-      console.log('Top Bettor ['+winners.topBettor+'] withdrew funds? ', withdrawalState)
-  
-  }else{
-    console.log('\n ... error: topBettor Already claimed. address=' + winners.topBettor)
-  }
-
-  await timeout(1)
-  withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
-  if (!withdrawalState){
-    // SECOND TOP BETTOR CLAIMING
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-
-      withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
-      console.log('Second Top Bettor ['+winners.secondTopBettor+'] withdrew funds? ', withdrawalState)
-  
-  }else{
-    console.log('\n ... error: secondTopBettor Already claimed. address=' +  winners.secondTopBettor)
-  }
-
-  let honeyPotBalance = await endowmentDB.getHoneyPotBalance(gameId);
-  let honeyPotBalanceKTY = honeyPotBalance.honeyPotBalanceKTY;
-  let honeyPotBalanceETH = honeyPotBalance.honeyPotBalanceETH;
-
-  // OTHER BETTOR CLAIMING
-  let claimer = 2
-  let share = await endowmentFund.getWinnerShare(gameId, supporters[claimer]);
-  console.log('\nOther Bettor ['+supporters[claimer]+'] \n     Claim amount is: KTY=',
-            share.winningsKTY.toString(), ', ETH=', web3.utils.fromWei(share.winningsETH).toString());
-
-  let errorInClaim = false          
-  if (share.winningsKTY.gt(honeyPotBalanceKTY)){
-    console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceKTY).toString());
-    errorInClaim = true
-  }          
-
-  if (share.winningsETH.gt(honeyPotBalanceETH)){
-    console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceETH).toString());
-    errorInClaim = true
-  }          
-
-
-  //withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[claimer]);
-  if (!errorInClaim){
-
-      let pre_kty = await kittieFightToken.balanceOf(supporters[claimer]);
-      await timeout(1)
-      await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-        [gameId]), { from: supporters[claimer]}).should.be.fulfilled;
-      await timeout(1)
-      withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[claimer]);
-      if (withdrawalState){
-        console.log('.... bettor successfully withdrew funds')
-
-        let post_kty = await kittieFightToken.balanceOf(supporters[claimer]);
-        let diff = post_kty.sub(pre_kty)
-        console.log(`.... total withdran by bettor is = ${diff} KTY `)
-      }        
-
-    
-  }else{
-    console.log('\n ... error in claimimg')
-  }
-
-
-  claims = await endowmentFund.getPastEvents('WinnerClaimed', { 
-    filter: {gameId}, 
-    fromBlock: 0, 
-    toBlock: "latest" 
-  });
-*/
-  //claims.length.should.be.equal(4);
-
-  claims.map(async (e) => {
-    console.log('   Claimer ', e.returnValues.winner)
-    console.log('       KTY ', e.returnValues.ktyAmount)
-    console.log('       ETH ', e.returnValues.ethAmount)
-
-  })    
+  //diffKTY.should.be.a.bignumber.that.eq(winnerShare.winningsKTY); // winner received the KTY
   
 })
 
 
 it('TOP BETTOR CLAIMING', async () => {  
+  let { gameId } = gameDetails;
   let winners = await getterDB.getWinners(gameId);
-
-  // TOP BETTOR CLAIMING
-  /*await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.topBettor }).should.be.fulfilled;
-  withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
-  console.log('Top Bettor withdrew funds? ', withdrawalState)*/
+  let winnerBalaceKTY_pre = await kittieFightToken.balanceOf(winners.topBettor)
 
   withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
   if (!withdrawalState){
     // TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.topBettor }).should.be.fulfilled; 
-
+      await timeout(2)
       withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.topBettor);
-      console.log('Top Bettor ['+winners.topBettor+'] withdrew funds? ', withdrawalState)
-  
+      console.log('\nTop Bettor ['+winners.topBettor+'] withdrew funds? ', withdrawalState)
+
+      let winnerBalaceKTY_post = await kittieFightToken.balanceOf(winners.topBettor)
+      let diffKTY = winnerBalaceKTY_post.sub(winnerBalaceKTY_pre)
+      console.log('  ... received =',  web3.utils.fromWei(diffKTY).toString());      
+
   }else{
     console.log('\n ... error: topBettor Already claimed. address=' + winners.topBettor)
   }
 
-
 })
 
 it('SECOND TOP BETTOR CLAIMING', async () => {
+  let { gameId } = gameDetails;
   let winners = await getterDB.getWinners(gameId);
-  // SECOND TOP BETTOR CLAIMING
-  /*await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-  withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
-  console.log('Second Top Bettor withdrew funds? ', withdrawalState)*/
+  let winnerBalaceKTY_pre = await kittieFightToken.balanceOf(winners.secondTopBettor)
 
   withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
   if (!withdrawalState){
     // SECOND TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-
+      await timeout(2)
       withdrawalState = await endowmentFund.getWithdrawalState(gameId,  winners.secondTopBettor);
-      console.log('Second Top Bettor ['+winners.secondTopBettor+'] withdrew funds? ', withdrawalState)
-  
+      console.log('\nSecond Top Bettor ['+winners.secondTopBettor+'] withdrew funds? ', withdrawalState)
+
+      let winnerBalaceKTY_post = await kittieFightToken.balanceOf(winners.secondTopBettor)
+      let diffKTY = winnerBalaceKTY_post.sub(winnerBalaceKTY_pre)
+      console.log('  ... received =',  web3.utils.fromWei(diffKTY).toString());      
+
   }else{
     console.log('\n ... error: secondTopBettor Already claimed. address=' +  winners.secondTopBettor)
   }
 
 })
 
-it('OTHER BETTOR CLAIMING', async () => {
+it('ALL BETTOR CLAIMING', async () => {
+  let { gameId } = gameDetails;
   let winners = await getterDB.getWinners(gameId);
-  // OTHER BETTOR CLAIMING
-  /*await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: supporters[1] }).should.be.fulfilled;
-  withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
-  console.log('Other Bettor withdrew funds? ', withdrawalState)*/
 
-  let honeyPotBalance = await endowmentDB.getHoneyPotBalance(gameId);
-  let honeyPotBalanceKTY = honeyPotBalance.honeyPotBalanceKTY;
-  let honeyPotBalanceETH = honeyPotBalance.honeyPotBalanceETH;
+  //console.log(`\ngameId=${gameId}`);
 
-  let claimer = 2
-  let share = await endowmentFund.getWinnerShare(gameId, supporters[claimer]);
-  console.log('\nOther Bettor ['+supporters[claimer]+'] \n     Claim amount is: KTY=',
-              web3.utils.fromWei(share.winningsKTY).toString(), ', ETH=', web3.utils.fromWei(share.winningsETH).toString());
+  let bettors = await gameManager.getPastEvents("NewSupporter", {
+    filter: { gameId },
+    fromBlock: 0,
+    toBlock: "latest"
+  });
 
-  let errorInClaim = false          
-  if (share.winningsKTY.gt(honeyPotBalanceKTY)){
-    console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceKTY).toString());
-    errorInClaim = true
-  }          
+  let honeyPotBalance, honeyPotBalanceKTY, honeyPotBalanceETH
 
-  if (share.winningsETH.gt(honeyPotBalanceETH)){
-    console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceETH).toString());
-    errorInClaim = true
-  }          
+  //Get list of other bettors/supporters
+  supporters = bettors
+    .map(e => e.returnValues)
+    .filter(e => e.playerSupported === winners.winner)
+    .filter(e => e.supporter !== winners.topBettor)
+    .filter(e => e.supporter !== winners.secondTopBettor)
+    .map(e => e.supporter)    
 
-  //withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[claimer]);
-  if (!errorInClaim){
+  let errorInClaim = false    
+  console.log(`\n====STARTING CLAIM BY BETTORS`);
+  for(let i=0; i<supporters.length; i++){
 
-      let pre_kty = await kittieFightToken.balanceOf(supporters[claimer]);
+    let share = await endowmentFund.getWinnerShare(gameId, supporters[i]);      
+    console.log(`\n  Bettor ${supporters[i]}: `);
+    console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
+    console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
+
+    honeyPotBalance = await endowmentDB.getHoneyPotBalance(gameId);
+    honeyPotBalanceKTY = honeyPotBalance.honeyPotBalanceKTY;
+    honeyPotBalanceETH = honeyPotBalance.honeyPotBalanceETH;
+
+    errorInClaim = false      
+    if (share.winningsKTY.gt(honeyPotBalanceKTY)){
+      console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceKTY).toString());
+      errorInClaim = true
+    }          
+  
+    if (share.winningsETH.gt(honeyPotBalanceETH)){
+      console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceETH).toString());
+      errorInClaim = true
+    }
+
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[i]);
+    if (withdrawalState){
+      console.log('... Address: ', supporters[i], ' has already claimed. ')
+    }else{
       await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-        [gameId]), { from: supporters[claimer]}).should.be.fulfilled;
-      await timeout(1)
-      withdrawalState = await endowmentFund.getWithdrawalState(gameId,  supporters[claimer]);
-      if (withdrawalState){
-        console.log('.... bettor successfully withdrew funds')
+        [gameId]), { from: supporters[i] }).should.be.fulfilled;
+      await timeout(2)    
+      withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[i]);
+      console.log('    supporters['+i+'] withdrew funds? ', withdrawalState)      
+    }    
 
-        let post_kty = await kittieFightToken.balanceOf(supporters[claimer]);
-        let diff = post_kty.sub(pre_kty)
-        console.log(`.... total withdran by bettor is = ${diff} KTY `)
-      }        
-    
-  }else{
-    console.log('\n ... error in claimimg: not enough funds in honeypot')
-  }
+    /*
+    // not working
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: supporters[i] }).should.be.fulfilled;
+    await timeout(2)    
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[i]);
+    console.log('    supporters['+i+'] withdrew funds? ', withdrawalState)
+    */
+
+  
+  }//end-for
+
+/*
+  // OTHER BETTOR CLAIMING
+  await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+    [gameId]), { from: supporters[1] }).should.be.fulfilled;
+  await timeout(2)    
+  withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
+  console.log('Other Bettor withdrew funds? ', withdrawalState)
+
+  console.log('      Address: ', supporters[1], ' claimed. ')
+*/
 
 
 })
-
 
 
 

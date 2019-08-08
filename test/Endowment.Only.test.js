@@ -1,5 +1,4 @@
-
-const BigNumber = require('bn.js');
+const BigNumber = web3.utils.BN;
 require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bn')(BigNumber))
@@ -9,7 +8,6 @@ require('chai')
 
 
 const KFProxy = artifacts.require('KFProxy')
-//const Guard = artifacts.require('Guard')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB')
 const RoleDB = artifacts.require('RoleDB')
@@ -29,30 +27,67 @@ const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const EndowmentDB = artifacts.require('EndowmentDB')
 const Escrow = artifacts.require('Escrow')
-const KittieHELL = artifacts.require('KittieHELL')
+const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
-const KittieFightToken = artifacts.require('MockERC20Token');
+const KittieFightToken = artifacts.require('KittieFightToken');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 
 //Contract instances
-let proxy, guard, dateTime, genericDB, profileDB, roleDB, superDaoToken,
+let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
-  endowmentDB, distribution, forfeiter, scheduler, betting, hitsResolve,
+  endowmentDB, forfeiter, scheduler, betting, hitsResolve,
   rarityCalculator, kittieHELL, kittieHellDB, getterDB, setterDB, gameManager,
   cronJob, escrow
 
+//Kitty Ids
+const kitties = [0, 1001, 1555108, 1267904, 454545, 333, 6666];
 
-// const ERC20_TOKEN_SUPPLY = new BigNumber(1000000);
-const ERC20_TOKEN_SUPPLY = new BigNumber(
-  web3.utils.toWei("100000000", "ether") //100 Million
-);
+//Civic Ids
+const cividIds = [0, 1, 2, 3, 4, 5, 6];
 
+gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING', 'CANCELLED'];
+potStates = ['CREATED', 'ASSIGNED', 'SCHEDULED', 'STARTED', 'FORFEITED', 'CLAIMING', 'DISSOLVED']
+const GameState = {
+  WAITING: 0,
+  PRE_GAME: 1,
+  MAIN_GAME: 2,
+  GAME_OVER: 3,
+  CLAIMING: 4,
+  CANCELLED: 5
+}
+
+// ================ GAME VARS AND FEES ================ //
+const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
+const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+const MIN_CONTRIBUTORS = 2
+const REQ_NUM_MATCHES = 2
+const GAME_PRESTART = 60 // 60 secs for quick test
+const GAME_DURATION = 120 // games last  2 min
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
+const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
+const GAME_TIMES = 120 //Scheduled games 2 min apart
+const KITTIE_HELL_EXPIRATION = 300
+const HONEY_POT_EXPIRATION = 180
+const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
+const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
+//Distribution Rates
+const WINNING_KITTIE = 35
+const TOP_BETTOR = 25
+const SECOND_RUNNER_UP = 10
+const OTHER_BETTORS = 15
+const ENDOWNMENT = 15
+// =================================================== //
+
+//If you change endowment initial tokens, need to change deployment file too
+
+// ======== INITIAL AMOUNTS ================ //
 const TOKENS_FOR_USERS = new BigNumber(
-  web3.utils.toWei("5000", "ether") //100 Million
+  web3.utils.toWei("5000", "ether") //5.000 KTY 
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
@@ -62,49 +97,11 @@ const INITIAL_KTY_ENDOWMENT = new BigNumber(
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
   web3.utils.toWei("1000", "ether") //1.000 ETH
 );
+// ============================================== //
 
-// GAME VARS AND FEES
-const LISTING_FEE = new BigNumber(web3.utils.toWei("5", "ether"));
-const TICKET_FEE = new BigNumber(web3.utils.toWei("2", "ether"));
-const BETTING_FEE = new BigNumber(web3.utils.toWei("1", "ether"));
-const MIN_CONTRIBUTORS = 2
-const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 20 // 20 secs for quick test
-const GAME_DURATION = 60 // games last 0.5 min
-const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
-const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
-const GAME_TIMES = 120 //Scheduled games 1 min apart
-const KITTIE_HELL_EXPIRATION = 300
-const HONEY_POT_EXPIRATION = 180
-const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
-//Distribution Rates
-const WINNING_KITTIE = 35
-const TOP_BETTOR = 25
-const SECOND_RUNNER_UP = 10
-const OTHER_BETTORS = 15
-const ENDOWNMENT = 15
-const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
 
-const kovanMedianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F'
-const kitties = [0, 1001, 1555108, 1267904, 454545, 333, 6666];
-
-gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING'];
-
-potStates = ['CREATED', 'ASSIGNED', 'SCHEDULED', 'STARTED', 'FORFEITED', 'CLAIMING', 'DISSOLVED']
-
-const cividIds = [0, 1, 2, 3, 4, 5, 6];
-
-const GameState = {
-  WAITING: 0,
-  PRE_GAME: 1,
-  MAIN_GAME: 2,
-  GAME_OVER: 3,
-  CLAIMING: 4,
-  KITTIE_HELL: 5,
-  CANCELLED: 6
-}
-
-var gameDetails;
+//Object used throughout the test, to store playing game details
+let gameDetails;
 
 // BETTING
 let redBetStore = new Map()
@@ -119,72 +116,68 @@ function setMessage(contract, funcName, argArray) {
 }
 
 function randomValue() {
-  return Math.floor(Math.random() * 30) + 1; // 0-100ETH
+  return Math.floor(Math.random() * 30) + 1; // 0-30ETH
 }
 
 function timeout(s) {
-   console.log(`~~~ Timeout for ${s} seconds`);
+  // console.log(`~~~ Timeout for ${s} seconds`);
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
-function formatDate(timestamp)
-{
-    let date = new Date(null);
-    date.setSeconds(timestamp);
-    return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+function formatDate(timestamp) {
+  let date = new Date(null);
+  date.setSeconds(timestamp);
+  return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
-contract('Endowment', (accounts) => {
+contract('GameManager', (accounts) => {
 
-  it('deploys contracts', async () => {
+  it('instantiate contracts', async () => {
+
     // PROXY
-    proxy = await KFProxy.new()
-    //guard = await Guard.new()
+    proxy = await KFProxy.deployed()
 
     // DATABASES
-    genericDB = await GenericDB.new()
-    profileDB = await ProfileDB.new(genericDB.address);
-    roleDB = await RoleDB.new(genericDB.address);
-    endowmentDB = await EndowmentDB.new(genericDB.address)
-    getterDB = await GMGetterDB.new(genericDB.address)
-    setterDB = await GMSetterDB.new(genericDB.address)
-    kittieHellDB = await KittieHellDB.new(genericDB.address)
+    genericDB = await GenericDB.deployed()
+    profileDB = await ProfileDB.deployed();
+    roleDB = await RoleDB.deployed();
+    endowmentDB = await EndowmentDB.deployed()
+    getterDB = await GMGetterDB.deployed()
+    setterDB = await GMSetterDB.deployed()
+    kittieHellDB = await KittieHellDB.deployed()
 
     // CRONJOB
-    cronJob = await CronJob.new(genericDB.address)
-    freezeInfo = await FreezeInfo.new();
-    cronJobTarget= await CronJobTarget.new();
+    cronJob = await CronJob.deployed()
+    freezeInfo = await FreezeInfo.deployed();
+    cronJobTarget = await CronJobTarget.deployed();
 
 
     // TOKENS
-    superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY);
-    kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY);
-    cryptoKitties = await CryptoKitties.new();
+    superDaoToken = await SuperDaoToken.deployed();
+    kittieFightToken = await KittieFightToken.deployed();
+    cryptoKitties = await CryptoKitties.deployed();
 
     // MODULES
-    gameManager = await GameManager.new()
-    gameStore = await GameStore.new()
-    gameCreation = await GameCreation.new()
-    register = await Register.new()
-    dateTime = await DateTime.new()
-    gameVarAndFee = await GameVarAndFee.new(genericDB.address, kovanMedianizer)
-    forfeiter = await Forfeiter.new()
-    scheduler = await Scheduler.new()
-    betting = await Betting.new()
-    hitsResolve = await HitsResolve.new()
-    rarityCalculator = await RarityCalculator.deployed()  //for testnet, as raruty needs some SETUP :)
-    // rarityCalculator = await RarityCalculator.new()
-    endowmentFund = await EndowmentFund.new()
-    kittieHELL = await KittieHELL.new()
+    gameManager = await GameManager.deployed()
+    gameStore = await GameStore.deployed()
+    gameCreation = await GameCreation.deployed()
+    register = await Register.deployed()
+    dateTime = await DateTime.deployed()
+    gameVarAndFee = await GameVarAndFee.deployed()
+    forfeiter = await Forfeiter.deployed()
+    scheduler = await Scheduler.deployed()
+    betting = await Betting.deployed()
+    hitsResolve = await HitsResolve.deployed()
+    rarityCalculator = await RarityCalculator.deployed()
+    endowmentFund = await EndowmentFund.deployed()
+    kittieHELL = await KittieHELL.deployed()
 
     //ESCROW
-    escrow = await Escrow.new()
-    await escrow.transferOwnership(endowmentFund.address).should.be.fulfilled
+    escrow = await Escrow.deployed()
 
   })
 
-  it('adds contract addresses to contract manager', async () => {
-    //await proxy.addContract('Guard', guard.address)
+  it.skip('adds contract addresses to contract manager', async () => {
     await proxy.addContract('TimeContract', dateTime.address)
     await proxy.addContract('GenericDB', genericDB.address)
     await proxy.addContract('CryptoKitties', cryptoKitties.address);
@@ -211,12 +204,11 @@ contract('Endowment', (accounts) => {
     await proxy.addContract('CronJobTarget', cronJobTarget.address);
     await proxy.addContract('KittieHell', kittieHELL.address)
     await proxy.addContract('KittieHellDB', kittieHellDB.address)
-    
+
 
   })
 
-  it('sets proxy in contracts', async () => {
-    //await guard.setProxy(proxy.address);
+  it.skip('sets proxy in contracts', async () => {
     await genericDB.setProxy(proxy.address)
     await profileDB.setProxy(proxy.address);
     await roleDB.setProxy(proxy.address);
@@ -242,8 +234,7 @@ contract('Endowment', (accounts) => {
 
   })
 
-  it('initializes contract variables', async () => {
-    await gameVarAndFee.initialize()
+  it.skip('initializes contract variables', async () => {
     await gameStore.initialize()
     await gameCreation.initialize()
     await forfeiter.initialize()
@@ -253,10 +244,17 @@ contract('Endowment', (accounts) => {
     await getterDB.initialize()
     await setterDB.initialize()
     await endowmentFund.initialize()
-    await endowmentFund.initUpgradeEscrow(escrow.address)
     await kittieHellDB.setKittieHELL()
     await kittieHELL.initialize()
     await hitsResolve.initialize()
+  })
+
+  it.skip('sets super admin address', async () => {
+    await register.addSuperAdmin(accounts[0])
+  })
+
+  it.skip('initialize escrow upgrade', async () => {
+    await endowmentFund.initUpgradeEscrow(escrow.address)
   })
 
   it('mint some kitties for the test addresses', async () => {
@@ -282,29 +280,14 @@ contract('Endowment', (accounts) => {
       await kittieFightToken.approve(endowmentFund.address, TOKENS_FOR_USERS, { from: accounts[i] }).should.be.fulfilled;
     }
   })
-  
-  it('add KTY to endowment', async () => {    
-    await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT).should.be.fulfilled;
-    let endowmentFund_kty = await kittieFightToken.balanceOf(endowmentFund.address); 
-    //console.log('balanceOf(endowmentFund.address) = ' + endowmentFund_kty);
-  })
 
-  it('send KTY to escrow from endowment', async () => {    
-    await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+  it('correct initial endowment/escrow funds', async () => {
     let balanceKTY = await escrow.getBalanceKTY();
-    //console.log(' escrow.getBalanceKTY() = ' + balanceKTY);
+    let balanceETH = await escrow.getBalanceETH();
+
     balanceKTY.toString().should.be.equal(INITIAL_KTY_ENDOWMENT.toString());
+    balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
   })
-
-
-  it('send ETH to escrow from accounts[0]', async () => {    
-      await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
-
-      let balanceETH = await escrow.getBalanceETH();
-      //console.log(' escrow.getBalanceETH() = ' + balanceETH);
-      balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
-  })
-
 
   it('Set game vars and fees correctly', async () => {
     let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
@@ -332,10 +315,6 @@ contract('Endowment', (accounts) => {
 
     getVar = await gameVarAndFee.getListingFee();
     getVar.toString().should.be.equal(LISTING_FEE.toString());
-    
-    //console.log('\n==== GAME FEE: \n', 'getListingFee=', getVar.toString(), '\nLISTING_FEE=', LISTING_FEE.toString());
-    LISTING_FEE.should.be.a.bignumber.that.equals(await gameVarAndFee.getListingFee());
-
   })
 
   it('registers user to the system', async () => {
@@ -353,6 +332,15 @@ contract('Endowment', (accounts) => {
       }).should.be.fulfilled;
     }
   })
+
+/*
+  it('returnOriginalSender', async () => {
+    let claimerAddress = await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'returnOriginalSender'), { from: accounts[0] });
+    console.log('claimerAddress returned by contract:' + claimerAddress);  
+  })
+return;
+*/
+
 
   // dummy claim pay check
   it('Call Dummy claim to check if payment work', async () => {
@@ -373,22 +361,6 @@ contract('Endowment', (accounts) => {
                 '\n Kty=', claimer_balance_kty_post.toString(), 
                 '\n Eth=', claimer_balance_eth_post.toString());
 
-    /*
-    // uint256 winningsETH = 1;  uint256 winningsKTY = 100; // from contracts/modules/endowment/EndowmentFund.sol    
-    let winningsKTY =  new BigNumber(100);
-    let winningsETH = new BigNumber(1); 
-
-    claimer_balance_kty_post = new BigNumber(claimer_balance_kty_post)
-    claimer_balance_kty_pre = new BigNumber(claimer_balance_kty_pre)
-    claimer_balance_eth_post = new BigNumber(claimer_balance_eth_post)
-    claimer_balance_eth_pre = new BigNumber(claimer_balance_eth_pre)
-    
-    let diff_kty = claimer_balance_kty_post.sub(claimer_balance_kty_pre);
-    diff_kty.should.be.a.bignumber.that.eq(winningsKTY);
-
-    let diff_eth = claimer_balance_eth_post.sub(claimer_balance_eth_pre);
-    diff_eth.should.be.a.bignumber.that.eq(winningsETH);
-    */
   })
 
   it('Test: function Claim()', async () => {
@@ -428,15 +400,6 @@ contract('Endowment', (accounts) => {
   }) 
   
   // updateHoneyPotState
-  
-  
-  
-  
-  
-  
-  
-  
-  return;
 
 })
 

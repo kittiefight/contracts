@@ -470,8 +470,10 @@ contract('GameManager', (accounts) => {
     console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
 
     let newState = await getterDB.getGameState(gameId)
-    console.log('\n==== NEW STATE: ', gameStates[newState.toNumber()])    
+    console.log('\n==== NEW STATE: ', gameStates[newState.toNumber()])     
     
+ // not finished.. as full needs to be run.,. using exsiting tests
+
 
 /*
 
