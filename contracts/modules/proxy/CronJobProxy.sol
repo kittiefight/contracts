@@ -21,6 +21,7 @@ pragma solidity ^0.5.5;
 
 import "../../authority/Owned.sol";
 import "../../CronJob.sol";
+import "./ProxyBase.sol";
 
 contract CronJobProxy is ProxyBase {
     event CronJobExecutionFailed(); //This is used to signal about something really unexpected happened
