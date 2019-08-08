@@ -152,7 +152,7 @@ contract GMGetterDB is Proxied {
     }
 
     return false;
-  } 
+  }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
@@ -162,6 +162,14 @@ contract GMGetterDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "playingGame")));
   }
 
+  function getFinalHoneypot(uint256 gameId)
+    public view
+    returns(uint totalEth, uint totalKty )
+  {
+    totalEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")));
+    totalKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")));
+  }
+
 
   // === FRONTEND GETTERS ===
 
@@ -169,8 +177,7 @@ contract GMGetterDB is Proxied {
     public view
     returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead, isPlaying, isGhost,) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
-    deathTime = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).kittyDeathTime(kittieId);
+    (owner, isDead, isPlaying, isGhost, deathTime) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
     gameId = getGameOfKittie(kittieId);
     kittieHellExp = gameStore.getKittieExpirationTime(gameId);
   }
@@ -218,8 +225,6 @@ contract GMGetterDB is Proxied {
     timeCreated = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "createdTime")));
     winner = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "winner")));
   }
-
-  
 
   function getHoneypotInfo(uint256 gameId)
     public view

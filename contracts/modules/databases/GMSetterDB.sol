@@ -234,15 +234,6 @@ contract GMSetterDB is Proxied {
     // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
   }
 
-  // function removeKittyStatus(uint gameId)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  // {
-  //   ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-  //   KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-  //   KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
-  // }
-
   /**
    * @dev set HoneyPotId and initial ETH in jackpot created by Endowment
    */
@@ -253,6 +244,16 @@ contract GMSetterDB is Proxied {
   {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), initialEth);
+  }
+
+  function storeHoneypotDetails(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    (,,,uint totalEth,,uint totalKty,) = gmGetterDB.getHoneypotInfo(gameId);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")), totalEth);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")), totalKty);
   }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {

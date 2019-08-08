@@ -21,6 +21,7 @@ contract GameStore is Proxied {
         uint kittieHellExpirationTime;
         uint honeypotExpirationTime;
         uint minimumContributors;
+        uint finalizeRewards;
         uint[5] distributionRates;
     }
 
@@ -42,6 +43,7 @@ contract GameStore is Proxied {
         globalSettings.honeypotExpirationTime = gameVarAndFee.getHoneypotExpiration();
         globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
         globalSettings.distributionRates = gameVarAndFee.getDistributionRates();
+        globalSettings.finalizeRewards = gameVarAndFee.getFinalizeRewards();
 
         gameSettings[gameId] = globalSettings;
     }
@@ -98,6 +100,14 @@ contract GameStore is Proxied {
 
     function getBettingFee(uint gameId) public view returns(uint){
         return gameSettings[gameId].bettingFee;
+    }
+
+    function getMinimumContributors(uint gameId) public view returns(uint){
+        return gameSettings[gameId].minimumContributors;
+    }
+
+    function getFinalizeRewards(uint gameId) public view returns(uint){
+        return gameSettings[gameId].finalizeRewards;
     }
 
     

@@ -147,7 +147,7 @@ contract Forfeiter is Proxied {
     public  returns(bool)
   {
     if (gamePreStartTime <= now) {
-      uint minSupporters = gameVarAndFee.getMinimumContributors(); //TODO: should call getterDB as vars and fees are locked
+      uint minSupporters = gameStore.getMinimumContributors(gameId); //TODO: should call getterDB as vars and fees are locked
       if(supportersBlack < minSupporters || supportersRed < minSupporters){
         forfeitGame(gameId, "Undersupported");
         return false;

@@ -75,8 +75,7 @@ contract Distribution is Proxied {
  
         uint256 winningCategory = checkWinnerCategory(gameId, claimer, winners[0]);
 
-        uint256 totalEthFunds = endowmentDB.getHoneypotTotalETH(gameId);
-        uint256 totalKTYFunds = endowmentDB.getHoneypotTotalKTY(gameId);
+        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
         
         winningsETH = (totalEthFunds.mul(rates[winningCategory])).div(100);
         winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);

@@ -793,7 +793,7 @@ contract('GameManager', (accounts) => {
 
     let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
 
-    console.log(`\n==== HONEPOT INFO ==== `)
+    console.log(`\n==== HONEYPOT INFO ==== `)
     console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
     console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
     console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
@@ -927,6 +927,8 @@ contract('GameManager', (accounts) => {
     newBalance.should.be.equal(balance + winningsKTY);
 
     // TOP BETTOR CLAIMING
+    let share = await distribution.getWinnerShare(gameId, winners.topBettor);
+    console.log('Top Bettor withdrawing ', share.winningsETH.toString(), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.topBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);

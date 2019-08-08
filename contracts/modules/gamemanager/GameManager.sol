@@ -302,6 +302,9 @@ contract GameManager is Proxied, Guard {
         //Store Winners in DB
         gmSetterDB.setWinners(gameId, winner, gameStore.getTopBettor(gameId, winner),
             gameStore.getSecondTopBettor(gameId, winner));
+        
+        //Lock Honeypot details
+        gmSetterDB.storeHoneypotDetails(gameId);
 
         //Release winner's Kittie
         kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
