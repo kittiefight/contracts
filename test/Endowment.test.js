@@ -73,7 +73,7 @@ const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
 const GAME_TIMES = 120 //Scheduled games 2 min apart
 const KITTIE_HELL_EXPIRATION = 300
-const HONEY_POT_EXPIRATION = 180
+const HONEY_POT_EXPIRATION = 1800
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
 const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
 //Distribution Rates
@@ -1055,35 +1055,11 @@ it('ALL BETTOR CLAIMING', async () => {
       console.log('    supporters['+i+'] withdrew funds? ', withdrawalState)      
     }    
 
-    /*
-    // not working
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: supporters[i] }).should.be.fulfilled;
-    await timeout(2)    
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[i]);
-    console.log('    supporters['+i+'] withdrew funds? ', withdrawalState)
-    */
-
-  
+ 
   }//end-for
-
-/*
-  // OTHER BETTOR CLAIMING
-  await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-    [gameId]), { from: supporters[1] }).should.be.fulfilled;
-  await timeout(2)    
-  withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
-  console.log('Other Bettor withdrew funds? ', withdrawalState)
-
-  console.log('      Address: ', supporters[1], ' claimed. ')
-*/
-
 
 })
 
-
-
-return
 
 it('check game kitties dead status', async () => {
   
