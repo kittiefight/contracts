@@ -103,6 +103,8 @@ contract GameManager is Proxied, Guard {
 
         address supporter = getOriginalSender();
 
+        require(supporter != playerToSupport);
+
         //Before GAME_OVER
         require(gameState <= 2);
 
@@ -218,14 +220,11 @@ contract GameManager is Proxied, Guard {
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
 
-        require(payedFee); //Needs to call participate first if false
+        if(sender != supportedPlayer) require(payedFee); //Needs to call participate first if false
         
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value)(gameId));
         require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
-
-        //Update bettor's total bet
-        if (sender != supportedPlayer) gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
 
         // Update Random
         hitsResolve.calculateCurrentRandom(gameId, randomNum);
@@ -235,8 +234,12 @@ contract GameManager is Proxied, Guard {
         //Send bet to betting algo, to decide attacks
         betting.bet(gameId, sender, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
-        // update game variables
-        gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
+        if (sender != supportedPlayer){
+            //Update bettor's total bet
+            gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
+            // update game variables
+            gmSetterDB.updateTopbettors(gameId, sender, supportedPlayer);
+        }
 
         // check underperforming game if one minut
         checkPerformance(gameId);
@@ -303,7 +306,7 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.setWinners(gameId, winner, gameStore.getTopBettor(gameId, winner),
             gameStore.getSecondTopBettor(gameId, winner));
         
-        //Lock Honeypot details
+        //Lock Honeypot Final Details
         gmSetterDB.storeHoneypotDetails(gameId);
 
         //Release winner's Kittie

@@ -669,7 +669,7 @@ contract('GameManager', (accounts) => {
 
   //TODO: Check top bettors calculation, as it sometimes return same address
   // for top and secondTop
-  it.skip('correctly computes the top bettors for each corner', async () => {
+  it('correctly computes the top bettors for each corner', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
     let redSortMap = new Map([...redBetStore.entries()].sort((a, b) => b[1] - a[1]));
@@ -852,8 +852,6 @@ contract('GameManager', (accounts) => {
       toBlock: "latest"
     });
 
-
-
     //Get list of other bettors
     supporters = bettors
       .map(e => e.returnValues)
@@ -907,10 +905,12 @@ contract('GameManager', (accounts) => {
     balance = Number(web3.utils.fromWei(balance.toString()));
 
     // WINNER CLAIMING
+    let share = await endowmentFund.getWinnerShare(gameId, winners.winner);
+    console.log('Winner withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.winner }).should.be.fulfilled;
     let withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.winner);
-    console.log('\nWinner withdrew funds? ', withdrawalState)
+    console.log('\nWithdrew funds? ', withdrawalState)
 
     let claims = await endowmentFund.getPastEvents('WinnerClaimed', {
       filter: { gameId },
@@ -927,25 +927,29 @@ contract('GameManager', (accounts) => {
     newBalance.should.be.equal(balance + winningsKTY);
 
     // TOP BETTOR CLAIMING
-    let share = await distribution.getWinnerShare(gameId, winners.topBettor);
-    console.log('Top Bettor withdrawing ', share.winningsETH.toString(), 'ETH')
+    share = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
+    console.log('Top Bettor withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.topBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
-    console.log('Top Bettor withdrew funds? ', withdrawalState)
+    console.log('\nWithdrew funds? ', withdrawalState)
 
 
     // SECOND TOP BETTOR CLAIMING
+    share = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
+    console.log('Second Top Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
-    console.log('Second Top Bettor withdrew funds? ', withdrawalState)
+    console.log('Withdrew funds? ', withdrawalState)
 
     // OTHER BETTOR CLAIMING
+    share = await endowmentFund.getWinnerShare(gameId, supporters[1]);
+    console.log('Other Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: supporters[1] }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
-    console.log('Other Bettor withdrew funds? ', withdrawalState)
+    console.log('\nWithdrew funds? ', withdrawalState)
 
     claims = await endowmentFund.getPastEvents('WinnerClaimed', {
       filter: { gameId },
