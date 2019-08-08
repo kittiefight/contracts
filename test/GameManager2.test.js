@@ -4,15 +4,15 @@ require('chai')
   .use(require('chai-shallow-deep-equal'))
   .use(require('chai-bignumber')(BigNumber))
   .use(require('chai-as-promised'))
-  .should();*/
+  .should();
+*/
+const BigNumber = web3.utils.BN;
+require('chai')
+  .use(require('chai-shallow-deep-equal'))
+  .use(require('chai-bn')(BigNumber))
+  .use(require('chai-as-promised'))
+  .should();
 
-  const BigNumber = require('bn.js');
-  require('chai')
-    .use(require('chai-shallow-deep-equal'))
-    .use(require('chai-bn')(BigNumber))
-    .use(require('chai-as-promised'))
-    .should();
-  
 
 
 const KFProxy = artifacts.require('KFProxy')
@@ -128,7 +128,7 @@ function randomValue() {
 }
 
 function timeout(s) {
-  //increaseBlockTime.advanceTimeAndBlock(s);
+  // console.log(`~~~ Timeout for ${s} seconds`);
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
@@ -480,7 +480,6 @@ contract('GameManager', (accounts) => {
     while (block < preStartTime) {
       block = await dateTime.getBlockTimeStamp();
       await timeout(3);
-      //console.log('post timeout(3); current block time = ' + formatDate(block));
     }
 
     let currentState = await getterDB.getGameState(gameId)
@@ -885,6 +884,14 @@ contract('GameManager', (accounts) => {
       console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
       console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
     }
+    
+    // check again for supporters[1]
+    let share = await endowmentFund.getWinnerShare(gameId, supporters[1]);
+    console.log('\nOther Bettor ['+supporters[1]+'] \n     Claim amount is: KTY=',
+              web3.utils.fromWei(share.winningsKTY).toString(), 
+              ', ETH=', web3.utils.fromWei(share.winningsETH).toString()
+              );
+
 
     await timeout(1);
 
@@ -930,20 +937,14 @@ contract('GameManager', (accounts) => {
     });
     claims.length.should.be.equal(1);
 
-    /*
     let newBalance = await kittieFightToken.balanceOf(winners.winner)
     // balance.should.be.equal(newBalance.add(winnerShare.winningsKTY))
     newBalance = Number(web3.utils.fromWei(newBalance.toString()));
     let winningsKTY = Number(web3.utils.fromWei(winnerShare.winningsKTY.toString()));
+
     newBalance.should.be.equal(balance + winningsKTY);
-    */
-    
-    let winnerBalaceKTY_post = await kittieFightToken.balanceOf(winners.winner)
-    let diffKTY = winnerBalaceKTY_post.sub(winnerBalaceKTY_pre)
-    diffKTY.should.be.a.bignumber.that.eq(winnerShare.winningsKTY);
 
-    
-
+    /*
     // TOP BETTOR CLAIMING
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.topBettor }).should.be.fulfilled;
@@ -970,8 +971,63 @@ contract('GameManager', (accounts) => {
     });
 
     claims.length.should.be.equal(4);
-    
+    */
   })
+
+  it('TOP BETTOR CLAIMING', async () => {
+    let { gameId, supporters } = gameDetails;
+    let winners = await getterDB.getWinners(gameId);
+    // TOP BETTOR CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: winners.topBettor }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
+    console.log('Top Bettor withdrew funds? ', withdrawalState)
+  })
+
+  it('SECOND TOP BETTOR CLAIMING', async () => {
+    let { gameId, supporters } = gameDetails;
+    let winners = await getterDB.getWinners(gameId);
+    // SECOND TOP BETTOR CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
+    console.log('Second Top Bettor withdrew funds? ', withdrawalState)
+  })
+
+  it('OTHER BETTOR CLAIMING', async () => {
+    let { gameId, supporters } = gameDetails;
+    let winners = await getterDB.getWinners(gameId);
+
+    let share = await endowmentFund.getWinnerShare(gameId, supporters[1]);
+    console.log('\nOther Bettor ['+supporters[1]+'] \n     Claim amount is: KTY=',
+              web3.utils.fromWei(share.winningsKTY).toString(), 
+              ', ETH=', web3.utils.fromWei(share.winningsETH).toString()
+              );
+  
+    let honeyPotBalance = await endowmentDB.getHoneyPotBalance(gameId);
+    let honeyPotBalanceKTY = honeyPotBalance.honeyPotBalanceKTY;
+    let honeyPotBalanceETH = honeyPotBalance.honeyPotBalanceETH;
+
+    let errorInClaim = false          
+    if (share.winningsKTY.gt(honeyPotBalanceKTY)){
+      console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceKTY).toString());
+      errorInClaim = true
+    }          
+  
+    if (share.winningsETH.gt(honeyPotBalanceETH)){
+      console.log('Not enough funds in honeypot. honeypot current balance=' + web3.utils.fromWei(honeyPotBalanceETH).toString());
+      errorInClaim = true
+    }
+
+    // OTHER BETTOR CLAIMING
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: supporters[1] }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
+    console.log('Other Bettor withdrew funds? ', withdrawalState)
+  })
+
+  return
+
 
   it('check game kitties dead status', async () => {
 
