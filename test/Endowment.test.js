@@ -1050,7 +1050,7 @@ it('ALL BETTOR CLAIMING', async () => {
     }else{
       await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
         [gameId]), { from: supporters[i] }).should.be.fulfilled;
-      await timeout(2)    
+      await timeout(5)    
       withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[i]);
       console.log('    supporters['+i+'] withdrew funds? ', withdrawalState)      
     }    
