@@ -66,6 +66,30 @@ contract('KFProxy', ([owner, addr1, unauthorizedAddr, randomAddr]) => {
       let recordedSender = proxiedEvents[0].args.sender;
       assert.equal(recordedSender, owner, 'Sender received by target contract does not match to original sender');
     });
+    it('forwards a call with two arrays to target', async () => {
+      let arg1 = []; let arg1Count = 2+Math.round(Math.random()*8); let arg1Sum = 0;
+      for(let i=0; i < arg1Count; i++){
+        let arg1i = Math.round(Math.random()*100);
+        arg1.push(arg1i);
+        arg1Sum += arg1i;
+      }
+      let arg2 = []; let arg2Count = 2+Math.round(Math.random()*8); let arg2Sum = 0;
+      for(let i=0; i < arg2Count; i++){
+        let arg2i = Math.round(Math.random()*100);
+        arg2.push(arg2i);
+        arg2Sum += arg2i;
+      }
+      let message = web3.eth.abi.encodeFunctionCall(
+        ProxiedTest.abi.find((f)=>{return f.name == 'testArray';}),
+        [arg1, arg2]
+      );
+      //console.log('ArrayTest: ', arg1, arg2, message);
+      let result = await this.proxy.execute(PROXIED_TEST_CONTRACT_NAME, message);
+      let resultArg1 = await this.proxiedTest.lastArg1();
+      let resultArg2 = await this.proxiedTest.lastArg2();
+      assert.equal(resultArg1.toString(), arg1Sum.toString(), 'Payload not matched: arg1');
+      assert.equal(web3.utils.toBN(resultArg2).toString(), arg2Sum.toString(), 'Payload not matched: arg2');
+    });
 
     it('forwards msg.sender to target', async () => {
       let randomPayload = web3.utils.randomHex(10);

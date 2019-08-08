@@ -1,5 +1,6 @@
 var $ = jQuery;
 jQuery(document).ready(function($) {
+    const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     let web3 = null;
     let contractDefinitions = {};
@@ -105,7 +106,7 @@ jQuery(document).ready(function($) {
                     .appendTo($field);
                     break;
                 case 'address':
-                    $(`<label><i>${argument.type}</i> ${argument.name}</label><input type="text" name="${argument.name}" placeholder="0x0000000000000000000000000000000000000000">`)
+                    $(`<label><i>${argument.type}</i> ${argument.name}</label><input type="text" name="${argument.name}" placeholder="${ZERO_ADDRESS}">`)
                     .appendTo($field);
                     break;
                 case 'uint8':
@@ -175,7 +176,7 @@ jQuery(document).ready(function($) {
         }else if(contractInstances.KFProxy) {
             $('#targetAddress').val('...');
             let address = await contractInstances.KFProxy.methods.getContract(contract).call();
-            if(address != '0x0000000000000000000000000000000000000000'){
+            if(address != ZERO_ADDRESS){
                 $('#targetAddress').val(address);
             }else{
                 $('#targetAddress').val('');
