@@ -1,3 +1,4 @@
+
 const BigNumber = web3.utils.BN;
 require('chai')
   .use(require('chai-shallow-deep-equal'))
@@ -825,6 +826,7 @@ contract('GameManager', (accounts) => {
   it('show distribution details', async () => {
 
     let { gameId, winners } = gameDetails;
+    console.log(`gameId=${gameId}`);
 
     let rates = await gameStore.getDistributionRates(gameId);
 
@@ -890,13 +892,14 @@ contract('GameManager', (accounts) => {
   })
 
   it('winners can claim their share', async () => {
+    console.log('\n==== STARTING CLAIMING PROCESS: ') 
     let { gameId, supporters } = gameDetails;
 
     let block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
 
     let potState = await endowmentDB.getHoneypotState(gameId);
-    console.log('\n==== HONEYPOT DISSOLUTION TIME: ', formatDate(potState.claimTime.toNumber()))
+    console.log('HONEYPOT DISSOLUTION TIME: ', formatDate(potState.claimTime.toNumber()))
 
     let winners = await getterDB.getWinners(gameId);
     let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
@@ -906,11 +909,11 @@ contract('GameManager', (accounts) => {
 
     // WINNER CLAIMING
     let share = await endowmentFund.getWinnerShare(gameId, winners.winner);
-    console.log('Winner withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
+    console.log('\nWinner withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.winner }).should.be.fulfilled;
     let withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.winner);
-    console.log('\nWithdrew funds? ', withdrawalState)
+    console.log('Withdrew funds? ', withdrawalState)
 
     let claims = await endowmentFund.getPastEvents('WinnerClaimed', {
       filter: { gameId },
@@ -925,19 +928,21 @@ contract('GameManager', (accounts) => {
     let winningsKTY = Number(web3.utils.fromWei(winnerShare.winningsKTY.toString()));
 
     newBalance.should.be.equal(balance + winningsKTY);
+    console.log('      Address: ', winners.winner, ' claimed. KTY=', winningsKTY)
 
+    
     // TOP BETTOR CLAIMING
     share = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
-    console.log('Top Bettor withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
+    console.log('\nTop Bettor withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.topBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
-    console.log('\nWithdrew funds? ', withdrawalState)
+    console.log('Withdrew funds? ', withdrawalState)
 
 
     // SECOND TOP BETTOR CLAIMING
     share = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
-    console.log('Second Top Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
+    console.log('\nSecond Top Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
@@ -945,11 +950,11 @@ contract('GameManager', (accounts) => {
 
     // OTHER BETTOR CLAIMING
     share = await endowmentFund.getWinnerShare(gameId, supporters[1]);
-    console.log('Other Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
+    console.log('\nOther Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: supporters[1] }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
-    console.log('\nWithdrew funds? ', withdrawalState)
+    console.log('Withdrew funds? ', withdrawalState)
 
     claims = await endowmentFund.getPastEvents('WinnerClaimed', {
       filter: { gameId },
@@ -958,8 +963,7 @@ contract('GameManager', (accounts) => {
     });
 
     claims.length.should.be.equal(4);
-
-
+    
   })
 
   it('check game kitties dead status', async () => {

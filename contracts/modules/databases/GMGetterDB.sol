@@ -233,10 +233,11 @@ contract GMGetterDB is Proxied {
     (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
     honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
     initialEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-    ethTotal = endowmentDB.getHoneypotTotalETH(gameId);
+    (ktyTotal, ethTotal) = endowmentDB.getHoneyPotBalance(gameId);
+    //ethTotal = endowmentDB.getHoneypotTotalETH(gameId);
     ethByCorner[0] = getTotalBet(gameId, playerBlack);
     ethByCorner[1] = getTotalBet(gameId, playerRed);
-    ktyTotal = endowmentDB.getHoneypotTotalKTY(gameId);
+    //ktyTotal = endowmentDB.getHoneypotTotalKTY(gameId);
     (status, expTime) = endowmentDB.getHoneypotState(gameId);
   }
 
