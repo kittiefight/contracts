@@ -136,7 +136,7 @@ contract CronJobDB is Proxied {
     }
 
 
-    function getFirstJobId() view internal returns(uint256){
+    function getFirstJobId() view public returns(uint256){
         (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_CRONJOB, TABLE_KEY, 0, false);    // 0 means HEAD, false means tail of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
         return id;
     }
@@ -160,6 +160,10 @@ contract CronJobDB is Proxied {
             (bool found, uint256 prevId) = genericDB.getAdjacent(CONTRACT_NAME_CRONJOB, TABLE_KEY, nextJobId, false);   // false means "before" (PREV)
             require(!found || newJobId > prevId, ERROR_NOT_FIRST_BEFORE);
         }
+    }
+
+    function getAllJobs() public returns(uint[] memory allJobs){
+        allJobs = genericDB.getAll(CONTRACT_NAME_CRONJOB, TABLE_KEY);
     }
 
 }

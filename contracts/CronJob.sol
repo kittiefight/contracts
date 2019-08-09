@@ -143,14 +143,14 @@ contract CronJob is CronJobDB {
      * @notice Executes next available job
      * returns (true, executed_job_id) if there was a job to execute,  (false, 0) if no job is scheduled for now
      */
-    function executeNextJobIfAvailable() external onlyProxy returns(bool, uint256) {
+    function executeNextJobIfAvailable() external onlyProxy returns(bool, bytes memory) {
         uint256 nextJob = getFirstJobId();
-        if(nextJob == 0) return (false, 0);
+        if(nextJob == 0) return (false, abi.encode(0));
         (uint256 time, /*uint16 nonce*/) = parseJobID(nextJob);
-        if(time > now) return (false, 0);
-        /*(bool success, bytes memory result) = */ _executeJob(nextJob);
-        removeJob(nextJob);
-        return (true, nextJob);
+        if(time > now) return (false, abi.encode(0));
+        (bool success, bytes memory result) = _executeJob(nextJob);
+        // removeJob(nextJob);
+        return (true, result);
     }
 
     function executeJobManually(uint256 jobId) external onlyOwner returns(bool, bytes memory){

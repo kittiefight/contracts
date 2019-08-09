@@ -173,11 +173,6 @@ contract GameManager is Proxied, Guard {
             //Call betting to set fight map
             betting.startGame(gameId, randomNum, gameStore.getRandom(gameId, opponentPlayer));
             
-            //If game is about to start delete cronjob for forfeiting if not start
-            // CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-            // uint256 jobId = gmSetterDB.cronJobsForGames(gameId);
-            // cron.deleteCronJob(CONTRACT_NAME_GAMEMANAGER,jobId);
-            
             gameCreation.deleteCronjob(gameId);
 
             //GameStarts

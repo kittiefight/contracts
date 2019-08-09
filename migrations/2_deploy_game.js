@@ -200,8 +200,9 @@ module.exports = (deployer, network, accounts) => {
     await kittieHELL.initialize()
     await hitsResolve.initialize()
 
-    console.log('\nAdding Super Admin...');
+    console.log('\nAdding Super Admin and Admin to Account 0...');
     await register.addSuperAdmin(accounts[0])
+    await register.addAdmin(accounts[0])
 
     console.log('\nUpgrading Escrow...');
     await endowmentFund.initUpgradeEscrow(escrow.address)
