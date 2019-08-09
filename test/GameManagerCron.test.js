@@ -295,8 +295,6 @@ contract('GameManager', (accounts) => {
       [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
-  //Change here to select what game to play
-  //Currently playing first game created
   it('correctly creates 2 games', async () => {
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {
       fromBlock: 0,
@@ -356,10 +354,10 @@ contract('GameManager', (accounts) => {
     jobIdGame2 = cronJobs[1].returnValues.jobId;
 
     // let firstJob = await cronJob.getFirstJobId();
-    // console.log('First Job in Cron: ', firstJob.toString());
+    // console.log('\n  First Job in Cron: ', firstJob.toString());
 
     // let parsedJob = await cronJob.parseJobID(firstJob);
-    // console.log(formatDate(parsedJob['0'].toString()));
+    // console.log('  Shceduled for:', formatDate(parsedJob['0'].toString()));
   })
 
   it('bettors can participate in a created game', async () => {
@@ -424,8 +422,6 @@ contract('GameManager', (accounts) => {
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.WAITING)
 
-    //IDEA: Player can hit button to change state, and have benefits in kittie redemption
-
     //Should be able to participate in prestart state (this one wont bet)
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerBlack]), { from: accounts[18] }).should.be.fulfilled;
@@ -445,6 +441,11 @@ contract('GameManager', (accounts) => {
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 14);
 
+    // let firstJob = await cronJob.getFirstJobId();
+    // console.log('\n  First Job in Cron: ', firstJob.toString());
+
+    // let parsedJob = await cronJob.parseJobID(firstJob);
+    // console.log('  Shceduled for:', formatDate(parsedJob['0'].toString()));
 
   })
 
@@ -496,8 +497,6 @@ contract('GameManager', (accounts) => {
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
 
-  //TODO: check with pavel, as I sometimes get an error:
-  //"Job can not be added, because there is other jobs after it. Use nextJob parameter"
   it('get scheduled events for cronjob in setterDB', async () => {
     let { gameId } = gameDetails;
 
@@ -635,9 +634,23 @@ contract('GameManager', (accounts) => {
       await timeout(3);
     }
 
-    //This one should execute job for game 2
-    await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-      [gameId, randomValue()]), { from: accounts[7], value: web3.utils.toWei('1') }).should.be.fulfilled;
+    let gameTimes = await getterDB.getGameTimes(2);
+    while (block.toNumber() < gameTimes.preStartTime.toNumber()) {
+      block = await dateTime.getBlockTimeStamp();
+      await timeout(3);
+    }
+
+    //This proxy call should end game 1
+    await proxy.execute('Register', setMessage(register, 'register', []), {
+      from: accounts[20]
+    })
+
+    let gamePlayers = await getterDB.getGamePlayers(2);
+    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [2, gamePlayers.playerBlack]), { from: accounts[15] }).should.not.be.fulfilled;
+
+    let newState = await getterDB.getGameState(2)
+    console.log('\n==== GAME STATE 2: ', gameStates[newState.toNumber()])
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(3);
@@ -689,14 +702,13 @@ contract('GameManager', (accounts) => {
 
   it('check executed and failed cronjobs in game', async () => {
 
-    let firstJob = await cronJob.getFirstJobId();
-    console.log('First Job in Cron: ', firstJob.toString());
+    // let firstJob = await cronJob.getFirstJobId();
+    // console.log('\n  First Job in Cron: ', firstJob.toString());
 
-    let parsedJob = await cronJob.parseJobID(firstJob);
-    console.log('Time scheduled: ',formatDate(parsedJob['0'].toString()));
+    // let parsedJob = await cronJob.parseJobID(firstJob);
+    // console.log('  Shceduled for:', formatDate(parsedJob['0'].toString()));
 
-    await cronJob.executeNextJobIfAvailable().should.be.fulfilled;
-
+    // await cronJob.executeNextJobIfAvailable().should.be.fulfilled;
     //DOES NOT WORK
     // await proxy.executeScheduledJobs().should.be.fulfilled;
     //WORKS, IT EXECUTES A JOB
@@ -709,7 +721,6 @@ contract('GameManager', (accounts) => {
       console.log('Job: ', e.toString());
     })
     
-
     let added = await cronJob.getPastEvents('JobAdded', {
       fromBlock: 0,
       toBlock: "latest"
@@ -749,6 +760,14 @@ contract('GameManager', (accounts) => {
     deleted.map(e => {
       console.log('\n  Job Id:', e.returnValues.jobId);
     })
+
+    let execFailed = await proxy.getPastEvents('CronJobExecutionFailed',{
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== EXEC FAILED JOBS:', execFailed.length);
+
   })
 
   it('game 2 should be cancelled ', async () => {

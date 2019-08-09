@@ -32,6 +32,8 @@ const CronJobTarget = artifacts.require('CronJobTarget');
 // const medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3' //Rinkeby
 // const medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan
 
+const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da'; //RINKEBY
+
 const ERC20_TOKEN_SUPPLY = new BigNumber(
   web3.utils.toWei("100000000", "ether") //100 Million
 );

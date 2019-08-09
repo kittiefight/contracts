@@ -265,7 +265,7 @@ contract GameManager is Proxied, Guard {
 
         if ( endTime <= now){
             gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
-                 
+            gameCreation.deleteCronjob(gameId);
             // gmSetterDB.removeKittyStatus(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
         }
