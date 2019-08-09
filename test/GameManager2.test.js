@@ -288,7 +288,7 @@ contract('GameManager', (accounts) => {
     balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
   })
 
-  it('Set game vars and fees correctly', async () => {
+  it.skip('Set game vars and fees correctly', async () => {
     let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
       'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
       'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
@@ -537,8 +537,8 @@ contract('GameManager', (accounts) => {
   it('get defense level for both players', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
-    await betting.setDefenseLevel(gameId, playerRed, 4).should.be.fulfilled;
-    await betting.setDefenseLevel(gameId, playerBlack, 5).should.be.fulfilled;
+    // await betting.setDefenseLevel(gameId, playerRed, 4).should.be.fulfilled;
+    // await betting.setDefenseLevel(gameId, playerBlack, 5).should.be.fulfilled;
 
     let defense = await betting.defenseLevel(gameId, playerBlack);
     console.log(`\n==== DEFENSE BLACK: ${defense}`);

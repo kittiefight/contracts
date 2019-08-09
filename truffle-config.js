@@ -33,7 +33,7 @@ module.exports = {
     rinkeby: {
       provider: providerFactory("rinkeby"),
       network_id: 4,
-      gas: 6000000,
+      gas: 7000000,
       gasPrice: 50000000000 // 50 Gwei
     },
     kovan: {

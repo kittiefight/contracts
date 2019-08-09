@@ -38,10 +38,6 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
   web3.utils.toWei("100000000", "ether") //100 Million
 );
 
-const TOKENS_FOR_USERS = new BigNumber(
-  web3.utils.toWei("5000", "ether") //100 Million
-);
-
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
   web3.utils.toWei("50000", "ether") //50.000 KTY
 );
@@ -50,6 +46,35 @@ const INITIAL_ETH_ENDOWMENT = new BigNumber(
   web3.utils.toWei("1000", "ether") //1.000 ETH
 );
 
+// ================ GAME VARS AND FEES ================ //
+const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
+const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+const MIN_CONTRIBUTORS = 2
+const REQ_NUM_MATCHES = 2
+const GAME_PRESTART = 60 // 60 secs for quick test
+const GAME_DURATION = 120 // games last  2 min
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
+const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
+const GAME_TIMES = 120 //Scheduled games 2 min apart
+const KITTIE_HELL_EXPIRATION = 300
+const HONEY_POT_EXPIRATION = 180
+const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
+const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
+//Distribution Rates
+const WINNING_KITTIE = 30
+const TOP_BETTOR = 20
+const SECOND_RUNNER_UP = 10
+const OTHER_BETTORS = 25
+const ENDOWNMENT = 15
+// =================================================== //
+
+function setMessage(contract, funcName, argArray) {
+  return web3.eth.abi.encodeFunctionCall(
+    contract.abi.find((f) => { return f.name == funcName; }),
+    argArray
+  );
+}
 
 module.exports = (deployer, network, accounts) => {
 
@@ -208,65 +233,87 @@ module.exports = (deployer, network, accounts) => {
 
     console.log('\nUpgrading Escrow...');
     await endowmentFund.initUpgradeEscrow(escrow.address)
+    //Transfer KTY
     await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
     await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+    //Transfer ETH
     await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+
+    console.log('\nSetting game vars and fees...');
+    let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
+      'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
+      'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
+      'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards'];
+
+    let bytesNames = [];
+    for (i = 0; i < names.length; i++) {
+      bytesNames.push(web3.utils.asciiToHex(names[i]));
+    }
+
+    let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+      REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
+      HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
+      OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString()];
+
+    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
+      from: accounts[0]
+    })
     
     //Temporary set manual defense level for testing
-    // console.log('\nRarity Calculator Setup...');
-    // await rarityCalculator.fillKaiValue()
+    console.log('\nRarity Calculator Setup...');
+    await rarityCalculator.fillKaiValue()
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
-    // }
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
+    }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
+    }
 
-    // for (let i=0; i<32; i++) {
-    //     await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
-    // }
+    for (let i=0; i<32; i++) {
+        await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
+    }
 
-    // for (let j=0; j<cattributesData.length; j++) {
-    //     await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
-    // }
+    for (let j=0; j<cattributesData.length; j++) {
+        await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
+    }
 
-    // for (let m=0; m<FancyKitties.length; m++) {
-    //   for (let n=1; n<FancyKitties[m].length; n++) {
-    //     await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-    //   }
-    // } 
+    for (let m=0; m<FancyKitties.length; m++) {
+      for (let n=1; n<FancyKitties[m].length; n++) {
+        await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
+      }
+    } 
 
-    // await rarityCalculator.updateTotalKitties(1600000)
-    // await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
+    await rarityCalculator.updateTotalKitties(1600000)
+    await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
   })
  
