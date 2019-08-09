@@ -12,6 +12,7 @@ contract CronJobTarget is Proxied {
 
 	uint256 public value;
     uint256 public scheduledJob;
+    uint256 public evilJob;
     event Scheduled(uint256 scheduledJob, uint256 time, uint256 value);
 
     function scheduleSetNonZeroValue(uint256 _value, uint256 _delay) public onlyOwner() {
@@ -19,12 +20,20 @@ contract CronJobTarget is Proxied {
 
         CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
         scheduledJob = cron.addCronJob(CONTRACT_NAME, now+_delay, abi.encodeWithSignature("setNonZeroValue(uint256)", _value));
+        if(_value == 666){
+            evilJob = scheduledJob;
+        }
         emit Scheduled(scheduledJob, now+_delay, _value);
     }
 
     function setNonZeroValue(uint256 _value) public onlyContract(CONTRACT_NAME_CRONJOB) {
         require(_value > 0, "Value should not be zero");
         value = _value;
+        if(value == 666 && evilJob > 0){
+            //Doing somethig evil...
+            CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+            cron.deleteCronJob(CONTRACT_NAME, evilJob);
+        }
     }
 
 
