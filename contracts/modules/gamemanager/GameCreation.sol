@@ -33,6 +33,8 @@ import "../../libs/SafeMath.sol";
 import '../../authority/Guard.sol';
 import "../../interfaces/IKittyCore.sol";
 import "./GameStore.sol";
+import "../../CronJob.sol";
+import "./Forfeiter.sol";
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -45,10 +47,14 @@ contract GameCreation is Proxied, Guard {
     Scheduler public scheduler;
     IKittyCore public cryptoKitties;
     GameStore public gameStore;
+    CronJob public cronJob;
 
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
     event NewListing(uint indexed kittieId, address indexed owner, uint timeListed);
+    event Scheduled(uint indexed jobId, uint jobTime, uint indexed gameId, string job);
+
+    mapping(uint256 => uint256) public cronJobsForGames;
 
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
@@ -68,6 +74,7 @@ contract GameCreation is Proxied, Guard {
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+        cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
     }
 
     /**
@@ -151,5 +158,86 @@ contract GameCreation is Proxied, Guard {
     {
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
+
+
+    // ==== CRONJOBS FUNCTIONS
+
+    function scheduleJobs(uint256 gameId, uint256 state)
+    external
+    onlyContract(CONTRACT_NAME_GM_SETTER_DB)
+    {
+        if(state == 0){
+            (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+            uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, preStartTime, abi.encodeWithSignature("updateGameStateCron(uint256)", gameId));
+            emit Scheduled(scheduledJob, preStartTime, gameId, "updateGameStateCron");
+            cronJobsForGames[gameId] = scheduledJob;
+        }
+
+        if(state == 1){
+            //If it is PRE_GAME STATE, again, when the job is scheduled (startTime), it should start, as both players press start
+            //So if state did not change we must cancelGame
+            //If they both press start this job is cancelled (In start function of GameManager)
+            (uint startTime,,) = gmGetterDB.getGameTimes(gameId);
+            uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, startTime, abi.encodeWithSignature("callForfeiterCron(uint256, string memory)", gameId, "Did not hit start"));
+            emit Scheduled(scheduledJob, startTime, gameId, "callForfeiterCron");
+            cronJobsForGames[gameId] = scheduledJob;
+        }
+        if(state == 2){
+            //If it is MAIN_GAME we endgame immediately
+            //We reschedule this Job if game extends (In checkPerformance of GameManager)
+            (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
+            uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, endTime, abi.encodeWithSignature("callGameEndCron(uint256)", gameId));
+            emit Scheduled(scheduledJob, endTime, gameId, "callGameEndCron");
+            cronJobsForGames[gameId] = scheduledJob;
+        }
+    }
+
+    
+    function updateGameStateCron(uint256 gameId)
+        external
+        onlyContract(CONTRACT_NAME_CRONJOB)
+    {
+        uint state = gmGetterDB.getGameState(gameId);
+        //Check forfeiter before updating game state
+        Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER)).checkGameStatusCron(gameId, state);
+        state = gmGetterDB.getGameState(gameId);
+        if (state == 0) gmSetterDB.updateGameStateCron(gameId);
+    }
+
+    function callForfeiterCron(uint gameId, string calldata reason)
+        external
+        onlyContract(CONTRACT_NAME_CRONJOB)
+    {
+        //TODO: Forfeit or check?
+        Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER)).forfeitCron(gameId, reason);
+    }
+
+    function callGameEndCron(uint gameId)
+        external
+        onlyContract(CONTRACT_NAME_CRONJOB)
+    {
+        uint state = gmGetterDB.getGameState(gameId);
+        if (state == 2) GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER)).gameEndCron(gameId);
+    }
+
+    function rescheduleCronJob(uint gameId)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        //Reschedule CronJob when more time added
+        uint256 jobId = cronJobsForGames[gameId];
+        (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
+        cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
+    }
+
+    function deleteCronjob(uint gameId)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        uint256 jobId = cronJobsForGames[gameId];
+        cronJob.deleteCronJob(CONTRACT_NAME_GAMECREATION, jobId);
+    }
+
+
 
 }

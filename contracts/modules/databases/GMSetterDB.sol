@@ -20,6 +20,9 @@ import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "../kittieHELL/KittieHell.sol";
+import "../gamemanager/Forfeiter.sol";
+import "../gamemanager/GameManager.sol";
+import "../gamemanager/GameCreation.sol";
 
 /**
  * @dev Stores game instances
@@ -32,10 +35,15 @@ contract GMSetterDB is Proxied {
   GameVarAndFee public gameVarAndFee;
   GMGetterDB public gmGetterDB;
   GameStore public gameStore;
+  GameCreation public gameCreation;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
   string internal constant TABLE_NAME_KITTIES = "KittieTable";
+
+  mapping(uint256 => uint256) public cronJobsForGames;
+
+  // event Scheduled(uint indexed jobId, uint jobTime, uint indexed gameId, string job);
 
   modifier onlyExistentGame(uint256 gameId) {
     require(doesGameExist(gameId));
@@ -54,6 +62,7 @@ contract GMSetterDB is Proxied {
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+    gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
   }
 
  /**
@@ -90,7 +99,8 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
 
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
+    // genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
+    setGameState(gameId);
 
     // Set kittieIds to true, so we know that there are in a match
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
@@ -217,7 +227,67 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
+    // if(state == 1){
+    //   //If it is PRE_GAME STATE, again, when the job is scheduled (startTime), it should start, as both players press start
+    //   //So if state did not change we must cancelGame
+    //   //If they both press start this job is cancelled (In start function of GameManager)
+    //   (uint startTime,,) = gmGetterDB.getGameTimes(gameId);
+    //   CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+    //   uint scheduledJob = cron.addCronJob("GMSetterDB", startTime, abi.encodeWithSignature("callForfeiterCron(uint256, string memory)", gameId, "Did not hit start"));
+    //   emit Scheduled(scheduledJob, startTime, gameId, "callForfeiterCron");
+    //   cronJobsForGames[gameId] = scheduledJob;
+    // }
+    // else if(state == 2){
+    //   //If it is MAIN_GAME we endgame immediately
+    //   //We reschedule this Job if game extends (In checkPerformance of GameManager)
+    //   (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
+    //   CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+    //   uint scheduledJob = cron.addCronJob("GMSetterDB", endTime, abi.encodeWithSignature("callGameEndCron(uint256)", gameId));
+    //   emit Scheduled(scheduledJob, endTime, gameId, "callGameEndCron");
+    //   cronJobsForGames[gameId] = scheduledJob;
+    // }
+    gameCreation.scheduleJobs(gameId, state);
+
+
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+  }
+
+  // ==== CRONJOBS FUNCTIONS
+  function updateGameStateCron(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+    onlyExistentGame(gameId){
+      genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 1);
+  }
+
+  // function callForfeiterCron(uint gameId, string calldata reason)
+  //   external
+  //   onlyContract(CONTRACT_NAME_CRONJOB)
+  // {
+  //   Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER)).forfeitCron(gameId, reason);
+  // }
+
+  // function callGameEndCron(uint gameId)
+  //   external
+  //   onlyContract(CONTRACT_NAME_CRONJOB)
+  // {
+  //   GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER)).gameEndCron(gameId);
+  // }
+  // ====================
+
+  function setGameState(uint256 gameId)
+    internal
+    onlyExistentGame(gameId){
+      //If it is WAITING STATE, we need just go to PRE_GAME,
+      //*TO-DO* but we also need to check if Kittie's owner change, when we fix forfeiter
+      // (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+      // CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+      // uint scheduledJob = cron.addCronJob("GMSetterDB", preStartTime, abi.encodeWithSignature("updateGameStateCron(uint256)", gameId));
+      // emit Scheduled(scheduledJob, preStartTime, gameId, "updateGameStateCron");
+      // cronJobsForGames[gameId] = scheduledJob;
+      gameCreation.scheduleJobs(gameId, 0);
+
+      genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
   }
 
   /**

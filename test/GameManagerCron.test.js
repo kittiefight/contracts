@@ -66,7 +66,7 @@ const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
 const GAME_PRESTART = 60 // 60 secs for quick test
-const GAME_DURATION = 120 // games last  2 min
+const GAME_DURATION = 100 // games last  2 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
 const GAME_TIMES = 120 //Scheduled games 2 min apart
@@ -416,6 +416,23 @@ contract('GameManager', (accounts) => {
     listed.length.should.be.equal(0);
   })
 
+  it('get scheduled events for cronjob in setterDB', async () => {
+    let { gameId } = gameDetails;
+
+    let cronJobs = await gameCreation.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== SCHEDULED JOBS EVENTS:', cronJobs.length);
+    cronJobs.map(e => {
+      console.log('\n  Job:', e.returnValues.job);
+      console.log('  Game Id:', e.returnValues.gameId);
+      console.log('  Job Id:', e.returnValues.jobId);
+      console.log('  Scheduled for:', formatDate(e.returnValues.jobTime));
+    })
+  })
+
   it('bettors can participate in a created game', async () => {
 
     let { gameId, playerRed, playerBlack } = gameDetails;
@@ -502,6 +519,23 @@ contract('GameManager', (accounts) => {
 
   })
 
+  it('get scheduled events for cronjob in setterDB', async () => {
+    let { gameId } = gameDetails;
+
+    let cronJobs = await gameCreation.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== SCHEDULED JOBS EVENTS:', cronJobs.length);
+    cronJobs.map(e => {
+      console.log('\n  Job:', e.returnValues.job);
+      console.log('  Game Id:', e.returnValues.gameId);
+      console.log('  Job Id:', e.returnValues.jobId);
+      console.log('  Scheduled for:', formatDate(e.returnValues.jobTime));      
+    })
+  })
+
   it('should move gameState to MAIN_GAME', async () => {
 
     let { gameId, playerRed, playerBlack } = gameDetails
@@ -531,6 +565,26 @@ contract('GameManager', (accounts) => {
 
     //Game starts
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
+  })
+
+  //TODO: check with pavel, as I sometimes get an error:
+  //"Job can not be added, because there is other jobs after it. Use nextJob parameter"
+
+  it('get scheduled events for cronjob in setterDB', async () => {
+    let { gameId } = gameDetails;
+
+    let cronJobs = await gameCreation.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== SCHEDULED JOBS EVENTS:', cronJobs.length);
+    cronJobs.map(e => {
+      console.log('\n  Job:', e.returnValues.job);
+      console.log('  Game Id:', e.returnValues.gameId);
+      console.log('  Job Id:', e.returnValues.jobId);
+      console.log('  Scheduled for:', formatDate(e.returnValues.jobTime));
+    })
   })
 
   //Temporal set manual defense level
@@ -596,13 +650,11 @@ contract('GameManager', (accounts) => {
     let betsBlack = [];
     let betsRed = [];
 
-    for (let i = 6; i < 29; i++) {
-      j = i;
-      if (i >= 18) j = j - 12;
+    for (let i = 6; i < 18; i++) {
 
       let betAmount = randomValue()
-      let bettor = accounts[j]
-      let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[j])
+      let bettor = accounts[i]
+      let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[i])
       let supportedPlayer = supporterInfo.supportedPlayer;
       let player;
 
@@ -615,8 +667,6 @@ contract('GameManager', (accounts) => {
 
       } else {
         player = 'BLACK';
-        //This line make bets in black be incremental
-        //betAmount = 1 + i
         betsBlack.push(betAmount);
         (blackBetStore.has(bettor)) ?
           blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
@@ -646,7 +696,7 @@ contract('GameManager', (accounts) => {
       console.log(' Timestamp last Bet: ', formatDate(lastBetTimestamp));
 
       totalBetAmount = totalBetAmount + betAmount;
-      await timeout(Math.floor(Math.random() * 5) + 1);
+      await timeout(1);
     }
 
     //Log all bets    
@@ -670,6 +720,14 @@ contract('GameManager', (accounts) => {
     await timeout(1);
   })
 
+  it('check game 2 cancelled state ', async () => {
+    
+    let newState = await getterDB.getGameState(2)
+    console.log('\n==== GAME 2 STATE: ', gameStates[newState.toNumber()])
+  })
+
+  //TODO: Check top bettors calculation, as it sometimes return same address
+  // for top and secondTop
   it('correctly computes the top bettors for each corner', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -826,8 +884,6 @@ contract('GameManager', (accounts) => {
   it('show distribution details', async () => {
 
     let { gameId, winners } = gameDetails;
-    console.log(`gameId=${gameId}`);
-
     let rates = await gameStore.getDistributionRates(gameId);
 
     console.log('\n==== DISTRIBUTION STRUCTURE ==== \n');
@@ -1012,12 +1068,40 @@ contract('GameManager', (accounts) => {
 
   })
 
-  //TODO: Check cronjob executions
-  it.skip('game 2 should be cancelled ', async () => {
+  it('check executed and failed cronjobs in game', async () => {
+
+    let executed = await cronJob.getPastEvents('JobExecuted', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== EXECUTED JOBS:', executed.length);
+    executed.map(e => {
+      console.log('\n  Job Id:', e.returnValues.jobId);
+    })   
+
+    let failed = await cronJob.getPastEvents('JobFailed', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== FAILED JOBS:', failed.length);
+    failed.map(e => {
+      console.log('\n  Job Id:', e.returnValues.jobId);
+    })
+  })
+
+  it('game 2 should be cancelled ', async () => {
+    console.log('\n==== GAME 2 ====')
+
     console.log('\n==== WAITING FOR PREGAME TIME OF GAME 2')
 
     let block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
+
+    let newState = await getterDB.getGameState(2)
+    console.log('\n==== GAME STATE: ', gameStates[newState.toNumber()])
+    //TODO: Game should be cancelled by now
 
     let gameTimes = await getterDB.getGameTimes(2);
     let gamePlayers = await getterDB.getGamePlayers(2);
@@ -1027,10 +1111,9 @@ contract('GameManager', (accounts) => {
       await timeout(3);
     }
 
-    block = await dateTime.getBlockTimeStamp();
-    console.log('\nblocktime: ', formatDate(block))
-
     //This will trigger Forfeiter
+    //This should not be fulfilled, as cronjob should have cancelled game
+    console.log('\n==== PARTICIPATING... ')
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [2, gamePlayers.playerBlack]), { from: accounts[18] }).should.be.fulfilled;
 
@@ -1042,24 +1125,17 @@ contract('GameManager', (accounts) => {
       toBlock: "latest"
     })
 
-    let redSupporters = await getterDB.getSupporters(2, gamePlayers.playerRed);
-    console.log(`\n==== SUPPORTERS FOR RED CORNER: ${redSupporters.toNumber()}`);
-
-    let blackSupporters = await getterDB.getSupporters(2, gamePlayers.playerBlack);
-    console.log(`\n==== SUPPORTERS FOR BLACK CORNER: ${blackSupporters.toNumber()}`);
-
-    // cancelledEvents.length.should.be.equal(1);
-
-    cancelledEvents.map(e => {
-      console.log('\n==== GAME CANCELLED EVENT ')
-      console.log(' GameId: ', e.returnValues.gameId)
+    cancelledEvents.length.should.be.equal(1);
+    console.log('\n==== CANCELLED GAME EVENTS: ', cancelledEvents.length)
+    cancelledEvents.map(e => {      
+      console.log('\n GameId: ', e.returnValues.gameId)
       console.log(' Reason: ', e.returnValues.reason)
     })
 
     newState = await getterDB.getGameState(2)
     console.log('\n==== NEW GAME STATE: ', gameStates[newState.toNumber()])
 
-    // newState.toNumber().should.be.equal(5)
+    newState.toNumber().should.be.equal(5)
 
     //Game cancelled, no more participants added
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',

@@ -38,6 +38,7 @@ import '../kittieHELL/KittieHell.sol';
 import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
+import "./GameCreation.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -52,6 +53,7 @@ contract GameManager is Proxied, Guard {
     HitsResolve public hitsResolve;
     KittieHell public kittieHELL;
     GameStore public gameStore;
+    GameCreation public gameCreation;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
@@ -83,6 +85,7 @@ contract GameManager is Proxied, Guard {
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+        gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
     }
 
     /**
@@ -116,12 +119,13 @@ contract GameManager is Proxied, Guard {
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
         if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
-
+        //Check again to see if forfeited
         gameState = gmGetterDB.getGameState(gameId);
 
         //Update state if reached prestart time
         //Include check game state because it can be called from the bet function
         if (gameState == uint(eGameState.WAITING) && preStartTime <= now){
+            gameCreation.deleteCronjob(gameId);
             gmSetterDB.updateGameState(gameId, uint(eGameState.PRE_GAME));
             emit GameStateChanged(gameId, eGameState.WAITING, eGameState.PRE_GAME);
         }
@@ -168,6 +172,13 @@ contract GameManager is Proxied, Guard {
         if (gameStore.didHitStart(gameId, opponentPlayer)){
             //Call betting to set fight map
             betting.startGame(gameId, randomNum, gameStore.getRandom(gameId, opponentPlayer));
+            
+            //If game is about to start delete cronjob for forfeiting if not start
+            // CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+            // uint256 jobId = gmSetterDB.cronJobsForGames(gameId);
+            // cron.deleteCronJob(CONTRACT_NAME_GAMEMANAGER,jobId);
+            
+            gameCreation.deleteCronjob(gameId);
 
             //GameStarts
             gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
@@ -193,6 +204,7 @@ contract GameManager is Proxied, Guard {
 
             if(currentJackpotEth < initialEth.mul(10)){
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
+                gameCreation.rescheduleCronJob(gameId);
                 emit GameExtended(gameId, gameEndTime.add(60));
             }
         }
@@ -262,6 +274,14 @@ contract GameManager is Proxied, Guard {
             // gmSetterDB.removeKittyStatus(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
         }
+    }
+
+    //Function to call gameEnd from Cronjob
+    function gameEndCron(uint gameId) 
+        external
+        onlyContract(CONTRACT_NAME_GAMECREATION)
+    {
+        gameEnd(gameId);
     }
 
     /**
@@ -338,6 +358,8 @@ contract GameManager is Proxied, Guard {
         //Set to forfeited
         endowmentFund.updateHoneyPotState(gameId, 4);
         gmSetterDB.removeKittiesInGame(gameId);
+
+        gameCreation.deleteCronjob(gameId);
 
     }
 }
