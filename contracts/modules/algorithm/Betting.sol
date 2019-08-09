@@ -475,8 +475,8 @@ contract Betting is Proxied, Guard {
         address _opponentPlayer,
         uint256 _randomNum)
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
-        returns (bool)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        //returns (bool)
     {
         string memory attackType;
         bytes32 attackHash;
@@ -523,7 +523,7 @@ contract Betting is Proxied, Guard {
             defenseLevelSupportedPlayer,
             defenseLevelOpponent
             );
-        return true;
+        //return true;
     }
 
     event GameStarted(uint256 indexed _gameId);
