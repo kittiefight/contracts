@@ -60,26 +60,26 @@ const GameState = {
 }
 
 // ================ GAME VARS AND FEES ================ //
-const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
-const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
-const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
-const MIN_CONTRIBUTORS = 2
-const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 20 // 60 secs for quick test
-const GAME_DURATION = 75 // games last  2 min
-const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
-const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
-const GAME_TIMES = 60 //Scheduled games 2 min apart
-const KITTIE_HELL_EXPIRATION = 300
-const HONEY_POT_EXPIRATION = 180
-const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
-const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
-//Distribution Rates
-const WINNING_KITTIE = 35
-const TOP_BETTOR = 25
-const SECOND_RUNNER_UP = 10
-const OTHER_BETTORS = 15
-const ENDOWNMENT = 15
+// const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
+// const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+// const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+// const MIN_CONTRIBUTORS = 2
+// const REQ_NUM_MATCHES = 2
+// const GAME_PRESTART = 20 // 60 secs for quick test
+// const GAME_DURATION = 75 // games last  2 min
+// const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
+// const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
+// const GAME_TIMES = 60 //Scheduled games 2 min apart
+// const KITTIE_HELL_EXPIRATION = 80
+// const HONEY_POT_EXPIRATION = 20
+// const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
+// const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
+// //Distribution Rates
+// const WINNING_KITTIE = 35
+// const TOP_BETTOR = 25
+// const SECOND_RUNNER_UP = 10
+// const OTHER_BETTORS = 15
+// const ENDOWNMENT = 15
 // =================================================== //
 
 //If you change endowment initial tokens, need to change deployment file too
@@ -738,6 +738,26 @@ contract('GameManager', (accounts) => {
     });
 
     console.log('\n==== EXEC FAILED JOBS:', execFailed.length);
+
+    let endowmentFundScheduled = await endowmentFund.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== ENDOWMENT JOBS:', endowmentFundScheduled.length);
+    endowmentFundScheduled.map(e => {
+      console.log('\n  Job Id:', e.returnValues.scheduledJob);
+    })
+
+    let kittieHellJobs = await kittieHELL.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== KITTIEHELL JOBS:', kittieHellJobs.length);
+    kittieHellJobs.map(e => {
+      console.log('\n  Job Id:', e.returnValues.scheduledJob);
+    })
 
   })
 

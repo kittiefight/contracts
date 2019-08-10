@@ -3,6 +3,7 @@ pragma solidity ^0.5.5;
 import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
+import "../endowment/EndowmentFund.sol";
 
 contract EndowmentDB is Proxied {
   using SafeMath for uint256;
@@ -45,6 +46,7 @@ contract EndowmentDB is Proxied {
   returns (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH)  {
     honeyPotBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
     honeyPotBalanceETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
+
   }
 
   function updateHoneyPotFund(
@@ -54,12 +56,14 @@ contract EndowmentDB is Proxied {
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     returns (bool)
   {
+    uint honeyPotKtyTotal;
+    uint honeyPotEthTotal;
 
     if (_kty_amount > 0){
 
       // get total Kty availabe in the HoneyPot
       bytes32 honeyPotKtyTotalKey = keccak256(abi.encodePacked(_gameId, "ktyTotal"));
-      uint honeyPotKtyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey);
+      honeyPotKtyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey);
 
       if (deductFunds){
 
@@ -78,7 +82,7 @@ contract EndowmentDB is Proxied {
     if (_eth_amount > 0){
       // get total Eth availabe in the HoneyPot
       bytes32 honeyPotEthTotalKey = keccak256(abi.encodePacked(_gameId, "ethTotal"));
-      uint honeyPotEthTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotEthTotalKey);
+      honeyPotEthTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotEthTotalKey);
 
       if (deductFunds){
 
@@ -93,6 +97,9 @@ contract EndowmentDB is Proxied {
 
       }
     }
+
+    if(honeyPotEthTotal == 0 && honeyPotKtyTotal == 0)
+      EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND)).deleteCronJob(_gameId);
 
     return true;
   }

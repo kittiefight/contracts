@@ -56,8 +56,8 @@ const GAME_DURATION = 120 // games last  2 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
 const GAME_TIMES = 120 //Scheduled games 2 min apart
-const KITTIE_HELL_EXPIRATION = 300
-const HONEY_POT_EXPIRATION = 180
+const KITTIE_HELL_EXPIRATION = 60 //These 2 cannot be the same time, as they are scheduled together
+const HONEY_POT_EXPIRATION = 30
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
 const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
 //Distribution Rates

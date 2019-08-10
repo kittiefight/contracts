@@ -1,7 +1,7 @@
 /**
  * @title GamesManager
  *
- * @author @wafflemakr @karl @vikrammandal
+ * @author @wafflemakr @karl @vikrammandal @Xaleee
 
  *
  */
@@ -284,7 +284,7 @@ contract GameManager is Proxied, Guard {
         kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
 
         //Kill losers's Kittie
-        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser));
+        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
         //Set to claiming
         endowmentFund.updateHoneyPotState(gameId, 5);
