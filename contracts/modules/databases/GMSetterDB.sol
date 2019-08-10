@@ -27,6 +27,8 @@ import "../gamemanager/GameCreation.sol";
 /**
  * @dev Stores game instances
  * @author @psychoplasma
+ * @author @psychoplasma
+ * @author @psychoplasma
  */
 contract GMSetterDB is Proxied {
  using SafeMath for uint256;
@@ -73,9 +75,15 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (uint256 gameId)
   {
-    gameId = genericDB.getLinkedListSize(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME).add(1);
+    // Get the lastest item in the linkedlist.
+    // Note that 0 means the HEAD of the list always and 
+    // direction(true) indicates that we are going to the end of the list.
+    (,uint256 prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, true);
+    // And create new item with an incremental id.
+    // Note that we don't need to check any existance here, because
+    // exsistance of the previous item in the list already self-verifies.
+    gameId = prevGameId.add(1);
     genericDB.pushNodeToLinkedList(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
-    
 
     uint256 gamePrestartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
     uint256 gameEndTime = gameStartTime.add(gameVarAndFee.getGameDuration());
@@ -95,15 +103,6 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
 
     setGameState(gameId);
-
-    // Set kittieIds to true, so we know that there are in a match
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
-    
-    //TODO: not working
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, true);
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, true); 
-
   }
 
   /**
@@ -239,17 +238,14 @@ contract GMSetterDB is Proxied {
   }
 
   /**
-   * @dev Update kittie state
+   * @dev Update kittie playing game Id
    */
-  function removeKittiesInGame(uint256 gameId)
+  function updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyContract(CONTRACT_NAME_GAMECREATION)
   {
-    ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), 0);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), 0);
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
   }
 
   /**
@@ -306,7 +302,6 @@ contract GMSetterDB is Proxied {
         gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
         gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
       }
-      //FIXED, in last release if topbettor was account, then he could become secondTopbettor, too.
       else {
         address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
         (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);

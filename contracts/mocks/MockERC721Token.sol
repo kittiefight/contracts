@@ -130,7 +130,7 @@ contract MockERC721Token is ERC721, Owned {
 
   function getKitty(uint256 _id)
         external
-        view
+        pure
         returns (uint256)
     {
         if(_id == 1001) return 512955438081049600613224346938352058409509756310147795204209859701881294;

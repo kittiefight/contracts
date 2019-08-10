@@ -163,7 +163,7 @@ contract CronJobDB is Proxied {
         }
     }
 
-    function getAllJobs() public returns(uint[] memory allJobs){
+    function getAllJobs() public view returns(uint[] memory allJobs){
         allJobs = genericDB.getAll(CONTRACT_NAME_CRONJOB, TABLE_KEY);
     }
 

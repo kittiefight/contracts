@@ -77,7 +77,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
     function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
         public
-        onlyContract(CONTRACT_NAME_GM_SETTER_DB)
+        onlyContract(CONTRACT_NAME_GAMECREATION)
         onlyOwnedKitty(_kittyID)
         onlyNotKilledKitty(_kittyID)
     {
@@ -135,13 +135,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @param _kittyID The kitty for whom the resurrection cost is requested
      * @return the kitty's resurrection cost
      */
-    function getResurrectionCost(uint256 _kittyID)
+    function getResurrectionCost(uint256 _kittyID, uint gameId)
     public
     view
     onlyOwnedKitty(_kittyID)
     onlyNotGhostKitty(_kittyID)
     returns(uint) {
-        uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
+        // We need to clear out game of kittie when game ends, so its set to 0;
+        // uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
         return gameStore.getKittieRedemptionFee(gameId);
 	}
 
@@ -155,14 +156,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @return true/false if the kitty ID is resurrected or not
      */
 
-    function payForResurrection(uint256 _kittyID)
+    function payForResurrection(uint256 _kittyID, uint gameId)
         public
         payable
         onlyOwnedKitty(_kittyID)
         onlyNotGhostKitty(_kittyID)
         onlyProxy
     returns (bool) {
-        uint256 tokenAmount = getResurrectionCost(_kittyID);
+        uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
         require(tokenAmount > 0);
         endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
         releaseKitty(_kittyID);

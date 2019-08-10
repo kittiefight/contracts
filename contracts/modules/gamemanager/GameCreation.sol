@@ -35,6 +35,7 @@ import "../../interfaces/IKittyCore.sol";
 import "./GameStore.sol";
 import "../../CronJob.sol";
 import "./Forfeiter.sol";
+import '../kittieHELL/KittieHell.sol';
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -140,6 +141,8 @@ contract GameCreation is Proxied, Guard {
         uint initialEth = endowmentFund.generateHoneyPot(gameId);
         gmSetterDB.setHoneypotInfo(gameId, initialEth);
 
+        gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, gameId);
+        
         emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
     }
 
@@ -157,6 +160,15 @@ contract GameCreation is Proxied, Guard {
         onlyContract(CONTRACT_NAME_SCHEDULER)
     {
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+    }
+
+    function removeKitties(uint256 gameId)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+        //Set gameId to 0 to both kitties (not playing any game)
+        gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, 0);   
     }
 
 
@@ -208,7 +220,6 @@ contract GameCreation is Proxied, Guard {
         external
         onlyContract(CONTRACT_NAME_CRONJOB)
     {
-        //TODO: Forfeit or check?
         Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER)).forfeitCron(gameId, reason);
     }
 

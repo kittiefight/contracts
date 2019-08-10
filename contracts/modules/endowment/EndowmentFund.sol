@@ -57,7 +57,7 @@ contract EndowmentFund is Distribution, Guard {
     */
     function generateHoneyPot(uint256 gameId)
         external
-        //onlyContract(CONTRACT_NAME_GAMECREATION)  // commented for testing
+        onlyContract(CONTRACT_NAME_GAMECREATION) 
         returns (uint) {
 
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();

@@ -26,7 +26,6 @@ pragma solidity ^0.5.5;
 import '../proxy/Proxied.sol';
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
-import "../databases/EndowmentDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "./Forfeiter.sol";
 import "../algorithm/Betting.sol";
@@ -47,7 +46,6 @@ contract GameManager is Proxied, Guard {
     GMSetterDB public gmSetterDB;
     GMGetterDB public gmGetterDB;
     EndowmentFund public endowmentFund;
-    EndowmentDB public endowmentDB;
     Forfeiter public forfeiter;
     Betting public betting;
     HitsResolve public hitsResolve;
@@ -79,7 +77,6 @@ contract GameManager is Proxied, Guard {
         gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
-        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
@@ -156,7 +153,7 @@ contract GameManager is Proxied, Guard {
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
         
-        gameStore.start(gameId, player,randomNum);
+        gameStore.start(gameId, player, randomNum);
 
         // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
         uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
@@ -222,7 +219,7 @@ contract GameManager is Proxied, Guard {
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
-        require(gameState == uint(eGameState.MAIN_GAME), "Game is not running anymore");
+        require(gameState == uint(eGameState.MAIN_GAME));
         
         address sender = getOriginalSender();
         (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
@@ -264,9 +261,9 @@ contract GameManager is Proxied, Guard {
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
 
         if ( endTime <= now){
-            gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
             gameCreation.deleteCronjob(gameId);
-            // gmSetterDB.removeKittyStatus(gameId);
+            gmSetterDB.updateGameState(gameId, uint(eGameState.GAME_OVER));
+            gameCreation.removeKitties(gameId);
             emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.GAME_OVER);
         }
     }
@@ -352,7 +349,7 @@ contract GameManager is Proxied, Guard {
 
         //Set to forfeited
         endowmentFund.updateHoneyPotState(gameId, 4);
-        gmSetterDB.removeKittiesInGame(gameId);
+        gameCreation.removeKitties(gameId);
 
         gameCreation.deleteCronjob(gameId);
 

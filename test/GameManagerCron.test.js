@@ -210,34 +210,6 @@ contract('GameManager', (accounts) => {
     balanceETH.toString().should.be.equal(INITIAL_ETH_ENDOWMENT.toString());
   })
 
-  it('Set game vars and fees correctly', async () => {
-    let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
-      'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
-      'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
-      'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards'];
-
-    let bytesNames = [];
-    for (i = 0; i < names.length; i++) {
-      bytesNames.push(web3.utils.asciiToHex(names[i]));
-    }
-
-    let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
-      REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
-      HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-      OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString()];
-
-
-    await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
-      from: accounts[0]
-    }).should.be.fulfilled;
-
-    let getVar = await gameVarAndFee.getRequiredNumberMatches();
-    getVar.toNumber().should.be.equal(REQ_NUM_MATCHES);
-
-    getVar = await gameVarAndFee.getListingFee();
-    getVar.toString().should.be.equal(LISTING_FEE.toString());
-  })
-
   it('registers user to the system', async () => {
     for (let i = 1; i < 20; i++) {
       await proxy.execute('Register', setMessage(register, 'register', []), {
@@ -514,12 +486,11 @@ contract('GameManager', (accounts) => {
     })
   })
 
-  //Temporal set manual defense level
   it('get defense level for both players', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
-    await betting.setDefenseLevel(gameId, playerRed, 4).should.be.fulfilled;
-    await betting.setDefenseLevel(gameId, playerBlack, 5).should.be.fulfilled;
+    // await betting.setDefenseLevel(gameId, playerRed, 4).should.be.fulfilled;
+    // await betting.setDefenseLevel(gameId, playerBlack, 5).should.be.fulfilled;
 
     let defense = await betting.defenseLevel(gameId, playerBlack);
     console.log(`\n==== DEFENSE BLACK: ${defense}`);

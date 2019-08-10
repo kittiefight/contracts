@@ -1,4 +1,6 @@
 const BigNumber = web3.utils.BN;
+
+//ARTIFACTS
 const KFProxy = artifacts.require('KFProxy')
 const GenericDB = artifacts.require('GenericDB');
 const ProfileDB = artifacts.require('ProfileDB')
@@ -28,11 +30,8 @@ const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 
-// const medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B' //Mainnet
-// const medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3' //Rinkeby
-// const medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan
-
-const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da'; //RINKEBY
+//Rinkeby address of KittieFightToken
+const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
 
 const ERC20_TOKEN_SUPPLY = new BigNumber(
   web3.utils.toWei("100000000", "ether") //100 Million
@@ -84,7 +83,6 @@ module.exports = (deployer, network, accounts) => {
   else if ( network === 'rinkeby' ) medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
   else medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan and other networks
 
-  
   deployer.deploy(GenericDB)
   .then(() => deployer.deploy(ProfileDB, GenericDB.address))
   .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
@@ -259,7 +257,6 @@ module.exports = (deployer, network, accounts) => {
       from: accounts[0]
     })
     
-    //Temporary set manual defense level for testing
     console.log('\nRarity Calculator Setup...');
     await rarityCalculator.fillKaiValue()
 
@@ -316,9 +313,6 @@ module.exports = (deployer, network, accounts) => {
     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
   })
- 
-
-
 };
 
 
@@ -807,8 +801,6 @@ const cattributesData = [
   { description: "pawsfree", type: "prestige", gene: null, total: "264" },
   { description: "bionic", type: "prestige", gene: null, total: "195" },
 ]
-
-
 
 // original data based on 
 // https://github.com/openblockchains/programming-cryptocollectibles/blob/master/02_genereader.md

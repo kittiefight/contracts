@@ -176,9 +176,11 @@ contract GMGetterDB is Proxied {
     public view
     returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead, isPlaying, isGhost, deathTime) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
+    (owner, isDead,, isGhost, deathTime) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
     gameId = getGameOfKittie(kittieId);
-    kittieHellExp = gameStore.getKittieExpirationTime(gameId);
+    //If gameId is 0 is not playing, otherwise, it is.
+    isPlaying = (gameId != 0);
+    if(isDead) kittieHellExp = deathTime.add(gameStore.getKittieExpirationTime(gameId));
   }
 
   /**
