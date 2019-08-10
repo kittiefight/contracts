@@ -20,8 +20,7 @@ contract FancyKitties is Proxied, Guard {
      * @param _name the fancy name of the fancy kittie
      */
     function updateFancyKittiesList(uint256 _kittieId, string memory _name)
-        public  // temporarily set as public just for truffle test purpose
-        // internal
+        public
         onlySuperAdmin
     {
         FancyKittiesList[_kittieId] = _name;
