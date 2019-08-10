@@ -59,9 +59,8 @@ contract Forfeiter is Proxied {
    * @dev function called only by the Game Manager contract
    * @param gameId uint256 game or fight id
    */
-  function checkGameStatus(uint256 gameId, uint gameState)
-    external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  function checkStatus(uint256 gameId, uint gameState)
+    internal
   {
     (address playerBlack, address playerRed, uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
@@ -102,6 +101,27 @@ contract Forfeiter is Proxied {
     if (ckc.ownerOf(kittyRed) != playerRed) kittieHELL.releaseKittyForfeiter(kittyRed);
     gameManager.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
+  }
+
+  function forfeitCron(uint256 gameId, string calldata reason)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+  {
+    forfeitGame(gameId, reason);
+  }
+
+  function checkGameStatusCron(uint256 gameId, uint state)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+  {
+    checkStatus(gameId, state);
+  }
+
+  function checkGameStatus(uint256 gameId, uint state)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  {
+    checkStatus(gameId, state);
   }
 
   /**
@@ -147,7 +167,7 @@ contract Forfeiter is Proxied {
     public  returns(bool)
   {
     if (gamePreStartTime <= now) {
-      uint minSupporters = gameVarAndFee.getMinimumContributors(); //TODO: should call getterDB as vars and fees are locked
+      uint minSupporters = gameStore.getMinimumContributors(gameId); //TODO: should call getterDB as vars and fees are locked
       if(supportersBlack < minSupporters || supportersRed < minSupporters){
         forfeitGame(gameId, "Undersupported");
         return false;

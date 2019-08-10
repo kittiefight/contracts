@@ -25,7 +25,7 @@ contract ProxiedTest is Proxied, Guard {
         emit TestCalledTwoArgs(arg1, arg2, msg.value, lastSender);
     }
 
-    function testRevertMessage() onlyProxy external {
+    function testRevertMessage() onlyProxy external view {
         revert('Test revert message');
     }
 

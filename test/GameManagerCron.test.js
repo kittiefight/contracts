@@ -65,11 +65,11 @@ const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 60 // 60 secs for quick test
-const GAME_DURATION = 120 // games last  2 min
+const GAME_PRESTART = 20 // 60 secs for quick test
+const GAME_DURATION = 75 // games last  2 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
-const GAME_TIMES = 120 //Scheduled games 2 min apart
+const GAME_TIMES = 60 //Scheduled games 2 min apart
 const KITTIE_HELL_EXPIRATION = 300
 const HONEY_POT_EXPIRATION = 180
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
@@ -129,11 +129,8 @@ function formatDate(timestamp) {
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
-/*
-  Simulation of 2 games created, 4 kitties listed. All bettors must register but only
-  users that want to list kitties are going to 
+let jobIdGame2;
 
-*/
 contract('GameManager', (accounts) => {
 
   it('instantiate contracts', async () => {
@@ -270,9 +267,6 @@ contract('GameManager', (accounts) => {
       [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
-
-  //Change here to select what game to play
-  //Currently playing first game created
   it('correctly creates 2 games', async () => {
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {
       fromBlock: 0,
@@ -308,20 +302,34 @@ contract('GameManager', (accounts) => {
     gameDetails.preStartTime = gameTimes.preStartTime.toNumber();
   })
 
-  it('get correct fighter details ', async () => {
-    let { kittieBlack, kittieRed} = gameDetails;
-
-    let detailsBlack = await getterDB.getFighterByKittieID(kittieBlack)
-    console.log(` Kittie ${kittieBlack} playing in game ${detailsBlack.gameId.toString()}`)
-
-    let detailsRed = await getterDB.getFighterByKittieID(kittieRed)
-    console.log(` Kittie ${kittieRed} playing in game ${detailsRed.gameId.toString()}`)
-  })
-
   it('listed kitties array emptied', async () => {
     let listed = await scheduler.getListedKitties();
     console.log('\n==== LISTED KITTIES: ', listed.length);
     listed.length.should.be.equal(0);
+  })
+
+  it('get scheduled events for cronjob in setterDB', async () => {
+    
+    let cronJobs = await gameCreation.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== SCHEDULED JOBS EVENTS:', cronJobs.length);
+    cronJobs.map(e => {
+      console.log('\n  Job:', e.returnValues.job);
+      console.log('  Game Id:', e.returnValues.gameId);
+      console.log('  Job Id:', e.returnValues.jobId);
+      console.log('  Scheduled for:', formatDate(e.returnValues.jobTime));
+    })
+
+    jobIdGame2 = cronJobs[1].returnValues.jobId;
+
+    // let firstJob = await cronJob.getFirstJobId();
+    // console.log('\n  First Job in Cron: ', firstJob.toString());
+
+    // let parsedJob = await cronJob.parseJobID(firstJob);
+    // console.log('  Shceduled for:', formatDate(parsedJob['0'].toString()));
   })
 
   it('bettors can participate in a created game', async () => {
@@ -386,8 +394,6 @@ contract('GameManager', (accounts) => {
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(GameState.WAITING)
 
-    //IDEA: Player can hit button to change state, and have benefits in kittie redemption
-
     //Should be able to participate in prestart state (this one wont bet)
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerBlack]), { from: accounts[18] }).should.be.fulfilled;
@@ -407,7 +413,29 @@ contract('GameManager', (accounts) => {
     events = await gameManager.getPastEvents("NewSupporter", { fromBlock: 0, toBlock: "latest" });
     assert.equal(events.length, 14);
 
+    // let firstJob = await cronJob.getFirstJobId();
+    // console.log('\n  First Job in Cron: ', firstJob.toString());
 
+    // let parsedJob = await cronJob.parseJobID(firstJob);
+    // console.log('  Shceduled for:', formatDate(parsedJob['0'].toString()));
+
+  })
+
+  it('get scheduled events for cronjob in setterDB', async () => {
+    let { gameId } = gameDetails;
+
+    let cronJobs = await gameCreation.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== SCHEDULED JOBS EVENTS:', cronJobs.length);
+    cronJobs.map(e => {
+      console.log('\n  Job:', e.returnValues.job);
+      console.log('  Game Id:', e.returnValues.gameId);
+      console.log('  Job Id:', e.returnValues.jobId);
+      console.log('  Scheduled for:', formatDate(e.returnValues.jobTime));      
+    })
   })
 
   it('should move gameState to MAIN_GAME', async () => {
@@ -441,6 +469,23 @@ contract('GameManager', (accounts) => {
     gameInfo.state.toNumber().should.be.equal(GameState.MAIN_GAME)
   })
 
+  it('get scheduled events for cronjob in setterDB', async () => {
+    let { gameId } = gameDetails;
+
+    let cronJobs = await gameCreation.getPastEvents('Scheduled', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    console.log('\n==== SCHEDULED JOBS EVENTS:', cronJobs.length);
+    cronJobs.map(e => {
+      console.log('\n  Job:', e.returnValues.job);
+      console.log('  Game Id:', e.returnValues.gameId);
+      console.log('  Job Id:', e.returnValues.jobId);
+      console.log('  Scheduled for:', formatDate(e.returnValues.jobTime));
+    })
+  })
+
   it('get defense level for both players', async () => {
     let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -452,39 +497,6 @@ contract('GameManager', (accounts) => {
 
     defense = await betting.defenseLevel(gameId, playerRed);
     console.log(`\n==== DEFENSE RED: ${defense}`);
-  })
-
-  it('kittie hell contracts is now owner of fighting kitties', async () => {
-    let { kittieRed, kittieBlack } = gameDetails;
-
-    //Red Kitty
-    let owner = await cryptoKitties.ownerOf(kittieRed);
-    owner.should.be.equal(kittieHELL.address)
-    //Black kitty
-    owner = await cryptoKitties.ownerOf(kittieBlack);
-    owner.should.be.equal(kittieHELL.address)
-  })
-
-  it('escrow contract should have KTY funds from fees', async () => {
-    let balanceKTY = await escrow.getBalanceKTY()
-    // 50.000 + 4*1000 + 14*100
-    let expected = new BigNumber(web3.utils.toWei("55400", "ether"));
-    balanceKTY.toString().should.be.equal(expected.toString())
-
-    await timeout(1);
-  })
-
-  it('betting algo creates a fight map', async () => {
-    let { gameId } = gameDetails;
-
-    let attack;
-    console.log('\n==== FIGHT MAP CREATED')
-    for (let i = 0; i < 7; i++) {
-      attack = await betting.fightMap(gameId, i)
-      console.log(`Name: ${attack.attack}`);
-      console.log(`Hash: ${attack.hash}\n`);
-    }
-    console.log('=================\n')
   })
 
   it('players should be able to make bets', async () => {
@@ -503,13 +515,11 @@ contract('GameManager', (accounts) => {
     let betsBlack = [];
     let betsRed = [];
 
-    for (let i = 6; i < 29; i++) {
-      j = i;
-      if (i >= 18) j = j - 12;
+    for (let i = 6; i < 18; i++) {
 
       let betAmount = randomValue()
-      let bettor = accounts[j]
-      let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[j])
+      let bettor = accounts[i]
+      let supporterInfo = await getterDB.getSupporterInfo(gameId, accounts[i])
       let supportedPlayer = supporterInfo.supportedPlayer;
       let player;
 
@@ -522,8 +532,6 @@ contract('GameManager', (accounts) => {
 
       } else {
         player = 'BLACK';
-        //This line make bets in black be incremental
-        //betAmount = 1 + i
         betsBlack.push(betAmount);
         (blackBetStore.has(bettor)) ?
           blackBetStore.set(bettor, blackBetStore.get(bettor) + betAmount) :
@@ -553,7 +561,7 @@ contract('GameManager', (accounts) => {
       console.log(' Timestamp last Bet: ', formatDate(lastBetTimestamp));
 
       totalBetAmount = totalBetAmount + betAmount;
-      await timeout(Math.floor(Math.random() * 5) + 1);
+      await timeout(1);
     }
 
     //Log all bets    
@@ -577,57 +585,10 @@ contract('GameManager', (accounts) => {
     await timeout(1);
   })
 
-  it('correctly computes the top bettors for each corner', async () => {
-    let { gameId, playerRed, playerBlack } = gameDetails;
-
-    let redSortMap = new Map([...redBetStore.entries()].sort((a, b) => b[1] - a[1]));
-    let blackSortMap = new Map([...blackBetStore.entries()].sort((a, b) => b[1] - a[1]));
-
-    console.log('\n==== RED SORTED MAP ====')
-    console.log(redSortMap)
-    console.log('\n==== BLACK SORTED MAP ====')
-    console.log(blackSortMap)
-    await timeout(1);
-
-    let redSorted = Array.from(redSortMap.keys())
-    let blackSorted = Array.from(blackSortMap.keys())
-
-    let redTopBettor = await gameStore.getTopBettor(gameId, playerRed)
-    let redSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerRed)
-
-    let blackTopBettor = await gameStore.getTopBettor(gameId, playerBlack)
-    let blackSecondTopBettor = await gameStore.getSecondTopBettor(gameId, playerBlack)
-
-    console.log('\n==== RED TOP BETTORS ====')
-    console.log(`Top: ${redTopBettor} \nSecond: ${redSecondTopBettor}`)
-
-    console.log('\n-==== BLACK TOP BETTORS ====')
-    console.log(`Top: ${blackTopBettor} \nSecond: ${blackSecondTopBettor}`)
-    await timeout(1);
-
-    redTopBettor.should.be.equal(redSorted[0])
-    redSecondTopBettor.should.be.equal(redSorted[1])
-    blackTopBettor.should.be.equal(blackSorted[0])
-    blackSecondTopBettor.should.be.equal(blackSorted[1])
-
-    let block = await dateTime.getBlockTimeStamp();
-    console.log('\nblocktime: ', formatDate(block))
-
-    let gameTimes = await getterDB.getGameTimes(gameId);
-
-    console.log('\nGame end time: ', formatDate(gameTimes.endTime))
-
-    await timeout(1);
-  })
-
-  it('get final defense level for both players', async () => {
-    let { gameId, playerRed, playerBlack } = gameDetails;
-
-    let defense = await betting.defenseLevel(gameId, playerBlack);
-    console.log(`\n==== FINAL DEFENSE BLACK: ${defense}`);
-
-    defense = await betting.defenseLevel(gameId, playerRed);
-    console.log(`\n==== FINAL DEFENSE RED: ${defense}`);
+  it('check game 2 cancelled state ', async () => {
+    
+    let newState = await getterDB.getGameState(2)
+    console.log('\n==== GAME 2 STATE: ', gameStates[newState.toNumber()])
   })
 
   it('game ends', async () => {
@@ -644,8 +605,23 @@ contract('GameManager', (accounts) => {
       await timeout(3);
     }
 
-    await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-      [gameId, randomValue()]), { from: accounts[7], value: web3.utils.toWei('1') }).should.be.fulfilled;
+    let gameTimes = await getterDB.getGameTimes(2);
+    while (block.toNumber() < gameTimes.preStartTime.toNumber()) {
+      block = await dateTime.getBlockTimeStamp();
+      await timeout(3);
+    }
+
+    //This proxy call should end game 1
+    await proxy.execute('Register', setMessage(register, 'register', []), {
+      from: accounts[20]
+    })
+
+    let gamePlayers = await getterDB.getGamePlayers(2);
+    await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+      [2, gamePlayers.playerBlack]), { from: accounts[15] }).should.not.be.fulfilled;
+
+    let newState = await getterDB.getGameState(2)
+    console.log('\n==== GAME STATE 2: ', gameStates[newState.toNumber()])
 
     let currentState = await getterDB.getGameState(gameId)
     currentState.toNumber().should.be.equal(3);
@@ -660,31 +636,12 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('get correct fighter details ', async () => {
-    let { kittieBlack, kittieRed} = gameDetails;
-
-    let detailsBlack = await getterDB.getFighterByKittieID(kittieBlack)
-    console.log(` Kittie ${kittieBlack} playing in game ${detailsBlack.gameId.toString()}`)
-
-    let detailsRed = await getterDB.getFighterByKittieID(kittieRed)
-    console.log(` Kittie ${kittieRed} playing in game ${detailsRed.gameId.toString()}`)
-  })
-
   it('can call finalize game', async () => {
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
-    let user = accounts[10];
-
-    let balance = await kittieFightToken.balanceOf(user);
-    console.log("\n==== PREVIOUS BALANCE: ",web3.utils.fromWei(balance.toString()), "KTY")
-
     await proxy.execute('GameManager', setMessage(gameManager, 'finalize',
-      [gameId, randomValue()]), { from: user }).should.be.fulfilled;
-    
-    let newBalance = await kittieFightToken.balanceOf(user);
-    console.log("\n====FINALIZE REWARD: ", web3.utils.fromWei(FINALIZE_REWARDS.toString()), "KTY")
-    console.log("\n==== NEW BALANCE: ", web3.utils.fromWei(newBalance.toString()), "KTY")
+      [gameId, randomValue()]), { from: accounts[10] }).should.be.fulfilled;
 
     let gameEnd = await gameManager.getPastEvents('GameEnded', {
       filter: { gameId },
@@ -714,226 +671,73 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('correct honeypot info', async () => {
+  it('check executed and failed cronjobs in game', async () => {
 
-    let { gameId } = gameDetails;
+    // let firstJob = await cronJob.getFirstJobId();
+    // console.log('\n  First Job in Cron: ', firstJob.toString());
 
-    let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
+    // let parsedJob = await cronJob.parseJobID(firstJob);
+    // console.log('  Shceduled for:', formatDate(parsedJob['0'].toString()));
 
-    console.log(`\n==== HONEYPOT INFO ==== `)
-    console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
-    console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
-    console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
-    console.log('=======================\n')
+    // await cronJob.executeNextJobIfAvailable().should.be.fulfilled;
+    //DOES NOT WORK
+    // await proxy.executeScheduledJobs().should.be.fulfilled;
+    //WORKS, IT EXECUTES A JOB
+    //await proxy.executeJob(jobIdGame2).should.be.fulfilled;
 
-    //1 ether from the last bet that ended game
-    honeyPotInfo.ethTotal.toString().should.be.equal(
-      String(ETH_PER_GAME.add(new BigNumber(web3.utils.toWei(String(totalBetAmount + 1)))))
-    )
+    let allJobs = await cronJob.getAllJobs.call();
 
-    await timeout(1);
-  })
-
-  it('state changes to CLAIMING', async () => {
-
-    let { gameId } = gameDetails;
-
-    let currentState = await getterDB.getGameState(gameId)
-    currentState.toNumber().should.be.equal(4);
-    console.log('\n==== NEW STATE: ', gameStates[currentState.toNumber()])
-
-    let potState = await endowmentDB.getHoneypotState(gameId);
-    console.log('\n==== HONEYPOT STATE: ', potStates[potState.state.toNumber()]);
-
-    await timeout(1);
-
-  })
-
-  it('show distribution details', async () => {
-
-    let { gameId, winners } = gameDetails;
-
-    let rates = await gameStore.getDistributionRates(gameId);
-
-    console.log('\n==== DISTRIBUTION STRUCTURE ==== \n');
-    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
-    console.log(` WINNER SHARE: ${rates[0].toString()} %`);
-    console.log('    ETH: ', web3.utils.fromWei(winnerShare.winningsETH.toString()));
-    console.log('    KTY: ', web3.utils.fromWei(winnerShare.winningsKTY.toString()));
-    let topShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
-    console.log(`  TOP BETTOR SHARE: ${rates[1].toString()} %`);
-    console.log('    ETH: ', web3.utils.fromWei(topShare.winningsETH.toString()));
-    console.log('    KTY: ', web3.utils.fromWei(topShare.winningsKTY.toString()));
-    let secondTopShare = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
-    console.log(`  SECOND TOP BETTOR SHARE: ${rates[2].toString()} %`);
-    console.log('    ETH: ', web3.utils.fromWei(secondTopShare.winningsETH.toString()));
-    console.log('    KTY: ', web3.utils.fromWei(secondTopShare.winningsKTY.toString()))
-    let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
-    console.log(`  ENDOWMENT SHARE: ${rates[4].toString()} %`);
-    console.log('    ETH: ', web3.utils.fromWei(endowmentShare.winningsETH.toString()));
-    console.log('    KTY: ', web3.utils.fromWei(endowmentShare.winningsKTY.toString()));
-
-    let bettors = await gameManager.getPastEvents("NewSupporter", {
-      filter: { gameId },
-      fromBlock: 0,
-      toBlock: "latest"
-    });
-
-    //Get list of other bettors
-    supporters = bettors
-      .map(e => e.returnValues)
-      .filter(e => e.playerSupported === winners.winner)
-      .filter(e => e.supporter !== winners.topBettor)
-      .filter(e => e.supporter !== winners.secondTopBettor)
-      .map(e => e.supporter)
-
-    gameDetails.supporters = supporters;
-
-    console.log(`\n  OTHER BETTORS SHARE: ${rates[3].toString()} %`);
-    console.log('   List: ', supporters)
-    for (let i = 0; i < supporters.length; i++) {
-      let share = await endowmentFund.getWinnerShare(gameId, supporters[i]);
-      // let supporterInfo = await getterDB.getSupporterInfo(gameId, supporters[i]);
-      console.log(`\n  Bettor ${supporters[i]}: `);
-      // console.log('    Amount Bet:', web3.utils.fromWei( supporterInfo.betAmount.toString()), 'ETH')      
-      console.log('    ETH: ', web3.utils.fromWei(share.winningsETH.toString()));
-      console.log('    KTY: ', web3.utils.fromWei(share.winningsKTY.toString()))
-    }
-
-    await timeout(1);
-
-    //Get list of losers
-    let losers = bettors
-      .map(e => e.returnValues)
-      .filter(e => e.playerSupported !== winners.winner)
-
-    gameDetails.losers = losers;
-
-    // //Bettor from Black Corner
-    let opponentShare = await endowmentFund.getWinnerShare(gameId, losers[0].supporter);
-    opponentShare.winningsETH.toString().should.be.equal('0');
-
-
-  })
-
-  it('winners can claim their share', async () => {
-    console.log('\n==== STARTING CLAIMING PROCESS: ') 
-    let { gameId, supporters } = gameDetails;
-
-    let block = await dateTime.getBlockTimeStamp();
-    console.log('\nblocktime: ', formatDate(block))
-
-    let potState = await endowmentDB.getHoneypotState(gameId);
-    console.log('HONEYPOT DISSOLUTION TIME: ', formatDate(potState.claimTime.toNumber()))
-
-    let winners = await getterDB.getWinners(gameId);
-    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
-
-    let balance = await kittieFightToken.balanceOf(winners.winner)
-    balance = Number(web3.utils.fromWei(balance.toString()));
-
-    // WINNER CLAIMING
-    let share = await endowmentFund.getWinnerShare(gameId, winners.winner);
-    console.log('\nWinner withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: winners.winner }).should.be.fulfilled;
-    let withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.winner);
-    console.log('Withdrew funds? ', withdrawalState)
-
-    let claims = await endowmentFund.getPastEvents('WinnerClaimed', {
-      filter: { gameId },
-      fromBlock: 0,
-      toBlock: "latest"
-    });
-    claims.length.should.be.equal(1);
-
-    let newBalance = await kittieFightToken.balanceOf(winners.winner)
-    // balance.should.be.equal(newBalance.add(winnerShare.winningsKTY))
-    newBalance = Number(web3.utils.fromWei(newBalance.toString()));
-    let winningsKTY = Number(web3.utils.fromWei(winnerShare.winningsKTY.toString()));
-
-    newBalance.should.be.equal(balance + winningsKTY);
-    //console.log('      Address: ', winners.winner, ' claimed. KTY=', winningsKTY)
-
+    console.log('\nAll Jobs in cronjob linked list: ');
+    allJobs.map(e => {
+      console.log('Job: ', e.toString());
+    })
     
-    // TOP BETTOR CLAIMING
-    share = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
-    console.log('\nTop Bettor withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: winners.topBettor }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
-    console.log('Withdrew funds? ', withdrawalState)
-
-
-    // SECOND TOP BETTOR CLAIMING
-    share = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
-    console.log('\nSecond Top Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: winners.secondTopBettor }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
-    console.log('Withdrew funds? ', withdrawalState)
-
-    // OTHER BETTOR CLAIMING
-    share = await endowmentFund.getWinnerShare(gameId, supporters[1]);
-    console.log('\nOther Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
-    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
-      [gameId]), { from: supporters[1] }).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
-    console.log('Withdrew funds? ', withdrawalState)
-
-    claims = await endowmentFund.getPastEvents('WinnerClaimed', {
-      filter: { gameId },
+    let added = await cronJob.getPastEvents('JobAdded', {
       fromBlock: 0,
       toBlock: "latest"
     });
 
-    claims.length.should.be.equal(4);
-    
-  })
+    console.log('\n==== ADDED JOBS:', added.length);
+    added.map(e => {
+      console.log('\n  Job Id:', e.returnValues.jobId);
+    })
 
-  it('check game kitties dead status', async () => {
+    let executed = await cronJob.getPastEvents('JobExecuted', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });    
 
-    let { playerBlack, kittieBlack, kittieRed, winners } = gameDetails;
+    console.log('\n==== EXECUTED JOBS:', executed.length);
+    executed.map(e => {
+      console.log('\n  Job Id:', e.returnValues.jobId);
+    })   
 
-    if (gameDetails.loser === playerBlack) {
-      loserKitty = kittieBlack;
-      winnerKitty = kittieRed;
-    }
-    else {
-      loserKitty = kittieRed;
-      winnerKitty = kittieBlack
-    }
+    let failed = await cronJob.getPastEvents('JobFailed', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
 
-    gameDetails.loserKitty = loserKitty;
+    console.log('\n==== FAILED JOBS:', failed.length);
+    failed.map(e => {
+      console.log('\n  Job Id:', e.returnValues.jobId);
+    })
 
-    //Loser Kittie Dead
-    let isKittyDead = await kittieHELL.isKittyDead(loserKitty);
-    isKittyDead.should.be.true;
+    let deleted = await cronJob.getPastEvents('JobDeleted', {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
 
-    winnerOwner = await cryptoKitties.ownerOf(winnerKitty);
-    winnerOwner.should.be.equal(winners.winner);
+    console.log('\n==== DELETED JOBS:', deleted.length);
+    deleted.map(e => {
+      console.log('\n  Job Id:', e.returnValues.jobId);
+    })
 
-  })
+    let execFailed = await proxy.getPastEvents('CronJobExecutionFailed',{
+      fromBlock: 0,
+      toBlock: "latest"
+    });
 
-  it('pay for resurrection', async () => {
-
-    console.log('\n==== KITTIE HELL: ')
-
-    let { gameId, loserKitty, loser } = gameDetails;
-
-    let resurrectionCost = await kittieHELL.getResurrectionCost(loserKitty, gameId);
-
-    console.log('Resurrection Cost: ', String(web3.utils.fromWei(resurrectionCost.toString())), 'KTY')
-
-    await kittieFightToken.approve(endowmentFund.address, resurrectionCost,
-      { from: loser }).should.be.fulfilled;
-
-    await proxy.execute('KittieHell', setMessage(kittieHELL, 'payForResurrection',
-      [loserKitty, gameId]), { from: loser }).should.be.fulfilled;
-
-    let owner = await cryptoKitties.ownerOf(loserKitty)
-    //Ownership back to address, not kittieHell
-    owner.should.be.equal(loser);
+    console.log('\n==== EXEC FAILED JOBS:', execFailed.length);
 
   })
 
@@ -983,8 +787,11 @@ contract('GameManager', (accounts) => {
 
     newState.toNumber().should.be.equal(5)
 
+    //Game cancelled, no more participants added
+    // await proxy.execute('GameManager', setMessage(gameManager, 'participate',
+    //   [2, gamePlayers.playerBlack]), { from: accounts[17] }).should.not.be.fulfilled;
+
   })
 
 })
-
 

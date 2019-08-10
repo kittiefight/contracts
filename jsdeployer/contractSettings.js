@@ -20,6 +20,16 @@ window.contractSettings = function() {
 			]
 		},
 		{
+			"name":"GMGetterDB",
+			"deployArgs":["${KFPoxy.options.address}"],
+			"setupActions":[
+				{
+					"contract":"KFProxy",
+					"function":"addContract"
+				}
+			]
+		},
+		{
 			"name":"ProxiedTest",
 		},
 		{

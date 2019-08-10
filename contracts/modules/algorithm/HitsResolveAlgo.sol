@@ -84,7 +84,7 @@ contract HitsResolve is Proxied, Guard {
      */
     function calculateCurrentRandom(uint256 gameID, uint256 randomNum)
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns (uint256 currentRandomNum)
     {
         uint256 seed = randomNum.add(currentRandom[gameID]);

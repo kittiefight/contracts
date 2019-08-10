@@ -208,13 +208,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
     }
-
-    // /// @notice Gets Kittie expiry time in kittieHELL 
-    // function getKittieExpiry() 
-    // public view returns(uint) {
-    //     return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_EXPIRY);
-    // }
-
+    
     /// @notice Gets minimum contributors needed for the game to continue
     function getMinimumContributors() 
     public view returns(uint) {
