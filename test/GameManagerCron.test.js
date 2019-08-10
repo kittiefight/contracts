@@ -507,9 +507,9 @@ contract('GameManager', (accounts) => {
 
     let betDetails;
 
-    let opponentRed = await getterDB.getOpponent(gameId, playerRed);
+    let opponentRed = await gameStore.getOpponent(gameId, playerRed);
     console.log('\n==== OPPONENT RED: ', opponentRed);
-    let opponentBlack = await getterDB.getOpponent(gameId, playerBlack);
+    let opponentBlack = await gameStore.getOpponent(gameId, playerBlack);
     console.log('\n==== OPPONENT BLACK: ', opponentBlack);
 
     let betsBlack = [];

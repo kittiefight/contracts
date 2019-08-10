@@ -114,6 +114,19 @@ contract EndowmentFund is Distribution, Guard {
         emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
     }
 
+    /**
+    * @dev send reward to the user that pressed finalize button
+    */
+    function sendFinalizeRewards(address user)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        returns(bool)
+    {
+        uint reward = gameVarAndFee.getFinalizeRewards();
+        require(transferKTYfromEscrow(address(uint160(user)), reward));
+        return true;
+    }
+
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
         (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
         return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts

@@ -495,9 +495,9 @@ contract('GameManager', (accounts) => {
 
     let betDetails;
 
-    let opponentRed = await getterDB.getOpponent(gameId, playerRed);
+    let opponentRed = await gameStore.getOpponent(gameId, playerRed);
     console.log('\n==== OPPONENT RED: ', opponentRed);
-    let opponentBlack = await getterDB.getOpponent(gameId, playerBlack);
+    let opponentBlack = await gameStore.getOpponent(gameId, playerBlack);
     console.log('\n==== OPPONENT BLACK: ', opponentBlack);
 
     let betsBlack = [];
@@ -674,8 +674,17 @@ contract('GameManager', (accounts) => {
 
     let { gameId, playerRed, playerBlack } = gameDetails;
 
+    let user = accounts[10];
+
+    let balance = await kittieFightToken.balanceOf(user);
+    console.log("\n==== PREVIOUS BALANCE: ",web3.utils.fromWei(balance.toString()), "KTY")
+
     await proxy.execute('GameManager', setMessage(gameManager, 'finalize',
-      [gameId, randomValue()]), { from: accounts[10] }).should.be.fulfilled;
+      [gameId, randomValue()]), { from: user }).should.be.fulfilled;
+    
+    let newBalance = await kittieFightToken.balanceOf(user);
+    console.log("\n====FINALIZE REWARD: ", web3.utils.fromWei(FINALIZE_REWARDS.toString()), "KTY")
+    console.log("\n==== NEW BALANCE: ", web3.utils.fromWei(newBalance.toString()), "KTY")
 
     let gameEnd = await gameManager.getPastEvents('GameEnded', {
       filter: { gameId },
