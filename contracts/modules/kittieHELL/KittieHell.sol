@@ -77,7 +77,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
     function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
         public
-        onlyContract(CONTRACT_NAME_GAMECREATION)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
         onlyOwnedKitty(_kittyID)
         onlyNotKilledKitty(_kittyID)
     {

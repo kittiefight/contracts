@@ -160,6 +160,7 @@ contract GameManager is Proxied, Guard {
         betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
         require(kittieHELL.acquireKitty(kittieId, player));
+        kittieHELL.updateKittyPlayingStatus(kittieId, true);
 
         address opponentPlayer = gmGetterDB.getOpponent(gameId, player);
 
@@ -320,6 +321,10 @@ contract GameManager is Proxied, Guard {
         
         //Lock Honeypot Final Details
         gmSetterDB.storeHoneypotDetails(gameId);
+
+        //Update kitty's playing status in kittieHELL
+        kittieHELL.updateKittyPlayingStatus(gmGetterDB.getKittieInGame(gameId, winner), false);
+        kittieHELL.updateKittyPlayingStatus(gmGetterDB.getKittieInGame(gameId, loser), false);
 
         //Release winner's Kittie
         kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
