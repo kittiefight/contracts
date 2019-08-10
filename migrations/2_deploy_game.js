@@ -303,11 +303,11 @@ module.exports = (deployer, network, accounts) => {
         await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
     }
 
-    for (let m=0; m<FancyKitties.length; m++) {
-      for (let n=1; n<FancyKitties[m].length; n++) {
-        await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-      }
-    } 
+    // for (let m=0; m<FancyKitties.length; m++) {
+    //   for (let n=1; n<FancyKitties[m].length; n++) {
+    //     await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
+    //   }
+    // } 
 
     await rarityCalculator.updateTotalKitties(1600000)
     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
