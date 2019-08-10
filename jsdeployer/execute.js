@@ -17,7 +17,8 @@ jQuery(document).ready(function($) {
         // Load contracts 
         let loaders = [];
         for(let contract of window.contractSettings){
-            let loader = loadContract(`../build/contracts/${contract.name}.json`);
+            let contractFile = (typeof contract.contract != 'undefined')?contract.contract:contract.name;
+            let loader = loadContract(`../build/contracts/${contractFile}.json`);
             loader.then(function(data){
                 contractDefinitions[contract.name] = {
                    'name': contract.name,
