@@ -24,11 +24,13 @@ const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
-const KittieFightToken = artifacts.require('KittieFightToken');
+// const KittieFightToken = artifacts.require('KittieFightToken');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
+
+const KittieFightToken = artifacts.require('ERC20Standard')
 
 //Rinkeby address of KittieFightToken
 const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
@@ -38,28 +40,28 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("50000", "ether") //50.000 KTY
+  web3.utils.toWei("100000", "ether") //100.000 KTY
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("1000", "ether") //1.000 ETH
+  web3.utils.toWei("500", "ether") //500 ETH
 );
 
 // ================ GAME VARS AND FEES ================ //
-const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
-const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
-const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
-const MIN_CONTRIBUTORS = 2
-const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 60 // 60 secs for quick test
-const GAME_DURATION = 120 // games last  2 min
-const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether"));
-const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether"));
-const GAME_TIMES = 120 //Scheduled games 2 min apart
-const KITTIE_HELL_EXPIRATION = 300
-const HONEY_POT_EXPIRATION = 180
-const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("500", "ether"));
-const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //500 KTY
+const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
+const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
+const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
+const MIN_CONTRIBUTORS = 833
+const REQ_NUM_MATCHES = 10
+const GAME_PRESTART = 120 // 2 min
+const GAME_DURATION = 300 // 5 min
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("211.37", "ether")); //$50,000 / (@ $236.55 USD/ETH)
+const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether")); // 10,000 KTY
+const GAME_TIMES = 10*60 //Scheduled games 10 min apart
+const KITTIE_HELL_EXPIRATION = 1*60*60*24 //1 day
+const HONEY_POT_EXPIRATION = 1*60*60*24 //1 day
+const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("37500", "ether")); //37,500 KTY
+const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("5000", "ether")); //5000 KTY
 //Distribution Rates
 const WINNING_KITTIE = 30
 const TOP_BETTOR = 20
@@ -95,7 +97,7 @@ module.exports = (deployer, network, accounts) => {
   .then(() => deployer.deploy(FreezeInfo))
   .then(() => deployer.deploy(CronJobTarget))
   .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-  .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+  // .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
   .then(() => deployer.deploy(CryptoKitties))
   .then(() => deployer.deploy(GameManager))
   .then(() => deployer.deploy(GameStore))
@@ -120,7 +122,8 @@ module.exports = (deployer, network, accounts) => {
     await proxy.addContract('GenericDB', GenericDB.address)
     await proxy.addContract('CryptoKitties', CryptoKitties.address);
     await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-    await proxy.addContract('KittieFightToken', KittieFightToken.address);
+    // await proxy.addContract('KittieFightToken', KittieFightToken.address);
+    await proxy.addContract('KittieFightToken', KTY_ADDRESS);
     await proxy.addContract('ProfileDB', ProfileDB.address);
     await proxy.addContract('RoleDB', RoleDB.address);
     await proxy.addContract('Register', Register.address)
@@ -165,7 +168,8 @@ module.exports = (deployer, network, accounts) => {
 
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
-    kittieFightToken = await KittieFightToken.deployed();
+    // kittieFightToken = await KittieFightToken.deployed();
+    kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
     cryptoKitties = await CryptoKitties.deployed();
 
     // MODULES
@@ -303,11 +307,11 @@ module.exports = (deployer, network, accounts) => {
         await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
     }
 
-    for (let m=0; m<FancyKitties.length; m++) {
-      for (let n=1; n<FancyKitties[m].length; n++) {
-        await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-      }
-    } 
+    // for (let m=0; m<FancyKitties.length; m++) {
+    //   for (let n=1; n<FancyKitties[m].length; n++) {
+    //     await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
+    //   }
+    // } 
 
     await rarityCalculator.updateTotalKitties(1600000)
     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
