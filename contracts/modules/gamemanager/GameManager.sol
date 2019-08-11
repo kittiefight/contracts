@@ -133,7 +133,8 @@ contract GameManager is Proxied, Guard {
     function startGame
     (
         uint gameId,
-        uint randomNum
+        uint randomNum,
+        uint genes
     )
         external
         onlyProxy onlyPlayer
@@ -150,7 +151,7 @@ contract GameManager is Proxied, Guard {
         gameStore.start(gameId, player, randomNum);
 
         // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
-        uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
+        // uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
         betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
         require(kittieHELL.acquireKitty(kittieId, player));
