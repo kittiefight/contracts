@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KittieFight Deployer v2</title>
+    <meta charset="UTF-8">
+    <script src="jquery.min.js"></script>
+	<script src="semantic/semantic.min.js"></script>
+    <script type="text/javascript" src="deploy2.js"></script>
+    <script type="text/javascript" src="web3.min.js"></script>
+    <script type="text/javascript" src="contractSettings.js"></script>
+	<link rel="stylesheet" type="text/css" href="semantic/semantic.min.css">    
+    <link rel="stylesheet" href="style.css" type='text/css'/>
+</head>
+<body>
+<h1>KittieFight Deployer</h1>
+<div id="errormsg" class="ui icon message hidden">
+  <i class="exclamation triangle icon"></i>
+  <div class="content">
+    <div class="header">Error</div>
+    <p></p>
+  </div>
+</div>
+<form id="deployForm" class="ui form">
+	<div class="two fields">
+		<div class="field">
+			<label>KFProxy Address</label>
+			<input type="text" id="proxyAddress">
+		</div>
+		<div class="field">
+			<label>Actions</label>
+			<button id="deployProxy" type="button" class="ui button disabled">Deploy KFProxy</button>
+			<button id="loadData" type="button" class="ui button disabled">Load data from KFProxy</button>
+		</div>
+	</div>
+
+	<table id="contractsTable" class="ui definition table">
+		<thead><tr>
+			<th>Contract</th>
+			<th>Address</th>
+			<th>Info</th>
+		</tr></thead>
+		<tbody></tbody>
+	</table>
+
+
+
+
+</form>
+
+
+
+</body>
+</html>
