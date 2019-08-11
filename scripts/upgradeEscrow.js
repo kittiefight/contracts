@@ -15,20 +15,22 @@ const INITIAL_ETH_ENDOWMENT = new BigNumber(
 );
 
 module.exports = async (callback) => {
+	try{
+		escrow = await Escrow.deployed();
+		endowmentFund = await EndowmentFund.deployed()
+		kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
 
-    escrow = await Escrow.deployed();
-    endowmentFund = await EndowmentFund.deployed()
-    kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+		console.log('\nUpgrading Escrow...');
+		await endowmentFund.initUpgradeEscrow(escrow.address)
+		//Transfer KTY
+		await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
+		await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+		//Transfer ETH
+		await endowmentFund.sendETHtoEscrow({value:INITIAL_ETH_ENDOWMENT});
 
-    console.log('\nUpgrading Escrow...');
-    await endowmentFund.initUpgradeEscrow(escrow.address)
-    //Transfer KTY
-    await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
-    await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
-    //Transfer ETH
-    await endowmentFund.sendETHtoEscrow({value:INITIAL_ETH_ENDOWMENT});
-  
-    callback()
+		callback()
+	}
+	catch(e){callback(e)}
 }
 
 

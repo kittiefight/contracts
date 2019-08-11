@@ -34,28 +34,29 @@ function setMessage(contract, funcName, argArray) {
 }
 
 module.exports = async (callback) => {
+	try {
+		proxy = await KFProxy.deployed()
+		gameVarAndFee = await GameVarAndFee.deployed()
 
-    proxy = await KFProxy.deployed()
-    gameVarAndFee = await GameVarAndFee.deployed()
+		console.log('\nSetting game vars and fees...');
+		let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
+				'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
+				'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
+				'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards'];
 
-    console.log('\nSetting game vars and fees...');
-    let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
-        'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
-        'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
-        'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards'];
+		let bytesNames = [];
+		for (i = 0; i < names.length; i++) {
+				bytesNames.push(web3.utils.asciiToHex(names[i]));
+		}
 
-    let bytesNames = [];
-    for (i = 0; i < names.length; i++) {
-        bytesNames.push(web3.utils.asciiToHex(names[i]));
-    }
+		let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+				REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
+				HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
+				OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString()];
 
-    let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
-        REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
-        HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-        OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString()];
-
-    proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
-    .then(() => callback())
-    .catch(e => callback(e))
+		await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', 
+			[bytesNames, values]))
+	}
+	catch(e){callback(e)}
 }
 
