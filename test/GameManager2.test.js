@@ -365,9 +365,11 @@ contract('GameManager', (accounts) => {
   })
 
   it('player cant start a game before reaching PRE_GAME', async () => {
+    const gene1 = "512955438081049600613224346938352058409509756310147795204209859701881294";
+
     let { gameId, playerRed } = gameDetails;
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 99]), { from: playerRed }).should.be.rejected;
+      [gameId, 99, gene1]), { from: playerRed }).should.be.rejected;
   })
 
   it('should move gameState to PRE_GAME', async () => {
@@ -417,15 +419,18 @@ contract('GameManager', (accounts) => {
     let block = await dateTime.getBlockTimeStamp();
     console.log('\nblocktime: ', formatDate(block))
 
+    const gene1 = "512955438081049600613224346938352058409509756310147795204209859701881294";
+    const gene2 = "24171491821178068054575826800486891805334952029503890331493652557302916";
+
     await timeout(1);
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 2456]), { from: playerRed }).should.be.fulfilled;
+      [gameId, 2456, gene1]), { from: playerRed }).should.be.fulfilled;
     console.log(`\n==== PLAYER RED STARTS`);
 
     await timeout(1);
 
     await proxy.execute('GameManager', setMessage(gameManager, 'startGame',
-      [gameId, 1148]), { from: playerBlack }).should.be.fulfilled;
+      [gameId, 1148, gene2]), { from: playerBlack }).should.be.fulfilled;
     console.log(`\n==== PLAYER BLACK STARTS`);
 
     await timeout(1);
