@@ -89,18 +89,18 @@ contract GMGetterDB is Proxied {
   
   }
 
-  function getOpponent(uint gameId, address player) public view returns(address){
-    (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
-    if(playerBlack == player) return playerRed;
-    return playerBlack;
-  }
+  // function getOpponent(uint gameId, address player) public view returns(address){
+  //   (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
+  //   if(playerBlack == player) return playerRed;
+  //   return playerBlack;
+  // }
 
-  function getCorner(uint gameId, address player) public view returns(uint){
-    (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
-    if(playerBlack == player) return 0;
-    if(playerRed == player) return 1;
-    return 2;
-  }
+  // function getCorner(uint gameId, address player) public view returns(uint){
+  //   (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
+  //   if(playerBlack == player) return 0;
+  //   if(playerRed == player) return 1;
+  //   return 2;
+  // }
 
  /**
    * @dev check game state, 0-4
@@ -214,13 +214,17 @@ contract GMGetterDB is Proxied {
     returns (address[2] memory players, uint[2] memory kittieIds, uint state,
       uint[2] memory supporters, bool[2] memory pressedStart, uint timeCreated, address winner)
   {
-    players[0] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
-    players[1] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-    kittieIds[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "kitty")));
-    kittieIds[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "kitty")));
-    state = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
-    supporters[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "supporters")));
-    supporters[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "supporters")));
+    // players[0] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
+    // players[1] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
+    // kittieIds[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "kitty")));
+    // kittieIds[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "kitty")));
+    (players[0], players[1], kittieIds[0], kittieIds[1]) = getGamePlayers(gameId);
+    // state = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
+    state = getGameState(gameId);
+    // supporters[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "supporters")));
+    // supporters[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "supporters")));
+    supporters[0] = getSupporters(gameId, players[0]);
+    supporters[1] = getSupporters(gameId, players[1]);
     pressedStart[0] = gameStore.didHitStart(gameId, players[0]);
     pressedStart[1] = gameStore.didHitStart(gameId, players[1]);
     timeCreated = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "createdTime")));
@@ -235,10 +239,8 @@ contract GMGetterDB is Proxied {
     honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
     initialEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
     (ktyTotal, ethTotal) = endowmentDB.getHoneyPotBalance(gameId);
-    //ethTotal = endowmentDB.getHoneypotTotalETH(gameId);
     ethByCorner[0] = getTotalBet(gameId, playerBlack);
     ethByCorner[1] = getTotalBet(gameId, playerRed);
-    //ktyTotal = endowmentDB.getHoneypotTotalKTY(gameId);
     (status, expTime) = endowmentDB.getHoneypotState(gameId);
   }
 
@@ -249,17 +251,17 @@ contract GMGetterDB is Proxied {
     isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), msg.sender);
     address supportedPlayer = genericDB.getAddressStorage(
       CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, msg.sender, "supportedPlayer")));
-    supportedCorner = getCorner(gameId, supportedPlayer);
+    supportedCorner = gameStore.getCorner(gameId, supportedPlayer);
     isPlayerInGame = isPlayer(gameId, msg.sender);
-    corner = getCorner(gameId, msg.sender);
+    corner = gameStore.getCorner(gameId, msg.sender);
   }
 
   function getPlayer(uint gameId, address player)
     public view
     returns(uint kittieId, uint corner, uint betsTotalEth)
   {
-    kittieId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, player, "kitty")));
-    corner = getCorner(gameId, player);
+    kittieId = getKittieInGame(gameId, player);
+    corner = gameStore.getCorner(gameId, player);
     betsTotalEth = getTotalBet(gameId, player);
   }
 

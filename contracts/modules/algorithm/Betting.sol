@@ -1,7 +1,7 @@
 /**
  * @title Betting
  *
- * @author @kittieFIGHT @ola
+ * @author @kittieFIGHT @ola @Xalee @wafflemakr
  *
  */
 //modifier class (DSAuth )

@@ -56,10 +56,10 @@ const REQ_NUM_MATCHES = 10
 const GAME_PRESTART = 120 // 2 min
 const GAME_DURATION = 300 // 5 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("211.37", "ether")); //$50,000 / (@ $236.55 USD/ETH)
-const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("10000", "ether")); // 10,000 KTY
+const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("1000", "ether")); // 1,000 KTY
 const GAME_TIMES = 10*60 //Scheduled games 10 min apart
 const KITTIE_HELL_EXPIRATION = 1*60*60*24 //1 day
-const HONEY_POT_EXPIRATION = 1*60*60*24 //1 day
+const HONEY_POT_EXPIRATION = 1*60*60*24 + 10 //1 day + 10 seconds
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("37500", "ether")); //37,500 KTY
 const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("5000", "ether")); //5000 KTY
 //Distribution Rates

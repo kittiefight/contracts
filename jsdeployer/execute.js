@@ -17,7 +17,8 @@ jQuery(document).ready(function($) {
         // Load contracts 
         let loaders = [];
         for(let contract of window.contractSettings){
-            let loader = loadContract(`../build/contracts/${contract.name}.json`);
+            let contractFile = (typeof contract.contract != 'undefined')?contract.contract:contract.name;
+            let loader = loadContract(`../build/contracts/${contractFile}.json`);
             loader.then(function(data){
                 contractDefinitions[contract.name] = {
                    'name': contract.name,
@@ -70,7 +71,7 @@ jQuery(document).ready(function($) {
     function initContractSelect(){
         $('#selectContract').parent().dropdown('setup menu', {
             values: Object.entries(contractDefinitions).map(entry => entry[1])
-                .filter(contract => contract.name != 'KFProxy')
+                //.filter(contract => contract.name != 'KFProxy')
                 .map(contract => {return {'name':contract.name, 'value': contract.name}})
                 .sort((a,b) => {return (a.name < b.name)?-1:(a.name > b.name)?1:0}),
         }).removeClass('disabled');
@@ -88,8 +89,9 @@ jQuery(document).ready(function($) {
     }
     function clearArguments(){
         $('#arguments').empty();
-        $('#executeBtn').addClass('disabled');
+        $('#executeDirectlyBtn').addClass('disabled');
         $('#generatePayloadBtn').addClass('disabled');
+        $('#executeViaProxyBtn').addClass('disabled');
     }
     function initArguments(contractName, functionName){
         let functionAbi = contractDefinitions[contractName].abi.find(entry => entry.type == 'function' && entry.constant == false && entry.name == functionName);
@@ -162,7 +164,8 @@ jQuery(document).ready(function($) {
             }
         }
         $('#generatePayloadBtn').removeClass('disabled');
-        $('#executeBtn').addClass('disabled');
+        $('#executeDirectlyBtn').addClass('disabled');
+        $('#executeViaProxyBtn').addClass('disabled');
     }
 
     function initProxy(){
@@ -224,12 +227,13 @@ jQuery(document).ready(function($) {
         try{
             let message = web3.eth.abi.encodeFunctionCall(functionABI,args);
             $('#payloadData').val(message);
-            $('#executeBtn').removeClass('disabled');
+            $('#executeViaProxyBtn').removeClass('disabled');
+            $('#executeDirectlyBtn').removeClass('disabled');
         }catch(e){
             printError(e.message)
         }
     });
-    $('#executeBtn').click(function(){
+    $('#executeViaProxyBtn').click(function(){
         let targetContract =  $('#arguments').data('contract');
         let payload = $('#payloadData').val();
         let messageValue = web3.utils.toWei($('#callValue').val(), 'ether');
@@ -246,7 +250,25 @@ jQuery(document).ready(function($) {
             console.log('Proxy call to '+targetContract+' receipt: '+receipt);
         });
     });
+    $('#executeDirectlyBtn').click(function(){
+        let targetContract =  $('#arguments').data('contract');
+        let payload = $('#payloadData').val();
+        let messageValue = web3.utils.toWei($('#callValue').val(), 'ether');
+        console.log(`Sending call to ${targetContract} directly`, payload);
 
+        web3.eth.sendTransaction({
+            from: web3.eth.defaultAccount,
+            to: $('#targetAddress').val(),
+            value: messageValue,
+            data: payload       
+        })
+        .on('transactionHash', function(hash){
+            console.log('Call to '+targetContract+' tx: '+hash);
+        })
+        .then(function(receipt){
+            console.log('Call to '+targetContract+' receipt: '+receipt);
+        });
+    });
     //====================================================
 
     async function loadWeb3(){

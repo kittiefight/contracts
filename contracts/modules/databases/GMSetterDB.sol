@@ -286,29 +286,29 @@ contract GMSetterDB is Proxied {
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
   }
 
-  function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
-    external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(_gameId)
-  {
+  // function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
+  //   external
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(_gameId)
+  // {
 
-    address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
-    (uint256 bettorTotal,,,) = gmGetterDB.getSupporterInfo(_gameId, _account);
-    (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
+  //   address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
+  //   (uint256 bettorTotal,,,) = gmGetterDB.getSupporterInfo(_gameId, _account);
+  //   (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
     
-    if(topBettor != _account){
-      if (bettorTotal > topBettorEth){
-        //If topBettor is already the account, dont update
-        gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
-        gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
-      }
-      else {
-        address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
-        (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
-        if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
-            gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
-        }
-      }
-    }
-  }
+  //   if(topBettor != _account){
+  //     if (bettorTotal > topBettorEth){
+  //       //If topBettor is already the account, dont update
+  //       gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
+  //       gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
+  //     }
+  //     else {
+  //       address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
+  //       (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
+  //       if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
+  //           gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
+  //       }
+  //     }
+  //   }
+  // }
 }

@@ -19,8 +19,7 @@ contract Rarity is KittiesCattributesDB, CattributesScoresDB {
      */
 
     function calculateRarity(uint256 kittieId)
-       public // temporarily set as public just for truffle testing purpose. should be internal
-       //internal
+       public
        view
        returns (uint256 rarity)
     {

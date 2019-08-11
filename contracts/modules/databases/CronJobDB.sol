@@ -131,6 +131,9 @@ contract CronJobDB is Proxied {
     function removeJob(uint256 jobId) 
         internal //external onlyContract(CONTRACT_NAME_CRONJOB) 
     {
+        //require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId), ERROR_DOES_NOT_EXIST);
+        //Removed requirement for the job to exist, because job can delete itself while being executed.
+        //TODO: Maybe this should be prevented in some other way
         // require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId), ERROR_DOES_NOT_EXIST);
         genericDB.removeNodeFromLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId);
         //TODO: Find out if we need to actually delete the job data from mappings. Test gas price for this.

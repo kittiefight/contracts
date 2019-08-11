@@ -200,8 +200,57 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             value = await this.cronJobTarget.value();
             assert.equal(value, randomVal, 'Value should aready be set');
         });
+        it('should execute all added jobs', async () => {
+            let delay = 10;
+            //Create Job 1
+            let random1Val = 1+Math.round(Math.random()*999999);
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random1Val, delay-1).should.be.fulfilled;
+            let job1Id = receipt.logs[0].args.scheduledJob;
+            //Create Job 2
+            let random2Val = 1+Math.round(Math.random()*999999);
+            receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random2Val, delay).should.be.fulfilled;
+            let job2Id = receipt.logs[0].args.scheduledJob;
+            //Create Job 3
+            let random3Val = 666; //Evil value which will cause job to delete itself
+            receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random3Val, delay+1).should.be.fulfilled;
+            let job3Id = receipt.logs[0].args.scheduledJob;
+            //Create Job 4
+            let random4Val = 1+Math.round(Math.random()*999999);
+            receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random4Val, delay+2).should.be.fulfilled;
+            let job4Id = receipt.logs[0].args.scheduledJob;
+            //Create Job 5
+            let random5Val = 1+Math.round(Math.random()*999999);
+            receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random5Val, delay+3).should.be.fulfilled;
+            let job5Id = receipt.logs[0].args.scheduledJob;
+
+            let logs = await this.cronJob.getPastEvents('JobAdded', {fromBlock: 0, toBlock:'latest'});
+            //console.log("Added Jobs", logs.map(le => {return {'jobId': le.returnValues.jobId, 'data': le.returnValues.data}}));
+
+            //Fast-forward time & execute
+            evm.increaseTime(web3, 2*delay);
+            receipt = await this.proxy.executeScheduledJobs();
+            //Check first 2 jobs are executed
+            logs = await this.cronJob.getPastEvents('JobExecuted', {fromBlock: 0, toBlock:'latest'});
+            //console.log("logs", logs)
+            //console.log("Executed Jobs", logs.map(le => le.returnValues.jobId));
+            assert.equal(logs[0].returnValues.jobId, job1Id, "Job1 Not executed");
+            assert.equal(logs[1].returnValues.jobId, job2Id, "Job2 Not executed");
+            //Execute other jobs
+            receipt = await this.proxy.executeScheduledJobs();
+            logs = await this.cronJob.getPastEvents('JobExecuted', {fromBlock: 0, toBlock:'latest'});
+            //console.log("Executed Jobs", logs.map(le => le.returnValues.jobId));
+            assert.equal(logs[2].returnValues.jobId, job3Id, "Job3 Not executed");
+            assert.equal(logs[3].returnValues.jobId, job4Id, "Job4 Not executed");
+            //Execute other jobs
+            receipt = await this.proxy.executeScheduledJobs();
+            logs = await this.cronJob.getPastEvents('JobExecuted', {fromBlock: 0, toBlock:'latest'});
+            //console.log("Executed Jobs", logs.map(le => le.returnValues.jobId));
+            assert.equal(logs[4].returnValues.jobId, job5Id, "Job5 Not executed");
+        });
 
 
     });
+
+
 
 });
