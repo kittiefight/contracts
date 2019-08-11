@@ -53,6 +53,7 @@ jQuery(document).ready(function($) {
 
     function createRegisteredContractsTable(){
         $tbody = $('#contractsTable tbody');
+        $tbody.empty();
         contractSettings
         .filter(contract => contract.name != 'KFProxy')
         .map(contract=>contract.name)
