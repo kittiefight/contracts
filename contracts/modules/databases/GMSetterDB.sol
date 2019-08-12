@@ -20,9 +20,14 @@ import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "../kittieHELL/KittieHell.sol";
+import "../gamemanager/Forfeiter.sol";
+import "../gamemanager/GameManager.sol";
+import "../gamemanager/GameCreation.sol";
 
 /**
  * @dev Stores game instances
+ * @author @psychoplasma
+ * @author @psychoplasma
  * @author @psychoplasma
  */
 contract GMSetterDB is Proxied {
@@ -32,10 +37,10 @@ contract GMSetterDB is Proxied {
   GameVarAndFee public gameVarAndFee;
   GMGetterDB public gmGetterDB;
   GameStore public gameStore;
+  GameCreation public gameCreation;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
-  string internal constant TABLE_NAME_KITTIES = "KittieTable";
 
   modifier onlyExistentGame(uint256 gameId) {
     require(doesGameExist(gameId));
@@ -54,6 +59,7 @@ contract GMSetterDB is Proxied {
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
     gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+    gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
   }
 
  /**
@@ -69,9 +75,15 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (uint256 gameId)
   {
-    gameId = genericDB.getLinkedListSize(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME).add(1);
+    // Get the lastest item in the linkedlist.
+    // Note that 0 means the HEAD of the list always and 
+    // direction(true) indicates that we are going to the end of the list.
+    (,uint256 prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, true);
+    // And create new item with an incremental id.
+    // Note that we don't need to check any existance here, because
+    // exsistance of the previous item in the list already self-verifies.
+    gameId = prevGameId.add(1);
     genericDB.pushNodeToLinkedList(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, gameId);
-    
 
     uint256 gamePrestartTime = gameStartTime.sub(gameVarAndFee.getGamePrestart());
     uint256 gameEndTime = gameStartTime.add(gameVarAndFee.getGameDuration());
@@ -90,18 +102,8 @@ contract GMSetterDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "prestartTime")), gamePrestartTime);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "endTime")), gameEndTime);
 
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
-
-    // Set kittieIds to true, so we know that there are in a match
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
-    
-    //TODO: not working
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, true);
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, true); 
-
+    setGameState(gameId);
   }
-  
 
   /**
    * @dev Adds a bettor to the given game iff the game exists.
@@ -125,7 +127,7 @@ contract GMSetterDB is Proxied {
       );
 
       //Set payed fee to true
-      genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")), true);      
+      genericDB.setBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")), true);
       // And increase the number of supporters for that player
       incrementSupporters(gameId, supportedPlayer);
       return true;
@@ -159,8 +161,8 @@ contract GMSetterDB is Proxied {
   {
     // Check if bettor does not exist in the game given, add her to the game.
     require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor),
-      "Bettor does not exist. Call participate first");
+      keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor));
+      
 
     // Get the supported player for this bettor
     address _supportedPlayer = genericDB.getAddressStorage(
@@ -172,7 +174,6 @@ contract GMSetterDB is Proxied {
 
     if (betAmount > 0) {
       // Update bettor's total bet amount
-      // updateBet(gameId, bettor, betAmount);
       uint256 prevAmount = genericDB.getUintStorage(
         CONTRACT_NAME_GM_SETTER_DB,
         keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
@@ -217,42 +218,55 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
+    gameCreation.scheduleJobs(gameId, state);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), state);
   }
 
-  /**
-   * @dev Update kittie state
-   */
-  function removeKittiesInGame(uint256 gameId)
+  // ==== CRONJOBS FUNCTIONS
+  function updateGameStateCron(uint256 gameId)
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  {
-    ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), 0);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), 0);
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-    // KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+    onlyExistentGame(gameId){
+      genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 1);
   }
 
-  // function removeKittyStatus(uint gameId)
-  //   external
-  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
-  // {
-  //   ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-  //   KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyBlack, false);
-  //   KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).updateKittyPlayingStatus(kittyRed, false);
-  // }
+  function setGameState(uint256 gameId)
+    internal
+    onlyExistentGame(gameId){
+      gameCreation.scheduleJobs(gameId, 0);
+      genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
+  }
 
   /**
-   * @dev set HoneyPotId and initial ETH in jackpot created by Endowment
+   * @dev Update kittie playing game Id
    */
-  function setHoneypotInfo(uint256 gameId, uint256 honeypotId, uint256 initialEth)
+  function updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+  {
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
+  }
+
+  /**
+   * @dev set initial ETH in jackpot created by Endowment
+   */
+  function setHoneypotInfo(uint256 gameId, uint256 initialEth)
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyExistentGame(gameId)
   {
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")), honeypotId);
     genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), initialEth);
+  }
+
+  function storeHoneypotDetails(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyExistentGame(gameId)
+  {
+    (,,,uint totalEth,,uint totalKty,) = gmGetterDB.getHoneypotInfo(gameId);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")), totalEth);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")), totalKty);
   }
 
   function doesGameExist(uint256 gameId) public view returns (bool) {
@@ -272,28 +286,29 @@ contract GMSetterDB is Proxied {
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
   }
 
-  function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
-    external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    onlyExistentGame(_gameId)
-  {
+  // function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
+  //   external
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(_gameId)
+  // {
 
-    address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
-    (uint256 bettorTotal,,,) = gmGetterDB.getSupporterInfo(_gameId, _account);
-    (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
+  //   address topBettor = gameStore.getTopBettor(_gameId, _supportedPlayer);
+  //   (uint256 bettorTotal,,,) = gmGetterDB.getSupporterInfo(_gameId, _account);
+  //   (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
     
-    if (bettorTotal > topBettorEth){
-      //If topBettor is already the account, dont update
-      if(topBettor != _account){
-        gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
-        gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
-      }
-    } else {
-      address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
-      (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
-      if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
-          gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
-      }
-    }
-  }
+  //   if(topBettor != _account){
+  //     if (bettorTotal > topBettorEth){
+  //       //If topBettor is already the account, dont update
+  //       gameStore.updateTopBettor(_gameId, _supportedPlayer, _account);
+  //       gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, topBettor);
+  //     }
+  //     else {
+  //       address secondTopBettor = gameStore.getSecondTopBettor(_gameId, _supportedPlayer);
+  //       (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
+  //       if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
+  //           gameStore.updateSecondTopBettor(_gameId, _supportedPlayer, _account);
+  //       }
+  //     }
+  //   }
+  // }
 }

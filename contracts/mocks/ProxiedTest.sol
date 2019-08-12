@@ -25,8 +25,20 @@ contract ProxiedTest is Proxied, Guard {
         emit TestCalledTwoArgs(arg1, arg2, msg.value, lastSender);
     }
 
-    function testRevertMessage() onlyProxy external {
+    function testRevertMessage() onlyProxy external view {
         revert('Test revert message');
+    }
+
+    function testArray(uint256[] calldata arg1, uint256[] calldata arg2) onlyProxy external {
+        lastArg1 = 0; 
+        for(uint256 i=0; i < arg1.length; i++){
+            lastArg1 += arg1[i];
+        }
+        uint256 arg2summ = 0;
+        for(uint256 i=0; i < arg2.length; i++){
+            arg2summ += arg2[i];
+        }
+        lastArg2 = address(arg2summ);
     }
 
 }

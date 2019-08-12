@@ -29,8 +29,7 @@ contract CattributesScoresDB is Proxied, Guard {
      * @param _score the cattribute's score
      */
     function updateCattributesScores(string memory _name, uint _score)
-        public  // temporarily set as public just for truffle test purpose
-        // internal
+        public
         onlySuperAdmin
     {
         CattributesScores[_name] = _score;

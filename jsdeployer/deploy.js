@@ -1,5 +1,6 @@
 var $ = jQuery;
 jQuery(document).ready(function($) {
+    const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     let web3 = null;
     let contractDefinitions = {
@@ -8,6 +9,7 @@ jQuery(document).ready(function($) {
         GenericDB: null,
         FreezeInfo: null,
         CronJob: null,
+        GMGetterDB: null,
         // Test contracts
         ProxiedTest:null
     };
@@ -29,6 +31,7 @@ jQuery(document).ready(function($) {
             if(web3.utils.isAddress(address)){
                 contractInstances.proxy = loadContractInstance(data, address);
                 prepareResultTd('#mainContractsDeployTable', 'Load '+data.contractName).text('at '+address);
+                $('#executeLink').attr('href', 'execute.html?KFProxy='+address);
             } 
         });
         loadContract('../build/contracts/GenericDB.json', function(data){
@@ -46,6 +49,15 @@ jQuery(document).ready(function($) {
             let address = getUrlParam(data.contractName);
             if(web3.utils.isAddress(address)){
                 contractInstances.cronJob = loadContractInstance(data, address);
+                prepareResultTd('#mainContractsDeployTable', 'Load '+data.contractName).text('at '+address);
+            } 
+        });
+        loadContract('../build/contracts/GMGetterDB.json', function(data){
+            contractDefinitions.GMGetterDB = data;
+            $('#GMGetterDB_ABI').text(JSON.stringify(data.abi));
+            let address = getUrlParam(data.contractName);
+            if(web3.utils.isAddress(address)){
+                contractInstances.gmGetterDB = loadContractInstance(data, address);
                 prepareResultTd('#mainContractsDeployTable', 'Load '+data.contractName).text('at '+address);
             } 
         });
@@ -92,6 +104,7 @@ jQuery(document).ready(function($) {
         contractInstances.proxy = await deployContract(contractDefinitions.KFProxy, [], table);
         contractInstances.genericDB = await deployContract(contractDefinitions.GenericDB, [], table);
         contractInstances.cronJob = await deployContract(contractDefinitions.CronJob, [contractInstances.genericDB.options.address], table);
+        contractInstances.gmGetterDB = await deployContract(contractDefinitions.GMGetterDB, [contractInstances.genericDB.options.address], table);
         contractInstances.freezeInfo = await deployContract(contractDefinitions.FreezeInfo, [], table);
     });
 
@@ -109,19 +122,21 @@ jQuery(document).ready(function($) {
         sendMessage(contractInstances.proxy, 'addContract', ['GenericDB', contractInstances.genericDB.options.address], table);
         sendMessage(contractInstances.proxy, 'addContract', ['FreezeInfo', contractInstances.freezeInfo.options.address], table);
         sendMessage(contractInstances.proxy, 'addContract', ['CronJob', contractInstances.cronJob.options.address], table);
+        sendMessage(contractInstances.proxy, 'addContract', ['GMGetterDB', contractInstances.gmGetterDB.options.address], table);
 
         sendMessage(contractInstances.genericDB,  'setProxy', [contractInstances.proxy.options.address], table);
         sendMessage(contractInstances.cronJob,    'setProxy', [contractInstances.proxy.options.address], table);
         sendMessage(contractInstances.freezeInfo, 'setProxy', [contractInstances.proxy.options.address], table);
+        sendMessage(contractInstances.gmGetterDB, 'setProxy', [contractInstances.proxy.options.address], table);
     });
 
     $('#setupTestContracts').click(async function(){
         let table = $('#testContractsSetupTable');
         $('tbody', table).empty();
 
-        sendMessage(contractInstances.proxy, 'addContract', ['ProxiedTest', contractInstances.proxiedTest.options.address], table);
+        sendMessage(contractInstances.proxiedTest,  'setProxy', [contractInstances.proxy.options.address], table);
+        addOrUpdateContractAddressOnProxy('ProxiedTest', contractInstances.proxiedTest.options.address, table);
 
-        sendMessage(contractInstances.proxiedTest,  'setProxy', [contractInstances.proxy.options.address], table)
     });
 
 
@@ -187,6 +202,15 @@ jQuery(document).ready(function($) {
         });
 
     });
+
+    async function addOrUpdateContractAddressOnProxy(contractName, contractAddress, table=null){
+        let oldAddress = await contractInstances.proxy.methods.getContract(contractName).call();
+        if(oldAddress == ZERO_ADDRESS){
+            sendMessage(contractInstances.proxy, 'addContract', [contractName, contractAddress], table);
+        }else{
+            sendMessage(contractInstances.proxy, 'updateContract', [contractName, contractAddress], table);
+        }
+    }
 
     async function sendMessage(contract, method, args, table=null, action=null) {
         return new Promise((resolve, reject) => {

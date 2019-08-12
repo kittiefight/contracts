@@ -43,7 +43,6 @@ import "./RarityCalculationDBs/FancyKitties.sol";
 contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties {
     using SafeMath for uint256;
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER)
     /**
      * @author @ziweidream
      * @notice calculate the defense level of a kitty
@@ -54,7 +53,7 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
      */
     function getDefenseLevel(uint256 kittieId, uint256 gene)
       public
-      //onlyContract(CONTRACT_NAME_GAMMANAGER)
+      onlyContract(CONTRACT_NAME_GAMEMANAGER)
       returns (uint256) {
       getDominantGeneBinary(kittieId, gene);
       binaryToKai(kittieId);
@@ -66,8 +65,8 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
 
       if (kittieId < 10000) {
           defenseLevel = 6;
-      } else if (isFancy(kittieId)) {
-          defenseLevel = 5;
+    //   } else if (isFancy(kittieId)) {
+    //       defenseLevel = 5;
       } else if (rarity < defenseLevelLimit.level5Limit) {
           defenseLevel = 6;
       } else if (rarity >= defenseLevelLimit.level5Limit && rarity < defenseLevelLimit.level4Limit) {

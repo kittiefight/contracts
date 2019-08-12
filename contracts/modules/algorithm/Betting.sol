@@ -1,7 +1,7 @@
 /**
  * @title Betting
  *
- * @author @kittieFIGHT @ola
+ * @author @kittieFIGHT @ola @Xalee @wafflemakr
  *
  */
 //modifier class (DSAuth )
@@ -61,8 +61,7 @@ contract Betting is Proxied, Guard {
      * @param _randomBlack black number generated when the black corner presses Button start
      */
     function setFightMap(uint256 _gameId, uint256 _randomRed, uint256 _randomBlack)
-        public //temporarily set as public just for truffle test purpose
-        //internal
+        internal
     {
         uint randomNum = _randomRed.add(_randomBlack);
         bytes32 hashLowPunch = keccak256(abi.encodePacked(randomNum, "lowPunch"));
@@ -96,8 +95,7 @@ contract Betting is Proxied, Guard {
           address _player,
           uint256 index
           )
-          public //temporarily set as public just for truffle testing purpose
-          //internal
+          internal
           {
             directAttacksScored[_gameId][_player][index] = directAttacksScored[_gameId][_player][index].add(1);
           }
@@ -115,8 +113,7 @@ contract Betting is Proxied, Guard {
           address _player,
           uint256 index
           )
-          public // temporarily set as public just for truffle testing purpose
-          //internal
+          internal
           {
             blockedAttacksScored[_gameId][_player][index] = blockedAttacksScored[_gameId][_player][index].add(1);
           }
@@ -195,8 +192,7 @@ contract Betting is Proxied, Guard {
     * @param _betAmount the ether amount of the bet placed by the given corner
     */
     function fillBets(uint256 _gameId, address _player, uint256 _betAmount)
-        public  // temporarily set as public just for truffle testing purpose
-        //internal
+        internal
     {
       bets[_gameId][_player].push(_betAmount);
     }
@@ -261,7 +257,7 @@ contract Betting is Proxied, Guard {
         }
     }
 
-    // setLastBetTimestamp() is internal. Temporarily set as public for truffle test purpose.
+    
     /**
     * @author @ziweidream
     * @notice record the last bet timestamp for the given corner in a game with a specific gameId
@@ -270,8 +266,7 @@ contract Betting is Proxied, Guard {
     * @param _lastBetTimestamp the timestamp of the last bet placed by the given corner in the game
     */
     function setLastBetTimestamp(uint256 _gameId, address _player, uint256 _lastBetTimestamp)
-        public //temporarily set as public just for truffle testing purpose
-        //internal
+        internal
     {
         lastBetTimestamp[_gameId][_player] = _lastBetTimestamp;
     }
@@ -283,13 +278,11 @@ contract Betting is Proxied, Guard {
     * @param _player the given corner in this game for whom the defense level is recorded
     */
     function setDefenseLevel(uint256 _gameId, address _player, uint _defense)
-        public   // temporarily set as public just for truffle testing purpose
-        //internal
+        internal
     {
         defenseLevel[_gameId][_player] = _defense;
     }
 
-    // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) 
     /**
     * @author @ziweidream
     * @notice record the original defense level of the given corner in a game with a specific gameId
@@ -301,7 +294,7 @@ contract Betting is Proxied, Guard {
     */
     function setOriginalDefenseLevel(uint256 _gameId, address _player, uint256 _originalDefenseLevel)
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setDefenseLevel(_gameId, _player, _originalDefenseLevel);
     }
@@ -409,8 +402,7 @@ contract Betting is Proxied, Guard {
         address _supportedPlayer,
         address _opponentPlayer
         )
-        public  // temporarily set as public just for truffle test purpose
-        //internal
+        internal
         {
         require(defenseLevel[_gameId][_opponentPlayer] > 0, "Defense level is already zero");
         uint256 defenseLevelOpponent;
@@ -447,7 +439,7 @@ contract Betting is Proxied, Guard {
         uint256 _randomBlack
         )
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         setFightMap(_gameId, _randomRed, _randomBlack);
         emit GameStarted(_gameId);
@@ -475,8 +467,7 @@ contract Betting is Proxied, Guard {
         address _opponentPlayer,
         uint256 _randomNum)
         public
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
-        returns (bool)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         string memory attackType;
         bytes32 attackHash;
@@ -523,7 +514,6 @@ contract Betting is Proxied, Guard {
             defenseLevelSupportedPlayer,
             defenseLevelOpponent
             );
-        return true;
     }
 
     event GameStarted(uint256 indexed _gameId);

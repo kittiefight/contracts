@@ -1,7 +1,5 @@
 /**
  * @title EndowmentFund
- *
- *
  */
 //
 // This program is free software: you can redistribute it and/or modify
@@ -22,13 +20,11 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
-import "./Escrow.sol";
-import '../../authority/Guard.sol';
 
 /**
  * @title EndowmentFund
  * @dev Responsible for : manage funds
- * @author @vikrammndal @wafflemakr
+ * @author @vikrammndal @wafflemakr @Xaleee
  */
 
 contract EndowmentFund is Distribution, Guard {
@@ -39,9 +35,11 @@ contract EndowmentFund is Distribution, Guard {
     event WinnerClaimed(uint indexed gameId, address indexed winner, uint256 ethAmount, uint256 ktyAmount, address from);
     event SentKTYtoEscrow(address sender, uint256 ktyAmount, address receiver);
     event SentETHtoEscrow(address sender, uint256 ethAmount, address receiver);
+    event Scheduled(uint256 scheduledJob, uint256 time, uint256 gameId);
 
     /// @notice  the count of all invocations of `generatePotId`.
     uint256 public potRequestCount;
+    mapping (uint => uint) public scheduledJobs;
 
     enum HoneypotState {
         created,
@@ -49,45 +47,88 @@ contract EndowmentFund is Distribution, Guard {
         gameScheduled,
         gameStarted,
         forefeited,
-        claiming
+        claiming,
+        dissolved
     }
 
-    struct Honeypot {
-        uint gameId;
-        HoneypotState state;
-        string forfeitReason;
-        uint dissolveTime;
-        uint gameEndTime;
-        uint createdTime;
-        uint ktyTotal;
-        uint ethTotal;
-    }
+    /**
+    * @dev check if enough funds present and maintains balance of tokens in DB
+    */
+    function generateHoneyPot(uint256 gameId)
+        external
+        onlyContract(CONTRACT_NAME_GAMECREATION)
+        returns (uint) {
 
-    function generateHoneyPot(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION) returns (uint, uint) {
         uint ktyAllocated = gameVarAndFee.getTokensPerGame();
-        require(endowmentDB.allocateKTY(ktyAllocated), 'Error: endowmentDB.allocateKTY(ktyAllocated) failed');
         uint ethAllocated = gameVarAndFee.getEthPerGame();
-        require(endowmentDB.allocateETH(ethAllocated), 'Error: endowmentDB.allocateETH(ethAllocated) failed');
 
-        uint potId = generatePotId();
-
-        Honeypot memory honeypot;
-        // honeypot.gameId = potId;
-        honeypot.gameId = gameId;
-        honeypot.state = HoneypotState.created;
-        honeypot.createdTime = now;
-        honeypot.ktyTotal = ktyAllocated;
-        honeypot.ethTotal = ethAllocated;
-
+        // + adds amount to honeypot
         endowmentDB.createHoneypot(
-            honeypot.gameId,
-            uint(honeypot.state),
-            honeypot.createdTime,
-            honeypot.ktyTotal,
-            honeypot.ethTotal
+            gameId,
+            uint(HoneypotState.created),
+            now,
+            ktyAllocated,
+            ethAllocated
         );
 
-    return (potId, ethAllocated);
+        // deduct amount from endowment
+        require(endowmentDB.updateEndowmentFund(ktyAllocated, ethAllocated, true));
+
+    return (ethAllocated);
+    }
+
+    /**
+    * @dev winner claims
+    */
+    function claim(uint256 _gameId) external payable {
+        address payable msgSender = address(uint160(getOriginalSender()));
+
+        // Honeypot status
+        (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
+
+        require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
+
+        require(now < claimTime, "Time to claim is over");
+
+        require(!getWithdrawalState(_gameId, msgSender), "already claimed");
+
+        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
+
+        // make sure enough funds in HoneyPot and update HoneyPot balance
+        require(endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true));
+
+        if (winningsKTY > 0){
+            transferKTYfromEscrow(msgSender, winningsKTY);
+        }
+
+        if (winningsETH > 0){
+            transferETHfromEscrow(msgSender, winningsETH);
+        }
+
+
+
+        // log tokens sent to an address
+        endowmentDB.setTotalDebit(_gameId, msgSender, winningsETH, winningsKTY);
+
+        emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
+    }
+
+    /**
+    * @dev send reward to the user that pressed finalize button
+    */
+    function sendFinalizeRewards(address user)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        returns(bool)
+    {
+        uint reward = gameVarAndFee.getFinalizeRewards();
+        require(transferKTYfromEscrow(address(uint160(user)), reward));
+        return true;
+    }
+
+    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
+        (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
+        return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts
     }
 
     /**
@@ -96,82 +137,62 @@ contract EndowmentFund is Distribution, Guard {
     function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
         uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
+
             claimTime = now.add(gameStore.getHoneypotExpiration(_gameId));
+
+            //add to cron: schedule desolve of HoneyPot
+            CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+            uint256 scheduledJob = cron.addCronJob(
+                                            CONTRACT_NAME_ENDOWMENT_FUND,
+                                            claimTime,
+                                            abi.encodeWithSignature("scheduleDissolve(uint256)", _gameId)
+                                            );
+            scheduledJobs[_gameId] = scheduledJob;
+            emit Scheduled(scheduledJob, claimTime, _gameId);
         }
         endowmentDB.setHoneypotState(_gameId, _state, claimTime);
     }
 
-    /** @notice  Returns a fresh unique identifier.
-    *
-    * @dev the generation scheme uses three components.
-    * First, the blockhash of the previous block.
-    * Second, the deployed address.
-    * Third, the next value of the counter.
-    * This ensure that identifiers are unique across all contracts
-    * following this scheme, and that future identifiers are
-    * unpredictable.
-    *
-    * @return a 32-byte unique identifier.
-    */
-    function generatePotId() internal returns (uint potId) {
-    return uint(keccak256(
-        abi.encodePacked(blockhash(block.number - 1), address(this), ++potRequestCount)
-        ));
+    function deleteCronJob(uint _gameId)
+        external
+        onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
+    {
+       CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+       cron.deleteCronJob(CONTRACT_NAME_ENDOWMENT_FUND, scheduledJobs[_gameId]);
     }
 
     /**
-    * @dev winner claims
+    * @dev added to cronjob : schedule Honey pot dissolve
     */
-    function claim(uint256 _gameId) external payable {
-        //address payable msgSender = getOriginalSender();
-        address payable msgSender = address(uint160(getOriginalSender()));
+    function scheduleDissolve(uint256 _gameId)
+        external
+        onlyContract(CONTRACT_NAME_CRONJOB)
+    {
 
-        require(!getWithdrawalState(_gameId, msgSender), "already claimed");
-        // status
-        (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
-        require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
+        // move left over funds from honey pot to endowment
+        (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH) = endowmentDB.getHoneyPotBalance(_gameId);
 
-        // get the time when state changed to claming start and add to it the Expiration time
-        require(now < claimTime, "Time to claim is over");
-    
-        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
-        if (winningsKTY > 0){
-            transferKFTfromEscrow(msgSender, winningsKTY);
-        }
+        // update endowmentFund
+        require(endowmentDB.updateEndowmentFund(honeyPotBalanceKTY, honeyPotBalanceETH, false));
 
-        if (winningsETH > 0){
-            transferETHfromEscrow(msgSender, winningsETH);
-        }
+        // change state to dissolved
+        endowmentDB.dissolveHoneypot(_gameId, uint(HoneypotState.dissolved));
 
-        // log debit of funds
-        endowmentDB.debitFunds(_gameId, msgSender, winningsETH, winningsKTY);
-
-        emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
     }
-
-    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
-        address msgSender = getOriginalSender();
-        (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
-        return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts
-    }
-
 
     /**
      * @dev Send KTY from EndowmentFund to Escrow
      */
-    function sendKTYtoEscrow(uint256 _kty_amount) external onlySuperAdmin {
+    function sendKTYtoEscrow(uint256 _kty_amount)
+        external
+        onlySuperAdmin
+    {
 
-        require(address(escrow) != address(0),
-            "Error: escrow not initialized");
+        require(_kty_amount > 0);
 
-        require(_kty_amount > 0,
-            "Error: _kty_amount is zero");
+        require(kittieFightToken.transfer(address(escrow), _kty_amount));
 
-        require(kittieFightToken.transfer(address(escrow), _kty_amount),
-            "Error: Transfer of KTY to Escrow failed");
-
-        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, false),
-            "Error: endowmentDB.updateEndowmentFund(_kty_amount, 0, false) failed");
+        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, false));
 
         emit SentKTYtoEscrow(address(this), _kty_amount, address(escrow));
     }
@@ -182,33 +203,33 @@ contract EndowmentFund is Distribution, Guard {
     function sendETHtoEscrow() external payable {
         address msgSender = getOriginalSender();
 
+        /* not very essential
         require(address(escrow) != address(0),
             "Error: escrow not initialized");
+        */
 
-        require(msg.value > 0,
-            "Error: msg.value is zero");
+        require(msg.value > 0);
 
         address(escrow).transfer(msg.value);
 
-        require(endowmentDB.updateEndowmentFund(0, msg.value, false),
-            "Error: endowmentDB.updateEndowmentFund(0, msg.value, false) failed");
+        require(endowmentDB.updateEndowmentFund(0, msg.value, false));
 
         emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
     }
 
     /**
-     * @dev accepts KTY. KTY is stored in escrow
+     * @dev accepts KTY. KTY is transfered to in escrow
      */
     function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
-        require(address(escrow) != address(0), "escrow not initialized");
+
+        //require(address(escrow) != address(0), "escrow not initialized"); //  not very essential
 
         // do transfer of KTY
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
             return false;
         }
-        // update DB
-        require(endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount),
-            'Error: endowmentDB.contributeFunds(_sender, 0, 0, _kty_amount) failed');
+
+        endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
 
         emit SentKTYtoEscrow(_sender, _kty_amount, address(escrow));
 
@@ -219,17 +240,18 @@ contract EndowmentFund is Distribution, Guard {
      * @dev GM calls
      */
     function contributeETH(uint _gameId) external payable returns(bool) {
-        require(address(escrow) != address(0), "escrow not initialized");
+        require(address(escrow) != address(0));
         address msgSender = getOriginalSender();
+
+        require(msg.value > 0);
 
         // transfer ETH to Escrow
         if (!address(escrow).send(msg.value)){
             return false;
         }
 
-        // update DB
-        require(endowmentDB.contributeFunds(msgSender, _gameId, msg.value, 0),
-            'Error: endowmentDB.contributeFunds(msgSender, _gameId, msg.value, 0) failed');
+        endowmentDB.updateHoneyPotFund(_gameId, 0, msg.value, false);
+        endowmentDB.updateEndowmentFund(0, msg.value, false);
 
         emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
 
@@ -247,16 +269,16 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow ETH funds
     */
-    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount) internal returns(bool){
-        require(address(_someAddress) != address(0), "_someAddress not set");
+    function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount)
+    private
+    returns(bool){
+        require(address(_someAddress) != address(0));
 
         // transfer the ETH
-        require(escrow.transferETH(_someAddress, _eth_amount),
-            "Error: escrow.transferETH(_someAddress, _eth_amount) failed");
+        require(escrow.transferETH(_someAddress, _eth_amount));
 
         // Update DB. true = deductFunds
-        require(endowmentDB.updateEndowmentFund(0, _eth_amount, true),
-            "Error: endowmentDB.updateEndowmentFund(0, _eth_amount, true) failed");
+        require(endowmentDB.updateEndowmentFund(0, _eth_amount, true));
 
         return true;
     }
@@ -264,16 +286,16 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKFTfromEscrow(address payable _someAddress, uint256 _kty_amount) internal returns(bool){
-        require(address(_someAddress) != address(0), "_someAddress not set");
+    function transferKTYfromEscrow(address payable _someAddress, uint256 _kty_amount)
+    private
+    returns(bool){
+        require(address(_someAddress) != address(0));
 
         // transfer the KTY
-        require(escrow.transferKTY(_someAddress, _kty_amount),
-            "Error: escrow.transferKTY(_someAddress, _kty_amount) failed");
+        require(escrow.transferKTY(_someAddress, _kty_amount));
 
         // Update DB. true = deductFunds
-        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, true),
-            "Error: endowmentDB.updateEndowmentFund(_kty_amount, 0, true) failed");
+        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, true));
 
         return true;
     }
@@ -284,26 +306,23 @@ contract EndowmentFund is Distribution, Guard {
     */
     function initUpgradeEscrow(Escrow _newEscrow) external onlySuperAdmin returns(bool){
 
-        require(address(_newEscrow) != address(0), "_newEscrow address not set");
+        require(address(_newEscrow) != address(0));
         _newEscrow.initialize(kittieFightToken);
 
         // check ownership
-        require(_newEscrow.owner() == address(this),
-            "Error: The new contract owner is not Endowment. Transfer ownership to Endowment before calling this function");
+        require(_newEscrow.owner() == address(this));
 
         // KTY is set
-        require(_newEscrow.getKTYaddress() != address(0), "kittieFightToken not initialized in Escrow");
+        require(_newEscrow.getKTYaddress() != address(0));
 
         if (address(escrow) != address(0)){ // Transfer if any funds
 
             // transfer all the ETH
-            require(escrow.transferETH(address(_newEscrow), address(escrow).balance),
-                "Error: Transfer of ETH failed");
+            require(escrow.transferETH(address(_newEscrow), address(escrow).balance));
 
             // transfer all the KTY
             uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
-            require(escrow.transferKTY(address(_newEscrow), ktyBalance),
-                "Error: Transfer of KYT failed");
+            require(escrow.transferKTY(address(_newEscrow), ktyBalance));
 
         }
 
@@ -322,27 +341,7 @@ contract EndowmentFund is Distribution, Guard {
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
     }
-
-
-
+    
 
 }
 
-/**
-Change log
-
-2019-07-26 11:17:05
-Aadded Guard to EndowmentFund
-Use getOriginalSender()insteads of msg.sender
-Replaced onlyOwner with onlySuperAdmin
-
-2019-07-26 11:51:59
-Improve getWithdrawalState() - just set staus when fund is withdrawn
-
-2019-07-26 12:01:49
-git push
-
-2019-07-27 10:09:34
-small change
-
-*/

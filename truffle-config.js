@@ -4,7 +4,9 @@ require('dotenv').config()
 const providerFactory = network =>
   new HDWalletProvider(
     process.env.MNEMONICS || "", // Mnemonics of the deployer
-    `https://${network}.infura.io/v3/${process.env.INFURA}` // Provider URL => web3.HttpProvider
+    `https://${network}.infura.io/v3/${process.env.INFURA_KEY}`, // Provider URL => web3.HttpProvider
+    0,
+    20
   );
 
 module.exports = {
@@ -33,8 +35,8 @@ module.exports = {
     rinkeby: {
       provider: providerFactory("rinkeby"),
       network_id: 4,
-      gas: 6000000,
-      gasPrice: 50000000000 // 50 Gwei
+      gas: 6900000,
+      gasPrice: 10000000000 // 10 Gwei
     },
     kovan: {
       provider: providerFactory("kovan"),
@@ -46,7 +48,8 @@ module.exports = {
       host: "127.0.0.1",
       port: 8544,
       network_id: 999,
-      gas: 7500000
+      // gas: 8000000
+      gas: 7000000
     },
     test: {
       host: "127.0.0.1",

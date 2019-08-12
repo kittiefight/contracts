@@ -18,8 +18,7 @@ contract KaiValueDB is Proxied, Guard {
      * @notice mapping a gene in binary with its kai notation
      */
      function fillKaiValue()
-        public // temporarily set as public just for truffle test purpose
-        //internal
+        public
         onlySuperAdmin
       {
         kaiValue['00000'] = '1';
