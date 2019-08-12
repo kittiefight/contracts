@@ -24,13 +24,13 @@ const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const SuperDaoToken = artifacts.require('MockERC20Token');
-// const KittieFightToken = artifacts.require('KittieFightToken');
+const KittieFightToken = artifacts.require('KittieFightToken');
 const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 
-const KittieFightToken = artifacts.require('ERC20Standard')
+// const KittieFightToken = artifacts.require('ERC20Standard')
 
 //Rinkeby address of KittieFightToken
 const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
@@ -98,7 +98,7 @@ module.exports = (deployer, network, accounts) => {
   .then(() => deployer.deploy(FreezeInfo))
   .then(() => deployer.deploy(CronJobTarget))
   .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-  // .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+  .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
   .then(() => deployer.deploy(CryptoKitties))
   .then(() => deployer.deploy(GameManager))
   .then(() => deployer.deploy(GameStore))
@@ -123,8 +123,8 @@ module.exports = (deployer, network, accounts) => {
     await proxy.addContract('GenericDB', GenericDB.address)
     await proxy.addContract('CryptoKitties', CryptoKitties.address);
     await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-    // await proxy.addContract('KittieFightToken', KittieFightToken.address);
-    await proxy.addContract('KittieFightToken', KTY_ADDRESS);
+    await proxy.addContract('KittieFightToken', KittieFightToken.address);
+    // await proxy.addContract('KittieFightToken', KTY_ADDRESS);
     await proxy.addContract('ProfileDB', ProfileDB.address);
     await proxy.addContract('RoleDB', RoleDB.address);
     await proxy.addContract('Register', Register.address)
@@ -169,8 +169,8 @@ module.exports = (deployer, network, accounts) => {
 
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
-    // kittieFightToken = await KittieFightToken.deployed();
-    kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+    kittieFightToken = await KittieFightToken.deployed();
+    // kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
     cryptoKitties = await CryptoKitties.deployed();
 
     // MODULES
