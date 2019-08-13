@@ -1,5 +1,6 @@
 const RarityCalculator = artifacts.require('RarityCalculator')
 
+//Account 0 should be Super Admin
 
 module.exports = async (callback) => {
 
