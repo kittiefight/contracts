@@ -66,7 +66,7 @@ contract EndowmentDB is Proxied {
         require(honeyPotKtyTotal >= _kty_amount,
           "Error: updateHoneyPotFund() insufficient KTY in HoneyPot");
 
-        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey, _kty_amount.sub(_eth_amount));
+        genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotKtyTotalKey, honeyPotKtyTotal.sub(_kty_amount));
 
       }else{ // add
 
