@@ -32,15 +32,15 @@ window.contractSettings = function() {
 		{"name":"EndowmentFund"},
 		{"name":"EndowmentDB"},
 		{"name":"Escrow"},
-		{"name":"KittieHELL"},
+		{"name":"KittieHell"},
 		{"name":"KittieHellDB"},
 		{"name":"SuperDaoToken", "contract":"MockERC20Token"},
 		{"name":"KittieFightToken"},
 		{"name":"CryptoKitties", "contract":"MockERC721Token"},
 
 		//Tests
-		{"name":"ProxiedTest"},
-		{"name":"CronJobTarget"},
+		//{"name":"ProxiedTest"},
+		//{"name":"CronJobTarget"},
 
 
 

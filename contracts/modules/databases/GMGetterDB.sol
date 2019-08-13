@@ -18,6 +18,8 @@ import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
 import "./EndowmentDB.sol";
+import "./ProfileDB.sol";
+import "../registration/Register.sol";
 import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
 
@@ -272,6 +274,15 @@ contract GMGetterDB is Proxied {
     winner = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "winner")));
     topBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "topBettor")));
     secondTopBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "secondTopBettor")));
+  }
+
+  function getAccountInfo(address account)
+    public view
+    returns(bool isRegistered, bool isVerified)
+  {
+    isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
+    uint civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
+    isVerified = civicId > 0;
   }
 
 }

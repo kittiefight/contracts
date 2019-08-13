@@ -8,7 +8,8 @@ function setMessage(contract, funcName, argArray) {
     );
 }
 
-// bet 0.01 in a gameId from address of accounts[index]
+//truffle exec scripts/bet.js gameId index_account 
+// bet in a gameId from address of accounts[index] amountBet(eth)
 
 module.exports = async (callback) => {
 	try{
@@ -17,11 +18,12 @@ module.exports = async (callback) => {
 
         let gameId = process.argv[4];
         let index = process.argv[5];
+        let amountBet = process.argv[6];
 
         accounts = await web3.eth.getAccounts();
         
         await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-        [gameId, randomValue()]), { from: accounts[index], value: web3.utils.toWei(String(0.01)) })
+        [gameId, randomValue()]), { from: accounts[index], value: web3.utils.toWei(String(amountBet)) })
 
 		callback()
 	}
