@@ -7,11 +7,11 @@ const GameVarAndFee = artifacts.require('GameVarAndFee')
 const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
 const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
-const MIN_CONTRIBUTORS = 833
-const REQ_NUM_MATCHES = 10
+const MIN_CONTRIBUTORS = 5 //833
+const REQ_NUM_MATCHES = 3 //10
 const GAME_PRESTART = 120 // 2 min
 const GAME_DURATION = 300 // 5 min
-const ETH_PER_GAME = new BigNumber(web3.utils.toWei("211.37", "ether")); //$50,000 / (@ $236.55 USD/ETH)
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("50", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("1000", "ether")); // 1,000 KTY
 const GAME_TIMES = 10*60 //Scheduled games 10 min apart
 const KITTIE_HELL_EXPIRATION = 60*60*24 //1 day
@@ -32,6 +32,9 @@ function setMessage(contract, funcName, argArray) {
       argArray
     );
 }
+
+//truffle exec scripts/setAllGameVars.js --network rinkeby
+
 
 module.exports = async (callback) => {
 	try {
@@ -56,6 +59,10 @@ module.exports = async (callback) => {
 
 		await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', 
 			[bytesNames, values]))
+
+		console.log('\nDone!');
+
+		callback()
 	}
 	catch(e){callback(e)}
 }

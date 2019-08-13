@@ -16,12 +16,7 @@ function formatDate(timestamp) {
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
-function timeout(s) {
-  // console.log(`~~~ Timeout for ${s} seconds`);
-  return new Promise(resolve => setTimeout(resolve, s * 1000));
-}
-
-//truffle exec scripts/FE/newgame.js kittyRed(kittieID) kittyBlack(kittieID) gameStartTimeGiven(FORMATexample (UTC): 2009 02 13 23:31:30)
+//truffle exec scripts/manualMatch.js <kittyRed> <kittyBlack> <gameStartTimeStamp>
 //Only SuperAdmin can call this function. Owners of Kittys must be those players.
 //Example: truffle exec scripts/manualMatch.js 1001 324 1565714534
 

@@ -8,7 +8,7 @@ function setMessage(contract, funcName, argArray) {
     );
 }
 
-//truffle exec scripts/bet.js gameId index_account 
+//truffle exec scripts/bet.js <gameId> <index_account> 
 // bet in a gameId from address of accounts[index] amountBet(eth)
 
 module.exports = async (callback) => {

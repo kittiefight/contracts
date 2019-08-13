@@ -9,7 +9,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/participate.js <gameId> <RED or BLACK> <account>
+//truffle exec scripts/participate.js <gameId> <RED or BLACK> <accountIndex>
 
 module.exports = async (callback) => {
   try{
@@ -19,7 +19,11 @@ module.exports = async (callback) => {
 
     let gameId = process.argv[4];
     let playerToSupport = process.argv[5];
-    let account = process.argv[6]; 
+    let accountIndex = process.argv[6];
+    
+    allAccounts = await web3.eth.getAccounts();
+
+    let account = allAccounts[accountIndex]
 
     let supported;
     
@@ -34,7 +38,7 @@ module.exports = async (callback) => {
     
     let info = await getterDB.getSupporterInfo(gameId, account);
 
-    if (info.supportedPlayer === supported) console.log(`\nAdded participator for player ${playerToSupport}`);
+    if (info.supportedPlayer === supported) console.log(`\nAdded participator for player ${playerToSupport} in game Id ${gameId}`);
     
     callback()
   }
