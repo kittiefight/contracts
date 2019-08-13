@@ -8,25 +8,26 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/registerUser.js <#users>
+//truffle exec scripts/FE/registerUsers.js noOfUsers(uint) (Till 39)
 
 module.exports = async (callback) => {
   try{
     let proxy = await KFProxy.deployed();
     let register = await Register.deployed()
-  
+    
     accounts = await web3.eth.getAccounts();
-  
-    let amount = accounts[process.argv[4]];
+    
+    //Changed
+    let amount = process.argv[4];
 
     for(let i = 1; i <= amount; i++){
       await proxy.execute('Register', setMessage(register, 'register', []), {
         from: accounts[i]
-      })
+      });
 
       let isRegistered = await register.isRegistered(accounts[i])
 
-      if(isRegistered) console.log('Registered User ', accounts[i]);
+      if(isRegistered) console.log('\nRegistered User ', accounts[i]);
     } 
 
     callback()

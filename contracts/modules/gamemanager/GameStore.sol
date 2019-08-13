@@ -169,7 +169,11 @@ contract GameStore is Proxied {
         pointsBlack = hitsResolve.calculateFinalPoints(gameId, playerBlack, random);
         pointsRed = hitsResolve.calculateFinalPoints(gameId, playerRed, random);
 
-         if (pointsBlack > pointsRed)
+        //Added to make game more balanced
+        pointsBlack = (gmGetterDB.getTotalBet(gameId, playerBlack)).mul(pointsBlack);
+        pointsRed = (gmGetterDB.getTotalBet(gameId, playerRed)).mul(pointsRed);
+
+        if (pointsBlack > pointsRed)
         {
             winner = playerBlack;
             loser = playerRed;
