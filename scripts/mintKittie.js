@@ -2,7 +2,7 @@ const CryptoKitties = artifacts.require('MockERC721Token');
 
 // =================================================== //
 
-//truffle exec scripts/mintKittie.js <kittieId> <addressTo> --network rinkeby
+// truffle exec scripts/mintKittie.js <kittieId> <addressTo> --network rinkeby
 // accounts 0 must be owner of ckc contract
 
 module.exports = async (callback) => {

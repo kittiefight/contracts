@@ -9,7 +9,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/participate.js <gameId> <RED or BLACK> <accountIndex>
+//truffle exec scripts/participate.js <gameId> <RED or BLACK> <accountIndex> --network rinkeby
 
 module.exports = async (callback) => {
   try{

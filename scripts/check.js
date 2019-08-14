@@ -6,6 +6,7 @@ const KFProxy = artifacts.require('KFProxy')
 const DateTime = artifacts.require('DateTime')
 const GameManager = artifacts.require('GameManager')
 const Scheduler = artifacts.require('Scheduler')
+const GameCreation = artifacts.require('GameCreation')
 
 function formatDate(timestamp) {
   let date = new Date(null);
@@ -24,6 +25,7 @@ module.exports = async (callback) => {
 		proxy = await KFProxy.deployed()
 		dateTime = await DateTime.deployed()
 		scheduler = await Scheduler.deployed()
+		gameCreation = await GameCreation.deployed();
 
 		accounts = await web3.eth.getAccounts();
 
@@ -46,7 +48,17 @@ module.exports = async (callback) => {
 		console.log(' Endowment/Escrow balance :', String(web3.utils.fromWei(balanceKTY)), "KTY");
 		console.log('', accounts[0], isSuperAdmin ? "IS":"IS NOT", "super admin");
 		console.log('', accounts[0], isAdmin ? "IS":"IS NOT", "admin");
-		console.log(' Kitties Listed and waiting to be matched:', listedKitties);
+
+		console.log(' Kitties Listed and waiting to be matched:');
+		listedKitties = listedKitties.map(k => k.toString());
+		let listEvents = await gameCreation.getPastEvents('NewListing');
+		listEvents.map(e => {
+			console.log(`   Kittie ${e.returnValues.kittieId}`);
+			console.log(`   Listed at ${formatDate(e.returnValues.timeListed)}`)
+		})
+
+		// NewListing event
+		
 
 		callback()
 	}

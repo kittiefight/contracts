@@ -3,7 +3,7 @@ const KittieFightToken = artifacts.require('KittieFightToken');
 
 const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
 
-// truffle exec scripts/FE/sendKTY.js <account> <amountKTY> --network rinkeby
+// truffle exec scripts/approveKTY.js <accountIndex> <amountKTY> --network rinkeby
 
 module.exports = async (callback) => {    
 
@@ -12,8 +12,12 @@ module.exports = async (callback) => {
     endowmentFund = await EndowmentFund.deployed();
     
     //Changed
-    let account = process.argv[4];
+    let index = process.argv[4];
     let amountKTY = process.argv[5];
+
+    allAccounts = await web3.eth.getAccounts();
+
+    let account = allAccounts[index];
 
     await kittieFightToken.approve(endowmentFund.address, web3.utils.toWei(String(amountKTY)) , 
         { from: account })
