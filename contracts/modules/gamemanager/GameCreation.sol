@@ -118,7 +118,7 @@ contract GameCreation is Proxied, Guard {
         require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
         require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
 
-        generateFight(playerBlack, playerRed, kittyBlack, kittyRed, gameStartTime);
+        generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
     /**
