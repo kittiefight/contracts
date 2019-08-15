@@ -110,7 +110,7 @@ contract GameManager is Proxied, Guard {
         
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
-        (uint startTime ,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+        (/*uint startTime*/ ,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
         if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
         //Check again to see if forfeited
