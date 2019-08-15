@@ -65,7 +65,7 @@ contract Distribution is Proxied {
 
         (winners[0], winners[1], winners[2]) = gmGetterDB.getWinners(gameId);
 
-        require(winners[0] != address(0), 'No winner detected for this game');
+        require(winners[0] != address(0));
 
         (uint256 betAmount, address supportedPlayer,,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
@@ -84,20 +84,34 @@ contract Distribution is Proxied {
         //!!! SUB bet amount player !!!
         //Other bettors winnings
         if (winningCategory == 3){
-            (uint256 betAmountTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);
-            (uint256 betAmountSecondTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[2]);
-
-            //get other supporters totalBets for winning side
-            uint256 totalBets = gmGetterDB.getTotalBet(gameId, winners[0]);
-
-            //Remove top and secondTop total bets
-            totalBets = totalBets.sub(betAmountTop).sub(betAmountSecondTop);
-
-            // Distribute the 20% of the jackpot according to amount that supporter bet in game
-            // This is to avoid a bettor for claiming winings if he/she did not bet
-            winningsETH = winningsETH.mul(betAmount).div(totalBets);
-            winningsKTY = winningsKTY.mul(betAmount).div(totalBets);
+            (winningsETH, winningsKTY) = getOtherWinnersShare(winningsETH, winningsKTY, betAmount, gameId);
         }
+    }
+
+    function getOtherWinnersShare(uint256 winningsETH, uint256 winningsKTY, uint256 betAmount,
+        uint256 gameId)
+    internal view
+    returns(uint256, uint256)
+    {
+
+        address[3] memory winners;
+        (winners[0], winners[1], winners[2]) = gmGetterDB.getWinners(gameId);
+        (uint256 betAmountTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);
+        (uint256 betAmountSecondTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[2]);
+
+
+        //getPlayerBet
+        uint256 playerBet = gmGetterDB.getPlayerBet(gameId, winners[0]);
+
+        //get other supporters totalBets for winning side
+        uint256 totalBets = gmGetterDB.getTotalBet(gameId, winners[0]);
+
+        //Remove top and secondTop total bets
+        totalBets = totalBets.sub(betAmountTop).sub(betAmountSecondTop).sub(playerBet);
+
+        // Distribute the 20% of the jackpot according to amount that supporter bet in game
+        // This is to avoid a bettor for claiming winings if he/she did not bet
+        return(winningsETH.mul(betAmount).div(totalBets), winningsKTY.mul(betAmount).div(totalBets));
     }
 
     function getEndowmentShare(uint gameId) public view returns(uint256 winningsETH, uint256 winningsKTY){

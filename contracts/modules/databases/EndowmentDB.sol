@@ -188,6 +188,9 @@ contract EndowmentDB is Proxied {
     if (claimTime > 0){
       genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "claimTime")), claimTime);
     }
+    else{
+      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "claimTime")), 0);
+    }
   }
 
 
@@ -198,15 +201,19 @@ contract EndowmentDB is Proxied {
 
   function dissolveHoneypot(
     uint gameId,
-    uint status
+    uint state
   )
     external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    onlyExistingHoneypot(gameId)
+    /*onlyExistingHoneypot(gameId)*/
   {
-    require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT_DISSOLVED, gameId));
-    require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT, gameId));
-    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "status")), status);
+
+    // require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT_DISSOLVED, gameId));
+    // require(genericDB.removeNodeFromLinkedList(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT, gameId));
+    uint256 claimTime = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")));
+    require(claimTime > 0);
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")), 0);
   }
 
 /**

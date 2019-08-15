@@ -110,7 +110,7 @@ contract GameManager is Proxied, Guard {
         
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
-        (/*uint startTime*/ ,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+        (uint startTime ,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
         if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
         //Check again to see if forfeited
@@ -166,6 +166,12 @@ contract GameManager is Proxied, Guard {
         //If we require, if all this call fails, kittieHell will have Kittie and player will not play
         //require(kittieHELL.acquireKitty(kittieId, player));
         kittieHELL.acquireKitty(kittieId, player);
+
+        // genericDB.setUintStorage(
+        //   CONTRACT_NAME_GM_SETTER_DB,
+        //   keccak256(abi.encodePacked(gameId, player, "betAmount")), 
+        //   0
+        // );
 
         address opponentPlayer = gameStore.getOpponent(gameId, player);
 

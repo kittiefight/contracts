@@ -180,6 +180,22 @@ contract EndowmentFund is Distribution, Guard {
 
     }
 
+    function dissolveTest(uint256 _gameId)
+        public
+        onlySuperAdmin
+    {
+
+        // move left over funds from honey pot to endowment
+        (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH) = endowmentDB.getHoneyPotBalance(_gameId);
+
+        // update endowmentFund
+        require(endowmentDB.updateEndowmentFund(honeyPotBalanceKTY, honeyPotBalanceETH, false));
+
+        // change state to dissolved
+        endowmentDB.dissolveHoneypot(_gameId, uint(HoneypotState.dissolved));
+
+    }
+
     /**
      * @dev Send KTY from EndowmentFund to Escrow
      */

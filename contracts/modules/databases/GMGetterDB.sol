@@ -258,6 +258,17 @@ contract GMGetterDB is Proxied {
     corner = gameStore.getCorner(gameId, msg.sender);
   }
 
+  //*FIXED*
+  function getPlayerBet(uint gameId, address player)
+  public view
+  returns(uint playerBet)
+  {
+    playerBet = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, player, "betAmount"))
+    );
+  }
+
   function getPlayer(uint gameId, address player)
     public view
     returns(uint kittieId, uint corner, uint betsTotalEth)

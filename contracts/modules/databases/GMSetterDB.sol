@@ -135,6 +135,16 @@ contract GMSetterDB is Proxied {
     return false;
   }
 
+  // function addPlayer(uint256 gameId, address player)
+  //   external
+  //   onlyContract(CONTRACT_NAME_GAMEMANAGER)
+  //   onlyExistentGame(gameId)
+  //   returns(bool)
+  // {
+  //    genericDB.pushNodeToLinkedListAddr(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_PLAYER)), player);
+
+  // }
+
   /**
    * @dev Increments the number of supporters for the given player
    */
@@ -189,7 +199,19 @@ contract GMSetterDB is Proxied {
         // updateTotalBet(gameId, betAmount, supportedPlayer);
       }
     }
+    else{
+      prevAmount = genericDB.getUintStorage(
+        CONTRACT_NAME_GM_SETTER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
+      );
 
+      genericDB.setUintStorage(
+        CONTRACT_NAME_GM_SETTER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "betAmount")),
+        prevAmount.add(betAmount)
+      );
+
+    }
     prevAmount = genericDB.getUintStorage(
       CONTRACT_NAME_GM_SETTER_DB,
       keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))

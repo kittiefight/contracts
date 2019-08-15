@@ -52,7 +52,7 @@ module.exports = async (callback) => {
     let supportedPlayer;
     let randomSupporter;
 
-    betAmount = 10;
+    betAmount = 200;
     await proxy.execute('GameManager', setMessage(gameManager, 'bet',
         [gameId, randomValue(98)]), { from: playerBlack, value: web3.utils.toWei(String(betAmount)) });
 
