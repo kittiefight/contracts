@@ -9,6 +9,8 @@ import "../authority/Owned.sol";
 contract MockERC721Token is ERC721, Owned {
   using SafeMath for uint256;
 
+  uint private supply;
+
   // Mapping from token ID to owner
   mapping (uint256 => address) private _tokenOwner;
 
@@ -26,7 +28,7 @@ contract MockERC721Token is ERC721, Owned {
   }
 
   function totalSupply() public view returns (uint256) {
-    return 0;
+    return supply;
   }
 
   function balanceOf(address owner) public view returns (uint256) {
@@ -89,6 +91,7 @@ contract MockERC721Token is ERC721, Owned {
 
     _tokenOwner[tokenId] = to;
     _ownedTokensCount[to] = _ownedTokensCount[to].add(1);
+    supply = supply.add(1);
 
     emit Transfer(address(0), to, tokenId);
   }
@@ -100,6 +103,7 @@ contract MockERC721Token is ERC721, Owned {
 
     _ownedTokensCount[owner]= _ownedTokensCount[owner].sub(1);
     _tokenOwner[tokenId] = address(0);
+    supply = supply.sub(1);
 
     emit Transfer(owner, address(0), tokenId);
   }

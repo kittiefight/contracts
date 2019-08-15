@@ -9,6 +9,9 @@ module.exports = async (callback) => {
 
         let balanceETH = await escrow.getBalanceETH();
 
+        let owner = await escrow.owner();
+        console.log(owner)
+
         console.log('\nChecking Escrow balances...');
         console.log('\n================');
         console.log(`  ${web3.utils.fromWei(balanceETH)} ETH`);

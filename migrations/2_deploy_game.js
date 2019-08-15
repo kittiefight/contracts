@@ -41,51 +41,28 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("10000", "ether") //10.000 KTY
+  web3.utils.toWei("50000", "ether") //10.000 KTY
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("650", "ether") //650 ETH
+  web3.utils.toWei("700", "ether") //650 ETH
 );
 
-// // ================ GAME VARS AND FEES (DROPBOX)================ //
-// const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
-// const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
-// const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
-// const MIN_CONTRIBUTORS = 833
-// const REQ_NUM_MATCHES = 10
-// const GAME_PRESTART = 120 // 2 min
-// const GAME_DURATION = 300 // 5 min
-// const ETH_PER_GAME = new BigNumber(web3.utils.toWei("211.37", "ether")); //$50,000 / (@ $236.55 USD/ETH)
-// const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("1000", "ether")); // 1,000 KTY
-// const GAME_TIMES = 10*60 //Scheduled games 10 min apart
-// const KITTIE_HELL_EXPIRATION = 60*60*24 //1 day
-// const HONEY_POT_EXPIRATION = 60*60*23// 23 hours
-// const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("37500", "ether")); //37,500 KTY
-// const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("100", "ether")); //100 KTY
-// //Distribution Rates
-// const WINNING_KITTIE = 30
-// const TOP_BETTOR = 20
-// const SECOND_RUNNER_UP = 10
-// const OTHER_BETTORS = 25
-// const ENDOWNMENT = 15
-// // =================================================== //
-
-// ================ GAME VARS AND FEES (TEST)================ //
+// ================ GAME VARS AND FEES (DROPBOX)================ //
 const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
 const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
-const MIN_CONTRIBUTORS = 2
-const REQ_NUM_MATCHES = 2
-const GAME_PRESTART = 60 // 2 min
-const GAME_DURATION = 120 // 5 min
-const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether")); //$50,000 / (@ $236.55 USD/ETH)
+const MIN_CONTRIBUTORS = 833 
+const REQ_NUM_MATCHES = 10
+const GAME_PRESTART = 120 // 2 min
+const GAME_DURATION = 300 // 5 min
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("211.37", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("1000", "ether")); // 1,000 KTY
-const GAME_TIMES = 120 //Scheduled games 10 min apart
-const KITTIE_HELL_EXPIRATION = 300 //1 day
-const HONEY_POT_EXPIRATION = 180// 23 hours
-const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("100", "ether")); //37,500 KTY
-const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //100 KTY
+const GAME_TIMES = 10*60 //Scheduled games 10 min apart
+const KITTIE_HELL_EXPIRATION = 60*60*24 //1 day
+const HONEY_POT_EXPIRATION = 60*60*23// 23 hours
+const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("37500", "ether")); //37,500 KTY
+const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("100", "ether")); //100 KTY
 //Distribution Rates
 const WINNING_KITTIE = 30
 const TOP_BETTOR = 20
@@ -93,6 +70,29 @@ const SECOND_RUNNER_UP = 10
 const OTHER_BETTORS = 25
 const ENDOWNMENT = 15
 // =================================================== //
+
+// // ================ GAME VARS AND FEES (TEST)================ //
+// const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
+// const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
+// const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
+// const MIN_CONTRIBUTORS = 2
+// const REQ_NUM_MATCHES = 2
+// const GAME_PRESTART = 60 // 2 min
+// const GAME_DURATION = 120 // 5 min
+// const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether")); //$50,000 / (@ $236.55 USD/ETH)
+// const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("1000", "ether")); // 1,000 KTY
+// const GAME_TIMES = 120 //Scheduled games 10 min apart
+// const KITTIE_HELL_EXPIRATION = 300 //1 day
+// const HONEY_POT_EXPIRATION = 180// 23 hours
+// const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("100", "ether")); //37,500 KTY
+// const FINALIZE_REWARDS = new BigNumber(web3.utils.toWei("500", "ether")); //100 KTY
+// //Distribution Rates
+// const WINNING_KITTIE = 30
+// const TOP_BETTOR = 20
+// const SECOND_RUNNER_UP = 10
+// const OTHER_BETTORS = 25
+// const ENDOWNMENT = 15
+// // =================================================== //
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -121,7 +121,6 @@ module.exports = (deployer, network, accounts) => {
   .then(() => deployer.deploy(FreezeInfo))
   .then(() => deployer.deploy(CronJobTarget))
   .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-  .then(() => (network === 'rinkeby')? "don't deploy" : deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY)) //Ganache
   .then(() => deployer.deploy(CryptoKitties))
   .then(() => deployer.deploy(GameManager))
   .then(() => deployer.deploy(GameStore))
@@ -132,46 +131,43 @@ module.exports = (deployer, network, accounts) => {
   .then(() => deployer.deploy(Scheduler))
   .then(() => deployer.deploy(Betting))
   .then(() => deployer.deploy(HitsResolve))
-  .then(() => deployer.deploy(RarityCalculator))
   .then(() => deployer.deploy(EndowmentFund))
   .then(() => deployer.deploy(KittieHELL))
   .then(() => deployer.deploy(Escrow))
   .then(async(escrow) => {
     await escrow.transferOwnership(EndowmentFund.address) 
   })
-  .then(() => deployer.deploy(KFProxy))
-  .then(async(proxy) => {
-    console.log('\nAdding contract names to proxy...');
-    await proxy.addContract('TimeContract', DateTime.address)
-    await proxy.addContract('GenericDB', GenericDB.address)
-    await proxy.addContract('CryptoKitties', CryptoKitties.address);
-    await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
+  .then(async() => {
 
-    (network === 'rinkeby')
-      ? await proxy.addContract('KittieFightToken', KTY_ADDRESS)
-      : await proxy.addContract('KittieFightToken', KittieFightToken.address)
-      
-    await proxy.addContract('ProfileDB', ProfileDB.address);
-    await proxy.addContract('RoleDB', RoleDB.address);
-    await proxy.addContract('Register', Register.address)
-    await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
-    await proxy.addContract('EndowmentFund', EndowmentFund.address)
-    await proxy.addContract('EndowmentDB', EndowmentDB.address)
-    await proxy.addContract('Forfeiter', Forfeiter.address)
-    await proxy.addContract('Scheduler', Scheduler.address)
-    await proxy.addContract('Betting', Betting.address)
-    await proxy.addContract('HitsResolve', HitsResolve.address)
-    await proxy.addContract('RarityCalculator', RarityCalculator.address)
-    await proxy.addContract('GMSetterDB', GMSetterDB.address)
-    await proxy.addContract('GMGetterDB', GMGetterDB.address)
-    await proxy.addContract('GameManager', GameManager.address)
-    await proxy.addContract('GameStore', GameStore.address)
-    await proxy.addContract('GameCreation', GameCreation.address)
-    await proxy.addContract('CronJob', CronJob.address)
-    await proxy.addContract('FreezeInfo', FreezeInfo.address);
-    await proxy.addContract('CronJobTarget', CronJobTarget.address);
-    await proxy.addContract('KittieHell', KittieHELL.address)
-    await proxy.addContract('KittieHellDB', KittieHellDB.address)
+    //Contracts not deployed
+    proxy = await KFProxy.deployed()
+    rarityCalculator = await RarityCalculator.deployed()
+
+    console.log('\nAdding contract names to proxy...');
+    await proxy.updateContract('TimeContract', DateTime.address)
+    await proxy.updateContract('GenericDB', GenericDB.address)
+    await proxy.updateContract('CryptoKitties', CryptoKitties.address);
+    await proxy.updateContract('SuperDAOToken', SuperDaoToken.address);      
+    await proxy.updateContract('ProfileDB', ProfileDB.address);
+    await proxy.updateContract('RoleDB', RoleDB.address);
+    await proxy.updateContract('Register', Register.address)
+    await proxy.updateContract('GameVarAndFee', GameVarAndFee.address)
+    await proxy.updateContract('EndowmentFund', EndowmentFund.address)
+    await proxy.updateContract('EndowmentDB', EndowmentDB.address)
+    await proxy.updateContract('Forfeiter', Forfeiter.address)
+    await proxy.updateContract('Scheduler', Scheduler.address)
+    await proxy.updateContract('Betting', Betting.address)
+    await proxy.updateContract('HitsResolve', HitsResolve.address)
+    await proxy.updateContract('GMSetterDB', GMSetterDB.address)
+    await proxy.updateContract('GMGetterDB', GMGetterDB.address)
+    await proxy.updateContract('GameManager', GameManager.address)
+    await proxy.updateContract('GameStore', GameStore.address)
+    await proxy.updateContract('GameCreation', GameCreation.address)
+    await proxy.updateContract('CronJob', CronJob.address)
+    await proxy.updateContract('FreezeInfo', FreezeInfo.address);
+    await proxy.updateContract('CronJobTarget', CronJobTarget.address);
+    await proxy.updateContract('KittieHell', KittieHELL.address)
+    await proxy.updateContract('KittieHellDB', KittieHellDB.address)
   })
   .then(async() => {
     console.log('\nGetting contract instances...');
@@ -213,7 +209,6 @@ module.exports = (deployer, network, accounts) => {
     scheduler = await Scheduler.deployed()
     betting = await Betting.deployed()
     hitsResolve = await HitsResolve.deployed()
-    rarityCalculator = await RarityCalculator.deployed()
     endowmentFund = await EndowmentFund.deployed()
     kittieHELL = await KittieHELL.deployed()
 
@@ -234,7 +229,6 @@ module.exports = (deployer, network, accounts) => {
     await scheduler.setProxy(proxy.address)
     await betting.setProxy(proxy.address)
     await hitsResolve.setProxy(proxy.address)
-    await rarityCalculator.setProxy(proxy.address)
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
     await gameStore.setProxy(proxy.address)
@@ -290,61 +284,6 @@ module.exports = (deployer, network, accounts) => {
     await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
       from: accounts[0]
     })
-    
-    console.log('\nRarity Calculator Setup...');
-    await rarityCalculator.fillKaiValue()
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("body", Object.keys(kaiToCattributesData[0].body.kai)[i], Object.values(kaiToCattributesData[0].body.kai)[i])
-    }
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("pattern", Object.keys(kaiToCattributesData[1].pattern.kai)[i], Object.values(kaiToCattributesData[1].pattern.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("coloreyes", Object.keys(kaiToCattributesData[2].coloreyes.kai)[i], Object.values(kaiToCattributesData[2].coloreyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("eyes", Object.keys(kaiToCattributesData[3].eyes.kai)[i], Object.values(kaiToCattributesData[3].eyes.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color1", Object.keys(kaiToCattributesData[4].color1.kai)[i], Object.values(kaiToCattributesData[4].color1.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color2", Object.keys(kaiToCattributesData[5].color2.kai)[i], Object.values(kaiToCattributesData[5].color2.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("color3", Object.keys(kaiToCattributesData[6].color3.kai)[i], Object.values(kaiToCattributesData[6].color3.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("wild", Object.keys(kaiToCattributesData[7].wild.kai)[i], Object.values(kaiToCattributesData[7].wild.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("mouth", Object.keys(kaiToCattributesData[8].mouth.kai)[i], Object.values(kaiToCattributesData[8].mouth.kai)[i])
-    }
-
-    for (let i=0; i<32; i++) {
-        await rarityCalculator.updateCattributes("environment", Object.keys(kaiToCattributesData[9].environment.kai)[i], Object.values(kaiToCattributesData[9].environment.kai)[i])
-    }
-
-    for (let j=0; j<cattributesData.length; j++) {
-        await rarityCalculator.updateCattributesScores(cattributesData[j].description, Number(cattributesData[j].total))
-    }
-
-    // for (let m=0; m<FancyKitties.length; m++) {
-    //   for (let n=1; n<FancyKitties[m].length; n++) {
-    //     await rarityCalculator.updateFancyKittiesList(FancyKitties[m][n], FancyKitties[m][0])
-    //   }
-    // } 
-
-    await rarityCalculator.updateTotalKitties(1600000)
-    await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
   })
 };
