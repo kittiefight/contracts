@@ -6,6 +6,7 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "authority",
           "type": "address"
         }
@@ -18,6 +19,7 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "owner",
           "type": "address"
         }
@@ -26,9 +28,9 @@
       "type": "event"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.10+commit.5a6ea5b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"authority\",\"type\":\"address\"}],\"name\":\"LogSetAuthority\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"LogSetOwner\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/authority/DSAuth.sol\":\"DSAuthEvents\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/authority/DSAuth.sol\":{\"keccak256\":\"0xea1d7e0d958384fe7fef111a9705a51c86acd6408c3e854bdbe4140a23adf8bd\",\"urls\":[\"bzzr://8a1eada3825355aea021016239b532f6b4f4cf22a7c3a9e8a136848ab179abf9\",\"dweb:/ipfs/QmVQTLfZ1uxBHsvSb6QcbespEW6Nsb2c9x9UEabNvfGdYi\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72305820188f27775d07dd8f52fe2da8b92566dab7e2ce4ab141ac8370551bac71e1433d64736f6c634300050a0032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72305820188f27775d07dd8f52fe2da8b92566dab7e2ce4ab141ac8370551bac71e1433d64736f6c634300050a0032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"authority\",\"type\":\"address\"}],\"name\":\"LogSetAuthority\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"LogSetOwner\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/authority/DSAuth.sol\":\"DSAuthEvents\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/authority/DSAuth.sol\":{\"keccak256\":\"0xea1d7e0d958384fe7fef111a9705a51c86acd6408c3e854bdbe4140a23adf8bd\",\"urls\":[\"bzz-raw://d1da7522b3253404035389a4f2a7c86da5fa93f4dfde4d6c7dd221391ad818f8\",\"dweb:/ipfs/QmVQTLfZ1uxBHsvSb6QcbespEW6Nsb2c9x9UEabNvfGdYi\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723158206d60860d4d227cdb4ce1af5452974f2e474035491972468409cca4a8bc5650bf64736f6c634300050b0032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a723158206d60860d4d227cdb4ce1af5452974f2e474035491972468409cca4a8bc5650bf64736f6c634300050b0032",
   "sourceMap": "797:131:7:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;797:131:7;;;;;;;",
   "deployedSourceMap": "797:131:7:-;;;;;",
   "source": "// This program is free software: you can redistribute it and/or modify\n// it under the terms of the GNU General Public License as published by\n// the Free Software Foundation, either version 3 of the License, or\n// (at your option) any later version.\n\n// This program is distributed in the hope that it will be useful,\n// but WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n// GNU General Public License for more details.\n\n// You should have received a copy of the GNU General Public License\n// along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\npragma solidity >=0.4.23;\n\ncontract DSAuthority {\n    function canCall(\n        address src, address dst, bytes4 sig\n    ) public view returns (bool);\n}\n\ncontract DSAuthEvents {\n    event LogSetAuthority (address indexed authority);\n    event LogSetOwner     (address indexed owner);\n}\n\ncontract DSAuth is DSAuthEvents {\n    DSAuthority  public  authority;\n    address      public  owner;\n\n    constructor() public {\n        owner = msg.sender;\n        emit LogSetOwner(msg.sender);\n    }\n\n    function setOwner(address owner_)\n        public\n        auth\n    {\n        owner = owner_;\n        emit LogSetOwner(owner);\n    }\n\n    function setAuthority(DSAuthority authority_)\n        public\n        auth\n    {\n        authority = authority_;\n        emit LogSetAuthority(address(authority));\n    }\n\n    modifier auth {\n        require(isAuthorized(msg.sender, msg.sig), \"ds-auth-unauthorized\");\n        _;\n    }\n\n    function isAuthorized(address src, bytes4 sig) internal view returns (bool) {\n        if (src == address(this)) {\n            return true;\n        } else if (src == owner) {\n            return true;\n        } else if (authority == DSAuthority(0)) {\n            return false;\n        } else {\n            return authority.canCall(src, address(this), sig);\n        }\n    }\n}\n",
@@ -442,7 +444,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 21305,
+                        "referencedDeclaration": 21371,
                         "src": "1076:3:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -485,7 +487,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21305,
+                          "referencedDeclaration": 21371,
                           "src": "1113:3:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -992,7 +994,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 21305,
+                              "referencedDeclaration": 21371,
                               "src": "1491:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -1021,7 +1023,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 21305,
+                              "referencedDeclaration": 21371,
                               "src": "1503:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -1113,10 +1115,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        21308,
-                        21309
+                        21374,
+                        21375
                       ],
-                      "referencedDeclaration": 21309,
+                      "referencedDeclaration": 21375,
                       "src": "1470:7:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1203,7 +1205,7 @@
                           "name": "this",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21375,
+                          "referencedDeclaration": 21441,
                           "src": "1665:4:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_contract$_DSAuth_$1424",
@@ -1415,7 +1417,7 @@
                                       "name": "this",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 21375,
+                                      "referencedDeclaration": 21441,
                                       "src": "1902:4:7",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_contract$_DSAuth_$1424",
@@ -2163,7 +2165,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 21305,
+                        "referencedDeclaration": 21371,
                         "src": "1076:3:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -2206,7 +2208,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21305,
+                          "referencedDeclaration": 21371,
                           "src": "1113:3:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -2713,7 +2715,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 21305,
+                              "referencedDeclaration": 21371,
                               "src": "1491:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -2742,7 +2744,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 21305,
+                              "referencedDeclaration": 21371,
                               "src": "1503:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -2834,10 +2836,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        21308,
-                        21309
+                        21374,
+                        21375
                       ],
-                      "referencedDeclaration": 21309,
+                      "referencedDeclaration": 21375,
                       "src": "1470:7:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2924,7 +2926,7 @@
                           "name": "this",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21375,
+                          "referencedDeclaration": 21441,
                           "src": "1665:4:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_contract$_DSAuth_$1424",
@@ -3136,7 +3138,7 @@
                                       "name": "this",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 21375,
+                                      "referencedDeclaration": 21441,
                                       "src": "1902:4:7",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_contract$_DSAuth_$1424",
@@ -3477,11 +3479,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.10+commit.5a6ea5b1.Emscripten.clang"
+    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-11T04:27:28.496Z",
+  "updatedAt": "2019-08-14T21:57:30.658Z",
   "devdoc": {
     "methods": {}
   },

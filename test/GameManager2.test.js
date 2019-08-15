@@ -90,11 +90,11 @@ const TOKENS_FOR_USERS = new BigNumber(
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("50000", "ether") //50.000 KTY
+  web3.utils.toWei("10000", "ether") //50.000 KTY
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("1000", "ether") //1.000 ETH
+  web3.utils.toWei("650", "ether") //1.000 ETH
 );
 // ============================================== //
 
@@ -270,7 +270,6 @@ contract('GameManager', (accounts) => {
       [kitties[4]]), { from: accounts[4] }).should.be.fulfilled;
   })
 
-
   //Change here to select what game to play
   //Currently playing first game created
   it('correctly creates 2 games', async () => {
@@ -279,8 +278,6 @@ contract('GameManager', (accounts) => {
       toBlock: "latest"
     });
     // assert.equal(newGameEvents.length, 2);
-
-
 
     newGameEvents.map(async (e) => {
       let gameInfo = await getterDB.getGameTimes(e.returnValues.gameId);
@@ -472,8 +469,8 @@ contract('GameManager', (accounts) => {
 
   it('escrow contract should have KTY funds from fees', async () => {
     let balanceKTY = await escrow.getBalanceKTY()
-    // 50.000 + 4*1000 + 14*100
-    let expected = new BigNumber(web3.utils.toWei("55400", "ether"));
+    // 10.000 + 4*1250 + 14*37.5
+    let expected = new BigNumber(web3.utils.toWei("15525", "ether"));
     balanceKTY.toString().should.be.equal(expected.toString())
 
     await timeout(1);
@@ -858,9 +855,9 @@ contract('GameManager', (accounts) => {
     let winningsKTY = Number(web3.utils.fromWei(winnerShare.winningsKTY.toString()));
 
     newBalance.should.be.equal(balance + winningsKTY);
-    //console.log('      Address: ', winners.winner, ' claimed. KTY=', winningsKTY)
 
-    
+    await timeout(1);
+
     // TOP BETTOR CLAIMING
     share = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
     console.log('\nTop Bettor withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
@@ -869,6 +866,7 @@ contract('GameManager', (accounts) => {
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
     console.log('Withdrew funds? ', withdrawalState)
 
+    await timeout(1);
 
     // SECOND TOP BETTOR CLAIMING
     share = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
@@ -878,12 +876,24 @@ contract('GameManager', (accounts) => {
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
     console.log('Withdrew funds? ', withdrawalState)
 
+    await timeout(1);
+
     // OTHER BETTOR CLAIMING
     share = await endowmentFund.getWinnerShare(gameId, supporters[1]);
-    console.log('\nOther Bettor withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
+    console.log('\nOther Bettor 1 withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: supporters[1] }).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[1]);
+    console.log('Withdrew funds? ', withdrawalState)
+
+    await timeout(1);
+
+    // OTHER BETTOR 2 CLAIMING
+    share = await endowmentFund.getWinnerShare(gameId, supporters[2]);
+    console.log('\nOther Bettor 2 withdrawing ',String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
+    await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
+      [gameId]), { from: supporters[2] }).should.be.fulfilled;
+    withdrawalState = await endowmentFund.getWithdrawalState(gameId, supporters[2]);
     console.log('Withdrew funds? ', withdrawalState)
 
     claims = await endowmentFund.getPastEvents('WinnerClaimed', {
@@ -892,7 +902,7 @@ contract('GameManager', (accounts) => {
       toBlock: "latest"
     });
 
-    claims.length.should.be.equal(4);
+    claims.length.should.be.equal(5);
     
   })
 

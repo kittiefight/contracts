@@ -1,4 +1,7 @@
 const Escrow = artifacts.require('Escrow')
+
+// truffle exec scripts/checkEscrow.js --network rinkeby
+
 module.exports = async (callback) => {
 	try{
 		escrow = await Escrow.deployed();

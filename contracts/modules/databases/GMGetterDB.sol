@@ -91,19 +91,6 @@ contract GMGetterDB is Proxied {
   
   }
 
-  // function getOpponent(uint gameId, address player) public view returns(address){
-  //   (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
-  //   if(playerBlack == player) return playerRed;
-  //   return playerBlack;
-  // }
-
-  // function getCorner(uint gameId, address player) public view returns(uint){
-  //   (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
-  //   if(playerBlack == player) return 0;
-  //   if(playerRed == player) return 1;
-  //   return 2;
-  // }
-
  /**
    * @dev check game state, 0-4
    */
@@ -216,15 +203,8 @@ contract GMGetterDB is Proxied {
     returns (address[2] memory players, uint[2] memory kittieIds, uint state,
       uint[2] memory supporters, bool[2] memory pressedStart, uint timeCreated, address winner)
   {
-    // players[0] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerBlack")));
-    // players[1] = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "playerRed")));
-    // kittieIds[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "kitty")));
-    // kittieIds[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "kitty")));
     (players[0], players[1], kittieIds[0], kittieIds[1]) = getGamePlayers(gameId);
-    // state = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
     state = getGameState(gameId);
-    // supporters[0] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[0], "supporters")));
-    // supporters[1] = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, players[1], "supporters")));
     supporters[0] = getSupporters(gameId, players[0]);
     supporters[1] = getSupporters(gameId, players[1]);
     pressedStart[0] = gameStore.didHitStart(gameId, players[0]);

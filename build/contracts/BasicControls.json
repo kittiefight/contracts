@@ -1,9 +1,9 @@
 {
   "contractName": "BasicControls",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.10+commit.5a6ea5b1\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0x703d0a6bb0e105ef824314fb8c80c281461c22c71ac6730151a5f3c090392dfd\",\"urls\":[\"bzzr://34724de720490a3a559fa8b2de2dac7baa828c6e4ca6c1dcf9f5349d7a538f1b\",\"dweb:/ipfs/QmdgdMu1Xhq3hrpTd74hGh22xJeGUxMnpM35VJJbZzXmSg\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723058208a8b4611d59abbbde0f2166bbeed315e2bb93efc4e20cea39fc6c596c7c51e7c64736f6c634300050a0032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a723058208a8b4611d59abbbde0f2166bbeed315e2bb93efc4e20cea39fc6c596c7c51e7c64736f6c634300050a0032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0x703d0a6bb0e105ef824314fb8c80c281461c22c71ac6730151a5f3c090392dfd\",\"urls\":[\"bzz-raw://f550feed155ec6987ea3b3c1bf5d0667a0507063c79c419340c22b16826bc151\",\"dweb:/ipfs/QmdgdMu1Xhq3hrpTd74hGh22xJeGUxMnpM35VJJbZzXmSg\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a7231582059fe835f5b1b3aa32378389a131f329ca158b6143cdefed171f9f94c8d0c38cb64736f6c634300050b0032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a7231582059fe835f5b1b3aa32378389a131f329ca158b6143cdefed171f9f94c8d0c38cb64736f6c634300050b0032",
   "sourceMap": "138:509:28:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;138:509:28;;;;;;;",
   "deployedSourceMap": "138:509:28:-;;;;;",
   "source": "pragma solidity ^0.5.5;\n\n\n/**\n * @title BasicControls\n * @dev this contract implement basic controls needed in a variety of contracts\n */\ncontract BasicControls {\n\n    /**\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n     * @param _addr the given address to check\n     * @return true or false if the address is a contract or not\n     */\n    function isContract(address _addr) internal view returns (bool) {\n        // retrieve the size of the code on target address, this needs assembly\n        uint length;\n        assembly { length := extcodesize(_addr) }\n        return length > 0;\n    }\n}\n",
@@ -506,11 +506,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.10+commit.5a6ea5b1.Emscripten.clang"
+    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-08-11T04:27:28.556Z",
+  "updatedAt": "2019-08-14T21:57:30.721Z",
   "devdoc": {
     "details": "this contract implement basic controls needed in a variety of contracts",
     "methods": {},

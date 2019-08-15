@@ -90,11 +90,11 @@ const TOKENS_FOR_USERS = new BigNumber(
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("50000", "ether") //50.000 KTY
+  web3.utils.toWei("10000", "ether") //50.000 KTY
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
-  web3.utils.toWei("1000", "ether") //1.000 ETH
+  web3.utils.toWei("650", "ether") //1.000 ETH
 );
 // ============================================== //
 

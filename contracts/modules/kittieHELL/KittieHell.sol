@@ -208,6 +208,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
         releaseKitty(_kittyID);
     }
 
+    function adminRelease(uint256 _kittyID)
+        public
+        onlyProxy
+        onlySuperAdmin
+    {
+        releaseKitty(_kittyID);
+    }
+
     function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay, uint _gameId)
         public
         returns(bool)
