@@ -110,15 +110,18 @@ contract GameManager is Proxied, Guard {
         
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
-        (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
+        (uint startTime ,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
         if (gameState == 0) forfeiter.checkGameStatus(gameId, gameState);
         //Check again to see if forfeited
         gameState = gmGetterDB.getGameState(gameId);
 
+        if ((gameState == 1)){
+            forfeiter.checkGameStatus(gameId, 1);
+        }
         //Update state if reached prestart time
         //Include check game state because it can be called from the bet function
-        if (gameState == uint(eGameState.WAITING) && preStartTime <= now){
+        if ((gameState == uint(eGameState.WAITING)) && (preStartTime <= now)){
             gameCreation.deleteCronjob(gameId);
             gmSetterDB.updateGameState(gameId, uint(eGameState.PRE_GAME));
             emit GameStateChanged(gameId, eGameState.WAITING, eGameState.PRE_GAME);
@@ -139,12 +142,18 @@ contract GameManager is Proxied, Guard {
         external
         onlyProxy onlyPlayer
         onlyGamePlayer(gameId, getOriginalSender())
+        returns(bool)
     {
         uint gameState = gmGetterDB.getGameState(gameId);
         forfeiter.checkGameStatus(gameId, gameState);
 
-        require(gameState == uint(eGameState.PRE_GAME));
+        gameState = gmGetterDB.getGameState(gameId);
 
+        //require(gameState == uint(eGameState.PRE_GAME), 'No pre_game');
+        //*FIXED*, anything happened before require is failing.
+        if(gameState != uint(eGameState.PRE_GAME)){
+            return false;
+        }
         address player = getOriginalSender();
         uint kittieId = gmGetterDB.getKittieInGame(gameId, player);
         
@@ -154,11 +163,14 @@ contract GameManager is Proxied, Guard {
         // uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
         betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
-        require(kittieHELL.acquireKitty(kittieId, player));
+        //If we require, if all this call fails, kittieHell will have Kittie and player will not play
+        //require(kittieHELL.acquireKitty(kittieId, player));
+        kittieHELL.acquireKitty(kittieId, player);
 
         address opponentPlayer = gameStore.getOpponent(gameId, player);
 
         emit PressStart(gameId, player);
+
 
         //Both Players Hit start
         if (gameStore.didHitStart(gameId, opponentPlayer)){
@@ -172,6 +184,7 @@ contract GameManager is Proxied, Guard {
             endowmentFund.updateHoneyPotState(gameId, 3);
             emit GameStateChanged(gameId, eGameState.PRE_GAME, eGameState.MAIN_GAME);
         }
+        return true;
     }
 
     /**
@@ -205,13 +218,22 @@ contract GameManager is Proxied, Guard {
 
         uint gameState = gmGetterDB.getGameState(gameId);
         
+        address supportedPlayer;
+
+        bool payedFee;
         require(gameState == uint(eGameState.MAIN_GAME));
         
         address sender = getOriginalSender();
-        (, address supportedPlayer, bool payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
 
-        if(sender != supportedPlayer) require(payedFee); //Needs to call participate first if false
-        
+        //*FIXED*
+        if(!(gmGetterDB.isPlayer(gameId, sender))){
+            (, supportedPlayer, payedFee,) = gmGetterDB.getSupporterInfo(gameId, sender);
+            require(payedFee); //Needs to call participate first if false
+        }
+        else{
+            supportedPlayer = sender;
+        }
+
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value)(gameId));
         require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
@@ -224,9 +246,11 @@ contract GameManager is Proxied, Guard {
         //Send bet to betting algo, to decide attacks
         betting.bet(gameId, sender, msg.value, supportedPlayer, opponentPlayer, randomNum);
 
-        if (sender != supportedPlayer){
-            //Update bettor's total bet
+        if(msg.value > 0){
             gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
+        }
+
+        if (sender != supportedPlayer){
             // update game variables
             gameStore.updateTopbettors(gameId, sender, supportedPlayer);
         }
@@ -259,6 +283,8 @@ contract GameManager is Proxied, Guard {
         external
         onlyContract(CONTRACT_NAME_GAMECREATION)
     {
+        //CheckPerformance
+        checkPerformance(gameId);
         gameEnd(gameId);
     }
 
@@ -308,10 +334,14 @@ contract GameManager is Proxied, Guard {
         require(gameState == uint(eGameState.WAITING) ||
                 gameState == uint(eGameState.PRE_GAME));
 
+        //Check what Kitties are doing
+        //gameStore.releaseKittiesGameCancelled(gameId, gameState);
+
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
         //Set to forfeited
         endowmentFund.updateHoneyPotState(gameId, 4);
+
         gameCreation.removeKitties(gameId);
 
         gameCreation.deleteCronjob(gameId);

@@ -5,15 +5,12 @@ const Escrow = artifacts.require('Escrow')
 const KFProxy = artifacts.require('KFProxy')
 const DateTime = artifacts.require('DateTime')
 const GameManager = artifacts.require('GameManager')
-const Scheduler = artifacts.require('Scheduler')
 
 function formatDate(timestamp) {
   let date = new Date(null);
   date.setSeconds(timestamp);
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
-
-// truffle exec scripts/check.js --network rinkeby
 
 module.exports = async (callback) => {
 	try{
@@ -23,7 +20,6 @@ module.exports = async (callback) => {
 		escrow = await Escrow.deployed();
 		proxy = await KFProxy.deployed()
 		dateTime = await DateTime.deployed()
-		scheduler = await Scheduler.deployed()
 
 		accounts = await web3.eth.getAccounts();
 
@@ -35,9 +31,8 @@ module.exports = async (callback) => {
 		let isAdmin = await roleDB.hasRole("admin", accounts[0])
 		let addressOfGameManager = await proxy.getContract("GameManager");
 		let blockchainTime = await dateTime.getBlockTimeStamp();
-		let listedKitties = await scheduler.getListedKitties()
 
-		console.log(' Blockchain Time:', blockchainTime.toString(), formatDate(blockchainTime));
+		console.log(' Blockchain Time:', formatDate(blockchainTime));
 		console.log(' Game Manager Address in json file:', gameManager.address);
 		console.log(' Game Manager Address stored in Proxy:', addressOfGameManager);
 		console.log(' Required Number of Matches:', numMatches.toString());
@@ -46,7 +41,6 @@ module.exports = async (callback) => {
 		console.log(' Endowment/Escrow balance :', String(web3.utils.fromWei(balanceKTY)), "KTY");
 		console.log('', accounts[0], isSuperAdmin ? "IS":"IS NOT", "super admin");
 		console.log('', accounts[0], isAdmin ? "IS":"IS NOT", "admin");
-		console.log(' Kitties Listed and waiting to be matched:', listedKitties);
 
 		callback()
 	}

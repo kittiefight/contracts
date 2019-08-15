@@ -26,7 +26,7 @@ import "./ProxyBase.sol";
 contract CronJobProxy is ProxyBase {
     event CronJobExecutionFailed(); //This is used to signal about something really unexpected happened
 
-    uint256 public maxJobsForOneRun = 2;
+    uint256 public maxJobsForOneRun = 8;
 
     function setMaxJobsForOneRun(uint256 _maxJobsForOneRun) onlyOwner public {
         require(_maxJobsForOneRun > 0);

@@ -49,6 +49,7 @@ contract GameCreation is Proxied, Guard {
     IKittyCore public cryptoKitties;
     GameStore public gameStore;
     CronJob public cronJob;
+    KittieHell public kittieHELL;
 
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
@@ -76,6 +77,7 @@ contract GameCreation is Proxied, Guard {
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
     /**
@@ -118,6 +120,9 @@ contract GameCreation is Proxied, Guard {
         require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
         require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
 
+        //*FIXED* not one player kittieHell
+        require(playerRed != address(kittieHELL) && playerBlack != address(kittieHELL), 'KittieHell owns Kitties');
+        //Here
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
@@ -167,6 +172,9 @@ contract GameCreation is Proxied, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+        //return Kitties to owner if acquired from kittieHell
+
+
         //Set gameId to 0 to both kitties (not playing any game)
         gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, 0);   
     }
@@ -190,7 +198,7 @@ contract GameCreation is Proxied, Guard {
             //So if state did not change we must cancelGame
             //If they both press start this job is cancelled (In start function of GameManager)
             (uint startTime,,) = gmGetterDB.getGameTimes(gameId);
-            uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, startTime, abi.encodeWithSignature("callForfeiterCron(uint256, string memory)", gameId, "Did not hit start"));
+            uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, startTime, abi.encodeWithSignature("callForfeiterCron(uint)", gameId));
             emit Scheduled(scheduledJob, startTime, gameId, "Change state to 2");
             cronJobsForGames[gameId] = scheduledJob;
         }
@@ -216,10 +224,11 @@ contract GameCreation is Proxied, Guard {
         if (state == 0) gmSetterDB.updateGameStateCron(gameId);
     }
 
-    function callForfeiterCron(uint gameId, string calldata reason)
+    function callForfeiterCron(uint gameId)
         external
         onlyContract(CONTRACT_NAME_CRONJOB)
     {
+        string memory reason = "Did not hit start";
         Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER)).forfeitCron(gameId, reason);
     }
 

@@ -81,6 +81,7 @@ contract Distribution is Proxied {
         winningsETH = (totalEthFunds.mul(rates[winningCategory])).div(100);
         winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
 
+        //!!! SUB bet amount player !!!
         //Other bettors winnings
         if (winningCategory == 3){
             (uint256 betAmountTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);

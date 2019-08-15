@@ -76,6 +76,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return true;
     }
 
+    //Called from nowhere
     function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
         public
         onlyContract(CONTRACT_NAME_GAMECREATION)
@@ -204,6 +205,13 @@ contract KittieHell is BasicControls, Proxied, Guard {
     function releaseKittyGameManager(uint256 _kittyID)
         public
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    returns (bool) {
+        releaseKitty(_kittyID);
+    }
+
+    function releaseKittyGameStore(uint256 _kittyID)
+        public
+        onlyContract(CONTRACT_NAME_GAMESTORE)
     returns (bool) {
         releaseKitty(_kittyID);
     }

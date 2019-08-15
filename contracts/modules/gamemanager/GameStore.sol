@@ -5,6 +5,7 @@ import "../../GameVarAndFee.sol";
 import "../databases/GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
 import "../algorithm/HitsResolveAlgo.sol";
+import '../kittieHELL/KittieHell.sol';
 
 contract GameStore is Proxied {
 
@@ -13,6 +14,7 @@ contract GameStore is Proxied {
     GameVarAndFee public gameVarAndFee;
     GMGetterDB public gmGetterDB;
     HitsResolve public hitsResolve;
+    KittieHell public kittieHELL;
 
     struct Game {
         uint randomNum; //when pressing start
@@ -40,6 +42,7 @@ contract GameStore is Proxied {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
+        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
     function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION){
@@ -130,18 +133,18 @@ contract GameStore is Proxied {
         (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
         
         if(topBettor != _account){
-        if (bettorTotal > topBettorEth){
-            //If topBettor is already the account, dont update
-            gameByPlayer[_gameId][_supportedPlayer].topBettor = _account;
-            gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = topBettor;
-        }
-        else {
-            address secondTopBettor = getSecondTopBettor(_gameId, _supportedPlayer);
-            (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
-            if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
-                gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = _account;
+            if (bettorTotal > topBettorEth){
+                //If topBettor is already the account, dont update
+                gameByPlayer[_gameId][_supportedPlayer].topBettor = _account;
+                gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = topBettor;
             }
-        }
+            else {
+                address secondTopBettor = getSecondTopBettor(_gameId, _supportedPlayer);
+                (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
+                if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
+                    gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = _account;
+                }
+            }
         }
     }
 
@@ -209,5 +212,22 @@ contract GameStore is Proxied {
         }
     }
 
-    
+    // function releaseKittiesGameCancelled(uint gameId, uint gameState)
+    // external
+    // onlyContract(CONTRACT_NAME_GAMEMANAGER){
+        
+    //     (address playerBlack, address playerRed, uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+
+    //     //If game state is PRE_GAME, one kittie maybe acquired from kittieHELL, let's fix
+    //     if(gameState == 1){
+    //         (,,bool playing,,) = kittieHELL.getKittyStatus(kittyBlack);
+    //         if(playing){
+    //             kittieHELL.releaseKittyGameStore(kittyBlack);
+    //         }
+    //         (,,playing,,) = kittieHELL.getKittyStatus(kittyRed);
+    //         if(playing){
+    //             kittieHELL.releaseKittyGameStore(kittyRed);
+    //         }
+    //     }
+    // }
 }

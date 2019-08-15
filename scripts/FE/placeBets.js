@@ -52,6 +52,43 @@ module.exports = async (callback) => {
     let supportedPlayer;
     let randomSupporter;
 
+    betAmount = 10;
+    await proxy.execute('GameManager', setMessage(gameManager, 'bet',
+        [gameId, randomValue(98)]), { from: playerBlack, value: web3.utils.toWei(String(betAmount)) });
+
+    let betEvents = await betting.getPastEvents('BetPlaced', {
+        filter: { gameId },
+        fromBlock: 0,
+        toBlock: "latest"
+      })
+
+      let betDetails = betEvents[betEvents.length - 1].returnValues;
+      console.log(`\n==== NEW BET FOR ${player} ====`);
+      console.log(' Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
+      console.log(' Bettor:', betDetails._bettor);
+      console.log(' Attack Hash:', betDetails.attackHash);
+      console.log(' Blocked?:', betDetails.isBlocked);
+      console.log(` Defense ${player}:`, betDetails.defenseLevelSupportedPlayer);
+      console.log(' Defense Opponent:', betDetails.defenseLevelOpponent);
+
+    await proxy.execute('GameManager', setMessage(gameManager, 'bet',
+        [gameId, randomValue(98)]), { from: playerRed, value: web3.utils.toWei(String(betAmount)) });
+
+    betEvents = await betting.getPastEvents('BetPlaced', {
+        filter: { gameId },
+        fromBlock: 0,
+        toBlock: "latest"
+      })
+
+      betDetails = betEvents[betEvents.length - 1].returnValues;
+      console.log(`\n==== NEW BET FOR ${player} ====`);
+      console.log(' Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
+      console.log(' Bettor:', betDetails._bettor);
+      console.log(' Attack Hash:', betDetails.attackHash);
+      console.log(' Blocked?:', betDetails.isBlocked);
+      console.log(` Defense ${player}:`, betDetails.defenseLevelSupportedPlayer);
+      console.log(' Defense Opponent:', betDetails.defenseLevelOpponent);
+
     for(let i=0; i<noOfBets; i++){
       let randomPlayer = randomValue(2);
 
@@ -93,13 +130,13 @@ module.exports = async (callback) => {
         betsRed.push(betAmount);
       }
 
-      let betEvents = await betting.getPastEvents('BetPlaced', {
+      betEvents = await betting.getPastEvents('BetPlaced', {
         filter: { gameId },
         fromBlock: 0,
         toBlock: "latest"
       })
 
-      let betDetails = betEvents[betEvents.length - 1].returnValues;
+      betDetails = betEvents[betEvents.length - 1].returnValues;
       console.log(`\n==== NEW BET FOR ${player} ====`);
       console.log(' Amount:', web3.utils.fromWei(betDetails._lastBetAmount), 'ETH');
       console.log(' Bettor:', betDetails._bettor);

@@ -149,7 +149,7 @@ contract CronJob is CronJobDB {
         (uint256 time, /*uint16 nonce*/) = parseJobID(nextJob);
         if(time > now) return (false, 0);
         /*(bool success, bytes memory result) = */ _executeJob(nextJob);
-        removeJob(nextJob);
+        //removeJob(nextJob);
         return (true, nextJob);
     }
 
