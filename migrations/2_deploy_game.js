@@ -121,7 +121,7 @@ module.exports = (deployer, network, accounts) => {
   .then(() => deployer.deploy(FreezeInfo))
   .then(() => deployer.deploy(CronJobTarget))
   .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-  .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY)) //Ganache
+  .then(() => (network === 'rinkeby')? "don't deploy" : deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY)) //Ganache
   .then(() => deployer.deploy(CryptoKitties))
   .then(() => deployer.deploy(GameManager))
   .then(() => deployer.deploy(GameStore))
@@ -146,8 +146,11 @@ module.exports = (deployer, network, accounts) => {
     await proxy.addContract('GenericDB', GenericDB.address)
     await proxy.addContract('CryptoKitties', CryptoKitties.address);
     await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-    await proxy.addContract('KittieFightToken', KittieFightToken.address); //Ganache
-    // await proxy.addContract('KittieFightToken', KTY_ADDRESS); // Rinkeby
+
+    (network === 'rinkeby')
+      ? await proxy.addContract('KittieFightToken', KTY_ADDRESS)
+      : await proxy.addContract('KittieFightToken', KittieFightToken.address)
+      
     await proxy.addContract('ProfileDB', ProfileDB.address);
     await proxy.addContract('RoleDB', RoleDB.address);
     await proxy.addContract('Register', Register.address)
@@ -192,8 +195,11 @@ module.exports = (deployer, network, accounts) => {
 
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
-    kittieFightToken = await KittieFightToken.deployed(); //Ganache
-    // kittieFightToken = await KittieFightToken.at(KTY_ADDRESS); //Rinkeby
+    
+    (network === 'rinkeby')
+      ? kittieFightToken = await KittieFightToken.at(KTY_ADDRESS) // Rinkeby
+      : kittieFightToken = await KittieFightToken.deployed(); //Ganache
+    
     cryptoKitties = await CryptoKitties.deployed();
 
     // MODULES

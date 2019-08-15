@@ -372,7 +372,7 @@ contract('GameManager', (accounts) => {
 
   })
 
-  it('player cant start a game before reaching PRE_GAME', async () => {
+  it.skip('player cant start a game before reaching PRE_GAME', async () => {
     const gene1 = "512955438081049600613224346938352058409509756310147795204209859701881294";
 
     let { gameId, playerRed } = gameDetails;
