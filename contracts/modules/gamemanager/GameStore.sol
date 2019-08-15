@@ -130,18 +130,18 @@ contract GameStore is Proxied {
         (uint256 topBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, topBettor);
         
         if(topBettor != _account){
-        if (bettorTotal > topBettorEth){
-            //If topBettor is already the account, dont update
-            gameByPlayer[_gameId][_supportedPlayer].topBettor = _account;
-            gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = topBettor;
-        }
-        else {
-            address secondTopBettor = getSecondTopBettor(_gameId, _supportedPlayer);
-            (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
-            if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
-                gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = _account;
+            if (bettorTotal > topBettorEth){
+                //If topBettor is already the account, dont update
+                gameByPlayer[_gameId][_supportedPlayer].topBettor = _account;
+                gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = topBettor;
             }
-        }
+            else {
+                address secondTopBettor = getSecondTopBettor(_gameId, _supportedPlayer);
+                (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
+                if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
+                    gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = _account;
+                }
+            }
         }
     }
 

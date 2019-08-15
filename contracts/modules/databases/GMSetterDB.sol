@@ -159,22 +159,23 @@ contract GMSetterDB is Proxied {
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     onlyExistentGame(gameId)
   {
-    // Check if bettor does not exist in the game given, add her to the game.
-    require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor));
-      
+    uint256 prevAmount;
 
-    // Get the supported player for this bettor
-    address _supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
-    );
+    if(bettor != supportedPlayer){
+      // Check if bettor does not exist in the game given, add her to the game.
+      require(genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB,
+        keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), bettor));
+        
+      // Get the supported player for this bettor
+      address _supportedPlayer = genericDB.getAddressStorage(
+        CONTRACT_NAME_GM_SETTER_DB,
+        keccak256(abi.encodePacked(gameId, bettor, "supportedPlayer"))
+      );
 
-    require(_supportedPlayer == supportedPlayer);
+      require(_supportedPlayer == supportedPlayer);
 
-    if (betAmount > 0) {
       // Update bettor's total bet amount
-      uint256 prevAmount = genericDB.getUintStorage(
+      prevAmount = genericDB.getUintStorage(
         CONTRACT_NAME_GM_SETTER_DB,
         keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
       );
@@ -183,20 +184,32 @@ contract GMSetterDB is Proxied {
         keccak256(abi.encodePacked(gameId, bettor, "betAmount")),
         prevAmount.add(betAmount)
       );
-
-      // Update total bet amount in the game for a given corner
-      // updateTotalBet(gameId, betAmount, supportedPlayer);
+    }
+    else{
       prevAmount = genericDB.getUintStorage(
         CONTRACT_NAME_GM_SETTER_DB,
-        keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
+        keccak256(abi.encodePacked(gameId, bettor, "betAmount"))
       );
 
       genericDB.setUintStorage(
         CONTRACT_NAME_GM_SETTER_DB,
-        keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount")),
+        keccak256(abi.encodePacked(gameId, bettor, "betAmount")),
         prevAmount.add(betAmount)
       );
     }
+
+    // Update total bet amount in the game for a given corner
+    // updateTotalBet(gameId, betAmount, supportedPlayer);
+    prevAmount = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount"))
+    );
+
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, supportedPlayer, "totalBetAmount")),
+      prevAmount.add(betAmount)
+    );
   }
 
   /**
@@ -227,6 +240,7 @@ contract GMSetterDB is Proxied {
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyExistentGame(gameId){
+      gameCreation.scheduleJobs(gameId, 1);
       genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 1);
   }
 

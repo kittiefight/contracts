@@ -80,7 +80,7 @@ contract Forfeiter is Proxied {
     if (gameState == 1) {
       (uint256 gameStartTime,,) = gmGetterDB.getGameTimes(gameId);
       bool redStarted = gameStore.didHitStart(gameId, playerRed);
-      bool blackStarted = gameStore.didHitStart(gameId, playerRed);
+      bool blackStarted = gameStore.didHitStart(gameId, playerBlack);
 
       bool check = checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed); // TODO check why it fails here
       //if previous check passes, check players start
@@ -95,10 +95,10 @@ contract Forfeiter is Proxied {
    * @param gameId uint256
    */
   function forfeitGame(uint256 gameId, string memory reason) internal {
-    (address playerBlack, address playerRed, uint256 kittyBlack,
+    (/*address playerBlack*/, /*address playerRed*/, uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    if (ckc.ownerOf(kittyBlack) != playerBlack) kittieHELL.releaseKittyForfeiter(kittyBlack);
-    if (ckc.ownerOf(kittyRed) != playerRed) kittieHELL.releaseKittyForfeiter(kittyRed);
+    if(ckc.ownerOf(kittyBlack) == address(kittieHELL)) kittieHELL.releaseKittyForfeiter(kittyBlack);
+    if(ckc.ownerOf(kittyRed) == address(kittieHELL)) kittieHELL.releaseKittyForfeiter(kittyRed);
     gameManager.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }
@@ -144,10 +144,12 @@ contract Forfeiter is Proxied {
 
     //When one player hits start, that kittie is owned by kittieHELL
     if (ckc.ownerOf(kittieIdBlack) == address(kittieHELL)) checkBlack = true;
-    else checkBlack = ckc.ownerOf(kittieIdBlack) == playerBlack;
+    else if(ckc.ownerOf(kittieIdBlack) == playerBlack) checkBlack = true;
+    else checkBlack = false;
 
     if(ckc.ownerOf(kittieIdRed) == address(kittieHELL)) checkRed = true;
-    else checkRed = ckc.ownerOf(kittieIdRed) == playerRed;
+    else if(ckc.ownerOf(kittieIdRed) == playerRed) checkRed = true;
+    else checkRed = false;
 
     if (!(checkBlack && checkRed)) {
       forfeitGame(gameId, 'Kittie Left');
@@ -184,13 +186,10 @@ contract Forfeiter is Proxied {
    * @param gameStartTime uint256 time when 2 min countdown ends
    */
   function didPlayersStartGame(uint gameId, bool blackStarted, bool redStarted, uint gameStartTime)
-    public  returns(bool)
+    public
   {
     if (gameStartTime <= now){
-      if(!blackStarted || !redStarted){
-        forfeitGame(gameId, "Did not hit start");
-        return true;
-      }
+      if(!blackStarted || !redStarted) forfeitGame(gameId, "Did not hit start");
     }
   }
 }

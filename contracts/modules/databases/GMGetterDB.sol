@@ -159,6 +159,15 @@ contract GMGetterDB is Proxied {
     totalKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")));
   }
 
+  function getPlayerBet(uint gameId, address player)
+  public view
+  returns(uint playerBet)
+  {
+    playerBet = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, player, "betAmount"))
+    );
+  }
 
   // === FRONTEND GETTERS ===
   function getFighterByKittieID(uint256 kittieId)
