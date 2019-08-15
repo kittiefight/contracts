@@ -1,5 +1,6 @@
 const KFProxy = artifacts.require('KFProxy')
-// truffle exec scripts/upgradeContract.js --network rinkeby
+
+// truffle exec scripts/upgradeContract.js <contractName> --network rinkeby
 
 module.exports = async (callback) => {
 
@@ -19,7 +20,7 @@ module.exports = async (callback) => {
         await contractInst.setProxy(proxy.address)
 
         callback();
-        //0x9EF10278436e696b5242adaac12F32e02379c84e
+        
 	}
 	catch(e){callback(e)}
 

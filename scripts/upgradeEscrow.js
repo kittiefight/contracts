@@ -7,12 +7,14 @@ const KittieFightToken = artifacts.require('ERC20Standard')
 const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
-    web3.utils.toWei("10000", "ether") //10.000 KTY
+    web3.utils.toWei("50000", "ether") //50.000 KTY
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
-    web3.utils.toWei("650", "ether") //650 ETH
+    web3.utils.toWei("700", "ether") //700 ETH
 );
+
+// truffle exec scripts/upgradeEscrow.js --network rinkeby
 
 module.exports = async (callback) => {
 	try{

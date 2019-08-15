@@ -9,9 +9,9 @@ const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
 const MIN_CONTRIBUTORS = 3 //833
 const REQ_NUM_MATCHES = 2 //10
-const GAME_PRESTART = 60 // 2 min
-const GAME_DURATION = 500 // 5 min
-const ETH_PER_GAME = new BigNumber(web3.utils.toWei("10", "ether")); //$50,000 / (@ $236.55 USD/ETH)
+const GAME_PRESTART = 300 // 5 min
+const GAME_DURATION = 600 // 10 min
+const ETH_PER_GAME = new BigNumber(web3.utils.toWei("50", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("1000", "ether")); // 1,000 KTY
 const GAME_TIMES = 10*60 //Scheduled games 10 min apart
 const KITTIE_HELL_EXPIRATION = 60*60*24 //1 day
@@ -33,7 +33,7 @@ function setMessage(contract, funcName, argArray) {
     );
 }
 
-//truffle exec scripts/setAllGameVars.js --network rinkeby
+// truffle exec scripts/setAllGameVars.js --network rinkeby
 
 
 module.exports = async (callback) => {
