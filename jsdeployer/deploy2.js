@@ -1,7 +1,7 @@
 var $ = jQuery;
 jQuery(document).ready(function($) {
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
+    const defaultSetupActions = ['addToProxy', 'setProxy', 'initialize'];
     let web3 = null;
     let contractDefinitions = {};
     let contractInstances = {};
@@ -19,7 +19,6 @@ jQuery(document).ready(function($) {
         for(let contract of window.contractSettings){
             let contractFile = (typeof contract.contract != 'undefined')?contract.contract:contract.name;
             let loader = loadContract(`../build/contracts/${contractFile}.json`);
-            const defaultSetupActions = ['addToProxy', 'setProxy', 'initialize'];
             loader.then(function(data){
                 contractDefinitions[contract.name] = {
                    'name': contract.name,
@@ -119,12 +118,12 @@ jQuery(document).ready(function($) {
         async function createPropField(instance, property, $infoGrid){
             try {
                 let value = await instance.methods[property]().call();
-                console.log(instance, property, value)
+                //console.log(instance, property, value)
                 if(typeof value == 'object') value = JSON.stringify(value, null, ' ');
                 $(`<div>${property} = ${value}</div>`).appendTo($infoGrid);
            }catch(ex){
                 //$(`<div>${property} read failed: ${ex.message}</div>`).appendTo($infoGrid);
-                console.log(`Failed to read ${property} on  `,instance, ex);
+                console.log(`Failed to read ${property} on `,instance.options.address, ex);
             }
         }
     }
@@ -132,16 +131,15 @@ jQuery(document).ready(function($) {
         //console.log('click on', this);
         let $this = $(this);     
         let contract = $this.parents("tr").data('contract');
-        let contractAddress = await contractInstances.KFProxy.methods.getContract(contract).call();
 
         if($this.hasClass('actionDeploy') || $this.hasClass('actionRedeploy')){
-            deployContract(contract, contractAddress)
+            deployContract(contract)
             .then(function(){
                 $('#loadData').click();
             });
         }else if($this.hasClass('actionSetAddress') || $this.hasClass('actionUpdateAddress')){
             let newAddress = $(`input[name=${contract}\\.address]`, $this.parents("tr")).val();
-            setContractAddress(contract, contractAddress, newAddress)
+            setContractAddress(contract, newAddress)
             .then(function(){
                 $('#loadData').click();
             });
@@ -149,35 +147,54 @@ jQuery(document).ready(function($) {
             console.error('Unknown button', this);
         }
     });
-    async function setContractAddress(contract, contractAddress, newAddress){
-        return new Promise( (resolve, reject) => {
-            let method = (contractAddress == ZERO_ADDRESS)?'addContract':'updateContract';
-            contractInstances.KFProxy.methods[method](contract, newAddress).send({from: web3.eth.defaultAccount})
-            .on('error',function(error){
-                console.log(`KFProxy.${method} tx failed: `, error);
-                printError(error);
-                reject(error);
-            })
-            .on('transactionHash',function(tx){
-                console.log(`KFProxy.${method} tx: `, tx);
-            })
-            .on('receipt',function(receipt){
-                resolve(receipt);
-            });
-        });
-
-        // let instance = new web3.eth.Contract(contractDefinitions[contract].abi, contractAddress);
-        // contractInstances[contract] = instance;
+    async function setContractAddress(contract, newAddress){
+        let oldContractAddress = await contractInstances.KFProxy.methods.getContract(contract).call();
+        let method = (oldContractAddress == ZERO_ADDRESS)?'addContract':'updateContract';
+        return callMethod('KFProxy', method, [contract, newAddress]);
+    }
+    async function setProxyAddress(contract){
+        let proxyAddress = contractInstances.KFProxy.options.address;
+        let instance = contractInstances[contract];
+        if(instance.methods['setProxy']){
+            return callMethod(contract, 'setProxy', [proxyAddress]);
+        }else{
+            return new Promise((resolve, reject) => {resolve(null)});
+        }
+    }
+    async function initializeContract(contract){
+        let instance = contractInstances[contract];
+        if(instance.methods['initialize']){
+            return callMethod(contract, 'initialize', []);
+        }else{
+            return new Promise((resolve, reject) => {resolve(null)});
+        }
     }
 
-    async function deployContract(contract, contractAddress){
-        let instance = await actionDeploy(contract);
-        let setupActions = contractDefinitions[contract].setupActions;
-        
-
-        $('#loadData').click();   
+    async function deployContract(contract){
+        contractInstances[contract] = await _deploy(contract);
+        $(`input[name=${contract}\\.address]`, $('#contractsTable')).val(contractInstances[contract].options.address);
+        let ar = [];
+        for(const action of contractDefinitions[contract].setupActions) {
+            console.log(`Executing action ${action} for newly deployed ${contract} at ${contractInstances[contract].options.address}`);
+            ar.push(actions[action].apply(this, [contract]));
+        }
+        Promise.all(ar).then(function(){
+            //$('#loadData').click();   
+        })
     }
-    async function actionDeploy(contract){
+    const actions = {
+        addToProxy: async function(contract){
+            return setContractAddress(contract, contractInstances[contract].options.address);
+        },
+        setProxy: async function(contract){
+            return setProxyAddress(contract);
+        },
+        initialize: async function(contract){
+            return initializeContract(contract);
+        }
+    }
+
+    async function _deploy(contract){
         let obj = new web3.eth.Contract(contractDefinitions[contract].abi);
         let args = [];
         for(const deployArg of contractDefinitions[contract].deployArgs){
@@ -207,8 +224,23 @@ jQuery(document).ready(function($) {
             });
         });
     }
-    async function actionAddToProxy(contract, contractAddress){
-
+    async function callMethod(contract, method, args){
+        return new Promise( (resolve, reject) => {
+            let instance = contractInstances[contract];
+            instance.methods[method].apply(instance, args).send({from: web3.eth.defaultAccount})
+            .on('error',function(error){
+                console.log(`${contract}.${method}(`,args,') tx failed: ', error);
+                printError(error);
+                reject(error);
+            })
+            .on('transactionHash',function(tx){
+                console.log(`${contract}.${method}(`,args,') tx: ', tx);
+            })
+            .on('receipt',function(receipt){
+                console.log(`${contract}.${method}(`,args,') receipt: ', receipt);
+                resolve(receipt);
+            });
+        });
     }
  
     //====================================================

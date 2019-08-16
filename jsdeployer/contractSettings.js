@@ -4,6 +4,7 @@ window.contractSettings = function() {
 	 * A set of default actions will be applied to a newly deployed contract
 	 * if there is no property "setupActions". If there is such property, 
 	 * default actions will not be applied, instead a list of specified actions will be executed.
+	 * All actions have one argument: contract name.
 	 * - addToProxy - adds/updates address of the contract in KFProxy;
 	 * - setProxy	- calls setProxy() method on a contract, if it has it;
 	 * - initialize - calls initialize() method on a contract if it has it;
@@ -20,7 +21,7 @@ window.contractSettings = function() {
 			"deployArgs":["${KFPoxy.options.address}"],
 		},
 		//Other system contract
-		{"name":"RoleDB"},
+		{"name":"RoleDB", "deployArgs":["${GenericDB.options.address}"],},
 		{"name":"GMSetterDB"},
 		{"name":"GMGetterDB"},
 		{"name":"GameManager"},
