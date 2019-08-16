@@ -52,6 +52,7 @@ jQuery(document).ready(function($) {
                     $('#selectContract').data('contract', value);
                     initFunctionSelect(value);
                     fillTargetAddress(value);
+                    initEventSelect(value);
                     clearArguments();
                 }
             }
@@ -73,6 +74,11 @@ jQuery(document).ready(function($) {
                     initFunctionSelect(contract);
                     clearArguments();
                 }
+            }
+        });
+        $('#eventType').dropdown({
+            onChange: function(value, text, $selectedItem){
+                $('#eventType').data('type', value);
             }
         });
     }
@@ -236,6 +242,25 @@ jQuery(document).ready(function($) {
         return args;
     }
 
+    function initEventSelect(contractName){
+        $('#eventType').data('contract', contractName);
+        $field = $('#eventType').parent();
+        let ncFunctions = contractDefinitions[contractName].abi.filter(entry => entry.type == 'event');
+        $field.dropdown('setup menu', {
+            values: [{'name':'All', 'value': 'allEvents'}]
+                .concat(
+                    ncFunctions
+                    .map(ncf => {return {'name':ncf.name, 'value': ncf.name}})
+                    .sort((a,b) => {return (a.name < b.name)?-1:(a.name > b.name)?1:0})
+                ),
+        }).removeClass('disabled');
+
+
+
+        $('#eventLoadBtn').removeClass('disabled');
+    }
+
+
     $('#generatePayloadBtn').click(function(){
         let targetContract =  $('#arguments').data('contract');
         let targetFunction =  $('#arguments').data('function');
@@ -336,6 +361,35 @@ jQuery(document).ready(function($) {
         $('#resultData').val(JSON.stringify(result));
     })
 
+    $('#eventLoadBtn').click(async function(){
+        let targetContract = $('#eventType').data('contract');
+        let targetAddress = $('#targetAddress').val();
+        if(targetAddress == ZERO_ADDRESS) return;
+        let contractABI = contractDefinitions[targetContract].abi;
+
+        let eventType = $('#eventType').data('type');
+        let fromBlock = $('#eventFromBlock').val();
+        let toBlock = $('#eventToBlock').val();
+
+
+        let instance = new web3.eth.Contract(contractABI, targetAddress);
+        let events = await instance.getPastEvents(eventType, {
+            'fromBlock': fromBlock,
+            'toBlock': toBlock
+        });
+
+        $logs = $('#eventLogs');
+        for(event of events){
+            console.log(event);
+            let args = Object.entries(event.returnValues)
+                .filter(entry => !isNumber(entry[0]))
+                .map(entry => `${entry[0]}="${entry[1]}"`)
+                .join(', ');
+            let eventStr = `${event.blockNumber}.${event.logIndex}\t${event.event}\t${args}`
+            $logs.append(eventStr+"\n");
+        }
+    });
+
     //====================================================
 
     async function loadWeb3(){
@@ -383,7 +437,9 @@ jQuery(document).ready(function($) {
     function timestmapToString(timestamp){
         return (new Date(timestamp*1000)).toISOString();
     }
-
+    function isNumber(str){
+        return !isNaN(str);
+    }
 
 
     /**

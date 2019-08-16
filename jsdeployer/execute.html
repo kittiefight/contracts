@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>KittieFight Call Execute</title>
+    <title>KittieFight Call Read/Execute</title>
     <meta charset="UTF-8">
     <script src="jquery.min.js"></script>
 	<script src="semantic/semantic.min.js"></script>
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css" type='text/css'/>
 </head>
 <body>
-<h1>KittieFight Call Execute</h1>
+<h1>KittieFight Call Read/Execute</h1>
 <div id="errormsg" class="ui icon message hidden">
   <i class="exclamation triangle icon"></i>
   <div class="content">
@@ -57,7 +57,7 @@
 		<div class="two wide field">
 			<label>Call value</label>
 			<div class="ui right labeled input">
-				<input type="number" id="callValue" min="0" value="0">
+				<input type="number" id="callValue" min="0" value="0" step="0.01">
 				<div class="ui basic label">ETH</div>
 			</div>
 		</div>
@@ -73,7 +73,31 @@
 		<label id="resultLabel">Result/Payload</label>
 		<textarea id="resultData"></textarea>
 	</div>
-
+	<h4 class="ui header">Read events:</h4>
+	<div class="four fields">
+		<div class="four wide field">
+      		<label>Event</label>
+      		<select id="eventType" class="ui fluid search selection dropdown disabled">
+      			<option value="allEvents">All</option>
+      		</select>
+    	</div>      	
+		<div class="four wide field">
+      		<label>From block</label>
+			<input type="text" id="eventFromBlock" value="0">
+    	</div>      	
+		<div class="four wide field">
+      		<label>To block</label>
+			<input type="text" id="eventToBlock" value="latest">
+    	</div>      	
+		<div class="four wide field">
+      		<label>Actions</label>
+			<button id="eventLoadBtn" type="button" class="ui button disabled">Load events</button>
+    	</div>      	
+	</div>
+	<div>
+		<label>Events</label>
+		<textarea id="eventLogs"></textarea>
+	</div>
 </form>
 
 
