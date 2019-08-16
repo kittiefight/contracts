@@ -22,15 +22,22 @@
 </div>
 <form id="executeForm" class="ui form">
 	<h4 class="ui header">Select contract and function:</h4>
-	<div class="two fields">
+	<div class="three fields">
 		<div class="four wide field">
       		<label>Contract</label>
       		<select id="selectContract" class="ui fluid search selection dropdown disabled"></select>
     	</div>      	
-		<div class="twelve wide field">
+		<div class="two wide field">
+      		<label>Mode</label>
+			<select id="selectMode" class="ui fluid selection dropdown">
+				<option value="read">Read</option>
+				<option value="write">Write</option>
+			</select>
+    	</div>      	
+		<div class="ten wide field">
       		<label>Function</label>
       		<select id="selectFunction" class="ui fluid search selection dropdown disabled"></select>
-    	</div>      	
+    	</div>    	
 	</div>
 	<h4 class="ui header">Input arguments:</h4>
 	<div class="ui segments">
@@ -59,11 +66,12 @@
 			<button id="generatePayloadBtn" type="button" class="ui button disabled">Generate Payload</button>
 			<button id="executeViaProxyBtn" type="button" class="ui button disabled">Execute via Proxy</button>
 			<button id="executeDirectlyBtn" type="button" class="ui button disabled">Execute directly</button>
+			<button id="readBtn" type="button" class="ui button disabled">Read</button>
 		</div>
 	</div>
 	<div class="field">
-		<label>Payload for execution</label>
-		<textarea id="payloadData"></textarea>
+		<label id="resultLabel">Result/Payload</label>
+		<textarea id="resultData"></textarea>
 	</div>
 
 </form>
