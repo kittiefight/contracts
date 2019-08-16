@@ -19,10 +19,15 @@ jQuery(document).ready(function($) {
         for(let contract of window.contractSettings){
             let contractFile = (typeof contract.contract != 'undefined')?contract.contract:contract.name;
             let loader = loadContract(`../build/contracts/${contractFile}.json`);
+            const defaultSetupActions = ['addToProxy', 'setProxy', 'initialize'];
             loader.then(function(data){
                 contractDefinitions[contract.name] = {
                    'name': contract.name,
-                   'abi': data.abi
+                   'abi': data.abi,
+                   'bytecode': data.bytecode,
+                   'deployedBytecode': data.deployedBytecode,
+                   'deployArgs': contract.deployArgs?contract.deployArgs:[],
+                   'setupActions': contract.setupActions?contract.setupActions:defaultSetupActions,
                 }
                 console.log(`Loaded ABI for ${contract.name}`);
                 let address = getUrlParam(contract.name);
@@ -57,17 +62,22 @@ jQuery(document).ready(function($) {
         contractSettings
         .filter(contract => contract.name != 'KFProxy')
         .map(contract=>contract.name)
-        .forEach(async (contract) => {
-            let contractAddress = await contractInstances.KFProxy.methods.getContract(contract).call();
-
-            console.log(`Creating row for ${contract}`);
-            $row = $('<tr></tr>').appendTo($tbody).append(`<td>${contract}</td>`);
+        .forEach(contract => {
+            let $row = $('<tr></tr>').appendTo($tbody);
             $row.data('contract', contract);
+            fillRow($row, contract);
+        });
+
+        async function fillRow($row, contract){
+            //console.log(`Filling row for ${contract}`);
+            $row.append(`<td>${contract}</td>`);
+
+            let contractAddress = await contractInstances.KFProxy.methods.getContract(contract).call();
             
             // Address column
             $addressCell = $('<div class="two fields"></div>').appendTo($('<td></td>').appendTo($row));
             $(`<div class="field"><input type="text" name="${contract}.address"></div>`).appendTo($addressCell);
-            $addressActions = $('<div class="field"></div>').appendTo($addressCell);
+            $addressActions = $('<div class="addressActions field"></div>').appendTo($addressCell);
             if(contractAddress == ZERO_ADDRESS){
                 $('<button type="button" class="actionDeploy ui button">Deploy</button>').appendTo($addressActions);
                 $('<button type="button" class="actionSetAddress ui button">Set address</button>').appendTo($addressActions);
@@ -81,25 +91,124 @@ jQuery(document).ready(function($) {
             $infoGrid = $('<div></div>').appendTo($('<td></td>').appendTo($row));
             if(contractAddress != ZERO_ADDRESS){
                 let instance = new web3.eth.Contract(contractDefinitions[contract].abi, contractAddress);
+                contractInstances[contract] = instance;
+
+                //Check if actual contract is different from definition
+                //checkCodeMatches(contract, instance, $infoGrid);
+
+                //Read properties
                 let props = contractDefinitions[contract].abi
                     .filter(entry => entry.type == 'function' && entry.constant && entry.inputs.length == 0)
                     .map(entry => entry.name);
-                console.log(`${contract} properties: `, props);
+                //console.log(`${contract} properties: `, props);
                 for(property of props) {
                     createPropField(instance, property, $infoGrid);
                 }
-                async function createPropField(instance, property, $infoGrid){
-                    try {
-                        let value = await instance.methods[property]().call();
-                        $(`<div>${property} = ${value}</div>`).appendTo($infoGrid);
-                   }catch(ex){
-                        //$(`<div>${property} read failed: ${ex.message}</div>`).appendTo($infoGrid);
-                        console.log(`Failed to read ${property} on  `,instance, ex);
-                    }
+            }
+        }
+        async function checkCodeMatches(contract, instance, $infoGrid){
+            let contractAddress = instance.options.address;
+            if(contractDefinitions[contract].deployedBytecode && contractDefinitions[contract].deployedBytecode != '0x'){
+                let deployedCode = await web3.eth.getCode(contractAddress);
+                if(deployedCode != contractDefinitions[contract].deployedBytecode){
+                    console.log(`Code of ${contract} at ${contractAddress} does not match with definition`, deployedCode, contractDefinitions[contract].deployedBytecode);
+                    $infoGrid.before('<div class="error">Deployed bytecode does not match with specified in build file. Probaly redeploy is required.</div>')
                 }
             }
+        }
+        async function createPropField(instance, property, $infoGrid){
+            try {
+                let value = await instance.methods[property]().call();
+                console.log(instance, property, value)
+                if(typeof value == 'object') value = JSON.stringify(value, null, ' ');
+                $(`<div>${property} = ${value}</div>`).appendTo($infoGrid);
+           }catch(ex){
+                //$(`<div>${property} read failed: ${ex.message}</div>`).appendTo($infoGrid);
+                console.log(`Failed to read ${property} on  `,instance, ex);
+            }
+        }
+    }
+    $('#contractsTable').on('click', '.addressActions button', async function(){
+        //console.log('click on', this);
+        let $this = $(this);     
+        let contract = $this.parents("tr").data('contract');
+        let contractAddress = await contractInstances.KFProxy.methods.getContract(contract).call();
 
+        if($this.hasClass('actionDeploy') || $this.hasClass('actionRedeploy')){
+            deployContract(contract, contractAddress)
+            .then(function(){
+                $('#loadData').click();
+            });
+        }else if($this.hasClass('actionSetAddress') || $this.hasClass('actionUpdateAddress')){
+            let newAddress = $(`input[name=${contract}\\.address]`, $this.parents("tr")).val();
+            setContractAddress(contract, contractAddress, newAddress)
+            .then(function(){
+                $('#loadData').click();
+            });
+        }else{
+            console.error('Unknown button', this);
+        }
+    });
+    async function setContractAddress(contract, contractAddress, newAddress){
+        return new Promise( (resolve, reject) => {
+            let method = (contractAddress == ZERO_ADDRESS)?'addContract':'updateContract';
+            contractInstances.KFProxy.methods[method](contract, newAddress).send({from: web3.eth.defaultAccount})
+            .on('error',function(error){
+                console.log(`KFProxy.${method} tx failed: `, error);
+                printError(error);
+                reject(error);
+            })
+            .on('transactionHash',function(tx){
+                console.log(`KFProxy.${method} tx: `, tx);
+            })
+            .on('receipt',function(receipt){
+                resolve(receipt);
+            });
         });
+
+        // let instance = new web3.eth.Contract(contractDefinitions[contract].abi, contractAddress);
+        // contractInstances[contract] = instance;
+    }
+
+    async function deployContract(contract, contractAddress){
+        let instance = await actionDeploy(contract);
+        let setupActions = contractDefinitions[contract].setupActions;
+        
+
+        $('#loadData').click();   
+    }
+    async function actionDeploy(contract){
+        let obj = new web3.eth.Contract(contractDefinitions[contract].abi);
+        let args = [];
+        for(const deployArg of contractDefinitions[contract].deployArgs){
+            let arg = interpolate(deployArg, contractInstances, null);
+            args.push(arg);
+        }
+        console.log(`Deploying ${contract} with args: `, args);
+        return new Promise( (resolve, reject) => {
+            obj.deploy({
+                data: contractDefinitions[contract].bytecode,
+                arguments: args,
+            }).send({from: web3.eth.defaultAccount})
+            .on('error',function(error){
+                console.log('Deploying failed: ', error);
+                printError(error);
+                reject(error);
+            })
+            .on('transactionHash',function(tx){
+                console.log(`Deploy ${contract} tx: `, tx);
+            })
+            .on('receipt',function(receipt){
+                let contractAddress = receipt.contractAddress;
+                console.log(`${contract} deployed at ${contractAddress}`);
+            })
+            .then(function(instance){
+                resolve(instance);
+            });
+        });
+    }
+    async function actionAddToProxy(contract, contractAddress){
+
     }
  
     //====================================================
