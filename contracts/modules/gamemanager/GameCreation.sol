@@ -242,7 +242,9 @@ contract GameCreation is Proxied, Guard {
         //Reschedule CronJob when more time added
         uint256 jobId = cronJobsForGames[gameId];
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
-        cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
+        uint newJobId = cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
+        emit Scheduled(newJobId, endTime, gameId, "Change state to 3");
+        cronJobsForGames[gameId] = newJobId;
     }
 
     function deleteCronjob(uint gameId)
