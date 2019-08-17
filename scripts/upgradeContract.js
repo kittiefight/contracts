@@ -1,6 +1,7 @@
 const KFProxy = artifacts.require('KFProxy')
+const GenericDB = artifacts.require('GenericDB');
 
-// truffle exec scripts/upgradeContract.js <contractName> --network rinkeby
+// truffle exec scripts/upgradeContract.js <contractName> <needsGenericDB?(1 or 0)> --network rinkeby
 
 // Only for contracts without constructor parameters. You will have to edit the file for that.
 
@@ -8,12 +9,19 @@ module.exports = async (callback) => {
 
 	try{
         let contractName = process.argv[4];
+        let needsGenericDB = process.argv[5];
+
         const contractArtifact = artifacts.require(`${contractName}`)
 
+        genericDB = await GenericDB.deployed()
         proxy = await KFProxy.deployed()
 
         console.log(`Deploying new ${contractName} contract`)
-        contractInst = await contractArtifact.new()
+
+        let contractInst;
+
+        if(Number(needsGenericDB) === 1) contractInst = await contractArtifact.new(genericDB.address)
+        else contractInst = await contractArtifact.new() 
 
         console.log(`New address of ${contractName}: ${contractInst.address}`)        
 
