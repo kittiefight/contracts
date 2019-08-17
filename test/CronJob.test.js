@@ -48,6 +48,7 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
         await this.roleDB.setProxy(this.proxy.address);
         await this.roleDB.addRole('Creator', 'admin', creator);
     });
+
     describe('CronJob::Authority', () => {
         it('sets proxy and db', async () => {
             await this.cronJob.setProxy(randomAddress).should.be.fulfilled;
@@ -66,6 +67,7 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
         });
 
     });
+
     describe('CronJob::JobList', () => {
         it('should add job to list manually', async () => {
             let delay = 10;
@@ -176,6 +178,7 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
                 let receipt = await cronJobTarget.scheduleSetNonZeroValue(time, delay).should.be.fulfilled;
                 let jobId = receipt.logs[0].args.scheduledJob;
                 // console.log('Added Job id ', parseJobID(jobId));
+                // console.log('Job nonce for ', time,': ', (await cronJob.getJobNonceForTimestamp(time)).toString());
                 // console.log('====')
                 return jobId;
             }
@@ -194,7 +197,7 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             //Create Job 6: 4*delay
             await addJob(4*delay);
             //Create Job 7: 4*delay
-            //await addJob(4*delay); //TODO: this fails
+            await addJob(4*delay);
 
             //Read event list
             let allEvents = await this.cronJob.getAllJobs();
@@ -210,12 +213,13 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             //console.log('Values', values);
             let prev = 0;
             for(let i=0; i < values.length; i++){
-                assert(prev < values[i], "Wrong order of execution: "+JSON.stringify(values));
+                assert(prev <= values[i], "Wrong order of execution: "+JSON.stringify(values));
                 prev = values[i];
             }
         });
 
     });
+
     describe('CronJob::ExecuteViaProxy', () => {
         it('should execute added job', async () => {
             let delay = 10;
@@ -267,7 +271,7 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             let delay = 10;
             //Create Job 1
             let random1Val = 1+Math.round(Math.random()*999999);
-            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random1Val, delay-1).should.be.fulfilled;
+            let receipt = await this.cronJobTarget.scheduleSetNonZeroValue(random1Val, delay).should.be.fulfilled;
             let job1Id = receipt.logs[0].args.scheduledJob;
             //Create Job 2
             let random2Val = 1+Math.round(Math.random()*999999);
@@ -311,6 +315,5 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             assert.equal(logs[4].returnValues.jobId, job5Id, "Job5 Not executed");
         });
     });
-
 
 });
