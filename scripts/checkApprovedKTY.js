@@ -10,9 +10,11 @@ module.exports = async (callback) => {
   try{
     kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
     endowmentFund = await EndowmentFund.deployed();
-    
-    //Changed
-    let account = process.argv[4];
+
+    allAccounts = await web3.eth.getAccounts();
+    let accountIndex = process.argv[4];
+
+    let account = allAccounts[accountIndex]
 
     let approvedTokens = await kittieFightToken.allowance(account, endowmentFund.address);
 

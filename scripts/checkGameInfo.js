@@ -3,6 +3,8 @@ const GMGetterDB = artifacts.require('GMGetterDB')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+gameStates = ['WAITING', 'PREGAME', 'MAINGAME', 'GAMEOVER', 'CLAIMING', 'CANCELLED'];
+
 function formatDate(timestamp) {
   let date = new Date(null);
   date.setSeconds(timestamp);
@@ -23,7 +25,7 @@ module.exports = async (callback) => {
         let winners = await getterDB.getWinners(gameId);
 
         console.log('\n============= GAME INFO ================');
-        console.log('\n Game State:', info.state.toString());
+        console.log('\n Game State:', gameStates[info.state.toNumber()]);
         console.log(' Start Time ', formatDate(times.startTime.toString()))
         console.log(' Prestart Time:', formatDate(times.preStartTime.toString()));
         console.log(' End Time:', formatDate(times.endTime.toString()));

@@ -33,6 +33,7 @@ module.exports = async (callback) => {
     else if (playerToSupport === "BLACK") supported = playerBlack;
     else callback(new Error("You need to choose 'RED' or 'BLACK'"))
 
+    console.log(`Supporting Player ${playerToSupport}...`)
     await proxy.execute('GameManager', setMessage(gameManager, 'participate',
     [gameId, supported]), { from: account })
     
