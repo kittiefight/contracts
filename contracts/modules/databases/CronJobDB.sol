@@ -63,7 +63,7 @@ contract CronJobDB is Proxied {
     }
 
     function getJobNonceForTimestamp(uint256 time) view public returns(uint16) {
-        uint16(genericDB.getUintStorage(CONTRACT_NAME_CRONJOB, keccak256(abi.encodePacked(time, "jobNonce"))));        
+        return uint16(genericDB.getUintStorage(CONTRACT_NAME_CRONJOB, keccak256(abi.encodePacked(time, "jobNonce"))));        
     }
     function incrementJobNonceForTimestamp(uint256 time) internal {
         uint16 nonce = getJobNonceForTimestamp(time);
@@ -113,11 +113,7 @@ contract CronJobDB is Proxied {
 
         validateNewJobPosition(jobId, nextJob);
 
-        // if(nextJob == 0){
-        //     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId), ERROR_ALREADY_EXIST);
-        // }else{
-            require(genericDB.insertNodeToLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId, nextJob, false), ERROR_ALREADY_EXIST); //false means "prev" direction - insert before nextJob
-        // }
+        require(genericDB.insertNodeToLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId, nextJob, false), ERROR_ALREADY_EXIST); //false means "prev" direction - insert before nextJob
         incrementJobNonceForTimestamp(time);
 
         genericDB.setStringStorage(CONTRACT_NAME_CRONJOB, keccak256(abi.encodePacked(jobId, "callee")), callee);
