@@ -49,8 +49,10 @@ jQuery(document).ready(function($) {
                     $('#selectFunction').addClass('disabled');
                 }else{
                     console.log('Contract selected: ', value);
+                    $('#selectContract').data('contract', value);
                     initFunctionSelect(value);
                     fillTargetAddress(value);
+                    initEventSelect(value);
                     clearArguments();
                 }
             }
@@ -58,12 +60,25 @@ jQuery(document).ready(function($) {
         $('#selectFunction').dropdown({
             placeholder: 'Select function ...',
             onChange: function(value, text, $selectedItem){
-                if(typeof value == 'undefined' || value == ''){
-                }else{
+                if(typeof value != 'undefined' && value != ''){
                     console.log('Function selected: ', value);
                     let contractName = $(this).parent().data('contract');
                     initArguments(contractName, value);
                 }
+            }
+        });
+        $('#selectMode').dropdown({
+            onChange: function(value, text, $selectedItem){
+                let contract = $('#selectContract').data('contract');
+                if(typeof contract != undefined && contract != null && contract != ''){
+                    initFunctionSelect(contract);
+                    clearArguments();
+                }
+            }
+        });
+        $('#eventType').dropdown({
+            onChange: function(value, text, $selectedItem){
+                $('#eventType').data('type', value);
             }
         });
     }
@@ -77,10 +92,12 @@ jQuery(document).ready(function($) {
         }).removeClass('disabled');
     }
     function initFunctionSelect(contractName){
+        let mode = $('#selectMode').dropdown('get value');
+        let constantFilter = (mode == 'read')?true:false;
         $field = $('#selectFunction').parent();
         $field.data('contract', contractName);
         $field.dropdown('restore placeholder text');
-        let ncFunctions = contractDefinitions[contractName].abi.filter(entry => entry.type == 'function' && entry.constant == false);
+        let ncFunctions = contractDefinitions[contractName].abi.filter(entry => entry.type == 'function' && entry.constant == constantFilter);
         $field.dropdown('setup menu', {
             values: ncFunctions
             .map(ncf => {return {'name':ncf.name, 'value': ncf.name}})
@@ -94,7 +111,9 @@ jQuery(document).ready(function($) {
         $('#executeViaProxyBtn').addClass('disabled');
     }
     function initArguments(contractName, functionName){
-        let functionAbi = contractDefinitions[contractName].abi.find(entry => entry.type == 'function' && entry.constant == false && entry.name == functionName);
+        let mode = $('#selectMode').dropdown('get value');
+        let constantFilter = (mode == 'read')?true:false;
+        let functionAbi = contractDefinitions[contractName].abi.find(entry => entry.type == 'function' && entry.constant == constantFilter && entry.name == functionName);
         console.log(`Arguments for ${contractName}.${functionName}`, functionAbi);
         $('#arguments').data('contract', contractName);
         $('#arguments').data('function', functionName);
@@ -163,9 +182,18 @@ jQuery(document).ready(function($) {
                     }
             }
         }
-        $('#generatePayloadBtn').removeClass('disabled');
-        $('#executeDirectlyBtn').addClass('disabled');
-        $('#executeViaProxyBtn').addClass('disabled');
+
+        if(mode == 'write'){
+            $('#generatePayloadBtn').removeClass('disabled');
+            $('#executeDirectlyBtn').addClass('disabled');
+            $('#executeViaProxyBtn').addClass('disabled');
+            $('#readBtn').addClass('disabled');
+        }else{
+            $('#generatePayloadBtn').addClass('disabled');
+            $('#executeDirectlyBtn').addClass('disabled');
+            $('#executeViaProxyBtn').addClass('disabled');
+            $('#readBtn').removeClass('disabled');
+        }
     }
 
     function initProxy(){
@@ -189,18 +217,7 @@ jQuery(document).ready(function($) {
         }
     }
 
-    $('#generatePayloadBtn').click(function(){
-        let targetContract =  $('#arguments').data('contract');
-        let targetFunction =  $('#arguments').data('function');
-
-        let contractABI = contractDefinitions[targetContract].abi;
-        let functionABI = contractABI.find((f)=>{return f.name == targetFunction;})
-
-        if(!functionABI){
-            printError(`Function ${targetFunction} in ${targetContract} not found!`);
-            return;
-        }
-
+    function parseArguments(functionABI){
         let args = [];
         for(let i = 0; i < functionABI.inputs.length; i++){
             let argument = functionABI.inputs[i];
@@ -222,11 +239,47 @@ jQuery(document).ready(function($) {
             }
             args.push(val);
         }
+        return args;
+    }
+
+    function initEventSelect(contractName){
+        $('#eventType').data('contract', contractName);
+        $field = $('#eventType').parent();
+        let ncFunctions = contractDefinitions[contractName].abi.filter(entry => entry.type == 'event');
+        $field.dropdown('setup menu', {
+            values: [{'name':'All', 'value': 'allEvents'}]
+                .concat(
+                    ncFunctions
+                    .map(ncf => {return {'name':ncf.name, 'value': ncf.name}})
+                    .sort((a,b) => {return (a.name < b.name)?-1:(a.name > b.name)?1:0})
+                ),
+        }).removeClass('disabled');
+
+
+
+        $('#eventLoadBtn').removeClass('disabled');
+    }
+
+
+    $('#generatePayloadBtn').click(function(){
+        let targetContract =  $('#arguments').data('contract');
+        let targetFunction =  $('#arguments').data('function');
+
+        let contractABI = contractDefinitions[targetContract].abi;
+        let functionABI = contractABI.find((f)=>{return f.name == targetFunction;})
+
+        if(!functionABI){
+            printError(`Function ${targetFunction} in ${targetContract} not found!`);
+            return;
+        }
+
+        let args = parseArguments(functionABI);
         console.log('Generating payload for ', functionABI, args);
         
         try{
             let message = web3.eth.abi.encodeFunctionCall(functionABI,args);
-            $('#payloadData').val(message);
+            $('#resultLabel').val('Generated payload');
+            $('#resultData').val(message);
             $('#executeViaProxyBtn').removeClass('disabled');
             $('#executeDirectlyBtn').removeClass('disabled');
         }catch(e){
@@ -235,7 +288,11 @@ jQuery(document).ready(function($) {
     });
     $('#executeViaProxyBtn').click(function(){
         let targetContract =  $('#arguments').data('contract');
-        let payload = $('#payloadData').val();
+        let payload = $('#resultData').val();
+        if(!payload.startsWith('0x')){
+            printError('Payload has incorrect format');
+            return;
+        }
         let messageValue = web3.utils.toWei($('#callValue').val(), 'ether');
         console.log(`Sending call to ${targetContract} via KFProxy at ${contractInstances.KFProxy.options.address}`, payload);
 
@@ -243,16 +300,24 @@ jQuery(document).ready(function($) {
             from: web3.eth.defaultAccount,
             value: messageValue
         })
-        .on('transactionHash', function(hash){
-            console.log('Proxy call to '+targetContract+' tx: '+hash);
+        .on('transactionHash', function(tx){
+            console.log('Proxy call to '+targetContract+' tx: '+tx);
+            $('#resultLabel').val('Transaction sent: '+tx);
+            $('#resultData').val('');
         })
         .then(function(receipt){
             console.log('Proxy call to '+targetContract+' receipt: '+receipt);
+            $('#resultLabel').val('Execution receipt');
+            $('#resultData').val(JSON.stringify(receipt));
         });
     });
     $('#executeDirectlyBtn').click(function(){
         let targetContract =  $('#arguments').data('contract');
         let payload = $('#payloadData').val();
+        if(!payload.startsWith('0x')){
+            printError('Payload has incorrect format');
+            return;
+        }
         let messageValue = web3.utils.toWei($('#callValue').val(), 'ether');
         console.log(`Sending call to ${targetContract} directly`, payload);
 
@@ -262,13 +327,70 @@ jQuery(document).ready(function($) {
             value: messageValue,
             data: payload       
         })
-        .on('transactionHash', function(hash){
+        .on('transactionHash', function(tx){
             console.log('Call to '+targetContract+' tx: '+hash);
+            $('#resultLabel').val('Transaction sent: '+tx);
+            $('#resultData').val('');
         })
         .then(function(receipt){
             console.log('Call to '+targetContract+' receipt: '+receipt);
+            $('#resultLabel').val('Execution receipt');
+            $('#resultData').val(JSON.stringify(receipt));
         });
     });
+    $('#readBtn').click(async function(){
+        let targetContract =  $('#arguments').data('contract');
+        let targetFunction =  $('#arguments').data('function');
+        let targetAddress = $('#targetAddress').val();
+
+        let contractABI = contractDefinitions[targetContract].abi;
+        let functionABI = contractABI.find((f)=>{return f.name == targetFunction;})
+
+        if(!functionABI){
+            printError(`Function ${targetFunction} in ${targetContract} not found!`);
+            return;
+        }
+        let args = parseArguments(functionABI);
+
+        let instance = new web3.eth.Contract(contractABI, targetAddress);
+
+        $('#resultLabel').val('Reading...');
+        $('#resultData').val('');
+        let result = await instance.methods[targetFunction].apply(instance, args).call();
+        $('#resultLabel').val('Read result');
+        $('#resultData').val(JSON.stringify(result));
+    })
+
+    $('#eventLoadBtn').click(async function(){
+        let targetContract = $('#eventType').data('contract');
+        let targetAddress = $('#targetAddress').val();
+        if(targetAddress == ZERO_ADDRESS) return;
+        let contractABI = contractDefinitions[targetContract].abi;
+
+        let eventType = $('#eventType').data('type');
+        let fromBlock = $('#eventFromBlock').val();
+        let toBlock = $('#eventToBlock').val();
+
+
+        let instance = new web3.eth.Contract(contractABI, targetAddress);
+        let events = await instance.getPastEvents(eventType, {
+            'fromBlock': fromBlock,
+            'toBlock': toBlock
+        });
+
+        $logs = $('#eventLogs');
+        $logs.empty();
+        for(event of events){
+            console.log(event);
+            let args = Object.entries(event.returnValues)
+                .filter(entry => !isNumber(entry[0]))
+                .map(entry => `${entry[0]}="${entry[1]}"`)
+                .join(', ');
+            let eventStr = `${event.blockNumber}.${event.logIndex}\t${event.event}\t${args}`
+            $logs.append(eventStr+"\n");
+        }
+    });
+
     //====================================================
 
     async function loadWeb3(){
@@ -316,7 +438,9 @@ jQuery(document).ready(function($) {
     function timestmapToString(timestamp){
         return (new Date(timestamp*1000)).toISOString();
     }
-
+    function isNumber(str){
+        return !isNaN(str);
+    }
 
 
     /**
