@@ -185,9 +185,9 @@ contract GameManager is Proxied, Guard {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
 
         if(gameStore.checkPerformanceHelper(gameId, gameEndTime)){
-            gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
+            gmSetterDB.updateEndTime(gameId, now.add(60));
             gameCreation.rescheduleCronJob(gameId);
-            emit GameExtended(gameId, gameEndTime.add(60));
+            emit GameExtended(gameId, now.add(60));
         }
     }
 
