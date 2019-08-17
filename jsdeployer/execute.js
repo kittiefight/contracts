@@ -379,6 +379,7 @@ jQuery(document).ready(function($) {
         });
 
         $logs = $('#eventLogs');
+        $logs.empty();
         for(event of events){
             console.log(event);
             let args = Object.entries(event.returnValues)
