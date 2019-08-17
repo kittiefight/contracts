@@ -8,7 +8,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/claim.js <gameId> <accountIndex> --network rinkeby
+//truffle exec scripts/claim.js <gameId> <accountIndex> --network rinkeby
                                       
 
 module.exports = async (callback) => {

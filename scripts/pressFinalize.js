@@ -13,7 +13,7 @@ function randomValue(num) {
   return Math.floor(Math.random() * num) + 1; // (1-num) value
 }
 
-// truffle exec scripts/FE/finalize.js <gameId> --network rinkeby
+// truffle exec scripts/pressFinalize.js <gameId> <accountIndex> --network rinkeby
 
 module.exports = async (callback) => {
   try{
@@ -53,14 +53,6 @@ module.exports = async (callback) => {
     console.log('')
     console.log(`   Points Black: ${pointsBlack}   `);
     console.log(`   Point Red: ${pointsRed}   `);
-    console.log('=======================\n')
-
-    let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
-
-    console.log(`\n==== HONEYPOT INFO ==== `)
-    console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
-    console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
-    console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
     console.log('=======================\n')
     
     let finalHoneypot = await getterDB.getFinalHoneypot(gameId);

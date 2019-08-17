@@ -1,6 +1,8 @@
 
 const KFProxy = artifacts.require('KFProxy')
 const GameManager = artifacts.require('GameManager')
+const KittieHELL = artifacts.require('KittieHell')
+const CryptoKitties = artifacts.require('MockERC721Token');
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -15,9 +17,13 @@ module.exports = async (callback) => {
   try{
     let proxy = await KFProxy.deployed();
     let gameManager = await GameManager.deployed();
+    let kittieHELL = await KittieHELL.deployed()
+    let cryptoKitties = await CryptoKitties.deployed();
 
     let gameId = process.argv[4];
     let accountIndex = process.argv[5];
+
+    // let gamePlayers = await getterDB.getGamePlatyers(gameId);
     
     allAccounts = await web3.eth.getAccounts();
 

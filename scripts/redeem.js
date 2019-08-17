@@ -11,7 +11,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/redeem.js <gameId> <kittieId> <accountIndex> --network rinkeby                                       
+//truffle exec scripts/redeem.js <gameId> <kittieId> <accountIndex> --network rinkeby                                       
 
 module.exports = async (callback) => {
   try{

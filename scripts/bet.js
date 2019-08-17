@@ -15,7 +15,6 @@ function randomValue() {
 
 
 //truffle exec scripts/bet.js <gameId> <index_account> <amount> --network rinkeby
-// bet in a gameId from address of accounts[index] amountBet(eth)
 
 module.exports = async (callback) => {
 	try{
@@ -37,7 +36,7 @@ module.exports = async (callback) => {
         let supporting;
 
         if(info.supportedPlayer === players.playerBlack) supporting = 'BLACK';
-        else supporting = 'BLACK';
+        else supporting = 'RED';
         
         console.log(`Betting ${amountBet} ETH...`)
         await proxy.execute('GameManager', setMessage(gameManager, 'bet',
