@@ -13,7 +13,12 @@ contract CronJobTarget is Proxied {
 	uint256 public value;
     uint256 public scheduledJob;
     uint256 public evilJob;
+    uint256[] values;
     event Scheduled(uint256 scheduledJob, uint256 time, uint256 value);
+
+    function getValues() view public returns(uint256[] memory){
+        return values;
+    }
 
     function scheduleSetNonZeroValue(uint256 _value, uint256 _delay) public onlyOwner() {
         require(_value > 0, 'Value should be > 0');
@@ -29,13 +34,13 @@ contract CronJobTarget is Proxied {
     function setNonZeroValue(uint256 _value) public onlyContract(CONTRACT_NAME_CRONJOB) {
         require(_value > 0, "Value should not be zero");
         value = _value;
+        values.push(value);
         if(value == 666 && evilJob > 0){
             //Doing somethig evil...
             CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
             cron.deleteCronJob(CONTRACT_NAME, evilJob);
         }
     }
-
 
     function removeJob(uint256 jobId) public {
         CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));

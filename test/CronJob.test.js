@@ -14,6 +14,15 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
+
+function parseJobID(jobID){
+    const FFFF = new web3.utils.BN(0xFFFF);
+    //let jobId = web3.utils.toBN(jobId);
+    let time = jobID.shrn(16).toString();
+    let nonce = jobID.and(FFFF);
+    return `${time}.${nonce}`;
+}
+
     
 contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
 
@@ -152,6 +161,60 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             newValue = await this.cronJobTarget.value();
             assert.equal(newValue.toString(), String(randomVal), 'Value should  be changed');
         });
+        it('should execute jobs in their time order', async () => {
+            let now = (await web3.eth.getBlock('latest')).timestamp;
+            //console.log('Now', now);
+
+            let cronJob = this.cronJob;
+            let cronJobTarget = this.cronJobTarget;
+            async function addJob(delay){
+                let now = (await web3.eth.getBlock('latest')).timestamp;
+                let time = now+delay;
+                // console.log('Current jobs:', (await cronJob.getAllJobs()).map(id => parseJobID(id)).join(', ') );
+                // console.log('Job nonce for ', time,': ', (await cronJob.getJobNonceForTimestamp(time)).toString());
+                // console.log('Adding Job for ', time, '; next = ', parseJobID(await cronJob.findNextJob(time)), '; last = ', parseJobID(await cronJob.getLastJobId()));
+                let receipt = await cronJobTarget.scheduleSetNonZeroValue(time, delay).should.be.fulfilled;
+                let jobId = receipt.logs[0].args.scheduledJob;
+                // console.log('Added Job id ', parseJobID(jobId));
+                // console.log('====')
+                return jobId;
+            }
+
+            let delay = 10;
+            //Create Job 1: delay
+            await addJob(delay);
+            //Create Job 2: 3*delay
+            await addJob(3*delay);
+            //Create Job 3: 2*delay
+            await addJob(2*delay);
+            //Create Job 4: delay/2
+            await addJob(delay/2);
+            //Create Job 5: 5*delay
+            await addJob(5*delay);
+            //Create Job 6: 4*delay
+            await addJob(4*delay);
+            //Create Job 7: 4*delay
+            //await addJob(4*delay); //TODO: this fails
+
+            //Read event list
+            let allEvents = await this.cronJob.getAllJobs();
+            //console.log('All events', allEvents.map(id => parseJobID(id)));
+
+            //Execute jobs
+            evm.increaseTime(web3, 10*delay);
+            for(let i=0; i < 4; i++){
+                await this.proxy.executeScheduledJobs();
+            }
+            //Check order
+            let values = (await this.cronJobTarget.getValues()).map(v => v.toNumber());
+            //console.log('Values', values);
+            let prev = 0;
+            for(let i=0; i < values.length; i++){
+                assert(prev < values[i], "Wrong order of execution: "+JSON.stringify(values));
+                prev = values[i];
+            }
+        });
+
     });
     describe('CronJob::ExecuteViaProxy', () => {
         it('should execute added job', async () => {
@@ -247,10 +310,7 @@ contract('CronJob', ([creator, unauthorizedUser, randomAddress]) => {
             //console.log("Executed Jobs", logs.map(le => le.returnValues.jobId));
             assert.equal(logs[4].returnValues.jobId, job5Id, "Job5 Not executed");
         });
-
-
     });
-
 
 
 });

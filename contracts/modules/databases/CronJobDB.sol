@@ -26,6 +26,9 @@ import "../../libs/SafeMath.sol";
  * After adding a job, nonce for it's timestamp is incremented. When canceling a job, nonce is NOT decremented.
  *
  * This contract should not be used standalone, it is designed as a part of CronJob
+ *
+ * CronJobDB uses a sorted linked list of job ids (tied to the time of execution), 
+ * so that nearest jobs are on the head, while latest jobs are on the tail of the list.
  */
 contract CronJobDB is Proxied {
     using SafeMath for uint256;
@@ -110,11 +113,11 @@ contract CronJobDB is Proxied {
 
         validateNewJobPosition(jobId, nextJob);
 
-        if(nextJob == 0){
-            require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId), ERROR_ALREADY_EXIST);
-        }else{
+        // if(nextJob == 0){
+        //     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId), ERROR_ALREADY_EXIST);
+        // }else{
             require(genericDB.insertNodeToLinkedList(CONTRACT_NAME_CRONJOB, TABLE_KEY, jobId, nextJob, false), ERROR_ALREADY_EXIST); //false means "prev" direction - insert before nextJob
-        }
+        // }
         incrementJobNonceForTimestamp(time);
 
         genericDB.setStringStorage(CONTRACT_NAME_CRONJOB, keccak256(abi.encodePacked(jobId, "callee")), callee);
@@ -140,12 +143,12 @@ contract CronJobDB is Proxied {
     }
 
 
-    function getFirstJobId() view internal returns(uint256){
-        (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_CRONJOB, TABLE_KEY, 0, false);    // 0 means HEAD, false means tail of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
+    function getFirstJobId() view public returns(uint256){
+        (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_CRONJOB, TABLE_KEY, 0, true);    // 0 means HEAD, false means tail of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
         return id;
     }
-    function getLastJobId() view internal returns(uint256){
-        (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_CRONJOB, TABLE_KEY, 0, true);    // 0 means HEAD, true means head of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
+    function getLastJobId() view public returns(uint256){
+        (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_CRONJOB, TABLE_KEY, 0, false);    // 0 means HEAD, true means head of the list (because GenericDB.pushNodeToLinkedList() uses true as direction)
         return id;
     }
     function getLastScheduledJobTime() view public returns(uint256) {
