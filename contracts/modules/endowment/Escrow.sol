@@ -19,7 +19,6 @@ contract Escrow is Owned {
     * @dev Initialize contracts used
     */
     function initialize(ERC20Standard _kittieFightToken) external onlyOwner {
-        //kittieFightToken = ERC20Standard(address(ktyAddress));
         kittieFightToken = _kittieFightToken;
     }
 
@@ -34,7 +33,7 @@ contract Escrow is Owned {
     function transferKTY(address _to, uint256 _kty_amount) public onlyOwner returns(bool){
         
         kittieFightToken.transfer(_to, _kty_amount);
-        emit EthTransfered(_to, _kty_amount);
+        emit KtyTransfered(_to, _kty_amount);
         return true;
     }
 

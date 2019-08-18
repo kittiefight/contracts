@@ -221,4 +221,16 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
     }
 
+    /// @notice Gets the time before a game ends that the check performance should act
+    function getPerformanceTimeCheck() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERFORMANCE_TIME_CHECK);
+    }
+
+    /// @notice Gets the amount of time to add when game is underperformant
+    function getTimeExtension() 
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TIME_EXTENSION);
+    }
+
 }

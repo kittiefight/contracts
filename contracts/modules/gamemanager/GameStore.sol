@@ -5,8 +5,9 @@ import "../../GameVarAndFee.sol";
 import "../databases/GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
 import "../algorithm/HitsResolveAlgo.sol";
+import '../../authority/Guard.sol';
 
-contract GameStore is Proxied {
+contract GameStore is Proxied, Guard {
 
     using SafeMath for uint256;
 
@@ -29,6 +30,8 @@ contract GameStore is Proxied {
         uint honeypotExpirationTime;
         uint minimumContributors;
         uint finalizeRewards;
+        uint timeExtension;
+        uint performanceTime;
         uint[5] distributionRates;
     }
 
@@ -42,7 +45,7 @@ contract GameStore is Proxied {
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
     }
 
-    function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION){
+    function lock(uint gameId) internal{
         GlobalSettings memory globalSettings;
 
         globalSettings.bettingFee = gameVarAndFee.getBettingFee();
@@ -53,9 +56,20 @@ contract GameStore is Proxied {
         globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
         globalSettings.distributionRates = gameVarAndFee.getDistributionRates();
         globalSettings.finalizeRewards = gameVarAndFee.getFinalizeRewards();
+        globalSettings.timeExtension = gameVarAndFee.getTimeExtension();
+        globalSettings.performanceTime = gameVarAndFee.getPerformanceTimeCheck();
 
         gameSettings[gameId] = globalSettings;
     }
+
+    function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION){
+        lock(gameId);
+    }
+
+    function lockVarsAdmin(uint gameId) external onlySuperAdmin{
+        lock(gameId);
+    }
+
 
     function getDistributionRates(uint gameId) public view returns(uint[5] memory){
         return gameSettings[gameId].distributionRates;
@@ -117,6 +131,14 @@ contract GameStore is Proxied {
 
     function getFinalizeRewards(uint gameId) public view returns(uint){
         return gameSettings[gameId].finalizeRewards;
+    }
+
+    function getPerformanceTimeCheck(uint gameId) public view returns(uint){
+        return gameSettings[gameId].performanceTime;
+    }
+
+    function getTimeExtension(uint gameId) public view returns(uint){
+        return gameSettings[gameId].timeExtension;
     }
 
     function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
@@ -200,7 +222,9 @@ contract GameStore is Proxied {
 
     function checkPerformanceHelper(uint gameId, uint gameEndTime) external returns(bool){
         //each time 1 minute before game ends
-        if(gameEndTime.sub(5) <= now) {
+        uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
+        
+        if(gameEndTime.sub(performanceTimeCheck) <= now) {
             //get initial jackpot, need endowment to send this when creating honeypot
             (,,uint initialEth, uint currentJackpotEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
 

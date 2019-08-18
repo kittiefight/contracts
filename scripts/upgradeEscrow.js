@@ -22,13 +22,35 @@ module.exports = async (callback) => {
 		endowmentFund = await EndowmentFund.deployed()
 		kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
 
-		console.log('\nUpgrading Escrow...');
+		allAccounts = await web3.eth.getAccounts();
+
+		let superAdmin = allAccounts[0];
+
+		console.log('Transfering ownership to SuperAdmin...')
+		await endowmentFund.transferEscrowOwnership(superAdmin)
+
+		let balanceKTY = await escrow.getBalanceKTY();
+        let balanceETH = await escrow.getBalanceETH();
+
+		console.log('Checking Escrow balances...');
+        console.log('\n================');
+        console.log(`  ${web3.utils.fromWei(balanceETH)} ETH`);
+        console.log(`  ${web3.utils.fromWei(balanceKTY)} KTY`);
+        console.log('================');
+		
+		console.log('\nTransfering Balances to super admin...');
+		await escrow.transferKTY(superAdmin, balanceKTY);
+		await escrow.transferETH(superAdmin, balanceETH);
+
+		console.log('Upgrading Escrow...');
 		await endowmentFund.initUpgradeEscrow(escrow.address)
 		//Transfer KTY
 		await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
 		await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
 		//Transfer ETH
 		await endowmentFund.sendETHtoEscrow({value:INITIAL_ETH_ENDOWMENT});
+
+		console.log('Done!\n');
 
 		callback()
 	}
