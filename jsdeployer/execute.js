@@ -313,7 +313,7 @@ jQuery(document).ready(function($) {
     });
     $('#executeDirectlyBtn').click(function(){
         let targetContract =  $('#arguments').data('contract');
-        let payload = $('#payloadData').val();
+        let payload = $('#resultData').val();
         if(!payload.startsWith('0x')){
             printError('Payload has incorrect format');
             return;
