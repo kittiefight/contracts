@@ -124,11 +124,7 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
-    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
-        address payable msgSender = address(uint160(_account));
-        (uint256 winningsETH,) = getWinnerShare(_gameId, msgSender);
-        if (winningsETH == 0) return true;
-        
+    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {        
         (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
         return ((totalETHdebited > 0) && (totalKTYdebited > 0)); // since payout is in full not in parts
     }
