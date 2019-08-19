@@ -115,7 +115,7 @@ contract Distribution is Proxied {
 
 
     function getEndowmentShare(uint gameId) public view returns(uint256 winningsETH, uint256 winningsKTY){
-        (uint256 totalEthFunds, uint256 totalKTYFunds) = endowmentDB.getHoneypotTotal(gameId);
+        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
         uint256[5] memory rates = gameStore.getDistributionRates(gameId);
         

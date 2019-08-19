@@ -122,6 +122,9 @@ contract GameCreation is Proxied, Guard {
         
         require(playerRed != address(kittieHELL) && playerBlack != address(kittieHELL), 'KittieHell owns Kitties');
 
+        emit NewListing(kittyRed, playerRed, now);
+        emit NewListing(kittyBlack, playerBlack, now);
+
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
