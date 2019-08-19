@@ -12,8 +12,8 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/redeem.js gameId(uint)
-//                                        
+//truffle exec scripts/FE/change_owner.js kittieID(uint) (number for accounts[number]) 
+//Script for changing owner of kitty                                      
 
 module.exports = async (callback) => {
   try{
@@ -26,37 +26,22 @@ module.exports = async (callback) => {
 
     accounts = await web3.eth.getAccounts();
 
-    let gameId = process.argv[4];
+    let kittyId = process.argv[4];
+    let newOwner = accounts[process.argv[5]];
 
-    let winners = await getterDB.getWinners(gameId);
+    let player = await cryptoKitties.ownerOf(kittyId);
+    console.log('Old Owner: ', player);
 
-    let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
+    await cryptoKitties.transfer(newOwner, kittyId, {from: player});
 
-    let loserKitty;
-    let loser;
+    let owner = await cryptoKitties.ownerOf(kittyId);
 
-    if(winners.winner === playerRed){
-      loser = playerBlack;
-      loserKitty = Number(kittyBlack);
-    }
-    else{
-      loser = playerRed;
-      loserKitty = Number(kittyRed);
+    if(owner === newOwner){
+      console.log('Owner changed: ', newOwner);
     }
 
-    let resurrectionCost = await kittieHell.getResurrectionCost(loserKitty, gameId);
 
-    await kittieFightToken.approve(endowmentFund.address, resurrectionCost,
-      { from: loser });
-
-    await proxy.execute('KittieHell', setMessage(kittieHell, 'payForResurrection',
-      [loserKitty, gameId]), { from: loser });
-
-    let owner = await cryptoKitties.ownerOf(loserKitty);
-
-    if (owner === loser){
-      console.log('Kitty Redeemed');
-    }
+    
 
 
     callback()

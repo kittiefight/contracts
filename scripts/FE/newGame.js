@@ -22,7 +22,7 @@ function timeout(s) {
 
 //truffle exec scripts/FE/newgame.js kittyRed(kittieID) kittyBlack(kittieID) gameStartTimeGiven(FORMATexample (UTC): 2009 02 13 23:31:30)
 //Only SuperAdmin can call this function. Owners of Kittys must be those players.
-//Example: truffle exec scripts/FE/newGame.js 1001 324 "2019-08-12 19:25:00"
+//Example: truffle exec scripts/FE/newGame.js 1001 324 '2019-08-12T19:25:00.906Z';
 
 module.exports = async (callback) => {
   try{

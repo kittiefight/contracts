@@ -46,7 +46,7 @@ module.exports = async (callback) => {
 
     let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
     
-    let finalizer = accounts[30];
+    let finalizer = accounts[31];
 
     console.log('\n==== WAITING FOR GAME OVER: ', formatDate(endTime))
 
