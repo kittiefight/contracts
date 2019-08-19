@@ -17,7 +17,8 @@ jQuery(document).ready(function($) {
             setTimeout(init, 5000);
             return;
         }
-        // Load contracts 
+        // Load contracts
+        $('#status').text('Loading contract definitions...');
         let loaders = [];
         for(let contract of window.contractSettings){
             let contractFile = (typeof contract.contract != 'undefined')?contract.contract:contract.name;
@@ -62,6 +63,7 @@ jQuery(document).ready(function($) {
             }
         }
         console.log(`loading from ${contractInstances.KFProxy.options.address}`);
+        $('#status').text('Loading contract addresses...');
         $('#startListening').addClass('disabled');
         let addresses = (await loadContracts())
             .filter(address => (address != ZERO_ADDRESS))
