@@ -8,6 +8,7 @@ jQuery(document).ready(function($) {
     let contractDefinitions = {};
     let contractInstances = {};
     let addressToContractMap = {};
+    let subscription = null;
 
 
     setTimeout(init, 1000);
@@ -73,7 +74,7 @@ jQuery(document).ready(function($) {
         $('#status').text('Listening to events...')
         let $logs = $('#eventLogs');
         $('#stopListening').removeClass('disabled');
-        web3s.eth.subscribe('logs', {
+        subscription = web3s.eth.subscribe('logs', {
             'address': addresses
         })
         .on('error', function(err){
@@ -98,9 +99,18 @@ jQuery(document).ready(function($) {
         })
     });
     $('#stopListening').click(function(){
-       web3s.eth.clearSubscriptions();
-       $('#stopListening').addClass('disabled');
-       $('#startListening').removeClass('disabled'); 
+        if(subscription != null){
+            subscription.unsubscribe(function(error, success){
+                if(success){
+                    $('#status').text('Ready');
+                    $('#stopListening').addClass('disabled');
+                    $('#startListening').removeClass('disabled'); 
+                    subscription = null;
+                }else{
+                    printError(error);
+                }
+            });
+        }
     })
 
     async function loadContracts(){
