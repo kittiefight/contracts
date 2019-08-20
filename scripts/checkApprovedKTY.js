@@ -3,7 +3,7 @@ const KittieFightToken = artifacts.require('KittieFightToken');
 
 const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
 
-// truffle exec scripts/checkApprovedKTY.js <account> --network rinkeby
+// truffle exec scripts/checkApprovedKTY.js <accountIndex> --network rinkeby
 
 module.exports = async (callback) => {    
 
