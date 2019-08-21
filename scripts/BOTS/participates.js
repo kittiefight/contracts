@@ -31,7 +31,7 @@ module.exports = async (callback) => {
     if (playerToSupport === "RED") supported = playerRed;
     else if (playerToSupport === "BLACK") supported = playerBlack;
 
-    for(i = fromAccount ; i < toAccount; i++){
+    for(i = fromAccount ; i <= toAccount; i++){
 
         let account = allAccounts[i]; 
         console.log(`Supporting Player ${playerToSupport}...`)
