@@ -4,7 +4,6 @@ const GMGetterDB = artifacts.require('GMGetterDB')
 const Register = artifacts.require('Register')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken');
-const GameManager = artifacts.require('GameManager')
 
 const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -47,10 +46,11 @@ module.exports = async (callback) => {
         let account = allAccounts[accountIndex];
 
         // APPROVE KTY TO ENDOWMENT
-        await kittieFightToken.approve(endowmentFund.address, web3.utils.toWei(String(amountKTY)) , 
+        let KTYBalance = await kittieFightToken.balanceOf(account)
+        await kittieFightToken.approve(endowmentFund.address, web3.utils.toWei(KTYBalance.toString()) , 
             { from: account })
         approvedTokens = await kittieFightToken.allowance(account, endowmentFund.address);
-        if(approvedTokens) console.log(`\n${account} approved ${amountKTY} KTY to endowment`);
+        if(approvedTokens) console.log(`\n${account} approved ${KTYBalance.toString()} KTY to endowment`);
 
         //REGISTER IF NOT ALREADY
         let isRegistered = await register.isRegistered(account);
@@ -88,28 +88,19 @@ module.exports = async (callback) => {
         //We assume the game has started
         while(true){
 
-            let info = await getterDB.getSupporterInfo(gameId, account);
-            let players = await getterDB.getGamePlayers(gameId);
-    
-            let supporting;
-    
-            if(info.supportedPlayer === players.playerBlack) supporting = 'BLACK';
-            else supporting = 'RED';
-
             let amountBet = randomBet(maxBetAmount);
 
             console.log(`Betting ${amountBet} ETH...`)
-            proxy.execute('GameManager', setMessage(gameManager, 'bet',
+            await proxy.execute('GameManager', setMessage(gameManager, 'bet',
                 [gameId, randomValue()]), { from: account, value: web3.utils.toWei(String(amountBet)) })            
-            console.log(`Player ${account} placed a bet in game ${gameId} for ${supporting}!\n`)
 
             //IF lower than 50 KTY
             approvedTokens = await kittieFightToken.allowance(account, endowmentFund.address);
-            if(approvedTokens < web3.utils.toWei('50')) callback()
+            if(approvedTokens < web3.utils.toWei('50')) callback(new Error('Low on approved KTY'))
 
             //If lower than 1 ETH
             balance = await web3.eth.getBalance(account);
-            if(balance < web3.utils.toWei('1')) callback()
+            if(balance < web3.utils.toWei('1')) callback(new Error('Low on ETH'))
         }
 
 		
