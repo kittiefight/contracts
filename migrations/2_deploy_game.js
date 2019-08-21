@@ -73,37 +73,40 @@ module.exports = (deployer, network, accounts) => {
   .then(async(escrow) => {
     await escrow.transferOwnership(EndowmentFund.address) 
   })
-  .then(async() => {
+  .then(() => deployer.deploy(KFProxy))
+  .then(async(proxy) => {
 
     //Contracts not deployed
-    proxy = await KFProxy.deployed()
+    // proxy = await KFProxy.deployed()
     rarityCalculator = await RarityCalculator.deployed()
 
     console.log('\nAdding contract names to proxy...');
-    await proxy.updateContract('TimeContract', DateTime.address)
-    await proxy.updateContract('GenericDB', GenericDB.address)
-    await proxy.updateContract('CryptoKitties', CryptoKitties.address);
-    await proxy.updateContract('SuperDAOToken', SuperDaoToken.address);      
-    await proxy.updateContract('ProfileDB', ProfileDB.address);
-    await proxy.updateContract('RoleDB', RoleDB.address);
-    await proxy.updateContract('Register', Register.address)
-    await proxy.updateContract('GameVarAndFee', GameVarAndFee.address)
-    await proxy.updateContract('EndowmentFund', EndowmentFund.address)
-    await proxy.updateContract('EndowmentDB', EndowmentDB.address)
-    await proxy.updateContract('Forfeiter', Forfeiter.address)
-    await proxy.updateContract('Scheduler', Scheduler.address)
-    await proxy.updateContract('Betting', Betting.address)
-    await proxy.updateContract('HitsResolve', HitsResolve.address)
-    await proxy.updateContract('GMSetterDB', GMSetterDB.address)
-    await proxy.updateContract('GMGetterDB', GMGetterDB.address)
-    await proxy.updateContract('GameManager', GameManager.address)
-    await proxy.updateContract('GameStore', GameStore.address)
-    await proxy.updateContract('GameCreation', GameCreation.address)
-    await proxy.updateContract('CronJob', CronJob.address)
-    await proxy.updateContract('FreezeInfo', FreezeInfo.address);
-    await proxy.updateContract('CronJobTarget', CronJobTarget.address);
-    await proxy.updateContract('KittieHell', KittieHELL.address)
-    await proxy.updateContract('KittieHellDB', KittieHellDB.address)
+    await proxy.addContract('TimeContract', DateTime.address)
+    await proxy.addContract('GenericDB', GenericDB.address)
+    await proxy.addContract('CryptoKitties', CryptoKitties.address);
+    await proxy.addContract('SuperDAOToken', SuperDaoToken.address); 
+    await proxy.addContract('KittieFightToken', KTY_ADDRESS)     
+    await proxy.addContract('ProfileDB', ProfileDB.address);
+    await proxy.addContract('RoleDB', RoleDB.address);
+    await proxy.addContract('Register', Register.address)
+    await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
+    await proxy.addContract('EndowmentFund', EndowmentFund.address)
+    await proxy.addContract('EndowmentDB', EndowmentDB.address)
+    await proxy.addContract('Forfeiter', Forfeiter.address)
+    await proxy.addContract('Scheduler', Scheduler.address)
+    await proxy.addContract('Betting', Betting.address)
+    await proxy.addContract('HitsResolve', HitsResolve.address)
+    await proxy.addContract('RarityCalculator', RarityCalculator.address)
+    await proxy.addContract('GMSetterDB', GMSetterDB.address)
+    await proxy.addContract('GMGetterDB', GMGetterDB.address)
+    await proxy.addContract('GameManager', GameManager.address)
+    await proxy.addContract('GameStore', GameStore.address)
+    await proxy.addContract('GameCreation', GameCreation.address)
+    await proxy.addContract('CronJob', CronJob.address)
+    await proxy.addContract('FreezeInfo', FreezeInfo.address);
+    await proxy.addContract('CronJobTarget', CronJobTarget.address);
+    await proxy.addContract('KittieHell', KittieHELL.address)
+    await proxy.addContract('KittieHellDB', KittieHellDB.address)
   })
   .then(async() => {
     console.log('\nGetting contract instances...');
@@ -141,6 +144,7 @@ module.exports = (deployer, network, accounts) => {
     scheduler = await Scheduler.deployed()
     betting = await Betting.deployed()
     hitsResolve = await HitsResolve.deployed()
+    rarityCalculator = await RarityCalculator.deployed()
     endowmentFund = await EndowmentFund.deployed()
     kittieHELL = await KittieHELL.deployed()
 

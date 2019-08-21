@@ -26,7 +26,7 @@ module.exports = async (callback) => {
         console.log(`  ${web3.utils.fromWei(balanceKTY)} KTY`);
         console.log('================');
 		
-		console.log('\nTransfering Balances to super admin...');
+		// console.log('\nTransfering Balances to super admin...');
 		await escrow.transferKTY(superAdmin, balanceKTY);
 		await escrow.transferETH(superAdmin, balanceETH);
 

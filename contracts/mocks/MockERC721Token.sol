@@ -9,6 +9,8 @@ import "../authority/Owned.sol";
 contract MockERC721Token is ERC721, Owned {
   using SafeMath for uint256;
 
+  event KittieMinted(uint indexed kittyId, address indexed owner);
+
   uint private supply;
 
   // Mapping from token ID to owner
@@ -25,6 +27,7 @@ contract MockERC721Token is ERC721, Owned {
 
   function mint(address to, uint256 tokenId) public onlyOwner {
     _mint(to, tokenId);
+    emit KittieMinted(tokenId, to);
   }
 
   function totalSupply() public view returns (uint256) {
