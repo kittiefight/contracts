@@ -21,10 +21,15 @@ function randomValue() {
 
 function randomBet(maxBet) {
     return (Math.random() * maxBet) + 0.1;
-  }
+}
+
+function timeout(s) {
+// console.log(`~~~ Timeout for ${s} seconds`);
+return new Promise(resolve => setTimeout(resolve, s * 1000));
+}
 
 
-//truffle exec scripts/BOTS/play.js <gameId> <accountIndex> <playerToSupport> <maxBetAmount> --network rinkeby
+//truffle exec scripts/BOTS/play.js <gameId> <accountIndex> <playerToSupport> <maxBetAmount> <timeBetweenBets> --network rinkeby
 
 module.exports = async (callback) => {
 	try{
@@ -39,6 +44,7 @@ module.exports = async (callback) => {
         let accountIndex = process.argv[5];
         let playerToSupport = process.argv[6];
         let maxBetAmount = process.argv[7];
+        let timeBetweenBets = process.argv[8];
 
         let allAccounts = await web3.eth.getAccounts();
 
@@ -101,6 +107,8 @@ module.exports = async (callback) => {
             //If lower than 1 ETH
             balance = await web3.eth.getBalance(account);
             if(balance < web3.utils.toWei('1')) callback(new Error('Low on ETH'))
+
+            await timeout(timeBetweenBets);
         }
 
 		
