@@ -165,6 +165,7 @@ module.exports = (deployer, network, accounts) => {
     await scheduler.setProxy(proxy.address)
     await betting.setProxy(proxy.address)
     await hitsResolve.setProxy(proxy.address)
+    await rarityCalculator.setProxy(proxy.address);
     await register.setProxy(proxy.address)
     await gameManager.setProxy(proxy.address)
     await gameStore.setProxy(proxy.address)
