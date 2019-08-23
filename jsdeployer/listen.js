@@ -4,7 +4,6 @@ jQuery(document).ready(function($) {
     const INFURA_ID = '615f9abed6d04d3abf8f2c3a66159ac5'; //Infura Project ID (public)
 
     let web3 = null;
-    let web3s = null;    //Subscriptions provider
     let contractDefinitions = {};
     let contractInstances = {};
     let addressToContractMap = {};
@@ -13,7 +12,10 @@ jQuery(document).ready(function($) {
 
     setTimeout(init, 1000);
     async function init(){
-        web3 = await loadWeb3();
+        let network = getUrlParam('network');
+        if(network == null) network = 'rinkeby';
+        network = network.toLowerCase();
+        web3 = await loadWeb3(network);
         if(web3 == null) {
             setTimeout(init, 5000);
             return;
@@ -74,7 +76,7 @@ jQuery(document).ready(function($) {
         $('#status').text('Listening to events...')
         let $logs = $('#eventLogs');
         $('#stopListening').removeClass('disabled');
-        subscription = web3s.eth.subscribe('logs', {
+        subscription = web3.eth.subscribe('logs', {
             'address': addresses
         })
         .on('error', function(err){
@@ -132,33 +134,15 @@ jQuery(document).ready(function($) {
 
     //====================================================
 
-    async function loadWeb3(){
+    async function loadWeb3(network){
         printError('');
-        if (typeof window.ethereum == 'undefined' && Web3.givenProvider == null) {
-            printError('No MetaMask found');
-            return null;
-        }
-        if(window.ethereum){
-            await window.ethereum.enable();
-        }
-        // Web3 browser user detected. You can now use the provider.
-        let web3 = new Web3(window.ethereum || Web3.givenProvider);
-        
-        let accounts = await web3.eth.getAccounts();
-        if(typeof accounts[0] == 'undefined'){
-            printError('Please, unlock MetaMask');
-            return null;
-        }
-        // web3.eth.getBlock('latest', function(error, result){
-        //     console.log('Current latest block: #'+result.number+' '+timestmapToString(result.timestamp), result);
-        // });
-        web3.eth.defaultAccount =  accounts[0];
+
+        web3 = new Web3(`wss://${network}.infura.io/ws/v3/${INFURA_ID}`);
         window.web3 = web3;
 
-        //Subscriptions provider
-        let network = await web3.eth.net.getNetworkType();
-        web3s = new Web3(`wss://${network}.infura.io/ws/v3/${INFURA_ID}`);
-        window.web3s = web3s;
+        web3.eth.getBlock('latest', function(error, result){
+            console.log('Current latest block: #'+result.number+' '+timestmapToString(result.timestamp), result);
+        });
 
         return web3;
     }
