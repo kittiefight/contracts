@@ -150,15 +150,26 @@ jQuery(document).ready(function($) {
                 case 'uint256':
                     $('<div class="two fields">')
                     .append(`<div class="field"><label><i>${argument.type}</i> ${argument.name}</label><input type="number" name="${argument.name}" min="0" placeholder="0"></div>`)
-                    .append(`<div class="field"><label>Convert</label><select name="${argument.name}.convertWei"></select></div>`)
+                    .append(`<div class="field"><label>Convert</label><select name="${argument.name}.convert"></select></div>`)
                     .appendTo($field);
                     $('select', $field).dropdown({
                         values: [
                             {name:'none/wei', value:'', selected : true},
                             {name:'gwei (value * 10**9)', value:'gwei'},
-                            {name:'Ether/KTY (value * 10**18)', value:'ether'}
+                            {name:'Ether/KTY (value * 10**18)', value:'ether'},
+                            {name:'DateTime (YYYY-MM-DD HH:mm)', value:'datetime'},
                         ],
                         placeholder: false,
+                        onChange: function(cvv){
+                            let $inp = $('input', $(this).parents('div.two.fields'));
+                            if(cvv == 'datetime'){
+                                $inp.attr('type', 'text');
+                                $inp.attr('placeholder', (new Date()).toISOString());
+                            }else{
+                                $inp.attr('type', 'number');
+                                $inp.attr('placeholder', 0);
+                            }
+                        }
                     });
                     break;
                 case 'bytes':
@@ -229,11 +240,26 @@ jQuery(document).ready(function($) {
                 val = text.trim().split('\n').map(line => line.trim());
             } else {
                 val = $(`input[name=${argument.name}]`).val();
-                let convertEl = $(`select[name='${argument.name}.convertWei']`);
+                let convertEl = $(`select[name='${argument.name}.convert']`);
                 if(convertEl.length > 0){
                     let convertType = convertEl.parent().find('.selected').data('value'); //dropdown('get value') does not work
+                    switch(convertType){
+                        case 'datetime':
+                            let ms = Date.parse(val);
+                            if(!isNaN(ms)) val = Math.round(ms/1000);
+                            break;
+                        case 'gwei':
+                        case 'ether':
+                            val = web3.utils.toWei(val, convertType);
+                            break;
+                        case '':
+                        default:
+                            //No conversion
+                    }
+                    if(convertType == ''){
+                    }else
                     if(convertType != ''){
-                        val = web3.utils.toWei(val, convertType);
+                        
                     }
                 }
             }
