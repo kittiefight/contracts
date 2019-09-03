@@ -38,7 +38,7 @@ window.contractSettings = function() {
 		{"name":"EndowmentFund"},
 		{"name":"EndowmentDB"},
 		{"name":"Escrow"},
-		{"name":"KittieHELL"},
+		{"name":"KittieHell"},
 		{"name":"KittieHellDB"},
 		{"name":"SuperDaoToken", "contract":"MockERC20Token"},
 		{"name":"KittieFightToken"},
