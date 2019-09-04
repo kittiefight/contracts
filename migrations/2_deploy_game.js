@@ -41,162 +41,164 @@ module.exports = (deployer, network, accounts) => {
 
   let medianizer;
 
-  if ( network === 'mainnet' ) medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
-  else if ( network === 'rinkeby' ) medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
+  if (network === 'mainnet') medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
+  else if (network === 'rinkeby') medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
   else medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan and other networks
 
   deployer.deploy(GenericDB)
-  .then(() => deployer.deploy(ProfileDB, GenericDB.address))
-  .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
-  .then(() => deployer.deploy(GMGetterDB, GenericDB.address))
-  .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
-  .then(() => deployer.deploy(GameVarAndFee, GenericDB.address, medianizer))
-  .then(() => deployer.deploy(KittieHellDB, GenericDB.address))
-  .then(() => deployer.deploy(RoleDB, GenericDB.address))
-  .then(() => deployer.deploy(CronJob, GenericDB.address))
-  .then(() => deployer.deploy(FreezeInfo))
-  .then(() => deployer.deploy(CronJobTarget))
-  .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-  .then(() => deployer.deploy(CryptoKitties))
-  .then(() => deployer.deploy(GameManager))
-  .then(() => deployer.deploy(GameStore))
-  .then(() => deployer.deploy(GameCreation))
-  .then(() => deployer.deploy(Register))
-  .then(() => deployer.deploy(DateTime))
-  .then(() => deployer.deploy(Forfeiter))
-  .then(() => deployer.deploy(Scheduler))
-  .then(() => deployer.deploy(Betting))
-  .then(() => deployer.deploy(HitsResolve))
-  .then(() => deployer.deploy(EndowmentFund))
-  .then(() => deployer.deploy(KittieHELL))
-  .then(() => deployer.deploy(Escrow))
-  .then(async(escrow) => {
-    await escrow.transferOwnership(EndowmentFund.address) 
-  })
-  .then(() => deployer.deploy(KFProxy))
-  .then(async(proxy) => {
+    .then(() => deployer.deploy(ProfileDB, GenericDB.address))
+    .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
+    .then(() => deployer.deploy(GMGetterDB, GenericDB.address))
+    .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
+    .then(() => deployer.deploy(GameVarAndFee, GenericDB.address, medianizer))
+    .then(() => deployer.deploy(KittieHellDB, GenericDB.address))
+    .then(() => deployer.deploy(RoleDB, GenericDB.address))
+    .then(() => deployer.deploy(CronJob, GenericDB.address))
+    .then(() => deployer.deploy(FreezeInfo))
+    .then(() => deployer.deploy(CronJobTarget))
+    .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(CryptoKitties))
+    .then(() => deployer.deploy(GameManager))
+    .then(() => deployer.deploy(GameStore))
+    .then(() => deployer.deploy(GameCreation))
+    .then(() => deployer.deploy(Register))
+    .then(() => deployer.deploy(DateTime))
+    .then(() => deployer.deploy(Forfeiter))
+    .then(() => deployer.deploy(Scheduler))
+    .then(() => deployer.deploy(Betting))
+    .then(() => deployer.deploy(HitsResolve))
+    .then(() => deployer.deploy(EndowmentFund))
+    .then(() => deployer.deploy(KittieHELL))
+    .then(() => deployer.deploy(Escrow))
+    .then(async (escrow) => {
+      await escrow.transferOwnership(EndowmentFund.address)
+    })
+    // .then(() => deployer.deploy(KFProxy))
+    // .then(async(proxy) => {
+    .then(async () => {
 
-    //Contracts not deployed
-    // proxy = await KFProxy.deployed()
-    rarityCalculator = await RarityCalculator.deployed()
+      //Contracts not deployed
+      proxy = await KFProxy.deployed()
+      rarityCalculator = await RarityCalculator.deployed()
 
-    console.log('\nAdding contract names to proxy...');
-    await proxy.addContract('TimeContract', DateTime.address)
-    await proxy.addContract('GenericDB', GenericDB.address)
-    await proxy.addContract('CryptoKitties', CryptoKitties.address);
-    await proxy.addContract('SuperDAOToken', SuperDaoToken.address); 
-    await proxy.addContract('KittieFightToken', KTY_ADDRESS)     
-    await proxy.addContract('ProfileDB', ProfileDB.address);
-    await proxy.addContract('RoleDB', RoleDB.address);
-    await proxy.addContract('Register', Register.address)
-    await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
-    await proxy.addContract('EndowmentFund', EndowmentFund.address)
-    await proxy.addContract('EndowmentDB', EndowmentDB.address)
-    await proxy.addContract('Forfeiter', Forfeiter.address)
-    await proxy.addContract('Scheduler', Scheduler.address)
-    await proxy.addContract('Betting', Betting.address)
-    await proxy.addContract('HitsResolve', HitsResolve.address)
-    await proxy.addContract('RarityCalculator', RarityCalculator.address)
-    await proxy.addContract('GMSetterDB', GMSetterDB.address)
-    await proxy.addContract('GMGetterDB', GMGetterDB.address)
-    await proxy.addContract('GameManager', GameManager.address)
-    await proxy.addContract('GameStore', GameStore.address)
-    await proxy.addContract('GameCreation', GameCreation.address)
-    await proxy.addContract('CronJob', CronJob.address)
-    await proxy.addContract('FreezeInfo', FreezeInfo.address);
-    await proxy.addContract('CronJobTarget', CronJobTarget.address);
-    await proxy.addContract('KittieHell', KittieHELL.address)
-    await proxy.addContract('KittieHellDB', KittieHellDB.address)
-  })
-  .then(async() => {
-    console.log('\nGetting contract instances...');
-    // PROXY
-    proxy = await KFProxy.deployed()
+      console.log('\nAdding contract names to proxy...');
+      await proxy.updateContract('TimeContract', DateTime.address)
+      await proxy.updateContract('GenericDB', GenericDB.address)
+      await proxy.updateContract('CryptoKitties', CryptoKitties.address);
+      await proxy.updateContract('SuperDAOToken', SuperDaoToken.address);
+      await proxy.updateContract('KittieFightToken', KTY_ADDRESS)
+      await proxy.updateContract('ProfileDB', ProfileDB.address);
+      await proxy.updateContract('RoleDB', RoleDB.address);
+      await proxy.updateContract('Register', Register.address)
+      await proxy.updateContract('GameVarAndFee', GameVarAndFee.address)
+      await proxy.updateContract('EndowmentFund', EndowmentFund.address)
+      await proxy.updateContract('EndowmentDB', EndowmentDB.address)
+      await proxy.updateContract('Forfeiter', Forfeiter.address)
+      await proxy.updateContract('Scheduler', Scheduler.address)
+      await proxy.updateContract('Betting', Betting.address)
+      await proxy.updateContract('HitsResolve', HitsResolve.address)
+      await proxy.updateContract('RarityCalculator', RarityCalculator.address)
+      await proxy.updateContract('GMSetterDB', GMSetterDB.address)
+      await proxy.updateContract('GMGetterDB', GMGetterDB.address)
+      await proxy.updateContract('GameManager', GameManager.address)
+      await proxy.updateContract('GameStore', GameStore.address)
+      await proxy.updateContract('GameCreation', GameCreation.address)
+      await proxy.updateContract('CronJob', CronJob.address)
+      await proxy.updateContract('FreezeInfo', FreezeInfo.address);
+      await proxy.updateContract('CronJobTarget', CronJobTarget.address);
+      await proxy.updateContract('KittieHell', KittieHELL.address)
+      await proxy.updateContract('KittieHellDB', KittieHellDB.address)
+    })
+    .then(async () => {
+      console.log('\nGetting contract instances...');
+      // PROXY
+      proxy = await KFProxy.deployed()
 
-    // DATABASES
-    genericDB = await GenericDB.deployed()
-    profileDB = await ProfileDB.deployed();
-    roleDB = await RoleDB.deployed();
-    endowmentDB = await EndowmentDB.deployed()
-    getterDB = await GMGetterDB.deployed()
-    setterDB = await GMSetterDB.deployed()
-    kittieHellDB = await KittieHellDB.deployed()
+      // DATABASES
+      genericDB = await GenericDB.deployed()
+      profileDB = await ProfileDB.deployed();
+      roleDB = await RoleDB.deployed();
+      endowmentDB = await EndowmentDB.deployed()
+      getterDB = await GMGetterDB.deployed()
+      setterDB = await GMSetterDB.deployed()
+      kittieHellDB = await KittieHellDB.deployed()
 
-    // CRONJOB
-    cronJob = await CronJob.deployed()
-    freezeInfo = await FreezeInfo.deployed();
-    cronJobTarget= await CronJobTarget.deployed();
+      // CRONJOB
+      cronJob = await CronJob.deployed()
+      freezeInfo = await FreezeInfo.deployed();
+      cronJobTarget = await CronJobTarget.deployed();
 
 
-    // TOKENS
-    superDaoToken = await SuperDaoToken.deployed();
-    kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);    
-    cryptoKitties = await CryptoKitties.deployed();
+      // TOKENS
+      superDaoToken = await SuperDaoToken.deployed();
+      kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+      cryptoKitties = await CryptoKitties.deployed();
 
-    // MODULES
-    gameManager = await GameManager.deployed()
-    gameStore = await GameStore.deployed()
-    gameCreation = await GameCreation.deployed()
-    register = await Register.deployed()
-    dateTime = await DateTime.deployed()
-    gameVarAndFee = await GameVarAndFee.deployed()
-    forfeiter = await Forfeiter.deployed()
-    scheduler = await Scheduler.deployed()
-    betting = await Betting.deployed()
-    hitsResolve = await HitsResolve.deployed()
-    rarityCalculator = await RarityCalculator.deployed()
-    endowmentFund = await EndowmentFund.deployed()
-    kittieHELL = await KittieHELL.deployed()
+      // MODULES
+      gameManager = await GameManager.deployed()
+      gameStore = await GameStore.deployed()
+      gameCreation = await GameCreation.deployed()
+      register = await Register.deployed()
+      dateTime = await DateTime.deployed()
+      gameVarAndFee = await GameVarAndFee.deployed()
+      forfeiter = await Forfeiter.deployed()
+      scheduler = await Scheduler.deployed()
+      betting = await Betting.deployed()
+      hitsResolve = await HitsResolve.deployed()
+      rarityCalculator = await RarityCalculator.deployed()
+      endowmentFund = await EndowmentFund.deployed()
+      kittieHELL = await KittieHELL.deployed()
 
-    //ESCROW
-    escrow = await Escrow.deployed()
-    
+      //ESCROW
+      escrow = await Escrow.deployed()
 
-    console.log('\nSetting Proxy...');
-    await genericDB.setProxy(proxy.address)
-    await profileDB.setProxy(proxy.address);
-    await roleDB.setProxy(proxy.address);
-    await setterDB.setProxy(proxy.address)
-    await getterDB.setProxy(proxy.address)
-    await endowmentFund.setProxy(proxy.address)
-    await endowmentDB.setProxy(proxy.address)
-    await gameVarAndFee.setProxy(proxy.address)
-    await forfeiter.setProxy(proxy.address)
-    await scheduler.setProxy(proxy.address)
-    await betting.setProxy(proxy.address)
-    await hitsResolve.setProxy(proxy.address)
-    await rarityCalculator.setProxy(proxy.address);
-    await register.setProxy(proxy.address)
-    await gameManager.setProxy(proxy.address)
-    await gameStore.setProxy(proxy.address)
-    await gameCreation.setProxy(proxy.address)
-    await cronJob.setProxy(proxy.address)
-    await kittieHELL.setProxy(proxy.address)
-    await kittieHellDB.setProxy(proxy.address)
-    await cronJobTarget.setProxy(proxy.address);
-    await freezeInfo.setProxy(proxy.address);
 
-    console.log('\nInitializing contracts...');
-    await gameStore.initialize()
-    await gameCreation.initialize()
-    await forfeiter.initialize()
-    await scheduler.initialize()
-    await register.initialize()
-    await gameManager.initialize()
-    await getterDB.initialize()
-    await setterDB.initialize()
-    await endowmentFund.initialize()    
-    await kittieHellDB.setKittieHELL()
-    await kittieHELL.initialize()
-    await hitsResolve.initialize()
+      console.log('\nSetting Proxy...');
+      await genericDB.setProxy(proxy.address)
+      await profileDB.setProxy(proxy.address);
+      await roleDB.setProxy(proxy.address);
+      await setterDB.setProxy(proxy.address)
+      await getterDB.setProxy(proxy.address)
+      await endowmentFund.setProxy(proxy.address)
+      await endowmentDB.setProxy(proxy.address)
+      await gameVarAndFee.setProxy(proxy.address)
+      await forfeiter.setProxy(proxy.address)
+      await scheduler.setProxy(proxy.address)
+      await betting.setProxy(proxy.address)
+      await hitsResolve.setProxy(proxy.address)
+      await rarityCalculator.setProxy(proxy.address);
+      await register.setProxy(proxy.address)
+      await gameManager.setProxy(proxy.address)
+      await gameStore.setProxy(proxy.address)
+      await gameCreation.setProxy(proxy.address)
+      await cronJob.setProxy(proxy.address)
+      await kittieHELL.setProxy(proxy.address)
+      await kittieHellDB.setProxy(proxy.address)
+      await cronJobTarget.setProxy(proxy.address);
+      await freezeInfo.setProxy(proxy.address);
 
-    console.log('\nAdding Super Admin and Admin to Account 0...');
-    await register.addSuperAdmin(accounts[0])
-    await register.addAdmin(accounts[0])
+      console.log('\nInitializing contracts...');
+      await gameStore.initialize()
+      await gameCreation.initialize()
+      await forfeiter.initialize()
+      await scheduler.initialize()
+      await register.initialize()
+      await gameManager.initialize()
+      await getterDB.initialize()
+      await setterDB.initialize()
+      await endowmentFund.initialize()
+      await kittieHellDB.setKittieHELL()
+      await kittieHELL.initialize()
+      await hitsResolve.initialize()
 
-    // truffle exec scripts/upgradeEscrow.js --network rinkeby
+      console.log('\nAdding Super Admin and Admin to Account 0...');
+      await register.addSuperAdmin(accounts[0])
+      await register.addAdmin(accounts[0])
 
-    // truffle exec scripts/setAllGameVars.js --network rinkeby
+      //Then, run 
+      // truffle exec scripts/upgradeEscrow.js --network rinkeby
 
-  })
+      // truffle exec scripts/setAllGameVars.js --network rinkeby
+
+    })
 };

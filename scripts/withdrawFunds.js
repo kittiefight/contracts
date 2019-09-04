@@ -6,7 +6,7 @@ const EndowmentFund = artifacts.require('EndowmentFund')
 // truffle exec scripts/withdrawFunds.js --network rinkeby
 
 module.exports = async (callback) => {
-	try{
+	try {
 		escrow = await Escrow.deployed();
 		endowmentFund = await EndowmentFund.deployed()
 
@@ -18,15 +18,15 @@ module.exports = async (callback) => {
 		await endowmentFund.transferEscrowOwnership(superAdmin)
 
 		let balanceKTY = await escrow.getBalanceKTY();
-        let balanceETH = await escrow.getBalanceETH();
+		let balanceETH = await escrow.getBalanceETH();
 
-		console.log('Checking Escrow balances...');
-        console.log('\n================');
-        console.log(`  ${web3.utils.fromWei(balanceETH)} ETH`);
-        console.log(`  ${web3.utils.fromWei(balanceKTY)} KTY`);
-        console.log('================');
-		
-		// console.log('\nTransfering Balances to super admin...');
+		console.log('\nChecking Escrow balances...');
+		console.log('\n================');
+		console.log(`  ${web3.utils.fromWei(balanceETH)} ETH`);
+		console.log(`  ${web3.utils.fromWei(balanceKTY)} KTY`);
+		console.log('================');
+
+		console.log('\nTransfering Balances to super admin...');
 		await escrow.transferKTY(superAdmin, balanceKTY);
 		await escrow.transferETH(superAdmin, balanceETH);
 
@@ -34,7 +34,7 @@ module.exports = async (callback) => {
 
 		callback()
 	}
-	catch(e){callback(e)}
+	catch (e) { callback(e) }
 }
 
 
