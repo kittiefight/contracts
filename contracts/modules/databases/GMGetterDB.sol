@@ -235,16 +235,16 @@ contract GMGetterDB is Proxied {
     (status, expTime) = endowmentDB.getHoneypotState(gameId);
   }
 
-  function getMyInfo(uint256 gameId)
+  function getMyInfo(uint256 gameId, address sender)
     public view
     returns(bool isSupporter, uint supportedCorner, bool isPlayerInGame, uint corner)
   {
-    isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), msg.sender);
+    isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), sender);
     address supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, msg.sender, "supportedPlayer")));
+      CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, sender, "supportedPlayer")));
     supportedCorner = gameStore.getCorner(gameId, supportedPlayer);
-    isPlayerInGame = isPlayer(gameId, msg.sender);
-    corner = gameStore.getCorner(gameId, msg.sender);
+    isPlayerInGame = isPlayer(gameId, sender);
+    corner = gameStore.getCorner(gameId, sender);
   }
 
   function getPlayer(uint gameId, address player)
