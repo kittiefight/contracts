@@ -21,17 +21,33 @@ contract CattributesScoresDB is Proxied, Guard {
     }
 
     /**
-     * @author @ziweidream
+     * @author @ziweidream @Xale
      * @notice mapping a cattribute with its score
      * @dev this db needs to beupdated periodically.
      * @dev https://api.cryptokitties.co/cattributes
      * @param _name the cattribute's name
      * @param _score the cattribute's score
      */
-    function updateCattributesScores(string memory _name, uint _score)
+    function updateCattributesScores(bytes32[] memory _name, uint[] memory _score)
         public
         onlySuperAdmin
     {
-        CattributesScores[_name] = _score;
+        for(uint i=0; i<_name.length; i++)
+        {
+            CattributesScores[bytes32ToStr(_name[i])] = _score[i];
+        }
+    }
+
+
+
+    function bytes32ToStr(bytes32 _bytes32)
+        internal 
+        returns (string memory)
+    {
+        bytes memory bytesArray = new bytes(32);
+        for (uint256 i; i < 32; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
 }

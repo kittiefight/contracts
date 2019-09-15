@@ -18,7 +18,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
     using SafeMath for uint256;
 
     mapping(uint256 => string[]) public kittiesDominantGeneBinary;
-    mapping(uint256 => string[]) public kittiesDominantGeneKai;
+    mapping(uint256 => bytes1[]) public kittiesDominantGeneKai;
     mapping(uint256 => string[]) public kittiesDominantCattributes;
 
     /**

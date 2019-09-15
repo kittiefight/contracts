@@ -1,15 +1,15 @@
 {
   "contractName": "BasicControls",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0x703d0a6bb0e105ef824314fb8c80c281461c22c71ac6730151a5f3c090392dfd\",\"urls\":[\"bzz-raw://f550feed155ec6987ea3b3c1bf5d0667a0507063c79c419340c22b16826bc151\",\"dweb:/ipfs/QmdgdMu1Xhq3hrpTd74hGh22xJeGUxMnpM35VJJbZzXmSg\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a7231582059fe835f5b1b3aa32378389a131f329ca158b6143cdefed171f9f94c8d0c38cb64736f6c634300050b0032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a7231582059fe835f5b1b3aa32378389a131f329ca158b6143cdefed171f9f94c8d0c38cb64736f6c634300050b0032",
-  "sourceMap": "138:509:28:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;138:509:28;;;;;;;",
-  "deployedSourceMap": "138:509:28:-;;;;;",
-  "source": "pragma solidity ^0.5.5;\n\n\n/**\n * @title BasicControls\n * @dev this contract implement basic controls needed in a variety of contracts\n */\ncontract BasicControls {\n\n    /**\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n     * @param _addr the given address to check\n     * @return true or false if the address is a contract or not\n     */\n    function isContract(address _addr) internal view returns (bool) {\n        // retrieve the size of the code on target address, this needs assembly\n        uint length;\n        assembly { length := extcodesize(_addr) }\n        return length > 0;\n    }\n}\n",
-  "sourcePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\\r\",\"methods\":{},\"title\":\"BasicControls\\r\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0xc01216aaec733594df8c7f7dbc49a6051c4943cdf0d10d31c4dbf5c2afe1f528\",\"urls\":[\"bzz-raw://15030b1c110553cfe1ac3eabb2eb6382955243f062f86991eb09fc3e1df42553\",\"dweb:/ipfs/QmRHEvqY5bW3dGBp4Tg3nUUhWmwFgK5nV4L3ZZ1TF3F27E\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820fae778d631b74126403b70c70382b0a2213ef919754bc95f5f932e729cb2acad64736f6c634300050b0032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820fae778d631b74126403b70c70382b0a2213ef919754bc95f5f932e729cb2acad64736f6c634300050b0032",
+  "sourceMap": "145:522:28:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;145:522:28;;;;;;;",
+  "deployedSourceMap": "145:522:28:-;;;;;",
+  "source": "pragma solidity ^0.5.5;\r\n\r\n\r\n/**\r\n * @title BasicControls\r\n * @dev this contract implement basic controls needed in a variety of contracts\r\n */\r\ncontract BasicControls {\r\n\r\n    /**\r\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n     * @param _addr the given address to check\r\n     * @return true or false if the address is a contract or not\r\n     */\r\n    function isContract(address _addr) internal view returns (bool) {\r\n        // retrieve the size of the code on target address, this needs assembly\r\n        uint length;\r\n        assembly { length := extcodesize(_addr) }\r\n        return length > 0;\r\n    }\r\n}\r\n",
+  "sourcePath": "C:\\Users\\Alex\\Desktop\\Upwork\\alpha\\contracts\\misc\\BasicControls.sol",
   "ast": {
-    "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
         3699
@@ -33,7 +33,7 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "contract",
-        "documentation": "@title BasicControls\n@dev this contract implement basic controls needed in a variety of contracts",
+        "documentation": "@title BasicControls\r\n@dev this contract implement basic controls needed in a variety of contracts\r",
         "fullyImplemented": true,
         "id": 3699,
         "linearizedBaseContracts": [
@@ -46,7 +46,7 @@
             "body": {
               "id": 3697,
               "nodeType": "Block",
-              "src": "460:185:28",
+              "src": "474:190:28",
               "statements": [
                 {
                   "assignments": [
@@ -59,7 +59,7 @@
                       "name": "length",
                       "nodeType": "VariableDeclaration",
                       "scope": 3697,
-                      "src": "550:11:28",
+                      "src": "566:11:28",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
@@ -70,7 +70,7 @@
                         "id": 3689,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
-                        "src": "550:4:28",
+                        "src": "566:4:28",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -83,7 +83,7 @@
                   "id": 3691,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "550:11:28"
+                  "src": "566:11:28"
                 },
                 {
                   "externalReferences": [
@@ -92,7 +92,7 @@
                         "declaration": 3690,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "582:6:28",
+                        "src": "599:6:28",
                         "valueSize": 1
                       }
                     },
@@ -101,7 +101,7 @@
                         "declaration": 3684,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "604:5:28",
+                        "src": "621:5:28",
                         "valueSize": 1
                       }
                     }
@@ -109,7 +109,7 @@
                   "id": 3692,
                   "nodeType": "InlineAssembly",
                   "operations": "{ length := extcodesize(_addr) }",
-                  "src": "571:41:28"
+                  "src": "588:41:28"
                 },
                 {
                   "expression": {
@@ -130,7 +130,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 3690,
-                      "src": "628:6:28",
+                      "src": "646:6:28",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -148,7 +148,7 @@
                       "kind": "number",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "637:1:28",
+                      "src": "655:1:28",
                       "subdenomination": null,
                       "typeDescriptions": {
                         "typeIdentifier": "t_rational_0_by_1",
@@ -156,7 +156,7 @@
                       },
                       "value": "0"
                     },
-                    "src": "628:10:28",
+                    "src": "646:10:28",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -165,11 +165,11 @@
                   "functionReturnParameters": 3688,
                   "id": 3696,
                   "nodeType": "Return",
-                  "src": "621:17:28"
+                  "src": "639:17:28"
                 }
               ]
             },
-            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n@param _addr the given address to check\n@return true or false if the address is a contract or not",
+            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n@param _addr the given address to check\r\n@return true or false if the address is a contract or not\r",
             "id": 3698,
             "implemented": true,
             "kind": "function",
@@ -186,7 +186,7 @@
                   "name": "_addr",
                   "nodeType": "VariableDeclaration",
                   "scope": 3698,
-                  "src": "416:13:28",
+                  "src": "430:13:28",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -197,7 +197,7 @@
                     "id": 3683,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "416:7:28",
+                    "src": "430:7:28",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -208,7 +208,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "415:15:28"
+              "src": "429:15:28"
             },
             "returnParameters": {
               "id": 3688,
@@ -220,7 +220,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 3698,
-                  "src": "454:4:28",
+                  "src": "468:4:28",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -231,7 +231,7 @@
                     "id": 3686,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "454:4:28",
+                    "src": "468:4:28",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -241,23 +241,23 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "453:6:28"
+              "src": "467:6:28"
             },
             "scope": 3699,
-            "src": "396:249:28",
+            "src": "410:254:28",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
         "scope": 3700,
-        "src": "138:509:28"
+        "src": "145:522:28"
       }
     ],
-    "src": "0:648:28"
+    "src": "0:669:28"
   },
   "legacyAST": {
-    "absolutePath": "/home/wafflemakr/Desktop/KittieFight/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
         3699
@@ -281,7 +281,7 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "contract",
-        "documentation": "@title BasicControls\n@dev this contract implement basic controls needed in a variety of contracts",
+        "documentation": "@title BasicControls\r\n@dev this contract implement basic controls needed in a variety of contracts\r",
         "fullyImplemented": true,
         "id": 3699,
         "linearizedBaseContracts": [
@@ -294,7 +294,7 @@
             "body": {
               "id": 3697,
               "nodeType": "Block",
-              "src": "460:185:28",
+              "src": "474:190:28",
               "statements": [
                 {
                   "assignments": [
@@ -307,7 +307,7 @@
                       "name": "length",
                       "nodeType": "VariableDeclaration",
                       "scope": 3697,
-                      "src": "550:11:28",
+                      "src": "566:11:28",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
@@ -318,7 +318,7 @@
                         "id": 3689,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
-                        "src": "550:4:28",
+                        "src": "566:4:28",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -331,7 +331,7 @@
                   "id": 3691,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "550:11:28"
+                  "src": "566:11:28"
                 },
                 {
                   "externalReferences": [
@@ -340,7 +340,7 @@
                         "declaration": 3690,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "582:6:28",
+                        "src": "599:6:28",
                         "valueSize": 1
                       }
                     },
@@ -349,7 +349,7 @@
                         "declaration": 3684,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "604:5:28",
+                        "src": "621:5:28",
                         "valueSize": 1
                       }
                     }
@@ -357,7 +357,7 @@
                   "id": 3692,
                   "nodeType": "InlineAssembly",
                   "operations": "{ length := extcodesize(_addr) }",
-                  "src": "571:41:28"
+                  "src": "588:41:28"
                 },
                 {
                   "expression": {
@@ -378,7 +378,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 3690,
-                      "src": "628:6:28",
+                      "src": "646:6:28",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -396,7 +396,7 @@
                       "kind": "number",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "637:1:28",
+                      "src": "655:1:28",
                       "subdenomination": null,
                       "typeDescriptions": {
                         "typeIdentifier": "t_rational_0_by_1",
@@ -404,7 +404,7 @@
                       },
                       "value": "0"
                     },
-                    "src": "628:10:28",
+                    "src": "646:10:28",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -413,11 +413,11 @@
                   "functionReturnParameters": 3688,
                   "id": 3696,
                   "nodeType": "Return",
-                  "src": "621:17:28"
+                  "src": "639:17:28"
                 }
               ]
             },
-            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n@param _addr the given address to check\n@return true or false if the address is a contract or not",
+            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n@param _addr the given address to check\r\n@return true or false if the address is a contract or not\r",
             "id": 3698,
             "implemented": true,
             "kind": "function",
@@ -434,7 +434,7 @@
                   "name": "_addr",
                   "nodeType": "VariableDeclaration",
                   "scope": 3698,
-                  "src": "416:13:28",
+                  "src": "430:13:28",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -445,7 +445,7 @@
                     "id": 3683,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "416:7:28",
+                    "src": "430:7:28",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -456,7 +456,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "415:15:28"
+              "src": "429:15:28"
             },
             "returnParameters": {
               "id": 3688,
@@ -468,7 +468,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 3698,
-                  "src": "454:4:28",
+                  "src": "468:4:28",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -479,7 +479,7 @@
                     "id": 3686,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "454:4:28",
+                    "src": "468:4:28",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -489,20 +489,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "453:6:28"
+              "src": "467:6:28"
             },
             "scope": 3699,
-            "src": "396:249:28",
+            "src": "410:254:28",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
         "scope": 3700,
-        "src": "138:509:28"
+        "src": "145:522:28"
       }
     ],
-    "src": "0:648:28"
+    "src": "0:669:28"
   },
   "compiler": {
     "name": "solc",
@@ -510,11 +510,11 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-04T14:43:06.105Z",
+  "updatedAt": "2019-09-15T17:39:03.087Z",
   "devdoc": {
-    "details": "this contract implement basic controls needed in a variety of contracts",
+    "details": "this contract implement basic controls needed in a variety of contracts\r",
     "methods": {},
-    "title": "BasicControls"
+    "title": "BasicControls\r"
   },
   "userdoc": {
     "methods": {}
