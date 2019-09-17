@@ -47,7 +47,7 @@ contract GameStore is Proxied {
 
         globalSettings.bettingFee = gameVarAndFee.getBettingFee();
         globalSettings.ticketFee = gameVarAndFee.getTicketFee();
-        globalSettings.redemptionFee = gameVarAndFee.getKittieRedemptionFee();
+        globalSettings.redemptionFee = 0;  // initialize as 0, updating is done when game ends in function finaliz() in gameManager
         globalSettings.kittieHellExpirationTime = gameVarAndFee.getKittieExpiry();
         globalSettings.honeypotExpirationTime = gameVarAndFee.getHoneypotExpiration();
         globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
@@ -59,6 +59,24 @@ contract GameStore is Proxied {
 
     function getDistributionRates(uint gameId) public view returns(uint[5] memory){
         return gameSettings[gameId].distributionRates;
+    }
+
+    function updateKittieRedemptionFee
+    (
+        uint256 gameId
+    )
+        public
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
+        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
+        require(percentageHoneyPot > 0 && totalKTYFunds > 0 && totalEthFunds > 0);
+
+        uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
+        uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
+
+        gameSettings[gameId].redemptionFee = (totalEthFunds.mul(ethUsdPrice).mul(percentageHoneyPot).div(usdKTYPrice).div(100))
+                                       .add((totalKTYFunds.mul(percentageHoneyPot).div(100)));
     }
 
     function getKittieExpirationTime(uint gameId) public view returns(uint){

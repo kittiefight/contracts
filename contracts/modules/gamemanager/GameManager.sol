@@ -286,6 +286,9 @@ contract GameManager is Proxied, Guard {
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser));
 
+        // update kittie redemption fee dynamically to a percentage of the final honey pot
+        gameStore.updateKittieRedemptionFee(gameId);
+
         //Set to claiming
         endowmentFund.updateHoneyPotState(gameId, 5);
 
