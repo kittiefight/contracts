@@ -335,25 +335,36 @@ module.exports = (deployer, network, accounts) => {
 
     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-
-
-
     console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
 
-    listFancyNames = [];
-    listFancyNamesTotal = [];
-    listFancyIds = [];
+    let listFancyNames = [];
+    let listFancyNamesTotal = [];
+    let listFancyIds = [];
 
-    for (let m=0; m<FancyKitties.length; m++) {
-      listFancyNamesTotal.push(FancyKitties[m].length)
+    for (let m=0; m<3; m++) {
+      listFancyNamesTotal.push(FancyKitties[m].length-1)
       listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
       for (let n=1; n<FancyKitties[m].length; n++) {
         listFancyIds.push(FancyKitties[m][n])
       }
     } 
 
+    await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+
+    listFancyIds=[];
+    listFancyNames=[];
+    listFancyNamesTotal=[];
+
+    for (let m=3; m<5; m++) {
+      listFancyNamesTotal.push(FancyKitties[m].length-1)
+      listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+      for (let n=1; n<FancyKitties[m].length; n++) {
+        listFancyIds.push(FancyKitties[m][n])
+      }
+    }
 
     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+
 
     await rarityCalculator.updateTotalKitties(1600000)
     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)

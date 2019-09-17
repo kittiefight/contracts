@@ -3,27 +3,9 @@ const chaiAsPromised = require('chai-as-promised')
 const assert = chai.assert
 chai.use(chaiAsPromised)
 
-const Proxy = artifacts.require('KFProxy')
-const GenericDB = artifacts.require('GenericDB')
-const RoleDB = artifacts.require('RoleDB')
-const ProfileDB = artifacts.require('ProfileDB')
-const Register = artifacts.require('Register')
-const CryptoKitties = artifacts.require('MockERC721Token')
-const KittieFightToken = artifacts.require('MockERC20Token')
-const SuperDaoToken = artifacts.require('MockERC20Token')
 const RarityCalculator = artifacts.require('RarityCalculator')
-const Betting = artifacts.require('Betting')
 
 
-let ProxyInst
-let GenericDBinst
-let RoleDBinst
-let ProfileDBinst
-let RegisterInst
-let cryptoKitties
-let SuperDaoTokenInst
-let KittieFightTokenInst
-let BettingInst
 let RarityCalculatorInst
 
 const sleep = ms => new Promise(res => setTimeout(res, ms))
@@ -49,136 +31,7 @@ const gene3 =
 
 contract('RarityCalculator', accounts => {
   before(async () => {
-    ProxyInst = await Proxy.new()
-    GenericDBinst = await GenericDB.new()
-    RoleDBinst = await RoleDB.new(GenericDBinst.address)
-    ProfileDBinst = await ProfileDB.new(GenericDBinst.address)
-    RegisterInst = await Register.new()
-    cryptoKitties = await CryptoKitties.new()
-    SuperDaoTokenInst = await SuperDaoToken.new(100000)
-    KittieFightTokenInst = await KittieFightToken.new(100000)
-    RarityCalculatorInst = await RarityCalculator.new()
-    BettingInst = await Betting.new()
-  
-    await ProxyInst.addContract("GenericDB", GenericDBinst.address)
-    await ProxyInst.addContract('RoleDB', RoleDBinst.address)
-    await ProxyInst.addContract('ProfileDB', ProfileDBinst.address)
-    await ProxyInst.addContract('Register', RegisterInst.address)
-    await ProxyInst.addContract('CryptoKitties', cryptoKitties.address)
-    await ProxyInst.addContract('SuperDAOToken', SuperDaoTokenInst.address)
-    await ProxyInst.addContract('KittieFightToken', KittieFightTokenInst.address)
-    await ProxyInst.addContract('RarityCalculator', RarityCalculatorInst.address)
-    await ProxyInst.addContract('Betting', BettingInst.address)
-  
-    await GenericDBinst.setProxy(ProxyInst.address)
-    await RoleDBinst.setProxy(ProxyInst.address)
-    await RoleDBinst.setProxy(ProxyInst.address)
-    await ProfileDBinst.setProxy(ProxyInst.address)
-    await RegisterInst.setProxy(ProxyInst.address)
-    await RarityCalculatorInst.setProxy(ProxyInst.address)
-    await BettingInst.setProxy(ProxyInst.address)
-  
-    await RegisterInst.initialize()
-    await RegisterInst.addSuperAdmin(accounts[0])
-  
-    await RarityCalculatorInst.fillKaiValue()
-    await RarityCalculatorInst.updateTotalKitties(1600000)
-    await RarityCalculatorInst.setDefenseLevelLimit(1832353, 9175, 1600000)
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'body',
-        Object.keys(kaiToCattributesData[0].body.kai)[i],
-        Object.values(kaiToCattributesData[0].body.kai)[i]
-      )
-    }
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'pattern',
-        Object.keys(kaiToCattributesData[1].pattern.kai)[i],
-        Object.values(kaiToCattributesData[1].pattern.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'coloreyes',
-        Object.keys(kaiToCattributesData[2].coloreyes.kai)[i],
-        Object.values(kaiToCattributesData[2].coloreyes.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'eyes',
-        Object.keys(kaiToCattributesData[3].eyes.kai)[i],
-        Object.values(kaiToCattributesData[3].eyes.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'color1',
-        Object.keys(kaiToCattributesData[4].color1.kai)[i],
-        Object.values(kaiToCattributesData[4].color1.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'color2',
-        Object.keys(kaiToCattributesData[5].color2.kai)[i],
-        Object.values(kaiToCattributesData[5].color2.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'color3',
-        Object.keys(kaiToCattributesData[6].color3.kai)[i],
-        Object.values(kaiToCattributesData[6].color3.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'wild',
-        Object.keys(kaiToCattributesData[7].wild.kai)[i],
-        Object.values(kaiToCattributesData[7].wild.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'mouth',
-        Object.keys(kaiToCattributesData[8].mouth.kai)[i],
-        Object.values(kaiToCattributesData[8].mouth.kai)[i]
-      )
-    }
-  
-    for (let i = 0; i < 32; i++) {
-      await RarityCalculatorInst.updateCattributes(
-        'environment',
-        Object.keys(kaiToCattributesData[9].environment.kai)[i],
-        Object.values(kaiToCattributesData[9].environment.kai)[i]
-      )
-    }
-  
-    for (let j = 0; j < cattributesData.length; j++) {
-      await RarityCalculatorInst.updateCattributesScores(
-        cattributesData[j].description,
-        Number(cattributesData[j].total)
-      )
-    }
-  
-    for (let m = 0; m < FancyKitties.length; m++) {
-      for (let n = 1; n < FancyKitties[m].length; n++) {
-        await RarityCalculatorInst.updateFancyKittiesList(
-          FancyKitties[m][n],
-          FancyKitties[m][0]
-        )
-      }
-    }
+    RarityCalculatorInst = await RarityCalculator.deployed()
   })
   
   it('is able to convert the genome of a kitty to binary', async () => {
@@ -288,6 +141,7 @@ contract('RarityCalculator', accounts => {
   })
 
   it('is able to convert the genome in binary to kai value', async () => {
+    await RarityCalculatorInst.fillKaiValue()
     await RarityCalculatorInst.getDominantGeneBinary(kittie1, gene1)
     await RarityCalculatorInst.binaryToKai(kittie1)
     const kittie1BodyGeneKai = await RarityCalculatorInst.kittiesDominantGeneKai.call(
@@ -330,19 +184,20 @@ contract('RarityCalculator', accounts => {
       kittie1,
       9
     )
-    assert.equal(kittie1BodyGeneKai, 'f')
-    assert.equal(kittie1PatternGeneKai, 'a')
-    assert.equal(kittie1ColoreyesGeneKai, '4')
-    assert.equal(kittie1EyesGeneKai, '7')
-    assert.equal(kittie1Color1GeneKai, '1')
-    assert.equal(kittie1Color2GeneKai, '9')
-    assert.equal(kittie1Color3GeneKai, '5')
-    assert.equal(kittie1WildGeneKai, '1')
-    assert.equal(kittie1MouthGeneKai, 'f')
-    assert.equal(kittie1EnvironmentGeneKai, '2')
+    assert.equal(kittie1BodyGeneKai, '0x66')
+    assert.equal(kittie1PatternGeneKai, '0x61')
+    assert.equal(kittie1ColoreyesGeneKai, '0x34')
+    assert.equal(kittie1EyesGeneKai, '0x37')
+    assert.equal(kittie1Color1GeneKai, '0x31')
+    assert.equal(kittie1Color2GeneKai, '0x39')
+    assert.equal(kittie1Color3GeneKai, '0x35')
+    assert.equal(kittie1WildGeneKai, '0x31')
+    assert.equal(kittie1MouthGeneKai, '0x66')
+    assert.equal(kittie1EnvironmentGeneKai, '0x32')
   })
 
   it('is able to convert the genome in kai to cattributes', async () => {
+    await RarityCalculatorInst.fillKaiValue()
     await RarityCalculatorInst.getDominantGeneBinary(kittie1, gene1)
     await RarityCalculatorInst.binaryToKai(kittie1)
     await RarityCalculatorInst.kaiToCattribute(kittie1)
@@ -388,16 +243,16 @@ contract('RarityCalculator', accounts => {
       9
     )
 
-    assert.equal(kittie1BodyCattribute, 'ragamuffin')
-    assert.equal(kittie1PatternCattribute, 'luckystripe')
-    assert.equal(kittie1ColoreyesCattribute, 'mintgreen')
-    assert.equal(kittie1EyesCattribute, 'crazy')
-    assert.equal(kittie1Color1Cattribute, 'shadowgrey')
-    assert.equal(kittie1Color2Cattribute, 'swampgreen')
-    assert.equal(kittie1Color3Cattribute, 'granitegrey')
-    assert.equal(kittie1WildCattribute, '')
-    assert.equal(kittie1MouthCattribute, 'happygokitty')
-    assert.equal(kittie1EnvironmentCattribute, '')
+    assert.equal(kittie1BodyCattribute.replace(/\0/g, ''), 'ragamuffin')
+    assert.equal(kittie1PatternCattribute.replace(/\0/g, ''), 'luckystripe')
+    assert.equal(kittie1ColoreyesCattribute.replace(/\0/g, ''), 'mintgreen')
+    assert.equal(kittie1EyesCattribute.replace(/\0/g, ''), 'crazy')
+    assert.equal(kittie1Color1Cattribute.replace(/\0/g, ''), 'shadowgrey')
+    assert.equal(kittie1Color2Cattribute.replace(/\0/g, ''), 'swampgreen')
+    assert.equal(kittie1Color3Cattribute.replace(/\0/g, ''), 'granitegrey')
+    assert.equal(kittie1WildCattribute.replace(/\0/g, ''), '')
+    assert.equal(kittie1MouthCattribute.replace(/\0/g, ''), 'happygokitty')
+    assert.equal(kittie1EnvironmentCattribute.replace(/\0/g, ''), '')
 
     await RarityCalculatorInst.getDominantGeneBinary(kittie3, gene3)
     await RarityCalculatorInst.binaryToKai(kittie3)
@@ -443,16 +298,16 @@ contract('RarityCalculator', accounts => {
       9
     )
 
-    assert.equal(kittie3BodyCattribute, 'toyger')
-    assert.equal(kittie3PatternCattribute, 'camo')
-    assert.equal(kittie3ColoreyesCattribute, 'cyan')
-    assert.equal(kittie3EyesCattribute, 'wiley')
-    assert.equal(kittie3Color1Cattribute, 'martian')
-    assert.equal(kittie3Color2Cattribute, 'royalpurple')
-    assert.equal(kittie3Color3Cattribute, 'icy')
-    assert.equal(kittie3WildCattribute, '')
-    assert.equal(kittie3MouthCattribute, 'confuzzled')
-    assert.equal(kittie3EnvironmentCattribute, '')
+    assert.equal(kittie3BodyCattribute.replace(/\0/g, ''), 'toyger')
+    assert.equal(kittie3PatternCattribute.replace(/\0/g, ''), 'camo')
+    assert.equal(kittie3ColoreyesCattribute.replace(/\0/g, ''), 'cyan')
+    assert.equal(kittie3EyesCattribute.replace(/\0/g, ''), 'wiley')
+    assert.equal(kittie3Color1Cattribute.replace(/\0/g, ''), 'martian')
+    assert.equal(kittie3Color2Cattribute.replace(/\0/g, ''), 'royalpurple')
+    assert.equal(kittie3Color3Cattribute.replace(/\0/g, ''), 'icy')
+    assert.equal(kittie3WildCattribute.replace(/\0/g, ''), '')
+    assert.equal(kittie3MouthCattribute.replace(/\0/g, ''), 'confuzzled')
+    assert.equal(kittie3EnvironmentCattribute.replace(/\0/g, ''), '')
   })
 
   it('is able to tell whether a kittie is a valule fancy kitite or not', async () => {

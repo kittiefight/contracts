@@ -10,6 +10,7 @@ import "../../../authority/Guard.sol";
 contract FancyKitties is Proxied, Guard {
 
     mapping(uint256 => string) internal FancyKittiesList;
+    uint counter;
 
     // the file /test/sourceData/FancyKitties.js contains complete data set to fill in this db
     /**
@@ -25,9 +26,11 @@ contract FancyKitties is Proxied, Guard {
     {   
         for(uint i=0; i<_nameLength.length; i++){
             for(uint j=0; j<_nameLength[i]; j++){
-                FancyKittiesList[_kittieId[j]] = bytes32ToStr(_name[i]);
+                FancyKittiesList[_kittieId[counter]] = bytes32ToStr(_name[i]);
+                counter++;
             }
         }
+        counter=0;
     }
 
     function bytes32ToStr(bytes32 _bytes32)
