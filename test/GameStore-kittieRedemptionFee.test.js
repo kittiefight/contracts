@@ -66,38 +66,19 @@ let proxy,
   freezeInfo,
   cronJobTarget
 
-let errorMessage
-
-function setMessage (contract, funcName, argArray) {
-  return web3.eth.abi.encodeFunctionCall(
-    contract.abi.find(f => {
-      return f.name == funcName
-    }),
-    argArray
-  )
-}
-
 before(async function () {
   this.timeout(10000)
-  errorMessage = ''
 
-  // PROXY
   proxy = await KFProxy.new()
-
-  // DATABASES
   genericDB = await GenericDB.new()
   profileDB = await ProfileDB.new(genericDB.address)
   roleDB = await RoleDB.new(genericDB.address)
   endowmentDB = await EndowmentDB.new(genericDB.address)
   getterDB = await GMGetterDB.new(genericDB.address)
   setterDB = await GMSetterDB.new(genericDB.address)
-
-  // TOKENS
   superDaoToken = await SuperDaoToken.new(ERC20_TOKEN_SUPPLY)
   kittieFightToken = await KittieFightToken.new(ERC20_TOKEN_SUPPLY)
   cryptoKitties = await CryptoKitties.new()
-
-  // MODULES
   gameManager = await GameManager.new()
   gameStore = await GameStore.deployed()
   gameCreation = await GameCreation.deployed()
