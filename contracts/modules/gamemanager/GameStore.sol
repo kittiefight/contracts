@@ -66,7 +66,9 @@ contract GameStore is Proxied {
         uint256 gameId
     )
         public
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) for truffle testing GameStore-kittieRedemptionFee.test.js
+        // please uncomment line 71 once testing is done
+        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
         (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);

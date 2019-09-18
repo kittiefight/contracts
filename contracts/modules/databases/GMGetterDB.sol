@@ -162,12 +162,17 @@ contract GMGetterDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "playingGame")));
   }
 
+  // temporarily hardcode totalEth and totalKty for truffle testing of GameStore-kittieRedemptionFee.test.js
+  // otherwise the entire gaming process has to be run throughly to get totalEth and totalKty
+  // please remove hardcoding once test is done and uncomment line 172 and line 173
   function getFinalHoneypot(uint256 gameId)
     public view
     returns(uint totalEth, uint totalKty )
   {
-    totalEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")));
-    totalKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")));
+    //totalEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")));
+    //totalKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")));
+    totalEth = 300000000000000000000;  // 300 ether 
+    totalKty = 10000000000000000000000;  //10000 KTY
   }
 
 

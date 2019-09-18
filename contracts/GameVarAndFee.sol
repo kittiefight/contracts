@@ -118,8 +118,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
 
     /// @notice get eth/usd current price
+    // temporarily hard code EthUsdPrice for truffle testing of GameStore-kittieRedemptionFee.test.js
+    // Please remove hardcoding and uncomment line 124 once testing is done
     function getEthUsdPrice() public view returns(uint){
-        return uint256(medianizer.read());
+        //return uint256(medianizer.read());
+        return uint256(0x00000000000000000000000000000000000000000000000b49bcb0036fa6c000);
     }
         
     /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
