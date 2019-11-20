@@ -18,7 +18,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
     using SafeMath for uint256;
 
     mapping(uint256 => string[]) public kittiesDominantGeneBinary;
-    mapping(uint256 => string[]) public kittiesDominantGeneKai;
+    mapping(uint256 => bytes1[]) public kittiesDominantGeneKai;
     mapping(uint256 => string[]) public kittiesDominantCattributes;
 
     /**
@@ -26,7 +26,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice converts kai notation to its corresponding cattribute
      */
     function kaiToCattribute(uint256 kittieId)
-      internal
+      public
     {
        kittiesDominantCattributes[kittieId].push(cattributes['body'][kittiesDominantGeneKai[kittieId][0]]);
        kittiesDominantCattributes[kittieId].push(cattributes['pattern'][kittiesDominantGeneKai[kittieId][1]]);
@@ -85,7 +85,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
     function getDominantGeneBinary(uint256 kittieId, uint256 gene)
-      internal
+      public
      {
         string memory geneBinary = toBinaryString(gene);
         kittiesDominantGeneBinary[kittieId].push(getSlice(236, 240, geneBinary));
