@@ -22,6 +22,7 @@ window.contractSettings = function() {
 		},
 		//Other system contract
 		{"name":"RoleDB", "deployArgs":["${GenericDB.options.address}"],},
+		{"name":"ProfileDB"},
 		{"name":"GMSetterDB"},
 		{"name":"GMGetterDB"},
 		{"name":"GameManager"},

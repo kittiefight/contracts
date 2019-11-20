@@ -53,6 +53,7 @@ jQuery(document).ready(function($) {
             contractInstances.KFProxy = new web3.eth.Contract(contractDefinitions.KFProxy.abi, address);
         }
         createRegisteredContractsTable();
+        $('#exportBtn').removeClass('disabled');
     });
 
     function createRegisteredContractsTable(){
@@ -123,7 +124,7 @@ jQuery(document).ready(function($) {
                 $(`<div>${property} = ${value}</div>`).appendTo($infoGrid);
            }catch(ex){
                 //$(`<div>${property} read failed: ${ex.message}</div>`).appendTo($infoGrid);
-                console.log(`Failed to read ${property} on `,instance.options.address, ex);
+                console.log(`Failed to read ${property} on `,instance.options.address/*, ex*/);
             }
         }
     }
@@ -242,6 +243,116 @@ jQuery(document).ready(function($) {
             });
         });
     }
+
+
+    $('#exportBtn').click(function(){
+        let format = $('#exportFmt').dropdown('get value');
+        let resultField = $('#exportResult');
+
+        switch(format){
+            case 'CSV_coma_headers':
+            case 'CSV_tab':
+            case 'Markdown':
+                resultField.val(generateCSV(format));
+                break;
+            case 'JSON_ContractAbi':
+                resultField.val(generateJSON_ContractAbi());
+                break;
+            case 'JSON_ContractAddress':
+                resultField.val(generateJSON_ContractAddress());
+                break;
+            case 'JSON_ContractNetworkAddress':
+                resultField.val(generateJSON_ContractNetworkAddress());
+                break;
+            default:
+                printError(`Wrong export format: ${format}`);
+        }
+
+
+        function generateCSV(format){
+            let columnTitles = ['Contract', 'Address'];
+            let lineSeparator = "\n";
+            let separator, headers, rowStart, rowEnd, cellMinWidth;
+            switch(format){
+                case 'CSV_coma_headers':
+                    separator = ',';
+                    headers = [columnTitles];
+                    rowStart = ''; rowEnd = ''; cellMinWidth = [0,0];
+                    break;
+                case 'CSV_tab':
+                    separator = "\t";
+                    headers = [];
+                    rowStart = ''; rowEnd = ''; cellMinWidth = [0,0];
+                    break;
+                case 'Markdown':
+                    separator = " | ";
+                    headers = [columnTitles, [':---', ':---:']];
+                    rowStart = '| '; rowEnd = ' |'; cellMinWidth = [20,42];
+                    break;
+                default:
+                    printError(`Wrong export format: ${format}`);
+            }
+
+
+            let data = [];
+            contractSettings
+            .forEach(contract => {
+                let address = $(`input[name="${contract.name}.address"]`).val();
+                if(typeof address == 'undefined') address = '';
+                data.push([contract.name, address])
+            });
+
+            let csv = '';
+            for(let line of headers){
+                csv += formatLine(line, separator, rowStart, rowEnd, cellMinWidth)+lineSeparator;
+            }
+            for(let line of data){
+                csv += formatLine(line, separator, rowStart, rowEnd, cellMinWidth)+lineSeparator;
+            }
+            return csv;
+
+            function formatLine(row, separator, rowStart, rowEnd, cellMinWidth){
+                let result = rowStart;
+                for(let i=0; i< row.length; i++){
+                    if(i!=0) result += separator;
+                    result += row[i].padEnd(cellMinWidth[i], ' ');
+                }
+                result += rowEnd;
+                return result;
+            }
+        }
+        function generateJSON_ContractAbi(){
+            let data = {};
+            contractSettings
+            .forEach(contract => {
+                data[contract.name] = contractDefinitions[contract.name].abi;
+            });
+            return JSON.stringify(data);
+        }
+        function generateJSON_ContractAddress(){
+            let data = {};
+            contractSettings
+            .forEach(contract => {
+                let address = $(`input[name="${contract.name}.address"]`).val();
+                if(typeof address == 'undefined') address = '';
+                data[contract.name] = address;
+            });
+            return JSON.stringify(data);
+        }
+        function generateJSON_ContractNetworkAddress(){
+            let network = web3.currentProvider.networkVersion;
+            let data = {};
+            contractSettings
+            .forEach(contract => {
+                let address = $(`input[name="${contract.name}.address"]`).val();
+                if(typeof address == 'undefined') address = '';
+                data[contract.name] = {};
+                data[contract.name][String(network)] = address;
+            });
+            return JSON.stringify(data);
+        }
+
+    });
  
     //====================================================
 
@@ -256,6 +367,10 @@ jQuery(document).ready(function($) {
         }
         // Web3 browser user detected. You can now use the provider.
         let web3 = new Web3(window.ethereum || Web3.givenProvider);
+
+        if(window.ethereum){
+            window.ethereum.on('networkChanged', document.location.reload);  //Metamask behaviour of reloading page on network change is deprecated          
+        }
         
 
         let accounts = await web3.eth.getAccounts();

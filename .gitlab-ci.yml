@@ -1,0 +1,20 @@
+image: node:10.15.3
+
+pages:
+  stage: deploy
+  before_script:
+    - npm install
+    - npm install -g truffle
+    - echo "MNEMONICS=buffalo excite exchange cost salad indicate tenant boil meadow verify pretty head" >> .env
+  script:
+  - truffle build  
+  - rm -rf public
+  - mkdir public
+  - cp -r jsdeployer public/jsdeployer
+  - mv build public
+  - cp jsdeployer/redirect-to-main.html public/index.html
+  artifacts:
+    paths:
+    - public
+  only:
+  - feature/jsdeployer
