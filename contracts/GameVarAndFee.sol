@@ -118,8 +118,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
 
     /// @notice get eth/usd current price
+    // temporarily hard code EthUsdPrice for truffle testing of GameStore-kittieRedemptionFee.test.js
+    // Please remove hardcoding and uncomment line 124 once testing is done
     function getEthUsdPrice() public view returns(uint){
-        return uint256(medianizer.read());
+        //return uint256(medianizer.read());
+        return uint256(0x00000000000000000000000000000000000000000000000b49bcb0036fa6c000);
     }
         
     /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
@@ -207,6 +210,18 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     function getKittieRedemptionFee() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
+    }
+
+    /// @notice Gets percentage of final honey pot that is set as kittieRedemptionFee
+    function getPercentageForKittieRedemptionFee()
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE);
+    }
+
+    /// @notice Gets USD to KTY ratio
+    function getUsdKTYPrice()
+    public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
     }
     
     /// @notice Gets minimum contributors needed for the game to continue

@@ -35,5 +35,6 @@ contract VarAndFeeNames {
     bytes32 constant FINALIZE_REWARDS       = keccak256(abi.encodePacked(TABLE_NAME, "finalizeRewards"));
     bytes32 constant PERFORMANCE_TIME_CHECK = keccak256(abi.encodePacked(TABLE_NAME, "performanceTime"));
     bytes32 constant TIME_EXTENSION         = keccak256(abi.encodePacked(TABLE_NAME, "timeExtension"));
-
+    bytes32 constant PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE = keccak256(abi.encodePacked(TABLE_NAME, "percentageForKittieRedemptionFee"));
+    bytes32 constant USD_KTY_PRICE          = keccak256(abi.encodePacked(TABLE_NAME, "usdKTYPrice"));
 }
