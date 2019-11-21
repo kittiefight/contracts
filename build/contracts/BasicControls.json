@@ -1,25 +1,25 @@
 {
   "contractName": "BasicControls",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\\r\",\"methods\":{},\"title\":\"BasicControls\\r\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0xc01216aaec733594df8c7f7dbc49a6051c4943cdf0d10d31c4dbf5c2afe1f528\",\"urls\":[\"bzz-raw://15030b1c110553cfe1ac3eabb2eb6382955243f062f86991eb09fc3e1df42553\",\"dweb:/ipfs/QmRHEvqY5bW3dGBp4Tg3nUUhWmwFgK5nV4L3ZZ1TF3F27E\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820fae778d631b74126403b70c70382b0a2213ef919754bc95f5f932e729cb2acad64736f6c634300050b0032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820fae778d631b74126403b70c70382b0a2213ef919754bc95f5f932e729cb2acad64736f6c634300050b0032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.13+commit.5b0b510c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0xc01216aaec733594df8c7f7dbc49a6051c4943cdf0d10d31c4dbf5c2afe1f528\",\"urls\":[\"bzz-raw://15030b1c110553cfe1ac3eabb2eb6382955243f062f86991eb09fc3e1df42553\",\"dweb:/ipfs/QmRHEvqY5bW3dGBp4Tg3nUUhWmwFgK5nV4L3ZZ1TF3F27E\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820711641f662e0f497c0e7d681c7999ee61027c6301914d4257db503435210f19e64736f6c634300050d0032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820711641f662e0f497c0e7d681c7999ee61027c6301914d4257db503435210f19e64736f6c634300050d0032",
   "sourceMap": "145:522:28:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;145:522:28;;;;;;;",
   "deployedSourceMap": "145:522:28:-;;;;;",
   "source": "pragma solidity ^0.5.5;\r\n\r\n\r\n/**\r\n * @title BasicControls\r\n * @dev this contract implement basic controls needed in a variety of contracts\r\n */\r\ncontract BasicControls {\r\n\r\n    /**\r\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n     * @param _addr the given address to check\r\n     * @return true or false if the address is a contract or not\r\n     */\r\n    function isContract(address _addr) internal view returns (bool) {\r\n        // retrieve the size of the code on target address, this needs assembly\r\n        uint length;\r\n        assembly { length := extcodesize(_addr) }\r\n        return length > 0;\r\n    }\r\n}\r\n",
-  "sourcePath": "C:\\Users\\Alex\\Desktop\\Upwork\\alpha\\contracts\\misc\\BasicControls.sol",
+  "sourcePath": "C:\\Users\\Alex\\Desktop\\MyProjects\\alpha\\contracts\\misc\\BasicControls.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
-        3699
+        3721
       ]
     },
-    "id": 3700,
+    "id": 3722,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3682,
+        "id": 3704,
         "literals": [
           "solidity",
           "^",
@@ -33,32 +33,32 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "contract",
-        "documentation": "@title BasicControls\r\n@dev this contract implement basic controls needed in a variety of contracts\r",
+        "documentation": "@title BasicControls\n@dev this contract implement basic controls needed in a variety of contracts",
         "fullyImplemented": true,
-        "id": 3699,
+        "id": 3721,
         "linearizedBaseContracts": [
-          3699
+          3721
         ],
         "name": "BasicControls",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 3697,
+              "id": 3719,
               "nodeType": "Block",
               "src": "474:190:28",
               "statements": [
                 {
                   "assignments": [
-                    3690
+                    3712
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 3690,
+                      "id": 3712,
                       "name": "length",
                       "nodeType": "VariableDeclaration",
-                      "scope": 3697,
+                      "scope": 3719,
                       "src": "566:11:28",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -67,7 +67,7 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 3689,
+                        "id": 3711,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
                         "src": "566:4:28",
@@ -80,7 +80,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 3691,
+                  "id": 3713,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
                   "src": "566:11:28"
@@ -89,7 +89,7 @@
                   "externalReferences": [
                     {
                       "length": {
-                        "declaration": 3690,
+                        "declaration": 3712,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "599:6:28",
@@ -98,7 +98,7 @@
                     },
                     {
                       "_addr": {
-                        "declaration": 3684,
+                        "declaration": 3706,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "621:5:28",
@@ -106,7 +106,7 @@
                       }
                     }
                   ],
-                  "id": 3692,
+                  "id": 3714,
                   "nodeType": "InlineAssembly",
                   "operations": "{ length := extcodesize(_addr) }",
                   "src": "588:41:28"
@@ -118,18 +118,18 @@
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     },
-                    "id": 3695,
+                    "id": 3717,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
                       "argumentTypes": null,
-                      "id": 3693,
+                      "id": 3715,
                       "name": "length",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3690,
+                      "referencedDeclaration": 3712,
                       "src": "646:6:28",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -141,7 +141,7 @@
                     "rightExpression": {
                       "argumentTypes": null,
                       "hexValue": "30",
-                      "id": 3694,
+                      "id": 3716,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -162,30 +162,30 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 3688,
-                  "id": 3696,
+                  "functionReturnParameters": 3710,
+                  "id": 3718,
                   "nodeType": "Return",
                   "src": "639:17:28"
                 }
               ]
             },
-            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n@param _addr the given address to check\r\n@return true or false if the address is a contract or not\r",
-            "id": 3698,
+            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n@param _addr the given address to check\n@return true or false if the address is a contract or not",
+            "id": 3720,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "isContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3685,
+              "id": 3707,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3684,
+                  "id": 3706,
                   "name": "_addr",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3698,
+                  "scope": 3720,
                   "src": "430:13:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -194,7 +194,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3683,
+                    "id": 3705,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "430:7:28",
@@ -211,15 +211,15 @@
               "src": "429:15:28"
             },
             "returnParameters": {
-              "id": 3688,
+              "id": 3710,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3687,
+                  "id": 3709,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3698,
+                  "scope": 3720,
                   "src": "468:4:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -228,7 +228,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3686,
+                    "id": 3708,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "468:4:28",
@@ -243,31 +243,31 @@
               ],
               "src": "467:6:28"
             },
-            "scope": 3699,
+            "scope": 3721,
             "src": "410:254:28",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
-        "scope": 3700,
+        "scope": 3722,
         "src": "145:522:28"
       }
     ],
     "src": "0:669:28"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
-        3699
+        3721
       ]
     },
-    "id": 3700,
+    "id": 3722,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3682,
+        "id": 3704,
         "literals": [
           "solidity",
           "^",
@@ -281,32 +281,32 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "contract",
-        "documentation": "@title BasicControls\r\n@dev this contract implement basic controls needed in a variety of contracts\r",
+        "documentation": "@title BasicControls\n@dev this contract implement basic controls needed in a variety of contracts",
         "fullyImplemented": true,
-        "id": 3699,
+        "id": 3721,
         "linearizedBaseContracts": [
-          3699
+          3721
         ],
         "name": "BasicControls",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 3697,
+              "id": 3719,
               "nodeType": "Block",
               "src": "474:190:28",
               "statements": [
                 {
                   "assignments": [
-                    3690
+                    3712
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 3690,
+                      "id": 3712,
                       "name": "length",
                       "nodeType": "VariableDeclaration",
-                      "scope": 3697,
+                      "scope": 3719,
                       "src": "566:11:28",
                       "stateVariable": false,
                       "storageLocation": "default",
@@ -315,7 +315,7 @@
                         "typeString": "uint256"
                       },
                       "typeName": {
-                        "id": 3689,
+                        "id": 3711,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
                         "src": "566:4:28",
@@ -328,7 +328,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 3691,
+                  "id": 3713,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
                   "src": "566:11:28"
@@ -337,7 +337,7 @@
                   "externalReferences": [
                     {
                       "length": {
-                        "declaration": 3690,
+                        "declaration": 3712,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "599:6:28",
@@ -346,7 +346,7 @@
                     },
                     {
                       "_addr": {
-                        "declaration": 3684,
+                        "declaration": 3706,
                         "isOffset": false,
                         "isSlot": false,
                         "src": "621:5:28",
@@ -354,7 +354,7 @@
                       }
                     }
                   ],
-                  "id": 3692,
+                  "id": 3714,
                   "nodeType": "InlineAssembly",
                   "operations": "{ length := extcodesize(_addr) }",
                   "src": "588:41:28"
@@ -366,18 +366,18 @@
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
                     },
-                    "id": 3695,
+                    "id": 3717,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftExpression": {
                       "argumentTypes": null,
-                      "id": 3693,
+                      "id": 3715,
                       "name": "length",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3690,
+                      "referencedDeclaration": 3712,
                       "src": "646:6:28",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -389,7 +389,7 @@
                     "rightExpression": {
                       "argumentTypes": null,
                       "hexValue": "30",
-                      "id": 3694,
+                      "id": 3716,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -410,30 +410,30 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 3688,
-                  "id": 3696,
+                  "functionReturnParameters": 3710,
+                  "id": 3718,
                   "nodeType": "Return",
                   "src": "639:17:28"
                 }
               ]
             },
-            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n@param _addr the given address to check\r\n@return true or false if the address is a contract or not\r",
-            "id": 3698,
+            "documentation": "@dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n@param _addr the given address to check\n@return true or false if the address is a contract or not",
+            "id": 3720,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "isContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3685,
+              "id": 3707,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3684,
+                  "id": 3706,
                   "name": "_addr",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3698,
+                  "scope": 3720,
                   "src": "430:13:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -442,7 +442,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3683,
+                    "id": 3705,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "430:7:28",
@@ -459,15 +459,15 @@
               "src": "429:15:28"
             },
             "returnParameters": {
-              "id": 3688,
+              "id": 3710,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3687,
+                  "id": 3709,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3698,
+                  "scope": 3720,
                   "src": "468:4:28",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -476,7 +476,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3686,
+                    "id": 3708,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "468:4:28",
@@ -491,14 +491,14 @@
               ],
               "src": "467:6:28"
             },
-            "scope": 3699,
+            "scope": 3721,
             "src": "410:254:28",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
-        "scope": 3700,
+        "scope": 3722,
         "src": "145:522:28"
       }
     ],
@@ -506,15 +506,15 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
+    "version": "0.5.13+commit.5b0b510c.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-17T12:57:37.454Z",
+  "schemaVersion": "3.0.19",
+  "updatedAt": "2019-11-21T00:13:44.549Z",
   "devdoc": {
-    "details": "this contract implement basic controls needed in a variety of contracts\r",
+    "details": "this contract implement basic controls needed in a variety of contracts",
     "methods": {},
-    "title": "BasicControls\r"
+    "title": "BasicControls"
   },
   "userdoc": {
     "methods": {}

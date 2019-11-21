@@ -52,6 +52,9 @@ module.exports = async (callback) => {
     let supportedPlayer;
     let randomSupporter;
 
+    let state = await getterDB.getGameState(gameId);
+    console.log(state);
+
     for(let i=0; i<noOfBets; i++){
       let randomPlayer = randomValue(2);
 
@@ -64,7 +67,7 @@ module.exports = async (callback) => {
         console.log('\nEnd Time: ', endTime);
 
         while (block < endTime) {
-          block = await dateTime.getBlockTimeStamp();
+          block = Math.floor(Date.now() / 1000);
           await timeout(3);
         }
       }

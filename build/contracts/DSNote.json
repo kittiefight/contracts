@@ -45,15 +45,15 @@
       "type": "event"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":true,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes4\",\"name\":\"sig\",\"type\":\"bytes4\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"guy\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"foo\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"bar\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wad\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"fax\",\"type\":\"bytes\"}],\"name\":\"LogNote\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/DSNote.sol\":\"DSNote\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/DSNote.sol\":{\"keccak256\":\"0x3445539d79ad751d92834daa5943130fdbd797be9464db589d3d47be817c1e54\",\"urls\":[\"bzz-raw://cb594b45a7046be2c465d7791bc896733323224cead49b87fd6208534e633d2f\",\"dweb:/ipfs/QmZGUpHsuLAmFq5ERYehATUy2EvmtGVyH1EE2B8iiQHRcy\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723158204f8c7cc61f04d8c8671a485b9020f263fa270e2ce698bb174ec9cb62a20977f764736f6c634300050b0032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a723158204f8c7cc61f04d8c8671a485b9020f263fa270e2ce698bb174ec9cb62a20977f764736f6c634300050b0032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.13+commit.5b0b510c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":true,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes4\",\"name\":\"sig\",\"type\":\"bytes4\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"guy\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"foo\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"bar\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wad\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"fax\",\"type\":\"bytes\"}],\"name\":\"LogNote\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/DSNote.sol\":\"DSNote\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/DSNote.sol\":{\"keccak256\":\"0x3445539d79ad751d92834daa5943130fdbd797be9464db589d3d47be817c1e54\",\"urls\":[\"bzz-raw://cb594b45a7046be2c465d7791bc896733323224cead49b87fd6208534e633d2f\",\"dweb:/ipfs/QmZGUpHsuLAmFq5ERYehATUy2EvmtGVyH1EE2B8iiQHRcy\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820ec1dc636167f444d7db9ec5814e38941e6d596850c82bc4feead5eee4ee611b864736f6c634300050d0032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820ec1dc636167f444d7db9ec5814e38941e6d596850c82bc4feead5eee4ee611b864736f6c634300050d0032",
   "sourceMap": "751:566:2:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;751:566:2;;;;;;;",
   "deployedSourceMap": "751:566:2:-;;;;;",
   "source": "/// note.sol -- the `note' modifier, for logging calls as events\r\n\r\n// This program is free software: you can redistribute it and/or modify\r\n// it under the terms of the GNU General Public License as published by\r\n// the Free Software Foundation, either version 3 of the License, or\r\n// (at your option) any later version.\r\n\r\n// This program is distributed in the hope that it will be useful,\r\n// but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n// GNU General Public License for more details.\r\n\r\n// You should have received a copy of the GNU General Public License\r\n// along with this program.  If not, see <http://www.gnu.org/licenses/>.\r\n\r\npragma solidity ^0.5.5;\r\n\r\ncontract DSNote {\r\n    event LogNote(\r\n        bytes4   indexed  sig,\r\n        address  indexed  guy,\r\n        bytes32  indexed  foo,\r\n        bytes32  indexed  bar,\r\n        uint256           wad,\r\n        bytes             fax\r\n    ) anonymous;\r\n\r\n    modifier note {\r\n        bytes32 foo;\r\n        bytes32 bar;\r\n        uint256 wad;\r\n\r\n        assembly {\r\n            foo := calldataload(4)\r\n            bar := calldataload(36)\r\n            wad := callvalue\r\n        }\r\n\r\n        emit LogNote(msg.sig, msg.sender, foo, bar, wad, msg.data);\r\n\r\n        _;\r\n    }\r\n}\r\n",
-  "sourcePath": "C:/Users/Alex/Desktop/Upwork/alpha/contracts/DSNote.sol",
+  "sourcePath": "C:/Users/Alex/Desktop/MyProjects/alpha/contracts/DSNote.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/DSNote.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/DSNote.sol",
     "exportedSymbols": {
       "DSNote": [
         586
@@ -428,7 +428,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21854,
+                          "referencedDeclaration": 22832,
                           "src": "1247:3:2",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -457,7 +457,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21854,
+                          "referencedDeclaration": 22832,
                           "src": "1256:3:2",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -525,7 +525,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21854,
+                          "referencedDeclaration": 22832,
                           "src": "1283:3:2",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -631,7 +631,7 @@
     "src": "724:595:2"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/DSNote.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/DSNote.sol",
     "exportedSymbols": {
       "DSNote": [
         586
@@ -1006,7 +1006,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21854,
+                          "referencedDeclaration": 22832,
                           "src": "1247:3:2",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1035,7 +1035,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21854,
+                          "referencedDeclaration": 22832,
                           "src": "1256:3:2",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1103,7 +1103,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 21854,
+                          "referencedDeclaration": 22832,
                           "src": "1283:3:2",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1210,11 +1210,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
+    "version": "0.5.13+commit.5b0b510c.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-14T12:56:12.646Z",
+  "schemaVersion": "3.0.19",
+  "updatedAt": "2019-11-20T22:01:52.606Z",
   "devdoc": {
     "methods": {}
   },

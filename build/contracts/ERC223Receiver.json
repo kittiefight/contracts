@@ -27,25 +27,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"tokenFallback\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Base class contracts willing to accept ERC223 token transfers must conform to.\\r  * _from: the origin address from whose balance the tokens are sent\\r         - For transfer(), origin = msg.sender\\r         - For transferFrom() origin = _from to token contract\\r Value is the amount of tokens sent\\r Data is arbitrary data sent with the token transfer. Simulates ether tx.data\\r  * From, and value shouldn't be trusted unless the token contract is trusted.\\r\"}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/ERC223Receiver.sol\":\"ERC223Receiver\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/ERC223Receiver.sol\":{\"keccak256\":\"0x2fcce1da1c83db689abbab9794fa0a477ede27ab5a030218be22555b1c3e8c47\",\"urls\":[\"bzz-raw://b0e6bd91c6d71caf6c0abbafb2a262850ec35b315faf7c15f254101b7792ea62\",\"dweb:/ipfs/QmTi4TwP5rFmitWCx6cT7B2sSKip73THGjt31XUQDqyMbr\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.13+commit.5b0b510c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"tokenFallback\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Base class contracts willing to accept ERC223 token transfers must conform to.  * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data  * From, and value shouldn't be trusted unless the token contract is trusted.\"}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/ERC223Receiver.sol\":\"ERC223Receiver\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/ERC223Receiver.sol\":{\"keccak256\":\"0x2fcce1da1c83db689abbab9794fa0a477ede27ab5a030218be22555b1c3e8c47\",\"urls\":[\"bzz-raw://b0e6bd91c6d71caf6c0abbafb2a262850ec35b315faf7c15f254101b7792ea62\",\"dweb:/ipfs/QmTi4TwP5rFmitWCx6cT7B2sSKip73THGjt31XUQDqyMbr\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.5.5;\r\n\r\n/**\r\n * Base class contracts willing to accept ERC223 token transfers must conform to.\r\n *\r\n * _from: the origin address from whose balance the tokens are sent\r\n *          - For transfer(), origin = msg.sender\r\n *          - For transferFrom() origin = _from to token contract\r\n * Value is the amount of tokens sent\r\n * Data is arbitrary data sent with the token transfer. Simulates ether tx.data\r\n *\r\n * From, and value shouldn't be trusted unless the token contract is trusted.\r\n */\r\n\r\ninterface ERC223Receiver {\r\n    function tokenFallback(address _from, uint _value, bytes calldata _data) external;\r\n}\r\n",
-  "sourcePath": "C:/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/ERC223Receiver.sol",
+  "sourcePath": "C:/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/ERC223Receiver.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/ERC223Receiver.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/ERC223Receiver.sol",
     "exportedSymbols": {
       "ERC223Receiver": [
-        2038
+        2060
       ]
     },
-    "id": 2039,
+    "id": 2061,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2028,
+        "id": 2050,
         "literals": [
           "solidity",
           "^",
@@ -59,11 +59,11 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "interface",
-        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\r\n\n * _from: the origin address from whose balance the tokens are sent\r\n         - For transfer(), origin = msg.sender\r\n         - For transferFrom() origin = _from to token contract\r\nValue is the amount of tokens sent\r\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\r\n\n * From, and value shouldn't be trusted unless the token contract is trusted.\r",
+        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\n\n * _from: the origin address from whose balance the tokens are sent\n         - For transfer(), origin = msg.sender\n         - For transferFrom() origin = _from to token contract\nValue is the amount of tokens sent\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\n\n * From, and value shouldn't be trusted unless the token contract is trusted.",
         "fullyImplemented": false,
-        "id": 2038,
+        "id": 2060,
         "linearizedBaseContracts": [
-          2038
+          2060
         ],
         "name": "ERC223Receiver",
         "nodeType": "ContractDefinition",
@@ -71,22 +71,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2037,
+            "id": 2059,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "tokenFallback",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2035,
+              "id": 2057,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2030,
+                  "id": 2052,
                   "name": "_from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2037,
+                  "scope": 2059,
                   "src": "571:13:16",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -95,7 +95,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2029,
+                    "id": 2051,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "571:7:16",
@@ -110,10 +110,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2032,
+                  "id": 2054,
                   "name": "_value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2037,
+                  "scope": 2059,
                   "src": "586:11:16",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -122,7 +122,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2031,
+                    "id": 2053,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "586:4:16",
@@ -136,10 +136,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2034,
+                  "id": 2056,
                   "name": "_data",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2037,
+                  "scope": 2059,
                   "src": "599:20:16",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -148,7 +148,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 2033,
+                    "id": 2055,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "599:5:16",
@@ -164,36 +164,36 @@
               "src": "570:50:16"
             },
             "returnParameters": {
-              "id": 2036,
+              "id": 2058,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "629:0:16"
             },
-            "scope": 2038,
+            "scope": 2060,
             "src": "548:82:16",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2039,
+        "scope": 2061,
         "src": "516:117:16"
       }
     ],
     "src": "0:635:16"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/ERC223Receiver.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/ERC223Receiver.sol",
     "exportedSymbols": {
       "ERC223Receiver": [
-        2038
+        2060
       ]
     },
-    "id": 2039,
+    "id": 2061,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2028,
+        "id": 2050,
         "literals": [
           "solidity",
           "^",
@@ -207,11 +207,11 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "interface",
-        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\r\n\n * _from: the origin address from whose balance the tokens are sent\r\n         - For transfer(), origin = msg.sender\r\n         - For transferFrom() origin = _from to token contract\r\nValue is the amount of tokens sent\r\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\r\n\n * From, and value shouldn't be trusted unless the token contract is trusted.\r",
+        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\n\n * _from: the origin address from whose balance the tokens are sent\n         - For transfer(), origin = msg.sender\n         - For transferFrom() origin = _from to token contract\nValue is the amount of tokens sent\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\n\n * From, and value shouldn't be trusted unless the token contract is trusted.",
         "fullyImplemented": false,
-        "id": 2038,
+        "id": 2060,
         "linearizedBaseContracts": [
-          2038
+          2060
         ],
         "name": "ERC223Receiver",
         "nodeType": "ContractDefinition",
@@ -219,22 +219,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2037,
+            "id": 2059,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "tokenFallback",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2035,
+              "id": 2057,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2030,
+                  "id": 2052,
                   "name": "_from",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2037,
+                  "scope": 2059,
                   "src": "571:13:16",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -243,7 +243,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2029,
+                    "id": 2051,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "571:7:16",
@@ -258,10 +258,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2032,
+                  "id": 2054,
                   "name": "_value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2037,
+                  "scope": 2059,
                   "src": "586:11:16",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -270,7 +270,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2031,
+                    "id": 2053,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "586:4:16",
@@ -284,10 +284,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2034,
+                  "id": 2056,
                   "name": "_data",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2037,
+                  "scope": 2059,
                   "src": "599:20:16",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -296,7 +296,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 2033,
+                    "id": 2055,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "599:5:16",
@@ -312,19 +312,19 @@
               "src": "570:50:16"
             },
             "returnParameters": {
-              "id": 2036,
+              "id": 2058,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "629:0:16"
             },
-            "scope": 2038,
+            "scope": 2060,
             "src": "548:82:16",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2039,
+        "scope": 2061,
         "src": "516:117:16"
       }
     ],
@@ -332,16 +332,16 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
+    "version": "0.5.13+commit.5b0b510c.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-14T12:56:12.792Z",
+  "schemaVersion": "3.0.19",
+  "updatedAt": "2019-11-20T22:01:52.706Z",
   "devdoc": {
     "methods": {}
   },
   "userdoc": {
     "methods": {},
-    "notice": "Base class contracts willing to accept ERC223 token transfers must conform to.\r  * _from: the origin address from whose balance the tokens are sent\r         - For transfer(), origin = msg.sender\r         - For transferFrom() origin = _from to token contract\r Value is the amount of tokens sent\r Data is arbitrary data sent with the token transfer. Simulates ether tx.data\r  * From, and value shouldn't be trusted unless the token contract is trusted.\r"
+    "notice": "Base class contracts willing to accept ERC223 token transfers must conform to.  * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data  * From, and value shouldn't be trusted unless the token contract is trusted."
   }
 }

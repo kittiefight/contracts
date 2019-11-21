@@ -80,7 +80,7 @@ module.exports = async (callback) => {
         let {preStartTime} = await getterDB.getGameTimes(gameId);
 
         while (block < preStartTime) {
-          block = await dateTime.getBlockTimeStamp();
+          block = Math.floor(Date.now() / 1000);
           await timeout(3);
         }
       }

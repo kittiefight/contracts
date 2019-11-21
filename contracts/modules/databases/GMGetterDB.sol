@@ -158,10 +158,8 @@ contract GMGetterDB is Proxied {
     public view
     returns(uint totalEth, uint totalKty )
   {
-    //totalEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")));
-    //totalKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")));
-    totalEth = 300000000000000000000;  // 300 ether 
-    totalKty = 10000000000000000000000;  //10000 KTY
+    totalEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalEth")));
+    totalKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "totalKty")));
   }
 
   function getPlayerBet(uint gameId, address player)

@@ -78,25 +78,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"getContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"updateContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"removeContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"addContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IContractManager.sol\":\"IContractManager\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IContractManager.sol\":{\"keccak256\":\"0xd42ff3ca1863499f6d4b9213756d2bca7219a7fabe0229c004c521a9b863b2c7\",\"urls\":[\"bzz-raw://5c59650eb833c2cfb5761236c99c44bf90ebd1e2a18dea7c9787ea9dfa51222b\",\"dweb:/ipfs/QmdTGDa37vJjucj85VSTipk5rhPwTRYV9sfVzRKqSwLVWW\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.13+commit.5b0b510c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"addContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"getContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"removeContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"contractAddress\",\"type\":\"address\"}],\"name\":\"updateContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IContractManager.sol\":\"IContractManager\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IContractManager.sol\":{\"keccak256\":\"0xd42ff3ca1863499f6d4b9213756d2bca7219a7fabe0229c004c521a9b863b2c7\",\"urls\":[\"bzz-raw://5c59650eb833c2cfb5761236c99c44bf90ebd1e2a18dea7c9787ea9dfa51222b\",\"dweb:/ipfs/QmdTGDa37vJjucj85VSTipk5rhPwTRYV9sfVzRKqSwLVWW\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.5.5;\r\n\r\ninterface IContractManager {\r\n  function addContract(string calldata name, address contractAddress) external;\r\n  function removeContract(string calldata name) external;\r\n  function updateContract(string calldata name, address contractAddress) external;\r\n  function getContract(string calldata name) external view returns (address);\r\n}\r\n",
-  "sourcePath": "C:\\Users\\Alex\\Desktop\\Upwork\\alpha\\contracts\\interfaces\\IContractManager.sol",
+  "sourcePath": "C:\\Users\\Alex\\Desktop\\MyProjects\\alpha\\contracts\\interfaces\\IContractManager.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IContractManager.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IContractManager.sol",
     "exportedSymbols": {
       "IContractManager": [
-        2135
+        2157
       ]
     },
-    "id": 2136,
+    "id": 2158,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2108,
+        "id": 2130,
         "literals": [
           "solidity",
           "^",
@@ -112,9 +112,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 2135,
+        "id": 2157,
         "linearizedBaseContracts": [
-          2135
+          2157
         ],
         "name": "IContractManager",
         "nodeType": "ContractDefinition",
@@ -122,22 +122,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2115,
+            "id": 2137,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "addContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2113,
+              "id": 2135,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2110,
+                  "id": 2132,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2115,
+                  "scope": 2137,
                   "src": "80:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -146,7 +146,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2109,
+                    "id": 2131,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "80:6:18",
@@ -160,10 +160,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2112,
+                  "id": 2134,
                   "name": "contractAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2115,
+                  "scope": 2137,
                   "src": "102:23:18",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -172,7 +172,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2111,
+                    "id": 2133,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "102:7:18",
@@ -189,12 +189,12 @@
               "src": "79:47:18"
             },
             "returnParameters": {
-              "id": 2114,
+              "id": 2136,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "135:0:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "59:77:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -203,22 +203,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2120,
+            "id": 2142,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "removeContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2118,
+              "id": 2140,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2117,
+                  "id": 2139,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2120,
+                  "scope": 2142,
                   "src": "164:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -227,7 +227,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2116,
+                    "id": 2138,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "164:6:18",
@@ -243,12 +243,12 @@
               "src": "163:22:18"
             },
             "returnParameters": {
-              "id": 2119,
+              "id": 2141,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "194:0:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "140:55:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -257,22 +257,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2127,
+            "id": 2149,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "updateContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2125,
+              "id": 2147,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2122,
+                  "id": 2144,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2127,
+                  "scope": 2149,
                   "src": "223:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -281,7 +281,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2121,
+                    "id": 2143,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "223:6:18",
@@ -295,10 +295,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2124,
+                  "id": 2146,
                   "name": "contractAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2127,
+                  "scope": 2149,
                   "src": "245:23:18",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -307,7 +307,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2123,
+                    "id": 2145,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "245:7:18",
@@ -324,12 +324,12 @@
               "src": "222:47:18"
             },
             "returnParameters": {
-              "id": 2126,
+              "id": 2148,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "278:0:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "199:80:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -338,22 +338,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2134,
+            "id": 2156,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2130,
+              "id": 2152,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2129,
+                  "id": 2151,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2134,
+                  "scope": 2156,
                   "src": "304:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -362,7 +362,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2128,
+                    "id": 2150,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "304:6:18",
@@ -378,15 +378,15 @@
               "src": "303:22:18"
             },
             "returnParameters": {
-              "id": 2133,
+              "id": 2155,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2132,
+                  "id": 2154,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2134,
+                  "scope": 2156,
                   "src": "349:7:18",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -395,7 +395,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2131,
+                    "id": 2153,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "349:7:18",
@@ -411,31 +411,31 @@
               ],
               "src": "348:9:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "283:75:18",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2136,
+        "scope": 2158,
         "src": "27:334:18"
       }
     ],
     "src": "0:363:18"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IContractManager.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IContractManager.sol",
     "exportedSymbols": {
       "IContractManager": [
-        2135
+        2157
       ]
     },
-    "id": 2136,
+    "id": 2158,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2108,
+        "id": 2130,
         "literals": [
           "solidity",
           "^",
@@ -451,9 +451,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 2135,
+        "id": 2157,
         "linearizedBaseContracts": [
-          2135
+          2157
         ],
         "name": "IContractManager",
         "nodeType": "ContractDefinition",
@@ -461,22 +461,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2115,
+            "id": 2137,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "addContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2113,
+              "id": 2135,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2110,
+                  "id": 2132,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2115,
+                  "scope": 2137,
                   "src": "80:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -485,7 +485,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2109,
+                    "id": 2131,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "80:6:18",
@@ -499,10 +499,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2112,
+                  "id": 2134,
                   "name": "contractAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2115,
+                  "scope": 2137,
                   "src": "102:23:18",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -511,7 +511,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2111,
+                    "id": 2133,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "102:7:18",
@@ -528,12 +528,12 @@
               "src": "79:47:18"
             },
             "returnParameters": {
-              "id": 2114,
+              "id": 2136,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "135:0:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "59:77:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -542,22 +542,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2120,
+            "id": 2142,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "removeContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2118,
+              "id": 2140,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2117,
+                  "id": 2139,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2120,
+                  "scope": 2142,
                   "src": "164:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -566,7 +566,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2116,
+                    "id": 2138,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "164:6:18",
@@ -582,12 +582,12 @@
               "src": "163:22:18"
             },
             "returnParameters": {
-              "id": 2119,
+              "id": 2141,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "194:0:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "140:55:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -596,22 +596,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2127,
+            "id": 2149,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "updateContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2125,
+              "id": 2147,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2122,
+                  "id": 2144,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2127,
+                  "scope": 2149,
                   "src": "223:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -620,7 +620,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2121,
+                    "id": 2143,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "223:6:18",
@@ -634,10 +634,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2124,
+                  "id": 2146,
                   "name": "contractAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2127,
+                  "scope": 2149,
                   "src": "245:23:18",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -646,7 +646,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2123,
+                    "id": 2145,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "245:7:18",
@@ -663,12 +663,12 @@
               "src": "222:47:18"
             },
             "returnParameters": {
-              "id": 2126,
+              "id": 2148,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "278:0:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "199:80:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -677,22 +677,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2134,
+            "id": 2156,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getContract",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2130,
+              "id": 2152,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2129,
+                  "id": 2151,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2134,
+                  "scope": 2156,
                   "src": "304:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -701,7 +701,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 2128,
+                    "id": 2150,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "304:6:18",
@@ -717,15 +717,15 @@
               "src": "303:22:18"
             },
             "returnParameters": {
-              "id": 2133,
+              "id": 2155,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2132,
+                  "id": 2154,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2134,
+                  "scope": 2156,
                   "src": "349:7:18",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -734,7 +734,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 2131,
+                    "id": 2153,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "349:7:18",
@@ -750,14 +750,14 @@
               ],
               "src": "348:9:18"
             },
-            "scope": 2135,
+            "scope": 2157,
             "src": "283:75:18",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2136,
+        "scope": 2158,
         "src": "27:334:18"
       }
     ],
@@ -765,11 +765,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
+    "version": "0.5.13+commit.5b0b510c.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-17T12:57:37.426Z",
+  "schemaVersion": "3.0.19",
+  "updatedAt": "2019-11-21T00:13:44.523Z",
   "devdoc": {
     "methods": {}
   },

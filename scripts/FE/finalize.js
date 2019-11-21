@@ -46,7 +46,7 @@ module.exports = async (callback) => {
 
     let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
     
-    let finalizer = accounts[30];
+    let finalizer = accounts[20];
 
     console.log('\n==== WAITING FOR GAME OVER: ', formatDate(endTime))
 
@@ -54,7 +54,7 @@ module.exports = async (callback) => {
 
 
     await proxy.execute('GameManager', setMessage(gameManager, 'finalize',
-      [gameId, randomValue(99)]), { from: finalizer });
+      [gameId, randomValue(30)]), { from: finalizer });
 
     let gameEnd = await gameManager.getPastEvents('GameEnded', {
       filter: { gameId },

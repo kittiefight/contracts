@@ -196,11 +196,6 @@
           "internalType": "uint8",
           "name": "minute",
           "type": "uint8"
-        },
-        {
-          "internalType": "uint8",
-          "name": "second",
-          "type": "uint8"
         }
       ],
       "name": "toTimestamp",
@@ -236,6 +231,37 @@
         {
           "internalType": "uint8",
           "name": "hour",
+          "type": "uint8"
+        }
+      ],
+      "name": "toTimestamp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "year",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint8",
+          "name": "month",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "day",
           "type": "uint8"
         }
       ],
@@ -278,36 +304,10 @@
           "internalType": "uint8",
           "name": "minute",
           "type": "uint8"
-        }
-      ],
-      "name": "toTimestamp",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "uint16",
-          "name": "year",
-          "type": "uint16"
         },
         {
           "internalType": "uint8",
-          "name": "month",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint8",
-          "name": "day",
+          "name": "second",
           "type": "uint8"
         }
       ],
@@ -324,25 +324,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.11+commit.c082d0b4\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getHour\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getWeekday\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"hour\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"minute\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getDay\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"hour\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getSecond\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"hour\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"minute\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"second\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getYear\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getMonth\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"}],\"name\":\"isLeapYear\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getMinute\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IDateTimeAPI.sol\":\"IDateTimeAPI\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IDateTimeAPI.sol\":{\"keccak256\":\"0xa776dae1d23a77d1736a1e8cfd4b02e6e5be9ec63dda3df846741838640783ac\",\"urls\":[\"bzz-raw://b66caa6983846a0afbe6af5953dda8eca4609cd0870b886ce878bc88dfb9ebe6\",\"dweb:/ipfs/QmY3MJj7zgU1Ln16mz9A7AC87WhJ5iHaWrNp66NoKGtdNE\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.13+commit.5b0b510c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getDay\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getHour\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getMinute\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getMonth\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getSecond\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getWeekday\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"getYear\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"}],\"name\":\"isLeapYear\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"hour\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"minute\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"hour\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"year\",\"type\":\"uint16\"},{\"internalType\":\"uint8\",\"name\":\"month\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"day\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"hour\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"minute\",\"type\":\"uint8\"},{\"internalType\":\"uint8\",\"name\":\"second\",\"type\":\"uint8\"}],\"name\":\"toTimestamp\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IDateTimeAPI.sol\":\"IDateTimeAPI\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IDateTimeAPI.sol\":{\"keccak256\":\"0xa776dae1d23a77d1736a1e8cfd4b02e6e5be9ec63dda3df846741838640783ac\",\"urls\":[\"bzz-raw://b66caa6983846a0afbe6af5953dda8eca4609cd0870b886ce878bc88dfb9ebe6\",\"dweb:/ipfs/QmY3MJj7zgU1Ln16mz9A7AC87WhJ5iHaWrNp66NoKGtdNE\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity >=0.5.0 <0.6.0;\r\n\r\ninterface IDateTimeAPI {\r\n    function isLeapYear(uint16 year) external pure returns (bool);\r\n    function getYear(uint timestamp) external pure returns (uint16);\r\n    function getMonth(uint timestamp) external pure returns (uint8);\r\n    function getDay(uint timestamp) external pure returns (uint8);\r\n    function getHour(uint timestamp) external pure returns (uint8);\r\n    function getMinute(uint timestamp) external pure returns (uint8);\r\n    function getSecond(uint timestamp) external pure returns (uint8);\r\n    function getWeekday(uint timestamp) external pure returns (uint8);\r\n    function toTimestamp(uint16 year, uint8 month, uint8 day) external pure returns (uint timestamp);\r\n    function toTimestamp(uint16 year, uint8 month, uint8 day, uint8 hour) external pure returns (uint timestamp);\r\n    function toTimestamp(uint16 year, uint8 month, uint8 day, uint8 hour, uint8 minute) external pure returns (uint timestamp);\r\n    function toTimestamp(uint16 year, uint8 month, uint8 day, uint8 hour, uint8 minute, uint8 second) external pure returns (uint timestamp);\r\n}\r\n",
-  "sourcePath": "C:/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IDateTimeAPI.sol",
+  "sourcePath": "C:/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IDateTimeAPI.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IDateTimeAPI.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IDateTimeAPI.sol",
     "exportedSymbols": {
       "IDateTimeAPI": [
-        2250
+        2272
       ]
     },
-    "id": 2251,
+    "id": 2273,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2137,
+        "id": 2159,
         "literals": [
           "solidity",
           ">=",
@@ -361,9 +361,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 2250,
+        "id": 2272,
         "linearizedBaseContracts": [
-          2250
+          2272
         ],
         "name": "IDateTimeAPI",
         "nodeType": "ContractDefinition",
@@ -371,22 +371,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2144,
+            "id": 2166,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isLeapYear",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2140,
+              "id": 2162,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2139,
+                  "id": 2161,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2144,
+                  "scope": 2166,
                   "src": "85:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -395,7 +395,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2138,
+                    "id": 2160,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "85:6:19",
@@ -411,15 +411,15 @@
               "src": "84:13:19"
             },
             "returnParameters": {
-              "id": 2143,
+              "id": 2165,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2142,
+                  "id": 2164,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2144,
+                  "scope": 2166,
                   "src": "121:4:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -428,7 +428,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2141,
+                    "id": 2163,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "121:4:19",
@@ -443,7 +443,7 @@
               ],
               "src": "120:6:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "65:62:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -452,22 +452,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2151,
+            "id": 2173,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getYear",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2147,
+              "id": 2169,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2146,
+                  "id": 2168,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2151,
+                  "scope": 2173,
                   "src": "150:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -476,7 +476,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2145,
+                    "id": 2167,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "150:4:19",
@@ -492,15 +492,15 @@
               "src": "149:16:19"
             },
             "returnParameters": {
-              "id": 2150,
+              "id": 2172,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2149,
+                  "id": 2171,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2151,
+                  "scope": 2173,
                   "src": "189:6:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -509,7 +509,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2148,
+                    "id": 2170,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "189:6:19",
@@ -524,7 +524,7 @@
               ],
               "src": "188:8:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "133:64:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -533,22 +533,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2158,
+            "id": 2180,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getMonth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2154,
+              "id": 2176,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2153,
+                  "id": 2175,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2158,
+                  "scope": 2180,
                   "src": "221:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -557,7 +557,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2152,
+                    "id": 2174,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "221:4:19",
@@ -573,15 +573,15 @@
               "src": "220:16:19"
             },
             "returnParameters": {
-              "id": 2157,
+              "id": 2179,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2156,
+                  "id": 2178,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2158,
+                  "scope": 2180,
                   "src": "260:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -590,7 +590,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2155,
+                    "id": 2177,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "260:5:19",
@@ -605,7 +605,7 @@
               ],
               "src": "259:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "203:64:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -614,22 +614,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2165,
+            "id": 2187,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getDay",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2161,
+              "id": 2183,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2160,
+                  "id": 2182,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2165,
+                  "scope": 2187,
                   "src": "289:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -638,7 +638,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2159,
+                    "id": 2181,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "289:4:19",
@@ -654,15 +654,15 @@
               "src": "288:16:19"
             },
             "returnParameters": {
-              "id": 2164,
+              "id": 2186,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2163,
+                  "id": 2185,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2165,
+                  "scope": 2187,
                   "src": "328:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -671,7 +671,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2162,
+                    "id": 2184,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "328:5:19",
@@ -686,7 +686,7 @@
               ],
               "src": "327:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "273:62:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -695,22 +695,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2172,
+            "id": 2194,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getHour",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2168,
+              "id": 2190,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2167,
+                  "id": 2189,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2172,
+                  "scope": 2194,
                   "src": "358:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -719,7 +719,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2166,
+                    "id": 2188,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "358:4:19",
@@ -735,15 +735,15 @@
               "src": "357:16:19"
             },
             "returnParameters": {
-              "id": 2171,
+              "id": 2193,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2170,
+                  "id": 2192,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2172,
+                  "scope": 2194,
                   "src": "397:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -752,7 +752,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2169,
+                    "id": 2191,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "397:5:19",
@@ -767,7 +767,7 @@
               ],
               "src": "396:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "341:63:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -776,22 +776,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2179,
+            "id": 2201,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getMinute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2175,
+              "id": 2197,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2174,
+                  "id": 2196,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2179,
+                  "scope": 2201,
                   "src": "429:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -800,7 +800,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2173,
+                    "id": 2195,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "429:4:19",
@@ -816,15 +816,15 @@
               "src": "428:16:19"
             },
             "returnParameters": {
-              "id": 2178,
+              "id": 2200,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2177,
+                  "id": 2199,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2179,
+                  "scope": 2201,
                   "src": "468:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -833,7 +833,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2176,
+                    "id": 2198,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "468:5:19",
@@ -848,7 +848,7 @@
               ],
               "src": "467:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "410:65:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -857,22 +857,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2186,
+            "id": 2208,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getSecond",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2182,
+              "id": 2204,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2181,
+                  "id": 2203,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2186,
+                  "scope": 2208,
                   "src": "500:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -881,7 +881,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2180,
+                    "id": 2202,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "500:4:19",
@@ -897,15 +897,15 @@
               "src": "499:16:19"
             },
             "returnParameters": {
-              "id": 2185,
+              "id": 2207,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2184,
+                  "id": 2206,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2186,
+                  "scope": 2208,
                   "src": "539:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -914,7 +914,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2183,
+                    "id": 2205,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "539:5:19",
@@ -929,7 +929,7 @@
               ],
               "src": "538:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "481:65:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -938,22 +938,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2193,
+            "id": 2215,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getWeekday",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2189,
+              "id": 2211,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2188,
+                  "id": 2210,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2193,
+                  "scope": 2215,
                   "src": "572:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -962,7 +962,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2187,
+                    "id": 2209,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "572:4:19",
@@ -978,15 +978,15 @@
               "src": "571:16:19"
             },
             "returnParameters": {
-              "id": 2192,
+              "id": 2214,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2191,
+                  "id": 2213,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2193,
+                  "scope": 2215,
                   "src": "611:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -995,7 +995,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2190,
+                    "id": 2212,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "611:5:19",
@@ -1010,7 +1010,7 @@
               ],
               "src": "610:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "552:66:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1019,22 +1019,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2204,
+            "id": 2226,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2200,
+              "id": 2222,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2195,
+                  "id": 2217,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "645:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1043,7 +1043,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2194,
+                    "id": 2216,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "645:6:19",
@@ -1057,10 +1057,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2197,
+                  "id": 2219,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "658:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1069,7 +1069,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2196,
+                    "id": 2218,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "658:5:19",
@@ -1083,10 +1083,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2199,
+                  "id": 2221,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "671:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1095,7 +1095,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2198,
+                    "id": 2220,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "671:5:19",
@@ -1111,15 +1111,15 @@
               "src": "644:37:19"
             },
             "returnParameters": {
-              "id": 2203,
+              "id": 2225,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2202,
+                  "id": 2224,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "705:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1128,7 +1128,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2201,
+                    "id": 2223,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "705:4:19",
@@ -1143,7 +1143,7 @@
               ],
               "src": "704:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "624:97:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1152,22 +1152,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2217,
+            "id": 2239,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2213,
+              "id": 2235,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2206,
+                  "id": 2228,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "748:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1176,7 +1176,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2205,
+                    "id": 2227,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "748:6:19",
@@ -1190,10 +1190,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2208,
+                  "id": 2230,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "761:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1202,7 +1202,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2207,
+                    "id": 2229,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "761:5:19",
@@ -1216,10 +1216,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2210,
+                  "id": 2232,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "774:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1228,7 +1228,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2209,
+                    "id": 2231,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "774:5:19",
@@ -1242,10 +1242,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2212,
+                  "id": 2234,
                   "name": "hour",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "785:10:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1254,7 +1254,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2211,
+                    "id": 2233,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "785:5:19",
@@ -1270,15 +1270,15 @@
               "src": "747:49:19"
             },
             "returnParameters": {
-              "id": 2216,
+              "id": 2238,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2215,
+                  "id": 2237,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "820:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1287,7 +1287,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2214,
+                    "id": 2236,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "820:4:19",
@@ -1302,7 +1302,7 @@
               ],
               "src": "819:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "727:109:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1311,22 +1311,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2232,
+            "id": 2254,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2228,
+              "id": 2250,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2219,
+                  "id": 2241,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "863:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1335,7 +1335,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2218,
+                    "id": 2240,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "863:6:19",
@@ -1349,10 +1349,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2221,
+                  "id": 2243,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "876:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1361,7 +1361,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2220,
+                    "id": 2242,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "876:5:19",
@@ -1375,10 +1375,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2223,
+                  "id": 2245,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "889:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1387,7 +1387,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2222,
+                    "id": 2244,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "889:5:19",
@@ -1401,10 +1401,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2225,
+                  "id": 2247,
                   "name": "hour",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "900:10:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1413,7 +1413,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2224,
+                    "id": 2246,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "900:5:19",
@@ -1427,10 +1427,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2227,
+                  "id": 2249,
                   "name": "minute",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "912:12:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1439,7 +1439,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2226,
+                    "id": 2248,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "912:5:19",
@@ -1455,15 +1455,15 @@
               "src": "862:63:19"
             },
             "returnParameters": {
-              "id": 2231,
+              "id": 2253,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2230,
+                  "id": 2252,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "949:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1472,7 +1472,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2229,
+                    "id": 2251,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "949:4:19",
@@ -1487,7 +1487,7 @@
               ],
               "src": "948:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "842:123:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1496,22 +1496,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2249,
+            "id": 2271,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2245,
+              "id": 2267,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2234,
+                  "id": 2256,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "992:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1520,7 +1520,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2233,
+                    "id": 2255,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "992:6:19",
@@ -1534,10 +1534,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2236,
+                  "id": 2258,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1005:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1546,7 +1546,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2235,
+                    "id": 2257,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1005:5:19",
@@ -1560,10 +1560,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2238,
+                  "id": 2260,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1018:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1572,7 +1572,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2237,
+                    "id": 2259,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1018:5:19",
@@ -1586,10 +1586,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2240,
+                  "id": 2262,
                   "name": "hour",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1029:10:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1598,7 +1598,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2239,
+                    "id": 2261,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1029:5:19",
@@ -1612,10 +1612,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2242,
+                  "id": 2264,
                   "name": "minute",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1041:12:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1624,7 +1624,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2241,
+                    "id": 2263,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1041:5:19",
@@ -1638,10 +1638,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2244,
+                  "id": 2266,
                   "name": "second",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1055:12:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1650,7 +1650,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2243,
+                    "id": 2265,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1055:5:19",
@@ -1666,15 +1666,15 @@
               "src": "991:77:19"
             },
             "returnParameters": {
-              "id": 2248,
+              "id": 2270,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2247,
+                  "id": 2269,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1092:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1683,7 +1683,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2246,
+                    "id": 2268,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1092:4:19",
@@ -1698,31 +1698,31 @@
               ],
               "src": "1091:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "971:137:19",
             "stateMutability": "pure",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2251,
+        "scope": 2273,
         "src": "35:1076:19"
       }
     ],
     "src": "0:1113:19"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/Upwork/alpha/contracts/interfaces/IDateTimeAPI.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/interfaces/IDateTimeAPI.sol",
     "exportedSymbols": {
       "IDateTimeAPI": [
-        2250
+        2272
       ]
     },
-    "id": 2251,
+    "id": 2273,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2137,
+        "id": 2159,
         "literals": [
           "solidity",
           ">=",
@@ -1741,9 +1741,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 2250,
+        "id": 2272,
         "linearizedBaseContracts": [
-          2250
+          2272
         ],
         "name": "IDateTimeAPI",
         "nodeType": "ContractDefinition",
@@ -1751,22 +1751,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2144,
+            "id": 2166,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isLeapYear",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2140,
+              "id": 2162,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2139,
+                  "id": 2161,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2144,
+                  "scope": 2166,
                   "src": "85:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1775,7 +1775,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2138,
+                    "id": 2160,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "85:6:19",
@@ -1791,15 +1791,15 @@
               "src": "84:13:19"
             },
             "returnParameters": {
-              "id": 2143,
+              "id": 2165,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2142,
+                  "id": 2164,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2144,
+                  "scope": 2166,
                   "src": "121:4:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1808,7 +1808,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2141,
+                    "id": 2163,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "121:4:19",
@@ -1823,7 +1823,7 @@
               ],
               "src": "120:6:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "65:62:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1832,22 +1832,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2151,
+            "id": 2173,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getYear",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2147,
+              "id": 2169,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2146,
+                  "id": 2168,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2151,
+                  "scope": 2173,
                   "src": "150:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1856,7 +1856,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2145,
+                    "id": 2167,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "150:4:19",
@@ -1872,15 +1872,15 @@
               "src": "149:16:19"
             },
             "returnParameters": {
-              "id": 2150,
+              "id": 2172,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2149,
+                  "id": 2171,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2151,
+                  "scope": 2173,
                   "src": "189:6:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1889,7 +1889,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2148,
+                    "id": 2170,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "189:6:19",
@@ -1904,7 +1904,7 @@
               ],
               "src": "188:8:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "133:64:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1913,22 +1913,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2158,
+            "id": 2180,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getMonth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2154,
+              "id": 2176,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2153,
+                  "id": 2175,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2158,
+                  "scope": 2180,
                   "src": "221:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1937,7 +1937,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2152,
+                    "id": 2174,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "221:4:19",
@@ -1953,15 +1953,15 @@
               "src": "220:16:19"
             },
             "returnParameters": {
-              "id": 2157,
+              "id": 2179,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2156,
+                  "id": 2178,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2158,
+                  "scope": 2180,
                   "src": "260:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1970,7 +1970,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2155,
+                    "id": 2177,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "260:5:19",
@@ -1985,7 +1985,7 @@
               ],
               "src": "259:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "203:64:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -1994,22 +1994,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2165,
+            "id": 2187,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getDay",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2161,
+              "id": 2183,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2160,
+                  "id": 2182,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2165,
+                  "scope": 2187,
                   "src": "289:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2018,7 +2018,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2159,
+                    "id": 2181,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "289:4:19",
@@ -2034,15 +2034,15 @@
               "src": "288:16:19"
             },
             "returnParameters": {
-              "id": 2164,
+              "id": 2186,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2163,
+                  "id": 2185,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2165,
+                  "scope": 2187,
                   "src": "328:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2051,7 +2051,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2162,
+                    "id": 2184,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "328:5:19",
@@ -2066,7 +2066,7 @@
               ],
               "src": "327:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "273:62:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2075,22 +2075,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2172,
+            "id": 2194,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getHour",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2168,
+              "id": 2190,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2167,
+                  "id": 2189,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2172,
+                  "scope": 2194,
                   "src": "358:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2099,7 +2099,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2166,
+                    "id": 2188,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "358:4:19",
@@ -2115,15 +2115,15 @@
               "src": "357:16:19"
             },
             "returnParameters": {
-              "id": 2171,
+              "id": 2193,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2170,
+                  "id": 2192,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2172,
+                  "scope": 2194,
                   "src": "397:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2132,7 +2132,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2169,
+                    "id": 2191,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "397:5:19",
@@ -2147,7 +2147,7 @@
               ],
               "src": "396:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "341:63:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2156,22 +2156,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2179,
+            "id": 2201,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getMinute",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2175,
+              "id": 2197,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2174,
+                  "id": 2196,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2179,
+                  "scope": 2201,
                   "src": "429:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2180,7 +2180,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2173,
+                    "id": 2195,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "429:4:19",
@@ -2196,15 +2196,15 @@
               "src": "428:16:19"
             },
             "returnParameters": {
-              "id": 2178,
+              "id": 2200,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2177,
+                  "id": 2199,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2179,
+                  "scope": 2201,
                   "src": "468:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2213,7 +2213,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2176,
+                    "id": 2198,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "468:5:19",
@@ -2228,7 +2228,7 @@
               ],
               "src": "467:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "410:65:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2237,22 +2237,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2186,
+            "id": 2208,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getSecond",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2182,
+              "id": 2204,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2181,
+                  "id": 2203,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2186,
+                  "scope": 2208,
                   "src": "500:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2261,7 +2261,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2180,
+                    "id": 2202,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "500:4:19",
@@ -2277,15 +2277,15 @@
               "src": "499:16:19"
             },
             "returnParameters": {
-              "id": 2185,
+              "id": 2207,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2184,
+                  "id": 2206,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2186,
+                  "scope": 2208,
                   "src": "539:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2294,7 +2294,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2183,
+                    "id": 2205,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "539:5:19",
@@ -2309,7 +2309,7 @@
               ],
               "src": "538:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "481:65:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2318,22 +2318,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2193,
+            "id": 2215,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getWeekday",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2189,
+              "id": 2211,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2188,
+                  "id": 2210,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2193,
+                  "scope": 2215,
                   "src": "572:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2342,7 +2342,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2187,
+                    "id": 2209,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "572:4:19",
@@ -2358,15 +2358,15 @@
               "src": "571:16:19"
             },
             "returnParameters": {
-              "id": 2192,
+              "id": 2214,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2191,
+                  "id": 2213,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2193,
+                  "scope": 2215,
                   "src": "611:5:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2375,7 +2375,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2190,
+                    "id": 2212,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "611:5:19",
@@ -2390,7 +2390,7 @@
               ],
               "src": "610:7:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "552:66:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2399,22 +2399,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2204,
+            "id": 2226,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2200,
+              "id": 2222,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2195,
+                  "id": 2217,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "645:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2423,7 +2423,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2194,
+                    "id": 2216,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "645:6:19",
@@ -2437,10 +2437,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2197,
+                  "id": 2219,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "658:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2449,7 +2449,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2196,
+                    "id": 2218,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "658:5:19",
@@ -2463,10 +2463,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2199,
+                  "id": 2221,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "671:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2475,7 +2475,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2198,
+                    "id": 2220,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "671:5:19",
@@ -2491,15 +2491,15 @@
               "src": "644:37:19"
             },
             "returnParameters": {
-              "id": 2203,
+              "id": 2225,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2202,
+                  "id": 2224,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2204,
+                  "scope": 2226,
                   "src": "705:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2508,7 +2508,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2201,
+                    "id": 2223,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "705:4:19",
@@ -2523,7 +2523,7 @@
               ],
               "src": "704:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "624:97:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2532,22 +2532,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2217,
+            "id": 2239,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2213,
+              "id": 2235,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2206,
+                  "id": 2228,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "748:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2556,7 +2556,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2205,
+                    "id": 2227,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "748:6:19",
@@ -2570,10 +2570,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2208,
+                  "id": 2230,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "761:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2582,7 +2582,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2207,
+                    "id": 2229,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "761:5:19",
@@ -2596,10 +2596,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2210,
+                  "id": 2232,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "774:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2608,7 +2608,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2209,
+                    "id": 2231,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "774:5:19",
@@ -2622,10 +2622,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2212,
+                  "id": 2234,
                   "name": "hour",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "785:10:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2634,7 +2634,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2211,
+                    "id": 2233,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "785:5:19",
@@ -2650,15 +2650,15 @@
               "src": "747:49:19"
             },
             "returnParameters": {
-              "id": 2216,
+              "id": 2238,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2215,
+                  "id": 2237,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2217,
+                  "scope": 2239,
                   "src": "820:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2667,7 +2667,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2214,
+                    "id": 2236,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "820:4:19",
@@ -2682,7 +2682,7 @@
               ],
               "src": "819:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "727:109:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2691,22 +2691,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2232,
+            "id": 2254,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2228,
+              "id": 2250,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2219,
+                  "id": 2241,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "863:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2715,7 +2715,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2218,
+                    "id": 2240,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "863:6:19",
@@ -2729,10 +2729,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2221,
+                  "id": 2243,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "876:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2741,7 +2741,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2220,
+                    "id": 2242,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "876:5:19",
@@ -2755,10 +2755,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2223,
+                  "id": 2245,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "889:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2767,7 +2767,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2222,
+                    "id": 2244,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "889:5:19",
@@ -2781,10 +2781,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2225,
+                  "id": 2247,
                   "name": "hour",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "900:10:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2793,7 +2793,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2224,
+                    "id": 2246,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "900:5:19",
@@ -2807,10 +2807,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2227,
+                  "id": 2249,
                   "name": "minute",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "912:12:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2819,7 +2819,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2226,
+                    "id": 2248,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "912:5:19",
@@ -2835,15 +2835,15 @@
               "src": "862:63:19"
             },
             "returnParameters": {
-              "id": 2231,
+              "id": 2253,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2230,
+                  "id": 2252,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2232,
+                  "scope": 2254,
                   "src": "949:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2852,7 +2852,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2229,
+                    "id": 2251,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "949:4:19",
@@ -2867,7 +2867,7 @@
               ],
               "src": "948:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "842:123:19",
             "stateMutability": "pure",
             "superFunction": null,
@@ -2876,22 +2876,22 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2249,
+            "id": 2271,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "toTimestamp",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2245,
+              "id": 2267,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2234,
+                  "id": 2256,
                   "name": "year",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "992:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2900,7 +2900,7 @@
                     "typeString": "uint16"
                   },
                   "typeName": {
-                    "id": 2233,
+                    "id": 2255,
                     "name": "uint16",
                     "nodeType": "ElementaryTypeName",
                     "src": "992:6:19",
@@ -2914,10 +2914,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2236,
+                  "id": 2258,
                   "name": "month",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1005:11:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2926,7 +2926,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2235,
+                    "id": 2257,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1005:5:19",
@@ -2940,10 +2940,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2238,
+                  "id": 2260,
                   "name": "day",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1018:9:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2952,7 +2952,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2237,
+                    "id": 2259,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1018:5:19",
@@ -2966,10 +2966,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2240,
+                  "id": 2262,
                   "name": "hour",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1029:10:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2978,7 +2978,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2239,
+                    "id": 2261,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1029:5:19",
@@ -2992,10 +2992,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2242,
+                  "id": 2264,
                   "name": "minute",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1041:12:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -3004,7 +3004,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2241,
+                    "id": 2263,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1041:5:19",
@@ -3018,10 +3018,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 2244,
+                  "id": 2266,
                   "name": "second",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1055:12:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -3030,7 +3030,7 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 2243,
+                    "id": 2265,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
                     "src": "1055:5:19",
@@ -3046,15 +3046,15 @@
               "src": "991:77:19"
             },
             "returnParameters": {
-              "id": 2248,
+              "id": 2270,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2247,
+                  "id": 2269,
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2249,
+                  "scope": 2271,
                   "src": "1092:14:19",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -3063,7 +3063,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2246,
+                    "id": 2268,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "1092:4:19",
@@ -3078,14 +3078,14 @@
               ],
               "src": "1091:16:19"
             },
-            "scope": 2250,
+            "scope": 2272,
             "src": "971:137:19",
             "stateMutability": "pure",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2251,
+        "scope": 2273,
         "src": "35:1076:19"
       }
     ],
@@ -3093,11 +3093,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.11+commit.c082d0b4.Emscripten.clang"
+    "version": "0.5.13+commit.5b0b510c.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2019-09-14T12:56:12.801Z",
+  "schemaVersion": "3.0.19",
+  "updatedAt": "2019-11-20T22:01:52.712Z",
   "devdoc": {
     "methods": {}
   },

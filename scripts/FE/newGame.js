@@ -46,10 +46,12 @@ module.exports = async (callback) => {
 
     //Format of FORMATexample to timestamp for blockchain
     // Set variable to current date and time
-    let gameStartTimeGivenToTimestamp1 = new Date(gameStartTimeGiven).valueOf();
+    console.log(gameStartTimeGiven);
+    let gameStartTimeGivenToTimestamp1 = Date.parse(gameStartTimeGiven).valueOf();
 
     let gameStartTimeGivenToTimestamp = gameStartTimeGivenToTimestamp1/1000;
     console.log(gameStartTimeGivenToTimestamp);
+    console.log(formatDate(gameStartTimeGivenToTimestamp));
 
     await proxy.execute('GameCreation', setMessage(gameCreation, 'manualMatchKitties',
       [playerRed, playerBlack, kittyRed, kittyBlack, gameStartTimeGivenToTimestamp]), { from: accounts[0] });
