@@ -171,7 +171,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         require(tokenAmount > 0);
         require(requiredNumberKittieReplacements == numberOfReplacementKitties, "Please meet the required number of replacement kitties.");
         kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
-        KittieHellDB(proxy.getContract("KittieHellDB")).lockKTYsInKittieHell(_kittyID, tokenAmount);
+        KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
         kitties[_kittyID].dead = false;
         emit KittyResurrected(_kittyID);
@@ -251,16 +251,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
         uint kittieExpiry = gameStore.getKittieExpirationTime(_gameId);
 	    require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
         kitties[_kittyID].ghost = true;
-        cryptoKitties.transfer(proxy.getContract("KittieHellDB"), _kittyID);
-        uint256 _id = KittieHellDB(proxy.getContract("KittieHellDB")).getLastGhostId().add(1);
-        KittieHellDB(proxy.getContract("KittieHellDB")).loserKittieToHell(_id, _kittyID, kitties[_kittyID].owner);
+        cryptoKitties.transfer(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB), _kittyID);
+        KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).loserKittieToHell(_kittyID, kitties[_kittyID].owner);
         emit KittyPermanentDeath(_kittyID);
-        emit AddedToKittieHellDB(_kittyID, kitties[_kittyID].owner, _id);
         return true;
     }
 
     /**
-     * @author @ziweidream      
+     * @author @ziweidream
      * @param _kittyID The kittie to release
      * @return the previous kitty owner, the kitty dead status, the kitty playing status, the kitty ghost status, and the kitty death time   
      */
@@ -317,8 +315,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
     event KittyResurrected(uint256 indexed _kittyID);
 
     event KittyPermanentDeath(uint256 indexed _kittyID);
-
-    event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);
 
     event Scheduled(uint256 scheduledJob, uint256 time, uint256 indexed kittyID);
 }

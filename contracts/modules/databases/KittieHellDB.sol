@@ -79,19 +79,19 @@ contract KittieHellDB is Proxied, Guard {
    * @author @ziweidream
    * @dev This function can only be carried out via kittieHELL contract
    * @dev Add the node _id of a loser kittie to GhostsList
-   * @param _id the node id
    * @param _kittieID the kittieID of the loser kittie who lost a game
    * @param _owner the owner of the loser kittie
    */
   function loserKittieToHell
   (
-    uint256 _id,
     uint256 _kittieID,
     address _owner
   )
     public
     onlyContract(CONTRACT_NAME_KITTIEHELL)
   {
+    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieID) == address(this));
+    uint256 _id = getLastGhostId().add(1);
     fallToHell(_id);
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _kittieID);
     genericDB.setAddressStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "owner")), _owner);
@@ -100,6 +100,8 @@ contract KittieHellDB is Proxied, Guard {
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostID")), _id);
     uint256 totalNumberOfKitties = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")));
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")), totalNumberOfKitties.add(1));
+
+    emit AddedToKittieHellDB(_kittieID, _owner, _id);
   }
 
   /**
@@ -122,10 +124,9 @@ contract KittieHellDB is Proxied, Guard {
    * @return the node id of the last node
    */
   function getLastGhostId() public view returns(uint256){
-        (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_KITTIEHELL_DB, TABLE_KEY_KITTIEHELL, 0, false);
-        // 0 means HEAD, false means tail of the list
+        (/*bool found*/, uint256 id) = genericDB.getAdjacent(CONTRACT_NAME_KITTIEHELL_DB, TABLE_KEY_KITTIEHELL, 0, true);
         return id;
-    }
+  }
 
   /**
    * @author @ziweidream
@@ -138,12 +139,11 @@ contract KittieHellDB is Proxied, Guard {
   function kittieReplacementToHell(uint256 _kittieID, address _owner, uint256 _kittieReplacement)
       public
       onlyProxy
-      returns(bool, uint256 _id)
   {
     require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == _owner);
     ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).transferFrom(_owner, address(this), _kittieReplacement);
     require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == address(this));
-    _id = getLastGhostId().add(1);
+    uint256 _id = getLastGhostId().add(1);
     fallToHell(_id);
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _kittieReplacement);
     genericDB.setAddressStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "owner")), _owner);
@@ -160,7 +160,6 @@ contract KittieHellDB is Proxied, Guard {
     uint256 totalNumberOfKitties = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")));
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")), totalNumberOfKitties.add(1));
     emit AddedToKittieHellDB(_kittieReplacement, _owner, _id);
-    return (true, _id);
   }
 
   /**

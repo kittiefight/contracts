@@ -81,7 +81,7 @@ const OTHER_BETTORS = 15
 const ENDOWNMENT = 15
 const PERCENTAGEFORKITTIEREDEMPTIONFEE = 10
 const USDKTYPRICE = new BigNumber(web3.utils.toWei('0.4', 'ether')) // 0.4 USD to 1 KTY
-const REQUIRED_NUMBER_KITTIE_REPLACEMENTS = 2
+const REQUIRED_NUMBER_KITTIE_REPLACEMENTS = 3
 // =================================================== //
 
 //If you change endowment initial tokens, need to change deployment file too
@@ -891,7 +891,7 @@ contract('GameManager', (accounts) => {
     const kittieRedemptionFee = Math.round(parseFloat(redemptionFee))
     console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee)
 
-    const kittieReplacements = [1017555, 413830]
+    const kittieReplacements = [1017555, 413830, 888]
 
     for (let i = 0; i < kittieReplacements.length; i++) {
         await cryptoKitties.mint(loser, kittieReplacements[i]);
@@ -936,6 +936,9 @@ contract('GameManager', (accounts) => {
 
     const isReplacementKittyTwoInHell = await kittieHellDB.isKittieGhost(kittieReplacements[1])
     console.log("Is Placement kitty 2 in Hell? "+isReplacementKittyTwoInHell)
+
+    const isReplacementKittyThreeInHell = await kittieHellDB.isKittieGhost(kittieReplacements[2])
+    console.log("Is Placement kitty 3 in Hell? "+isReplacementKittyThreeInHell)
 
     })
 
