@@ -248,4 +248,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TIME_EXTENSION);
     }
 
+    /// @notice Gets the required number of kitties NFTs as replacement for redeemed kittie in kittieHELL
+    function getRequiredNumberKittieReplacements()
+        public view returns(uint)
+    {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_NUMBER_KITTIE_REPLACEMENTS);
+    }
+
 }

@@ -10,6 +10,7 @@ import "../../interfaces/ERC20Standard.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "../databases/GMGetterDB.sol";
+import "../databases/KittieHellDB.sol";
 import "../endowment/EndowmentFund.sol";
 
 
@@ -164,8 +165,13 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyProxy
     returns (bool) {
         uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
+        uint256 requiredNumberKittieReplacements = gameVarAndFee.getRequiredNumberKittieReplacements();
+        uint256 numberOfReplacementKitties = KittieHellDB(proxy.getContract("KittieHellDB")).getNumberOfReplacementKitties(_kittyID);
         require(tokenAmount > 0);
-        endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
+        require(requiredNumberKittieReplacements == numberOfReplacementKitties, "Please meet the required number of replacement kitties.");
+        kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
+        //endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
+        KittieHellDB(proxy.getContract("KittieHellDB")).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
         kitties[_kittyID].dead = false;
         emit KittyResurrected(_kittyID);
@@ -246,7 +252,10 @@ contract KittieHell is BasicControls, Proxied, Guard {
 	    require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
         kitties[_kittyID].ghost = true;
         cryptoKitties.transfer(proxy.getContract("KittieHellDB"), _kittyID);
+        uint256 _id = KittieHellDB(proxy.getContract("KittieHellDB")).getLastGhostId().add(1);
+        KittieHellDB(proxy.getContract("KittieHellDB")).loserKittieToHell(_id, _kittyID, kitties[_kittyID].owner);
         emit KittyPermanentDeath(_kittyID);
+        emit AddedToKittieHellDB(_kittyID, kitties[_kittyID].owner, _id);
         return true;
     }
 
@@ -308,6 +317,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
     event KittyResurrected(uint256 indexed _kittyID);
 
     event KittyPermanentDeath(uint256 indexed _kittyID);
+
+    event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);
 
     event Scheduled(uint256 scheduledJob, uint256 time, uint256 indexed kittyID);
 }
