@@ -170,7 +170,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
         require(tokenAmount > 0);
         require(requiredNumberKittieReplacements == numberOfReplacementKitties, "Please meet the required number of replacement kitties.");
         kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
-        //endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
         KittieHellDB(proxy.getContract("KittieHellDB")).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
         kitties[_kittyID].dead = false;
