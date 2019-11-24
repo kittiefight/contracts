@@ -153,7 +153,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @param _kittyID The kitty to resurrect
      * @dev The kitty must not be permanent dead
      * @dev This function can only be carried out via proxy
-     * @dev The ressurection payment is in KTY tokens and sent to EndowmentFund contract
+     * @dev This function can only proceed after the required number of replacement kitties have become permanent ghosts
+     * @dev The ressurection payment is in KTY tokens and locked/burned in kittieHELL contract
      * @return true/false if the kitty ID is resurrected or not
      */
 
