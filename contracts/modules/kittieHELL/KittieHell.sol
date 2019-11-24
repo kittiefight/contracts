@@ -77,14 +77,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return true;
     }
 
-    function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
-        public
-        onlyContract(CONTRACT_NAME_GAMECREATION)
-        onlyOwnedKitty(_kittyID)
-        onlyNotKilledKitty(_kittyID)
-    {
-        kitties[_kittyID].playing = _isPlaying;
-    }
+    //function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
+      //  public
+        //onlyContract(CONTRACT_NAME_GAMECREATION)
+        //onlyOwnedKitty(_kittyID)
+        //onlyNotKilledKitty(_kittyID)
+    //{
+      //  kitties[_kittyID].playing = _isPlaying;
+   // }
 
     /**
      * @author @ziweidream

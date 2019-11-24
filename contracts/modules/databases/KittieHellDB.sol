@@ -57,19 +57,11 @@ contract KittieHellDB is Proxied, Guard {
 
   /**
    * @author @ziweidream
-   * @param _id the node id 
-   * @return true if the node _id exists     
+   * @param _id the node id
+   * @return true if the node _id exists
    */
   function doesGhostExist(uint256 _id) public view returns (bool) {
     return genericDB.doesNodeExist(CONTRACT_NAME_KITTIEHELL_DB, TABLE_KEY_KITTIEHELL, _id);
-  }
-  
-  /**
-   * @author @ziweidream   
-   * @return the size of GhostsList    
-   */
-  function getGhostsListSize() public view returns (uint256) {
-      return genericDB.getLinkedListSize(CONTRACT_NAME_KITTIEHELL_DB, TABLE_KEY_KITTIEHELL);
   }
 
   /**
@@ -77,7 +69,6 @@ contract KittieHellDB is Proxied, Guard {
    * @dev Add the node _id to GhostsList
    * @param _id the node id
    */
-
   function fallToHell(uint256 _id)
     internal
   {
@@ -92,7 +83,6 @@ contract KittieHellDB is Proxied, Guard {
    * @param _kittieID the kittieID of the loser kittie who lost a game
    * @param _owner the owner of the loser kittie
    */
-
   function loserKittieToHell
   (
     uint256 _id,
@@ -118,22 +108,13 @@ contract KittieHellDB is Proxied, Guard {
    * @return its kittyID, its original owner, whether it is a replacement kittie,
    *         the loser kitty for which it is a replacement kittie(0 if this ghost is a loser kittie itself)
    */
-  function getKittieAttributes(uint256 _id) public view returns (uint256, address, bool, uint256) {
+  function getGhostAttributes(uint256 _id) public view returns (uint256, address, bool, uint256) {
     uint256 _kittyID = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")));
     address _owner = genericDB.getAddressStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "owner")));
     bool _isReplacementKittie = genericDB.getBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacementKittie")));
     uint256 _replacementFor = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacemetFor")));
 
     return (_kittyID, _owner, _isReplacementKittie, _replacementFor);
-  }
-
-  /**
-   * @author @ziweidream
-   * @param _id the node id
-   * @return the node id of the adjacent node
-   */
-  function getAdjacentGhost(uint256 _id) public view returns (bool, uint256) {
-    return genericDB.getAdjacent(CONTRACT_NAME_KITTIEHELL_DB, TABLE_KEY_KITTIEHELL, _id, false);
   }
 
   /**
@@ -161,7 +142,7 @@ contract KittieHellDB is Proxied, Guard {
   {
     require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == _owner);
     ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).transferFrom(_owner, address(this), _kittieReplacement);
-    assert(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == address(this));
+    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == address(this));
     _id = getLastGhostId().add(1);
     fallToHell(_id);
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _kittieReplacement);
@@ -270,23 +251,6 @@ contract KittieHellDB is Proxied, Guard {
     return false;
   }
 
-  // this function should not exist since no kitty can be released from the hell once the deadline
-  // for ressurection has been passed without proper action (pay for ressrrection) being taken
-  /**
-   * @author @ziweidream
-   * @dev This function can only be carried out via CronJob.sol contract
-   * @dev Removes the node _id from GhostsList
-   * @param _id the node id
-   * @return true if the node is removed from GhostsList
-   */
-  //function removeGhostFromHell(uint256 _id)
-   //public
-   //onlyContract(CONTRACT_NAME_CRONJOB)
-   //returns (bool) {
-    //return genericDB.removeNodeFromLinkedList(CONTRACT_NAME_KITTIEHELL_DB, TABLE_NAME_GHOST, _id);
-  //}
-
   event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);
-
 }
 
