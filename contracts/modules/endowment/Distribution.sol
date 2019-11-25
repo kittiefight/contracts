@@ -61,43 +61,51 @@ contract Distribution is Proxied {
         public view
         returns(uint256 winningsETH, uint256 winningsKTY)
     {
-        address[3] memory winners;
+        (address winner, address loser, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
 
-        (winners[0], winners[1], winners[2]) = gmGetterDB.getWinners(gameId);
+        require(winner != address(0));
 
-        require(winners[0] != address(0), 'No winner detected for this game');
-
-        (uint256 betAmount, address supportedPlayer,,) = gmGetterDB.getSupporterInfo(gameId, claimer);
+        (uint256 bet, address supportedPlayer,,) = gmGetterDB.getSupporterInfo(gameId, claimer);
 
         // If its not the winning player or part of the bettors of the winning corner
-        if(claimer != winners[0] && supportedPlayer != winners[0]) return (0,0);
-
-        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
+        if(claimer != winner && supportedPlayer != winner) return (0,0);
  
-        uint256 winningCategory = checkWinnerCategory(gameId, claimer, winners[0]);
+        uint256 winningCategory = checkWinnerCategory(gameId, claimer, winner);
 
-        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
-        
-        winningsETH = (totalEthFunds.mul(rates[winningCategory])).div(100);
-        winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
+        if (claimer == winner)
+            bet = gmGetterDB.getPlayerBet(gameId, claimer);
+
+        (winningsETH, winningsKTY) = calculator(totalBetsForLosingCorner, winningCategory, bet, gameId);
+    }
+
+    function calculator(uint256 totalBetsForLosingCorner, uint256 winningCategory, uint256 bet, uint256 gameId)
+        internal view
+        returns(uint256, uint256)
+    {
+        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
+        (, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
+
+        uint256 winningsETH = (totalBetsForLosingCorner.mul(rates[winningCategory])).div(100);
+        uint256 winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
 
         //Other bettors winnings
         if (winningCategory == 3){
-            (winningsETH, winningsKTY) = getOtherWinnersShare(winningsETH, winningsKTY, betAmount, gameId);
+            return getOtherWinnersShare(winningsKTY, winningsETH, bet, gameId);
+        }
+        else {
+            return (bet.add(winningsETH), winningsKTY);
         }
     }
 
-    function getOtherWinnersShare(uint256 winningsETH, uint256 winningsKTY, uint256 betAmount,
+    function getOtherWinnersShare(uint256 winningsKTY, uint256 winningsETH, uint256 bet,
         uint256 gameId)
         internal view
         returns(uint256, uint256)
     {
-
         address[3] memory winners;
         (winners[0], winners[1], winners[2]) = gmGetterDB.getWinners(gameId);
         (uint256 betAmountTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[1]);
         (uint256 betAmountSecondTop,,,) = gmGetterDB.getSupporterInfo(gameId, winners[2]);
-
 
         //getPlayerBet
         uint256 playerBet = gmGetterDB.getPlayerBet(gameId, winners[0]);
@@ -107,10 +115,12 @@ contract Distribution is Proxied {
 
         //Remove top and secondTop total bets
         totalBets = totalBets.sub(betAmountTop).sub(betAmountSecondTop).sub(playerBet);
+        winningsETH = winningsETH.mul(bet).div(totalBets);
+        winningsKTY = winningsKTY.mul(bet).div(totalBets);
 
         // Distribute the 20% of the jackpot according to amount that supporter bet in game
         // This is to avoid a bettor for claiming winings if he/she did not bet
-        return(winningsETH.mul(betAmount).div(totalBets), winningsKTY.mul(betAmount).div(totalBets));
+        return (bet.add(winningsETH), winningsKTY);
     }
 
 
@@ -118,8 +128,11 @@ contract Distribution is Proxied {
         (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
         uint256[5] memory rates = gameStore.getDistributionRates(gameId);
-        
-        winningsETH = (totalEthFunds.mul(rates[4])).div(100);
+        (,, uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
+
+        (address winner, address loser, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+
+        winningsETH = initialEth.add(totalBetsForLosingCorner.mul(rates[4]).div(100));
         winningsKTY = (totalKTYFunds.mul(rates[4])).div(100);
     }
 
@@ -144,5 +157,12 @@ contract Distribution is Proxied {
         return 3;
     }
 
-
+    function getWinnerLoser(uint256 gameId)
+        public view
+        returns(address winner, address loser, uint256 totalBetsForLosingCorner)
+    {
+        (winner,,) = gmGetterDB.getWinners(gameId);
+        loser = gameStore.getOpponent(gameId, winner);
+        totalBetsForLosingCorner = gmGetterDB.getTotalBet(gameId, loser);
+    }
 }

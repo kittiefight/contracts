@@ -126,6 +126,12 @@ module.exports = async (callback) => {
         await timeout(1);
 
       }
+
+      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+      console.log(`\n==== ENDOWMENT INFO ==== `);
+      console.log('\nEndowmentShare: ', String(web3.utils.fromWei(endowmentShare.winningsETH.toString())), 'ETH');
+      console.log('EndowmentShare: ', String(web3.utils.fromWei(endowmentShare.winningsKTY.toString())), 'KTY');
+      console.log('=======================\n');
     }
 
     callback()
