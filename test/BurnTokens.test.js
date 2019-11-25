@@ -81,7 +81,7 @@ const OTHER_BETTORS = 15
 const ENDOWNMENT = 15
 const PERCENTAGEFORKITTIEREDEMPTIONFEE = 10
 const USDKTYPRICE = new BigNumber(web3.utils.toWei('0.4', 'ether')) // 0.4 USD to 1 KTY
-const REQUIRED_NUMBER_KITTIE_REPLACEMENTS = 3
+const REQUIRED_KITTIE_SACRIFICE_NUM = 3
 // =================================================== //
 
 //If you change endowment initial tokens, need to change deployment file too
@@ -214,7 +214,7 @@ contract('GameManager', (accounts) => {
         let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
             'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
             'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment',
-            'finalizeRewards', 'percentageForKittieRedemptionFee', 'usdKTYPrice', 'requiredNumberKittieReplacements'];
+            'finalizeRewards', 'percentageForKittieRedemptionFee', 'usdKTYPrice', 'requiredKittieSacrificeNum'];
 
         let bytesNames = [];
         for (i = 0; i < names.length; i++) {
@@ -224,7 +224,7 @@ contract('GameManager', (accounts) => {
         let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
             REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
             HONEY_POT_EXPIRATION, WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-            OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGEFORKITTIEREDEMPTIONFEE, USDKTYPRICE.toString(), REQUIRED_NUMBER_KITTIE_REPLACEMENTS];
+            OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGEFORKITTIEREDEMPTIONFEE, USDKTYPRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM];
 
         await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
             from: accounts[0]
@@ -891,19 +891,19 @@ contract('GameManager', (accounts) => {
     const kittieRedemptionFee = Math.round(parseFloat(redemptionFee))
     console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee)
 
-    const kittieReplacements = [1017555, 413830, 888]
+    const sacrificeKitties = [1017555, 413830, 888]
 
-    for (let i = 0; i < kittieReplacements.length; i++) {
-        await cryptoKitties.mint(loser, kittieReplacements[i]);
+    for (let i = 0; i < sacrificeKitties.length; i++) {
+        await cryptoKitties.mint(loser, sacrificeKitties[i]);
     }
 
-    for (let i = 0; i < kittieReplacements.length; i++) {
-        await cryptoKitties.approve(kittieHellDB.address, kittieReplacements[i], { from: loser });
+    for (let i = 0; i < sacrificeKitties.length; i++) {
+        await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], { from: loser });
     }
 
-    for (let i = 0; i < kittieReplacements.length; i++) {
-        await proxy.execute('KittieHellDB', setMessage(kittieHellDB, 'kittieReplacementToHell',
-        [loserKitty, loser, kittieReplacements[i]]), { from: loser });
+    for (let i = 0; i < sacrificeKitties.length; i++) {
+        await proxy.execute('KittieHellDB', setMessage(kittieHellDB, 'sacrificeKittieToHell',
+        [loserKitty, loser, sacrificeKitties[i]]), { from: loser });
     }
 
     await kittieFightToken.approve(kittieHell.address, resurrectionCost,
@@ -918,12 +918,10 @@ contract('GameManager', (accounts) => {
       console.log('Kitty Redeemed');
     }
 
-    let numberOfReplacementKitties = await kittieHellDB.getNumberOfReplacementKitties(loserKitty)
-    console.log("Number of replacement kitties in kittieHELL for "+loserKitty+": "+numberOfReplacementKitties.toNumber())
+    let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(loserKitty)
+    console.log("Number of sacrificing kitties in kittieHELL for "+loserKitty+": "+numberOfSacrificeKitties.toNumber())
 
     let KTYsLockedInKittieHell = await kittieHellDB.getTotalKTYsLockedInKittieHell()
-    //console.log(KTYsLockedInKittieHell)
-
     const ktys = web3.utils.fromWei(KTYsLockedInKittieHell.toString(), 'ether')
     const ktysLocked = Math.round(parseFloat(ktys))
     console.log("KTYs locked in kittieHELL: "+ktysLocked)
@@ -931,14 +929,14 @@ contract('GameManager', (accounts) => {
     const isLoserKittyInHell = await kittieHellDB.isKittieGhost(loserKitty)
     console.log("Is Loser's kitty in Hell? "+isLoserKittyInHell)
 
-    const isReplacementKittyOneInHell = await kittieHellDB.isKittieGhost(kittieReplacements[0])
-    console.log("Is Placement kitty 1 in Hell? "+isReplacementKittyOneInHell)
+    const isSacrificeKittyOneInHell = await kittieHellDB.isKittieGhost(sacrificeKitties[0])
+    console.log("Is sacrificing kitty 1 in Hell? "+isSacrificeKittyOneInHell)
 
-    const isReplacementKittyTwoInHell = await kittieHellDB.isKittieGhost(kittieReplacements[1])
-    console.log("Is Placement kitty 2 in Hell? "+isReplacementKittyTwoInHell)
+    const isSacrificeKittyTwoInHell = await kittieHellDB.isKittieGhost(sacrificeKitties[1])
+    console.log("Is sacrificing kitty 2 in Hell? "+isSacrificeKittyTwoInHell)
 
-    const isReplacementKittyThreeInHell = await kittieHellDB.isKittieGhost(kittieReplacements[2])
-    console.log("Is Placement kitty 3 in Hell? "+isReplacementKittyThreeInHell)
+    const isSacrificeKittyThreeInHell = await kittieHellDB.isKittieGhost(sacrificeKitties[2])
+    console.log("Is sacrificing kitty 3 in Hell? "+isSacrificeKittyThreeInHell)
 
     })
 

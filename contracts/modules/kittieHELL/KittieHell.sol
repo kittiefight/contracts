@@ -166,10 +166,10 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyProxy
     returns (bool) {
         uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
-        uint256 requiredNumberKittieReplacements = gameVarAndFee.getRequiredNumberKittieReplacements();
-        uint256 numberOfReplacementKitties = KittieHellDB(proxy.getContract("KittieHellDB")).getNumberOfReplacementKitties(_kittyID);
+        uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
+        uint256 numberOfSacrificeKitties = KittieHellDB(proxy.getContract("KittieHellDB")).getNumberOfSacrificeKitties(_kittyID);
         require(tokenAmount > 0);
-        require(requiredNumberKittieReplacements == numberOfReplacementKitties, "Please meet the required number of replacement kitties.");
+        require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Please meet the required number of sacrificing kitties.");
         kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
         KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
@@ -227,7 +227,10 @@ contract KittieHell is BasicControls, Proxied, Guard {
         returns(bool)
     {
         CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-        scheduledJob = cron.addCronJob(CONTRACT_NAME_KITTIEHELL, now+_delay, abi.encodeWithSignature("becomeGhost(uint256, uint256)", _kittyID, _gameId));
+        scheduledJob = cron.addCronJob(
+            CONTRACT_NAME_KITTIEHELL,
+            now+_delay,
+            abi.encodeWithSignature("becomeGhost(uint256, uint256)", _kittyID, _gameId));
         scheduledJobs[_kittyID] = scheduledJob;
         emit Scheduled(scheduledJob, now+_delay, _kittyID);
         return true;

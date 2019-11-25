@@ -95,8 +95,8 @@ contract KittieHellDB is Proxied, Guard {
     fallToHell(_id);
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _kittieID);
     genericDB.setAddressStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "owner")), _owner);
-    genericDB.setBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacementKittie")), false);
-    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacemetFor")), 0);
+    genericDB.setBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "sacrificeKittie")), false);
+    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "sacrificeFor")), 0);
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostID")), _id);
     uint256 totalNumberOfKitties = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")));
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")), totalNumberOfKitties.add(1));
@@ -113,10 +113,10 @@ contract KittieHellDB is Proxied, Guard {
   function getGhostAttributes(uint256 _id) public view returns (uint256, address, bool, uint256) {
     uint256 _kittyID = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")));
     address _owner = genericDB.getAddressStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "owner")));
-    bool _isReplacementKittie = genericDB.getBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacementKittie")));
-    uint256 _replacementFor = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacemetFor")));
+    bool _isSacrificeKittie = genericDB.getBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "sacrificeKittie")));
+    uint256 _sacrificeFor = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "sacrificeFor")));
 
-    return (_kittyID, _owner, _isReplacementKittie, _replacementFor);
+    return (_kittyID, _owner, _isSacrificeKittie, _sacrificeFor);
   }
 
   /**
@@ -131,46 +131,46 @@ contract KittieHellDB is Proxied, Guard {
   /**
    * @author @ziweidream
    * @dev This function can only be carried out via proxy
-   * @dev Add the node _id of a replacement kittie to GhostsList
+   * @dev Add the node _id of a sacrificing kittie to GhostsList
    * @param _kittieID the kittieID of the loser kittie who lost a game
    * @param _owner the owner of the loser kittie
-   * @param _kittieReplacement the kittieID of the replacement kittie for redeeming the loser kittie
+   * @param _sacrificeKittie the kittieID of the sacrificing kittie for redeeming the loser kittie
    */
-  function kittieReplacementToHell(uint256 _kittieID, address _owner, uint256 _kittieReplacement)
+  function sacrificeKittieToHell(uint256 _kittieID, address _owner, uint256 _sacrificeKittie)
       public
       onlyProxy
   {
-    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == _owner);
-    ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).transferFrom(_owner, address(this), _kittieReplacement);
-    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_kittieReplacement) == address(this));
+    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_sacrificeKittie) == _owner);
+    ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).transferFrom(_owner, address(this), _sacrificeKittie);
+    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_sacrificeKittie) == address(this));
     uint256 _id = getLastGhostId().add(1);
     fallToHell(_id);
-    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _kittieReplacement);
+    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _sacrificeKittie);
     genericDB.setAddressStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "owner")), _owner);
-    genericDB.setBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacementKittie")), true);
-    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "replacemetFor")), _kittieID);
-    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieReplacement, "ghostID")), _id);
-    uint256 numberOfReplacementKitties = genericDB.getUintStorage(
+    genericDB.setBoolStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "sacrificeKittie")), true);
+    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "sacrificeFor")), _kittieID);
+    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_sacrificeKittie, "ghostID")), _id);
+    uint256 numberOfSacrificeKitties = genericDB.getUintStorage(
       CONTRACT_NAME_KITTIEHELL_DB,
-      keccak256(abi.encodePacked(_kittieID, "numberOfReplacementKitties"))).add(1);
+      keccak256(abi.encodePacked(_kittieID, "numberOfSacrificeKitties"))).add(1);
     genericDB.setUintStorage(
       CONTRACT_NAME_KITTIEHELL_DB,
-      keccak256(abi.encodePacked(_kittieID, "numberOfReplacementKitties")),
-      numberOfReplacementKitties);
+      keccak256(abi.encodePacked(_kittieID, "numberOfSacrificeKitties")),
+      numberOfSacrificeKitties);
     uint256 totalNumberOfKitties = genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")));
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked("totalNumberOfKitties")), totalNumberOfKitties.add(1));
-    emit AddedToKittieHellDB(_kittieReplacement, _owner, _id);
+    emit AddedToKittieHellDB(_sacrificeKittie, _owner, _id);
   }
 
   /**
    * @author @ziweidream
    * @param _kittieID the kittieID of the loser kittie
-   * @return the number of replacement kitties already in HELL for this loser kittie
+   * @return the number of sacrificing kitties already in HELL for this loser kittie
    */
-  function getNumberOfReplacementKitties(uint256 _kittieID) public view returns(uint256) {
+  function getNumberOfSacrificeKitties(uint256 _kittieID) public view returns(uint256) {
     return genericDB.getUintStorage(
       CONTRACT_NAME_KITTIEHELL_DB,
-      keccak256(abi.encodePacked(_kittieID, "numberOfReplacementKitties")));
+      keccak256(abi.encodePacked(_kittieID, "numberOfSacrificeKitties")));
   }
 
   /**
