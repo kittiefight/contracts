@@ -138,7 +138,7 @@ contract KittieHellDB is Proxied, Guard {
    */
   function sacrificeKittieToHell(uint256 _kittieID, address _owner, uint256 _sacrificeKittie)
       public
-      onlyProxy
+      onlyContract(CONTRACT_NAME_KITTIEHELL)
   {
     require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_sacrificeKittie) == _owner);
     ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).transferFrom(_owner, address(this), _sacrificeKittie);

@@ -158,13 +158,22 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @return true/false if the kitty ID is resurrected or not
      */
 
-    function payForResurrection(uint256 _kittyID, uint gameId)
+    function payForResurrection
+    (
+        uint256 _kittyID,
+        uint gameId,
+        address _owner,
+        uint256[] memory sacrificeKitties
+    )
         public
         payable
         onlyOwnedKitty(_kittyID)
         onlyNotGhostKitty(_kittyID)
         onlyProxy
     returns (bool) {
+        for (uint i = 0; i < sacrificeKitties.length; i++) {
+            KittieHellDB(proxy.getContract("KittieHellDB")).sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
+        }
         uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
         uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
         uint256 numberOfSacrificeKitties = KittieHellDB(proxy.getContract("KittieHellDB")).getNumberOfSacrificeKitties(_kittyID);

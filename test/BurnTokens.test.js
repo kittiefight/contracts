@@ -901,16 +901,16 @@ contract('GameManager', (accounts) => {
         await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], { from: loser });
     }
 
-    for (let i = 0; i < sacrificeKitties.length; i++) {
-        await proxy.execute('KittieHellDB', setMessage(kittieHellDB, 'sacrificeKittieToHell',
-        [loserKitty, loser, sacrificeKitties[i]]), { from: loser });
-    }
+    //for (let i = 0; i < sacrificeKitties.length; i++) {
+      //  await proxy.execute('KittieHellDB', setMessage(kittieHellDB, 'sacrificeKittieToHell',
+        //[loserKitty, loser, sacrificeKitties[i]]), { from: loser });
+    //}
 
     await kittieFightToken.approve(kittieHell.address, resurrectionCost,
         { from: loser });
     
     await proxy.execute('KittieHell', setMessage(kittieHell, 'payForResurrection',
-        [loserKitty, gameId]), { from: loser });
+        [loserKitty, gameId, loser, sacrificeKitties]), { from: loser });
 
     let owner = await cryptoKitties.ownerOf(loserKitty);
 
