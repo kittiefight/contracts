@@ -886,7 +886,6 @@ contract('GameManager', (accounts) => {
     console.log("Loser's Kitty: " + loserKitty)
 
     let resurrectionCost = await kittieHell.getResurrectionCost(loserKitty, gameId);
-
     const redemptionFee = web3.utils.fromWei(resurrectionCost.toString(), 'ether')
     const kittieRedemptionFee = Math.round(parseFloat(redemptionFee))
     console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee)
@@ -900,11 +899,6 @@ contract('GameManager', (accounts) => {
     for (let i = 0; i < sacrificeKitties.length; i++) {
         await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], { from: loser });
     }
-
-    //for (let i = 0; i < sacrificeKitties.length; i++) {
-      //  await proxy.execute('KittieHellDB', setMessage(kittieHellDB, 'sacrificeKittieToHell',
-        //[loserKitty, loser, sacrificeKitties[i]]), { from: loser });
-    //}
 
     await kittieFightToken.approve(kittieHell.address, resurrectionCost,
         { from: loser });
