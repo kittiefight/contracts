@@ -171,13 +171,13 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyNotGhostKitty(_kittyID)
         onlyProxy
     returns (bool) {
+        uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
+        require(tokenAmount > 0);
         for (uint i = 0; i < sacrificeKitties.length; i++) {
             KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
         }
-        uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
         uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
         uint256 numberOfSacrificeKitties = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).getNumberOfSacrificeKitties(_kittyID);
-        require(tokenAmount > 0);
         require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Please meet the required number of sacrificing kitties.");
         kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
         KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
