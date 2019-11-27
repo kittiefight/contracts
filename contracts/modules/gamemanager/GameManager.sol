@@ -223,7 +223,7 @@ contract GameManager is Proxied, Guard {
         else{
             supportedPlayer = sender;
         }
-        
+
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value)(gameId));
         require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));

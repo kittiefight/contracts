@@ -59,9 +59,9 @@ const GameState = {
 }
 
 // ================ GAME VARS AND FEES ================ //
-const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
-const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
-const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+//const LISTING_FEE = new BigNumber(web3.utils.toWei("1000", "ether"));
+//const TICKET_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
+//const BETTING_FEE = new BigNumber(web3.utils.toWei("100", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 2
 const GAME_PRESTART = 30 // 30 secs for quick test
@@ -79,9 +79,12 @@ const TOP_BETTOR = 25
 const SECOND_RUNNER_UP = 10
 const OTHER_BETTORS = 15
 const ENDOWNMENT = 15
-const PERCENTAGEFORKITTIEREDEMPTIONFEE = 10
+const PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE = 10 * 1000
 const USDKTYPRICE = new BigNumber(web3.utils.toWei('0.4', 'ether')) // 0.4 USD to 1 KTY
 const REQUIRED_KITTIE_SACRIFICE_NUM = 3
+const PERCENTAGE_FOR_LISTING_FEE = 1 * 1000
+const PERCENTAGE_FOR_TICKET_FEE = 0.03 * 1000
+const PERCENTAGE_FOR_BETTING_FEE = 0.002 * 1000
 // =================================================== //
 
 //If you change endowment initial tokens, need to change deployment file too
@@ -211,20 +214,21 @@ contract('GameManager', (accounts) => {
     })
 
     it('Set game vars and fees correctly', async () => {
-        let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
+        let names = ['gamePrestart', 'gameDuration',
             'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
             'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment',
-            'finalizeRewards', 'percentageForKittieRedemptionFee', 'usdKTYPrice', 'requiredKittieSacrificeNum'];
+            'finalizeRewards', 'percentageForKittieRedemptionFee', 'usdKTYPrice', 'requiredKittieSacrificeNum', 'percentageForListingFee', 'percentageForTicketFee', 'percentageForBettingFee'];
 
         let bytesNames = [];
         for (i = 0; i < names.length; i++) {
             bytesNames.push(web3.utils.asciiToHex(names[i]));
         }
 
-        let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+        let values = [GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
             REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
             HONEY_POT_EXPIRATION, WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-            OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGEFORKITTIEREDEMPTIONFEE, USDKTYPRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM];
+            OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, USDKTYPRICE.toString(), 
+            REQUIRED_KITTIE_SACRIFICE_NUM, PERCENTAGE_FOR_LISTING_FEE, PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE];
 
         await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
             from: accounts[0]
@@ -233,8 +237,8 @@ contract('GameManager', (accounts) => {
         let getVar = await gameVarAndFee.getRequiredNumberMatches();
         getVar.toNumber().should.be.equal(REQ_NUM_MATCHES);
 
-        getVar = await gameVarAndFee.getListingFee();
-        getVar.toString().should.be.equal(LISTING_FEE.toString());
+        getVar = await gameVarAndFee.getPercentageForListingFee();
+        getVar.toString().should.be.equal(PERCENTAGE_FOR_LISTING_FEE.toString());
     })
 
     it('registers user to the system', async () => {
@@ -277,10 +281,15 @@ contract('GameManager', (accounts) => {
         await gameCreation.listKittie(kitties[1], { from: accounts[1] }).should.be.rejected;
     })
 
-    it('list 3 kitties to the system', async () => {
+    it('list 3 kitties to the system using dynamical listing fee', async () => {
         for (let i = 1; i < 4; i++) {
+            let listingFee = await gameCreation.calculateListingFee();
+            let listingFeeKTY = web3.utils.fromWei(listingFee.toString(), 'ether');
+            let kittieListingFeeKTY = parseFloat(listingFeeKTY)
+            console.log("Kitty "+i+" Listing Fee in KTY: "+kittieListingFeeKTY);
             await proxy.execute('GameCreation', setMessage(gameCreation, 'listKittie',
                 [kitties[i]]), { from: accounts[i] }).should.be.fulfilled;
+            
         }
     })
 
@@ -333,7 +342,7 @@ contract('GameManager', (accounts) => {
         listed.length.should.be.equal(0);
     })
 
-    it('bettors can participate in a created game', async () => {
+    it('bettors can participate in a created game, paying ticket fee dynamically set as a percentage of the initial honeypot size', async () => {
 
         let { gameId, playerRed, playerBlack } = gameDetails;
 
@@ -343,6 +352,12 @@ contract('GameManager', (accounts) => {
         console.log('\n==== NEW GAME STATE: ', gameStates[currentState.toNumber()])
 
         console.log('\n==== ADDING SUPPORTERS TO THE GAME ');
+
+        // Dynamic ticket fee
+        const ticketFee = await gameStore.getTicketFee(gameId);
+        const ticketFeeKTY = web3.utils.fromWei(ticketFee.toString(), 'ether');
+            let ticketFeeInKTY = parseFloat(ticketFeeKTY)
+            console.log("Dynamic Ticket Fee in KTY: "+ticketFeeInKTY);
 
         await proxy.execute('GameManager', setMessage(gameManager, 'participate',
             [gameId, playerRed]), { from: accounts[5] }).should.be.fulfilled;
@@ -355,7 +370,6 @@ contract('GameManager', (accounts) => {
         //Cannot support the opponent too
         await proxy.execute('GameManager', setMessage(gameManager, 'participate',
             [gameId, playerBlack]), { from: accounts[5] }).should.be.rejected;
-
 
         let players = [playerRed, playerBlack];
 
@@ -483,7 +497,7 @@ contract('GameManager', (accounts) => {
         gameDetails.fightMap = fightMap;
     })
 
-    it('players make bets', async () => {
+    it('players make bets, betting ethers, and paying betting fee which is set dynamically as a percentage of initial honeypot size', async () => {
         let { gameId, playerRed, playerBlack } = gameDetails;
 
         let currentState = await getterDB.getGameState(gameId)
@@ -638,6 +652,12 @@ contract('GameManager', (accounts) => {
 
         console.log('\nBets Black: ', betsBlack)
         console.log('Bets Red: ', betsRed)
+
+        // Dynamic Betting fee
+        const bettingFee = await gameStore.getBettingFee(gameId);
+        const bettingFeeKTY = web3.utils.fromWei(bettingFee.toString(), 'ether');
+            let bettingFeeInKTY = parseFloat(bettingFeeKTY)
+            console.log("Dynamic Betting Fee in KTY: "+bettingFeeInKTY);
     })
 
     it('get final defense level for both players', async () => {
@@ -725,7 +745,7 @@ contract('GameManager', (accounts) => {
       })
   
       let state = await getterDB.getGameState(gameId);
-      console.log(state);
+      //console.log(state);
   
       let { pointsBlack, pointsRed, loser } = gameEnd[0].returnValues;
   
@@ -887,7 +907,7 @@ contract('GameManager', (accounts) => {
 
     let resurrectionCost = await kittieHell.getResurrectionCost(loserKitty, gameId);
     const redemptionFee = web3.utils.fromWei(resurrectionCost.toString(), 'ether')
-    const kittieRedemptionFee = Math.round(parseFloat(redemptionFee))
+    const kittieRedemptionFee = parseFloat(redemptionFee)
     console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee)
 
     const sacrificeKitties = [1017555, 413830, 888]
