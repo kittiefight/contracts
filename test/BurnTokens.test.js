@@ -282,6 +282,7 @@ contract('GameManager', (accounts) => {
     })
 
     it('list 3 kitties to the system using dynamical listing fee', async () => {
+        console.log("*********************************************")
         for (let i = 1; i < 4; i++) {
             let listingFee = await gameCreation.calculateListingFee();
             let listingFeeKTY = web3.utils.fromWei(listingFee.toString(), 'ether');
@@ -291,6 +292,7 @@ contract('GameManager', (accounts) => {
                 [kitties[i]]), { from: accounts[i] }).should.be.fulfilled;
             
         }
+        console.log("*********************************************")
     })
 
     it('get correct amount of unmatched/listed kitties', async () => {
@@ -356,8 +358,10 @@ contract('GameManager', (accounts) => {
         // Dynamic ticket fee
         const ticketFee = await gameStore.getTicketFee(gameId);
         const ticketFeeKTY = web3.utils.fromWei(ticketFee.toString(), 'ether');
-            let ticketFeeInKTY = parseFloat(ticketFeeKTY)
-            console.log("Dynamic Ticket Fee in KTY: "+ticketFeeInKTY);
+        const ticketFeeInKTY = parseFloat(ticketFeeKTY)
+        console.log("***************************************")
+        console.log("Dynamic Ticket Fee in KTY: "+ticketFeeInKTY);
+        console.log("***************************************")
 
         await proxy.execute('GameManager', setMessage(gameManager, 'participate',
             [gameId, playerRed]), { from: accounts[5] }).should.be.fulfilled;
@@ -657,7 +661,9 @@ contract('GameManager', (accounts) => {
         const bettingFee = await gameStore.getBettingFee(gameId);
         const bettingFeeKTY = web3.utils.fromWei(bettingFee.toString(), 'ether');
             let bettingFeeInKTY = parseFloat(bettingFeeKTY)
+            console.log("**********************************************")
             console.log("Dynamic Betting Fee in KTY: "+bettingFeeInKTY);
+            console.log("**********************************************")
     })
 
     it('get final defense level for both players', async () => {

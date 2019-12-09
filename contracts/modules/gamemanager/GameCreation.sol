@@ -156,8 +156,8 @@ contract GameCreation is Proxied, Guard {
         
         gameStore.lockVars(gameId);
 
-        uint initialEth = endowmentFund.generateHoneyPot(gameId);
-        gmSetterDB.setHoneypotInfo(gameId, initialEth);
+        /*uint initialEth = */endowmentFund.generateHoneyPot(gameId);
+        gmSetterDB.setHoneypotInfo(gameId);
 
         gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, gameId);
 
