@@ -112,8 +112,7 @@ contract GameStore is Proxied, Guard {
         public
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForBettingFee();
-        (,,uint256 initialHoneypotEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
-        uint256 initialHoneypotKTY = gameVarAndFee.getTokensPerGame();
+        (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
         gameSettings[gameId].bettingFee = calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
     }
 
