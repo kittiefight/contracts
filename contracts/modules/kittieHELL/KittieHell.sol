@@ -114,7 +114,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;
-        scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId), gameId);
+        scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
     }
@@ -231,17 +231,17 @@ contract KittieHell is BasicControls, Proxied, Guard {
         releaseKitty(_kittyID);
     }
 
-    function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay, uint _gameId)
-        public
+    function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay)
+        internal
         returns(bool)
     {
         CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
         scheduledJob = cron.addCronJob(
             CONTRACT_NAME_KITTIEHELL,
-            now+_delay,
-            abi.encodeWithSignature("becomeGhost(uint256, uint256)", _kittyID, _gameId));
+            now.add(_delay),
+            abi.encodeWithSignature("becomeGhost(uint256)", _kittyID));
         scheduledJobs[_kittyID] = scheduledJob;
-        emit Scheduled(scheduledJob, now+_delay, _kittyID);
+        emit Scheduled(scheduledJob, now.add(_delay), _kittyID);
         return true;
     }
 
@@ -253,15 +253,15 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @param _kittyID The kittie to become ghost
      * @return true if the kittie became a ghost and transferred to KittieHellDB
      */
-    function becomeGhost(uint256 _kittyID, uint _gameId)
+    function becomeGhost(uint256 _kittyID)
         public
         onlyOwnedKitty(_kittyID)
         onlyContract(CONTRACT_NAME_CRONJOB)
         returns (bool)
     {
-        // uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
-        uint kittieExpiry = gameStore.getKittieExpirationTime(_gameId);
-	    require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
+        //unnecessary to check kittie expiration time since this is ensured by cronjob
+        //uint kittieExpiry = gameStore.getKittieExpirationTime(_gameId);
+	    //require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
         kitties[_kittyID].ghost = true;
         cryptoKitties.transfer(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB), _kittyID);
         KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).loserKittieToHell(_kittyID, kitties[_kittyID].owner);

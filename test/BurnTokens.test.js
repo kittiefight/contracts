@@ -928,14 +928,26 @@ contract('GameManager', (accounts) => {
 
     await kittieFightToken.approve(kittieHell.address, resurrectionCost,
         { from: loser });
+
+    //To run test for loser kitty becoming permanent ghost after kittieHell expiration time,
+    // please un-comment line 934 to line 938, and comment-out line 940 to line 941
+    //await timeout(305);
+    //await proxy.executeScheduledJobs()
+
+    //await proxy.execute('KittieHell', setMessage(kittieHell, 'payForResurrection',
+        //[loserKitty, gameId, loser, sacrificeKitties]), { from: loser }).should.be.rejected;
     
     await proxy.execute('KittieHell', setMessage(kittieHell, 'payForResurrection',
-        [loserKitty, gameId, loser, sacrificeKitties]), { from: loser });
+        [loserKitty, gameId, loser, sacrificeKitties]), { from: loser }).should.be.fulfilled;
 
     let owner = await cryptoKitties.ownerOf(loserKitty);
 
+    if (owner === kittieHellDB.address) {
+        console.log('Loser kitty became ghost in kittieHELL FOREVER :(');
+    }
+
     if (owner === loser){
-      console.log('Kitty Redeemed');
+      console.log('Kitty Redeemed :)');
     }
 
     let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(loserKitty)
