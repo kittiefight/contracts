@@ -15,6 +15,7 @@ function formatDate(timestamp) {
   date.setSeconds(timestamp);
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
+
 function timeout(s) {
   // console.log(`~~~ Timeout for ${s} seconds`);
   return new Promise(resolve => setTimeout(resolve, s * 1000));
@@ -83,8 +84,6 @@ module.exports = async (callback) => {
     //Take both Kitties game to see it is the same
     let gameId1 = await getterDB.getGameOfKittie(kittyRed);
     let gameId2 = await getterDB.getGameOfKittie(kittyBlack);
-    console.log(gameId1);
-    console.log(gameId2);
 
     if(gameId1 == gameId2) console.log('\nGameId: ', gameId1);
 
