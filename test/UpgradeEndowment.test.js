@@ -5,6 +5,13 @@ require('chai')
   .use(require('chai-as-promised'))
   .should();
 
+const INITIAL_KTY_ENDOWMENT = new BigNumber(
+    web3.utils.toWei("100000", "ether") //10.000 KTY
+);
+
+const INITIAL_ETH_ENDOWMENT = new BigNumber(
+    web3.utils.toWei("1000", "ether") //650 ETH
+);
 //ARTIFACTS
 const KFProxy = artifacts.require('KFProxy')
 const GenericDB = artifacts.require('GenericDB');
@@ -110,17 +117,28 @@ contract('GameManager', (accounts) => {
     
     it('should upgrade contracts correctly', async () => {
 
+		// Upgrading endowmentFund and endowmentDB
         let oldEndowmentFund = endowmentFund
         console.log("old endowmentFund address: "+oldEndowmentFund.address)
         endowmentFund = await EndowmentFund.new()
-        console.log("new endowmentFund address: "+endowmentFund.address)
+		console.log("new endowmentFund address: "+endowmentFund.address)
+		assert.notEqual(oldEndowmentFund.address, endowmentFund.address)
         await oldEndowmentFund.transferEscrowOwnership(endowmentFund.address)
         await proxy.removeContract('EndowmentFund')
         await proxy.addContract('EndowmentFund', endowmentFund.address)
         await endowmentFund.setProxy(proxy.address)
 
         let escrowOwner = await escrow.owner.call()
-        console.log("Escrow owner: "+escrowOwner)
+		console.log("Escrow owner: "+escrowOwner)
+		
+		let oldEndowmentDB = endowmentDB
+		console.log("old endowmentDB address: "+oldEndowmentDB.address)
+		endowmentDB = await EndowmentDB.new(genericDB.address)
+		console.log("new endowmentDB address: "+endowmentDB.address)
+		assert.notEqual(oldEndowmentDB.address, endowmentDB.address)
+		await proxy.removeContract('EndowmentDB')
+        await proxy.addContract('EndowmentDB', endowmentDB.address)
+        await endowmentDB.setProxy(proxy.address)
 
         // initialize contracts
         await gameStore.initialize()
@@ -137,7 +155,16 @@ contract('GameManager', (accounts) => {
         await hitsResolve.initialize()
 
         console.log('\nUpgrading Escrow...');
-        await endowmentFund.initUpgradeEscrow(escrow.address, {from: accounts[0]})
+		await endowmentFund.initUpgradeEscrow(escrow.address, {from: accounts[0]})
+		
+		// Verify that upgrading endowmentFund doesn't impact escrow's ether/KTY balance
+		let etherEndowment = await web3.eth.getBalance(escrow.address)
+		console.log("ethers in Escrow: "+etherEndowment)
+		assert.equal(etherEndowment, INITIAL_ETH_ENDOWMENT)
+
+		let ktyEndowment = await kittieFightToken.balanceOf(escrow.address)
+		console.log("KTYs in Escrow: "+ktyEndowment)
+		assert.equal(ktyEndowment.toString(), INITIAL_KTY_ENDOWMENT.toString())
     })
 
 	it('registers 40 users', async () => {
