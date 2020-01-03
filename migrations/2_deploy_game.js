@@ -53,8 +53,8 @@ const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
-const GAME_PRESTART = 60 // 2 min
-const GAME_DURATION = 120 // 5 min
+const GAME_PRESTART = 30 // 2 min
+const GAME_DURATION = 80 // 5 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
 const GAME_TIMES = 10*60 //Scheduled games 10 min apart
@@ -68,6 +68,14 @@ const TOP_BETTOR = 20
 const SECOND_RUNNER_UP = 10
 const OTHER_BETTORS = 25
 const ENDOWNMENT = 15
+
+//Fee Percentages
+const PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE = 1
+const PERCENTAGE_FOR_LISTING_FEE = 1
+const PERCENTAGE_FOR_TICKET_FEE = 1
+const PERCENTAGE_FOR_BETTING_FEE = 1
+const USD_KTY_PRICE = 1
+const REQUIRED_KITTIE_SACRIFICE_NUM = 1
 // =================================================== //
 
 function setMessage(contract, funcName, argArray) {
@@ -245,7 +253,9 @@ module.exports = (deployer, network, accounts) => {
             let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
                 'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
                 'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
-                'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards'];
+                'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
+                'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
+                'percentageForBettingFee', 'usdKtyPrice', 'requiredKittieSacrificeNum'];
 
             let bytesNames = [];
             for (i = 0; i < names.length; i++) {
@@ -255,7 +265,8 @@ module.exports = (deployer, network, accounts) => {
             let values = [LISTING_FEE.toString(), TICKET_FEE.toString(), BETTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
                 REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
                 HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-                OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString()];
+                OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
+                PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE, REQUIRED_KITTIE_SACRIFICE_NUM];
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
                 from: accounts[0]
