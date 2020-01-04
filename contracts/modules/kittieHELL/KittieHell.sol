@@ -10,6 +10,7 @@ import "../../interfaces/ERC20Standard.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "../databases/GMGetterDB.sol";
+import "../databases/KittieHellDB.sol";
 import "../endowment/EndowmentFund.sol";
 
 
@@ -76,14 +77,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return true;
     }
 
-    function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
-        public
-        onlyContract(CONTRACT_NAME_GAMECREATION)
-        onlyOwnedKitty(_kittyID)
-        onlyNotKilledKitty(_kittyID)
-    {
-        kitties[_kittyID].playing = _isPlaying;
-    }
+    //function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
+      //  public
+        //onlyContract(CONTRACT_NAME_GAMECREATION)
+        //onlyOwnedKitty(_kittyID)
+        //onlyNotKilledKitty(_kittyID)
+    //{
+      //  kitties[_kittyID].playing = _isPlaying;
+   // }
 
     /**
      * @author @ziweidream
@@ -113,7 +114,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;
-        scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId), gameId);
+        scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
     }
@@ -152,11 +153,18 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @param _kittyID The kitty to resurrect
      * @dev The kitty must not be permanent dead
      * @dev This function can only be carried out via proxy
-     * @dev The ressurection payment is in KTY tokens and sent to EndowmentFund contract
+     * @dev This function can only proceed after the required number of replacement kitties have become permanent ghosts
+     * @dev The ressurection payment is in KTY tokens and locked/burned in kittieHELL contract
      * @return true/false if the kitty ID is resurrected or not
      */
 
-    function payForResurrection(uint256 _kittyID, uint gameId)
+    function payForResurrection
+    (
+        uint256 _kittyID,
+        uint gameId,
+        address _owner,
+        uint256[] memory sacrificeKitties
+    )
         public
         payable
         onlyOwnedKitty(_kittyID)
@@ -165,7 +173,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
     returns (bool) {
         uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
         require(tokenAmount > 0);
-        endowmentFund.contributeKTY(kitties[_kittyID].owner, tokenAmount);
+        for (uint i = 0; i < sacrificeKitties.length; i++) {
+            KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
+        }
+        uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
+        uint256 numberOfSacrificeKitties = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).getNumberOfSacrificeKitties(_kittyID);
+        require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Please meet the required number of sacrificing kitties.");
+        kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
+        KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
         kitties[_kittyID].dead = false;
         emit KittyResurrected(_kittyID);
@@ -216,14 +231,17 @@ contract KittieHell is BasicControls, Proxied, Guard {
         releaseKitty(_kittyID);
     }
 
-    function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay, uint _gameId)
-        public
+    function scheduleBecomeGhost(uint256 _kittyID, uint256 _delay)
+        internal
         returns(bool)
     {
         CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-        scheduledJob = cron.addCronJob(CONTRACT_NAME_KITTIEHELL, now+_delay, abi.encodeWithSignature("becomeGhost(uint256, uint256)", _kittyID, _gameId));
+        scheduledJob = cron.addCronJob(
+            CONTRACT_NAME_KITTIEHELL,
+            now.add(_delay),
+            abi.encodeWithSignature("becomeGhost(uint256)", _kittyID));
         scheduledJobs[_kittyID] = scheduledJob;
-        emit Scheduled(scheduledJob, now+_delay, _kittyID);
+        emit Scheduled(scheduledJob, now.add(_delay), _kittyID);
         return true;
     }
 
@@ -235,23 +253,24 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @param _kittyID The kittie to become ghost
      * @return true if the kittie became a ghost and transferred to KittieHellDB
      */
-    function becomeGhost(uint256 _kittyID, uint _gameId)
+    function becomeGhost(uint256 _kittyID)
         public
         onlyOwnedKitty(_kittyID)
         onlyContract(CONTRACT_NAME_CRONJOB)
         returns (bool)
     {
-        // uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
-        uint kittieExpiry = gameStore.getKittieExpirationTime(_gameId);
-	    require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
+        //unnecessary to check kittie expiration time since this is ensured by cronjob
+        //uint kittieExpiry = gameStore.getKittieExpirationTime(_gameId);
+	    //require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
         kitties[_kittyID].ghost = true;
-        cryptoKitties.transfer(proxy.getContract("KittieHellDB"), _kittyID);
+        cryptoKitties.transfer(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB), _kittyID);
+        KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).loserKittieToHell(_kittyID, kitties[_kittyID].owner);
         emit KittyPermanentDeath(_kittyID);
         return true;
     }
 
     /**
-     * @author @ziweidream      
+     * @author @ziweidream
      * @param _kittyID The kittie to release
      * @return the previous kitty owner, the kitty dead status, the kitty playing status, the kitty ghost status, and the kitty death time   
      */

@@ -81,6 +81,17 @@ contract GameCreation is Proxied, Guard {
     }
 
     /**
+     * @dev calculate listing fee dynamically as a percentage of initial honey pot
+     */
+    function calculateListingFee() public view returns(uint256)
+    {
+        uint256 percentageHoneyPot = gameVarAndFee.getPercentageForListingFee();
+        uint256 initialHoneypotEth = gameVarAndFee.getEthPerGame();
+        uint256 initialHoneypotKTY = gameVarAndFee.getTokensPerGame();
+        return gameStore.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+    }
+
+    /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
     function listKittie
@@ -94,7 +105,7 @@ contract GameCreation is Proxied, Guard {
         address player = getOriginalSender();
 
         //Pay Listing Fee
-        endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
+        endowmentFund.contributeKTY(player, calculateListingFee());
 
         require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
 
@@ -145,11 +156,17 @@ contract GameCreation is Proxied, Guard {
         
         gameStore.lockVars(gameId);
 
-        uint initialEth = endowmentFund.generateHoneyPot(gameId);
-        gmSetterDB.setHoneypotInfo(gameId, initialEth);
+        /*uint initialEth = */endowmentFund.generateHoneyPot(gameId);
+        gmSetterDB.setHoneypotInfo(gameId);
 
         gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, gameId);
-        
+
+        // update ticket fee dynamically as a percentage of initial honeypot size
+        gameStore.updateTicketFee(gameId);
+
+        // update betting fee dynamically as a percentage of initial honeypot size
+        gameStore.updateBettingFee(gameId);
+
         emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
     }
 

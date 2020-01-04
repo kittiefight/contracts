@@ -48,9 +48,9 @@ contract GameStore is Proxied, Guard {
     function lock(uint gameId) internal{
         GlobalSettings memory globalSettings;
 
-        globalSettings.bettingFee = gameVarAndFee.getBettingFee();
-        globalSettings.ticketFee = gameVarAndFee.getTicketFee();
-        globalSettings.redemptionFee = 0;  // initialize as 0, updating is done when game ends in function finaliz() in gameManager
+        globalSettings.bettingFee = 0;
+        globalSettings.ticketFee = 0;
+        globalSettings.redemptionFee = 0;
         globalSettings.kittieHellExpirationTime = gameVarAndFee.getKittieExpiry();
         globalSettings.honeypotExpirationTime = gameVarAndFee.getHoneypotExpiration();
         globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
@@ -70,29 +70,50 @@ contract GameStore is Proxied, Guard {
         lock(gameId);
     }
 
-
     function getDistributionRates(uint gameId) public view returns(uint[5] memory){
         return gameSettings[gameId].distributionRates;
     }
 
-    function updateKittieRedemptionFee
+    function calculateDynamicFee
     (
-        uint256 gameId
+        uint256 percentageHoneyPot,
+        uint256 _eth_amount,
+        uint256 _kty_amount
     )
-        public
-        // temporarily comment out onlyContract(CONTRACT_NAME_GAMEMANAGER) for truffle testing GameStore-kittieRedemptionFee.test.js
-        // please uncomment line 71 once testing is done
-        //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        public view returns(uint256)
     {
-        uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
-        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
-        require(percentageHoneyPot > 0 && totalKTYFunds > 0 && totalEthFunds > 0);
+        require(percentageHoneyPot > 0 && _eth_amount > 0 && _kty_amount > 0, "Destroyed");
 
         uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
         uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
 
-        gameSettings[gameId].redemptionFee = (totalEthFunds.mul(ethUsdPrice).mul(percentageHoneyPot).div(usdKTYPrice).div(100))
-                                       .add((totalKTYFunds.mul(percentageHoneyPot).div(100)));
+        return ((_eth_amount.mul(ethUsdPrice).mul(percentageHoneyPot).div(usdKTYPrice)).add((_kty_amount.mul(percentageHoneyPot)))).div(100000);
+    }
+
+    function updateKittieRedemptionFee(uint256 gameId)
+        public
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
+        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
+
+        gameSettings[gameId].redemptionFee = calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);
+    }
+
+    function updateTicketFee(uint256 gameId)
+        public
+    {
+        uint256 percentageHoneyPot = gameVarAndFee.getPercentageForTicketFee();
+        (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
+        gameSettings[gameId].ticketFee = calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+    }
+
+    function updateBettingFee(uint256 gameId)
+        public
+    {
+        uint256 percentageHoneyPot = gameVarAndFee.getPercentageForBettingFee();
+        (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
+        gameSettings[gameId].bettingFee = calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
     }
 
     function getKittieExpirationTime(uint gameId) public view returns(uint){
@@ -106,7 +127,6 @@ contract GameStore is Proxied, Guard {
     function getHoneypotExpiration(uint gameId) public view returns(uint){
         return  gameSettings[gameId].honeypotExpirationTime;
     }
-
 
     function start(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
         gameByPlayer[gameId][player].pressedStart = true;
@@ -252,6 +272,4 @@ contract GameStore is Proxied, Guard {
             return false;
         }
     }
-
-    
 }

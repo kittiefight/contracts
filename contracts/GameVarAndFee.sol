@@ -109,16 +109,17 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     // ----- GETTERS ------
 
+    // Stale function - what is this getter for and where is it used?
     /// @notice FrontEnd Global Getter
-    function getGlobalSettings() public view    
-        returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
-    {
-        return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
-            getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
-    }
+   // function getGlobalSettings() public view    
+     //   returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
+    //{
+      //  return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
+        //    getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
+    //}
 
     /// @notice get eth/usd current price
-    // temporarily hard code EthUsdPrice for truffle testing of GameStore-kittieRedemptionFee.test.js
+    // temporarily hard code EthUsdPrice for truffle testing of BurnTokens.test.js
     // Please remove hardcoding and uncomment line 124 once testing is done
     function getEthUsdPrice() public view returns(uint){
         //return uint256(medianizer.read());
@@ -188,31 +189,22 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         rates[4] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT);
     }
 
-    /// @notice Gets fee for players to list kitties for matching in fights
-    function getListingFee() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
+    /// @notice Gets percentage of initial honeypot that is set as kittie listing fee
+    function getPercentageForListingFee() public view returns(uint256) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_LISTING_FEE);
     }
 
-    /// @notice Gets ticket fee in KTY for betting participators
-    function getTicketFee() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE);
+    /// @notice Gets percentage of initial honeypot that is set as Ticket fee
+    function getPercentageForTicketFee() public view returns(uint256) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_TICKET_FEE);
     }
 
-    /// @notice Gets betting fee in KTY for betting participators
-    function getBettingFee() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE);
+    /// @notice Gets percentage of initial honeypot that is set as Betting fee
+    function getPercentageForBettingFee() public view returns(uint256) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_BETTING_FEE);
     }
 
-    /// @notice Gets kittieHELL redemption fee in KTY for redeeming kitties
-    function getKittieRedemptionFee() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
-    }
-
-    /// @notice Gets percentage of final honey pot that is set as kittieRedemptionFee
+    /// @notice Gets percentage of final honeypot that is set as kittieRedemptionFee
     function getPercentageForKittieRedemptionFee()
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE);
@@ -223,7 +215,34 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
     }
-    
+
+    // stale function
+    /// @notice Gets fee for players to list kitties for matching in fights
+    //function getListingFee() public view returns(uint) {
+      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
+    //}
+
+    // Stale function
+    /// @notice Gets ticket fee in KTY for betting participators
+    //function getTicketFee() 
+    //public view returns(uint) {
+      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE);
+    //}
+
+    // Stale function
+    /// @notice Gets betting fee in KTY for betting participators
+    //function getBettingFee() 
+    //public view returns(uint) {
+      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE);
+    //}
+
+    //stale function
+    /// @notice Gets kittieHELL redemption fee in KTY for redeeming kitties
+    //function getKittieRedemptionFee()
+    //public view returns(uint) {
+      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
+    //}
+
     /// @notice Gets minimum contributors needed for the game to continue
     function getMinimumContributors() 
     public view returns(uint) {
@@ -246,6 +265,13 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     function getTimeExtension() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TIME_EXTENSION);
+    }
+
+    /// @notice Gets the required number of kitties NFTs as replacement for redeemed kittie in kittieHELL
+    function getRequiredKittieSacrificeNum()
+        public view returns(uint)
+    {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_KITTIE_SACRIFICE_NUM);
     }
 
 }

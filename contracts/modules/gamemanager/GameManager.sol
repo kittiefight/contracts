@@ -223,7 +223,7 @@ contract GameManager is Proxied, Guard {
         else{
             supportedPlayer = sender;
         }
-        
+
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value)(gameId));
         require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
@@ -299,7 +299,7 @@ contract GameManager is Proxied, Guard {
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
         // update kittie redemption fee dynamically to a percentage of the final honey pot
-        //gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
+        gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
 
         //Set to claiming
         endowmentFund.updateHoneyPotState(gameId, 5);

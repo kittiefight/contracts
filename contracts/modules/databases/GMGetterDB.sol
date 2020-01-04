@@ -225,6 +225,13 @@ contract GMGetterDB is Proxied {
     winner = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "winner")));
   }
 
+  function getInitialHoneypot(uint256 gameId)
+      public view returns(uint256 initialHoneypotEth, uint256 initialHoneypotKty)
+  {
+    initialHoneypotEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
+    initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
+  }
+
   function getHoneypotInfo(uint256 gameId)
     public view
     returns(uint honeypotId, uint status, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal, uint expTime)

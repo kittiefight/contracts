@@ -265,12 +265,13 @@ contract GMSetterDB is Proxied {
   /**
    * @dev set initial ETH in jackpot created by Endowment
    */
-  function setHoneypotInfo(uint256 gameId, uint256 initialEth)
+  function setHoneypotInfo(uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyExistentGame(gameId)
   {
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), initialEth);
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")), gameVarAndFee.getEthPerGame());
+    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")), gameVarAndFee.getTokensPerGame());
   }
 
   function storeHoneypotDetails(uint256 gameId)
