@@ -82,7 +82,7 @@ contract GameStore is Proxied, Guard {
     )
         public view returns(uint256)
     {
-        require(percentageHoneyPot > 0 && _eth_amount > 0 && _kty_amount > 0);
+        require(percentageHoneyPot > 0 && _eth_amount > 0 && _kty_amount > 0, "Destroyed");
 
         uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
         uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();

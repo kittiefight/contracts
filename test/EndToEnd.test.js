@@ -120,8 +120,8 @@ contract('GameManager', (accounts) => {
 	    } 
 	})
 
-	it('sends 2000 KTYs to 40 users', async () => {
-		let amountKTY = 2000;
+	it('sends 30000 KTYs to 40 users', async () => {
+		let amountKTY = 30000;
 		let users = 40;
 
 		for(let i = 1; i <= users; i++){
@@ -184,8 +184,8 @@ contract('GameManager', (accounts) => {
 	      console.log('    Red Player ', e.returnValues.playerRed)
 	      console.log('    Black Fighter ', e.returnValues.kittieBlack)
 	      console.log('    Black Player ', e.returnValues.playerBlack)
-	      console.log('    Start Time ', formatDate(e.returnValues.gameStartTime))
 	      console.log('    Prestart Time:', formatDate(gameInfo.preStartTime));
+	      console.log('    Start Time ', formatDate(e.returnValues.gameStartTime))
 	      console.log('    End Time:', formatDate(gameInfo.endTime));
 	      console.log('========================\n')
 	    })
@@ -212,6 +212,8 @@ contract('GameManager', (accounts) => {
 	    let supportersForRed = [];
 	    let supportersForBlack = [];
 	    let ticketFee = await gameStore.getTicketFee(gameId);
+
+	    console.log(ticketFee);
 
 
 	    let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
@@ -565,5 +567,77 @@ contract('GameManager', (accounts) => {
 	      console.log('EndowmentShare: ', String(web3.utils.fromWei(endowmentShare.winningsKTY.toString())), 'KTY');
 	      console.log('=======================\n');
 	    }
+	})
+
+	it('the loser can redeem his/her kitty, dynamic redemption fee is burnt to kittieHELL, replacement kitties become permanent ghosts in kittieHELL', async () => {
+        let gameId = 1;
+        let winners = await getterDB.getWinners(gameId);
+
+	    let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
+
+	    let loserKitty;
+	    let loser;
+
+	    if(winners.winner === playerRed){
+	      loser = playerBlack;
+	      loserKitty = Number(kittyBlack);
+	    }
+	    else{
+	      loser = playerRed;
+	      loserKitty = Number(kittyRed);
+	    }
+
+	    console.log("Loser's Kitty: " + loserKitty)
+
+	    let resurrectionCost = await kittieHell.getResurrectionCost(loserKitty, gameId);
+	    const redemptionFee = web3.utils.fromWei(resurrectionCost.toString(), 'ether')
+	    const kittieRedemptionFee = parseFloat(redemptionFee)
+	    console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee)
+
+	    const sacrificeKitties = [1017555, 413830, 888]
+
+	    for (let i = 0; i < sacrificeKitties.length; i++) {
+	        await cryptoKitties.mint(loser, sacrificeKitties[i]);
+	    }
+
+	    for (let i = 0; i < sacrificeKitties.length; i++) {
+	        await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], { from: loser });
+	    }
+
+	    await kittieFightToken.approve(kittieHell.address, resurrectionCost,
+	        { from: loser });
+	    
+	    await proxy.execute('KittieHell', setMessage(kittieHell, 'payForResurrection',
+	        [loserKitty, gameId, loser, sacrificeKitties]), { from: loser }).should.be.fulfilled;
+
+	    let owner = await cryptoKitties.ownerOf(loserKitty);
+
+	    if (owner === kittieHellDB.address) {
+	        console.log('Loser kitty became ghost in kittieHELL FOREVER :(');
+	    }
+
+	    if (owner === loser){
+	      console.log('Kitty Redeemed :)');
+	    }
+
+	    let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(loserKitty)
+	    console.log("Number of sacrificing kitties in kittieHELL for "+loserKitty+": "+numberOfSacrificeKitties.toNumber())
+
+	    let KTYsLockedInKittieHell = await kittieHellDB.getTotalKTYsLockedInKittieHell()
+	    const ktys = web3.utils.fromWei(KTYsLockedInKittieHell.toString(), 'ether')
+	    const ktysLocked = Math.round(parseFloat(ktys))
+	    console.log("KTYs locked in kittieHELL: "+ktysLocked)
+
+	    const isLoserKittyInHell = await kittieHellDB.isKittieGhost(loserKitty)
+	    console.log("Is Loser's kitty in Hell? "+isLoserKittyInHell)
+
+	    const isSacrificeKittyOneInHell = await kittieHellDB.isKittieGhost(sacrificeKitties[0])
+	    console.log("Is sacrificing kitty 1 in Hell? "+isSacrificeKittyOneInHell)
+
+	    const isSacrificeKittyTwoInHell = await kittieHellDB.isKittieGhost(sacrificeKitties[1])
+	    console.log("Is sacrificing kitty 2 in Hell? "+isSacrificeKittyTwoInHell)
+
+	    const isSacrificeKittyThreeInHell = await kittieHellDB.isKittieGhost(sacrificeKitties[2])
+	    console.log("Is sacrificing kitty 3 in Hell? "+isSacrificeKittyThreeInHell)
 	})
 })
