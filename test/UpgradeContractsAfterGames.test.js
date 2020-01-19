@@ -901,7 +901,7 @@ contract('GameManager', (accounts) => {
 	    console.log('\nGame End Time: ', formatDate(endTime));
     })
     
-    it('participates users for game 1', async () => {
+    it('participates users for game 2', async () => {
 		let gameId = 2;
 	    let blackParticipators = 6;
 	    let redParticipators = 6; 
@@ -965,7 +965,7 @@ contract('GameManager', (accounts) => {
 	    console.log('\nTotal KTY for Red (only participators): ', KTYforRed);
     })
     
-    it('players press start for game 1', async () => {
+    it('players press start for game 2', async () => {
 		let gameId = 2;
 
 	    let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
