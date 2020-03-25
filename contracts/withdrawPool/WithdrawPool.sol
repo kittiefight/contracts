@@ -143,7 +143,7 @@ contract WithdrawPool is Proxied, Guard {
      * @param pool_id The pool from which they would like to claim.
      * @param unlock true if this staker would like to unlock, false if this 
      */
-    function claimYield(uint256 pool_id, bool unlock)
+    function claimYield(uint256 pool_id)
     external returns(bool)
     {
         // must be the open pool
