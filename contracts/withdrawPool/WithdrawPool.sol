@@ -1,12 +1,14 @@
 /* Code by Xaleee ======================================================================================= Kittiefight */
 pragma solidity ^0.5.5;
 
-import "../proxy/Proxied.sol";
+import "../../modules/proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 //import {Owned} from ".././authority/Owned.sol";
 import {SafeMath} from ".././libs/SafeMath.sol";
 import {IStaking} from ".././interfaces/IStaking.sol";
 import "../../interfaces/ERC20Standard.sol";
+import "../../modules/databases/EndowmentDB.sol";
+import "../../modules/endowment/EndowmentFund.sol";
 
 contract WithdrawPool is Proxied, Guard {
 
@@ -21,6 +23,10 @@ contract WithdrawPool is Proxied, Guard {
     ERC20Standard public superDaoToken;
 
     CronJob public cronJob;
+
+    EndowmentDB public endowmentDB;
+
+    EndowmentFund public endowmentFund;
 
     //address cronJob; //The address of the cronJob contract.
 
@@ -113,6 +119,7 @@ contract WithdrawPool is Proxied, Guard {
         stakingContract = IStaking(_stakingContract);
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         superDaoToken = ERC20Standard(_superDaoToken);
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB))
     }
 
     /*                                                   CONSTRUCTOR                                                  */
@@ -163,7 +170,7 @@ contract WithdrawPool is Proxied, Guard {
         // update staker
         _updateStaker();
         // pay dividend to the caller
-        require(EndowmentFund(endowmentFund).transferETHfromEscrow(account, yield));
+        require(endowmentFund.transferETHfromEscrow(account, yield));
         emit ClaimYield(pool_id, account, yield);
         return true;
     }
@@ -190,14 +197,14 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     /**
-     * @dev This function is used by endowmentFund to add amounts to the pool.
+     * @dev This function is used by endowmentDB to add amounts to the pool.
      * @dev When a honeypot dissolves, this funciton is carried out to add the 7% share 
      *      to the pool. Each honeypot is associated with a pool with pool_id
      */
     function addAmountToPool(uint256 pool_id, uint256 amountETH)
         external
         payable
-        onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+        onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
         returns (bool)
     {
         //if time of previous week's pool has passed we jump to a new pool, otherwise we just increase previous pools
