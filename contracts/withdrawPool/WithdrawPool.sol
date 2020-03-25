@@ -159,7 +159,9 @@ contract WithdrawPool is Proxied, Guard {
         // calculate the amount of ether entitled to the caller
         uint256 yield = getPercentagePool(msg.sender).mul(weeklyPools[pool_id].ETHAvailable).div(1000000000) // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
         // update pool data
-        _updatePool(account, pool_id, yield)
+        _updatePool(account, pool_id, yield);
+        // update staker
+        _updateStaker();
         // pay dividend to the caller
         require(EndowmentFund(endowmentFund).transferETHfromEscrow(account, yield));
         emit ClaimYield(pool_id, account, yield);
