@@ -1,14 +1,14 @@
 /* Code by Xaleee ======================================================================================= Kittiefight */
 pragma solidity ^0.5.5;
 
-import "../../modules/proxy/Proxied.sol";
-import "../../authority/Guard.sol";
+import "../modules/proxy/Proxied.sol";
+import "../authority/Guard.sol";
 //import {Owned} from ".././authority/Owned.sol";
-import {SafeMath} from ".././libs/SafeMath.sol";
+import "../libs/SafeMath.sol";
 import {IStaking} from ".././interfaces/IStaking.sol";
-import "../../interfaces/ERC20Standard.sol";
-import "../../modules/databases/EndowmentDB.sol";
-import "../../modules/endowment/EndowmentFund.sol";
+import "../interfaces/ERC20Standard.sol";
+import "../modules/databases/EndowmentDB.sol";
+import "../modules/endowment/EndowmentFund.sol";
 
 contract WithdrawPool is Proxied, Guard {
 
@@ -83,6 +83,8 @@ contract WithdrawPool is Proxied, Guard {
 
     mapping(address => Staker) internal stakers; //Stake information about this address
 
+    address[] internal potentialStakers; //SuperDao holders who stake their tokens, may not eligible for claiming yields if not meeting staking period requirement
+
     /*                                                 POOL VARIABLES                                                 */
     /*                                                      END                                                       */
     /* ============================================================================================================== */
@@ -109,17 +111,14 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                      START                                                     */
     /* ============================================================================================================== */
 
-    function initialize() external onlyOwner (
-        address _stakingContract,
-        address _superDaoToken
-    )
-    public onlyOwner
+    function initialize(address _stakingContract, address _superDaoToken)
+        external onlyOwner 
     {
         cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
         stakingContract = IStaking(_stakingContract);
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         superDaoToken = ERC20Standard(_superDaoToken);
-        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB))
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
     }
 
     /*                                                   CONSTRUCTOR                                                  */
@@ -127,8 +126,7 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     // events
-    //event LockSuperDao(address indexed staker, uint256 lockedAmount, uint256 activeLockId, uint256 lockingTime);
-    event AddETHtoPool(address indexed pool_id, uint256 amountETH);
+    event AddETHtoPool(uint256 indexed pool_id, uint256 amountETH);
     event CheckStakersEligibility(uint256 indexed pool_id, uint256 numberOfStakersEligible, uint256 checkingTime);
     event PoolUpdated(
         uint256 indexed pool_id,
@@ -148,14 +146,13 @@ contract WithdrawPool is Proxied, Guard {
     /**
      * @dev This function is used by stakers to claim their yields.
      * @param pool_id The pool from which they would like to claim.
-     * @param unlock true if this staker would like to unlock, false if this 
      */
     function claimYield(uint256 pool_id)
     external returns(bool)
     {
         // must be the open pool
         require(weeklyPools[pool_id].dateAvailable <= now, "This pool is not available for claiming yet");
-        require(weeklyPools[pool_id].dissolve == false, "This pool is already dissolved");
+        require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
         // if eligibility of the stakers for the pool is not checked, check it here. 
         // only need to check once
         if (weeklyPools[pool_id].eligibilityChecked == false) {
@@ -164,14 +161,14 @@ contract WithdrawPool is Proxied, Guard {
         // check caller's eligibiliy for the specific pool with pool_id
         require(isUnclaimed(msg.sender, pool_id) == true, "You have already claimed or you are not eligible to claim this pool");
         // calculate the amount of ether entitled to the caller
-        uint256 yield = getPercentagePool(msg.sender).mul(weeklyPools[pool_id].ETHAvailable).div(1000000000) // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
+        uint256 yield = getPercentagePool(msg.sender, pool_id).mul(weeklyPools[pool_id].ETHAvailable).div(1000000000); // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
         // update pool data
-        _updatePool(account, pool_id, yield);
+        _updatePool(msg.sender, pool_id, yield);
         // update staker
         _updateStaker();
         // pay dividend to the caller
-        require(endowmentFund.transferETHfromEscrow(account, yield));
-        emit ClaimYield(pool_id, account, yield);
+        require(endowmentFund.transferETHfromEscrowWithdrawalPool(msg.sender, yield));
+        emit ClaimYield(pool_id, msg.sender, yield);
         return true;
     }
 
@@ -185,7 +182,7 @@ contract WithdrawPool is Proxied, Guard {
     view
     returns(uint256)
     {
-        return getPercentagePool(staker).mul(weeklyPools[pool_id].ETHAvailable).div(1000000000) // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
+        return getPercentagePool(staker, pool_id).mul(weeklyPools[pool_id].ETHAvailable).div(1000000000); // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
     }
 
     /*                                                 STAKER FUNCTIONS                                               */
@@ -249,28 +246,6 @@ contract WithdrawPool is Proxied, Guard {
         emit NewPoolCreated(newPoolId, now);
 
         return true;
-    }
-
-    /**
-     * @dev This function is used by owner to change cronJob's address.
-     * @param _cronJob The address of the new cronJob contract.
-     */
-    function setCronJob(address _cronJob)
-    external
-    onlyOwner()
-    {
-        cronJob = _cronJob;
-    }
-
-    /**
-     * @dev This function is used by owner to change endowmentFund's address.
-     * @param _endowmentFund The address of the new endowmentFund contract.
-     */
-    function setEndowmentFund(address _endowmentFund)
-    external
-    onlyOwner()
-    {
-        endowmentFund = _endowmentFund;
     }
 
     /**
@@ -377,8 +352,8 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns(bool)
     {
-        uint256[] unclaimed = weeklyPools[pool_id].unclaimedStakers;
-        for (uint256 i=1; i<unclaimed.length; i++) {
+        address[] memory unclaimed = weeklyPools[pool_id].unclaimedStakers;
+        for (uint256 i=0; i<unclaimed.length-1; i++) {
             if (account == unclaimed[i]) {
                 return true;
             }
@@ -393,9 +368,9 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        require(stakers[account].locking == true, "This account is not currently locking SuperDao tokens");
+        require(stakers[account].staking == true, "This account is not currently staking SuperDao tokens");
         uint256 total = superDaoToken.totalSupply(); // TODO: total minted
-        uint256 stakedAmout = stakingContract.totalStakedForAt(account, stakers[account].stakeStartDate);
+        uint256 stakedAmount = stakingContract.totalStakedForAt(account, stakers[account].stakeStartDate);
         uint256 percentagePool = stakedAmount.mul(1000000000).div(total); // multiply 1000000000 to ensure it is always an integer
         return percentagePool;
     }
@@ -408,7 +383,7 @@ contract WithdrawPool is Proxied, Guard {
         returns (uint256)
     {
         uint256 sum;
-        address[] allEligibleStakers = weeklyPools[pool_id].eligibleStakers;
+        address[] memory allEligibleStakers = weeklyPools[pool_id].eligibleStakers;
         for (uint256 i=0; i<allEligibleStakers.length; i++) {
             sum = sum.add(getPercentageSuperDao(allEligibleStakers[i]));
         }
@@ -417,12 +392,12 @@ contract WithdrawPool is Proxied, Guard {
 
     // calculate the share of a staker in a pool
 
-    function getPercentagePool(address account)
+    function getPercentagePool(address account, uint256 pool_id)
         internal
         view
         returns (uint256)
     {
-        return getPercentageSuperDao(account).div(getSumOfPercentagePool);
+        return getPercentageSuperDao(account).div(getSumOfPercentagePool(pool_id));
     }
 
 
@@ -438,13 +413,15 @@ contract WithdrawPool is Proxied, Guard {
         internal
         returns (uint256)
     {
-        uint256 newPoolId = weeklyPools.length.add(1);
+        uint256 newPoolId = noOfPools;
         WithdrawalPool memory withdrawalPool;
-        uint256 WORKING_DAYS = 6.mul(24).mul(3600);
+        uint256 WORKING_DAYS = 6 * 24 * 3600;
         withdrawalPool.blockNumber = block.number;
         withdrawalPool.dateAvailable = now.add(WORKING_DAYS);
         
         weeklyPools[newPoolId] = withdrawalPool;
+
+        noOfPools.add(1);
 
         return newPoolId;
     }
@@ -463,7 +440,7 @@ contract WithdrawPool is Proxied, Guard {
 
         endowmentDB.updateEndowmentFund(0, unclaimedETH, false);
 
-        emit ReturnUnclaimedETHtoEscrow(pool_id, unclaimedETH, address(escrow);
+        emit ReturnUnclaimedETHtoEscrow(pool_id, unclaimedETH, proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
 
         return true;
     }
@@ -504,8 +481,8 @@ contract WithdrawPool is Proxied, Guard {
     {
         uint256 len = weeklyPools[pool_id].unclaimedStakers.length;
         for (uint256 i=0; i<len-1; i++) {
-            if (_account == weeklyPool[pool_id].unclaimedStakers[i]) {
-                weeklyPool[pool_id].unclaimedStakers[i] = weeklyPool[pool_id].unclaimedStakers[len-1]
+            if (_account == weeklyPools[pool_id].unclaimedStakers[i]) {
+                weeklyPools[pool_id].unclaimedStakers[i] = weeklyPools[pool_id].unclaimedStakers[len-1];
             }
         }
         weeklyPools[pool_id].unclaimedStakers.length.sub(1);
@@ -514,20 +491,20 @@ contract WithdrawPool is Proxied, Guard {
     // check all stakers activeLockIds and select those who didn't unlock as eligibleStakers
     // only need to be called once for a pool(by the first claimer for the current pool)
     function checkEligibility(uint256 pool_id) internal {
-        for (unt256 i = 0; i < stakers.length; i++) {
-            uint256 lastModifiedBlockNumber = stakingContract.lastStakedFor(stakers[i]);
+        for (uint256 i = 0; i < potentialStakers.length; i++) {
+            uint256 lastModifiedBlockNumber = stakingContract.lastStakedFor(potentialStakers[i]);
             if (lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber) {
-                weeklyPools[pool_id].eligibleStakers.push(stakers[i]);
-                weeklyPools[pool_id].unclaimedStakers.push(stakers[i]);
-                stakers[i].currentAvailablePools.add(1);
-                stakers[i].stakeStartDate = lastModifiedBlockNumber;
+                weeklyPools[pool_id].eligibleStakers.push(potentialStakers[i]);
+                weeklyPools[pool_id].unclaimedStakers.push(potentialStakers[i]);
+                stakers[potentialStakers[i]].currentAvailablePools.add(1);
+                stakers[potentialStakers[i]].stakeStartDate = lastModifiedBlockNumber;
             }
         }
 
-        weeklyPool[pool_id].stakersEligible = weeklyPools[pool_id].eligibleStakers.length;
-        weeklyPool[pool_id].eligibilityChecked = true;
+        weeklyPools[pool_id].stakersEligible = weeklyPools[pool_id].eligibleStakers.length;
+        weeklyPools[pool_id].eligibilityChecked = true;
 
-        emit CheckStakersEligibility(pool_id, stakersEligible, now);
+        emit CheckStakersEligibility(pool_id, weeklyPools[pool_id].stakersEligible, now);
     }
     
     /*                                                INTERNAL FUNCTIONS                                              */

@@ -110,15 +110,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"see https://github.com/ethereum/EIPs/issues/20\",\"methods\":{},\"title\":\"ERC20 Advanced interface\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/kittieFight-development/alpha/contracts/interfaces/ERC20Advanced.sol\":\"ERC20Advanced\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/kittieFight-development/alpha/contracts/interfaces/ERC20Advanced.sol\":{\"keccak256\":\"0xc7d7e76f373cc058b824e27099e6cf08531bf51ca65bdb06d4b48cd48c120d4f\",\"urls\":[\"bzz-raw://409f56916cca30b397b2336399026dfa49a6b631a3cfddc62e029ce79b2de87d\",\"dweb:/ipfs/QmdQc2xMynJtJ92vQvLoJ6YYT6WxJgGsW7oTnQVeLt8B3Q\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"see https://github.com/ethereum/EIPs/issues/20\",\"methods\":{},\"title\":\"ERC20 Advanced interface\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/staking/alpha/contracts/interfaces/ERC20Advanced.sol\":\"ERC20Advanced\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/staking/alpha/contracts/interfaces/ERC20Advanced.sol\":{\"keccak256\":\"0xc7d7e76f373cc058b824e27099e6cf08531bf51ca65bdb06d4b48cd48c120d4f\",\"urls\":[\"bzz-raw://409f56916cca30b397b2336399026dfa49a6b631a3cfddc62e029ce79b2de87d\",\"dweb:/ipfs/QmdQc2xMynJtJ92vQvLoJ6YYT6WxJgGsW7oTnQVeLt8B3Q\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.5.5;\n\n\n/**\n * @title ERC20 Advanced interface\n * @dev see https://github.com/ethereum/EIPs/issues/20\n */\ninterface ERC20Advanced {\n    function allowance(address owner, address spender) external view returns (uint256);\n    function transferFrom(address from, address to, uint256 value) external returns (bool);\n    function approve(address spender, uint256 value) external returns (bool);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n}\n",
-  "sourcePath": "/Users/ziweizhang/Desktop/kittieFight-development/alpha/contracts/interfaces/ERC20Advanced.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/staking/alpha/contracts/interfaces/ERC20Advanced.sol",
   "ast": {
-    "absolutePath": "/Users/ziweizhang/Desktop/kittieFight-development/alpha/contracts/interfaces/ERC20Advanced.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/staking/alpha/contracts/interfaces/ERC20Advanced.sol",
     "exportedSymbols": {
       "ERC20Advanced": [
         1940
@@ -609,7 +609,7 @@
     "src": "0:493:12"
   },
   "legacyAST": {
-    "absolutePath": "/Users/ziweizhang/Desktop/kittieFight-development/alpha/contracts/interfaces/ERC20Advanced.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/staking/alpha/contracts/interfaces/ERC20Advanced.sol",
     "exportedSymbols": {
       "ERC20Advanced": [
         1940
@@ -1101,11 +1101,11 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2020-01-18T20:52:08.410Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-03-28T10:16:36.688Z",
   "devdoc": {
     "details": "see https://github.com/ethereum/EIPs/issues/20",
     "methods": {},

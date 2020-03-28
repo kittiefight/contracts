@@ -281,6 +281,15 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
+    function transferETHfromEscrowWithdrawalPool(address payable _someAddress, uint256 _eth_amount)
+        public
+        onlyContract(CONTRACT_NAME_WITHDRAWAL_POOL)
+        returns(bool)
+    {
+        transferETHfromEscrow(_someAddress, _eth_amount);
+        return true;
+    }
+
     /**
     * @dev transfer Escrow KFT funds
     */

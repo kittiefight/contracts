@@ -35,5 +35,7 @@ contract ContractNames {
     string constant CONTRACT_NAME_HITSRESOLVE       = "HitsResolve";
     string constant CONTRACT_NAME_RARITYCALCULATOR  = "RarityCalculator";
     string constant CONTRACT_NAME_CRYPTOKITTIES     = "CryptoKitties";
+    string constant CONTRACT_NAME_WITHDRAWAL_POOL   = "WithdrawalPool";
+    string constant CONTRACT_NAME_TIMEFRAME         = "TimeFrame";
 
 }

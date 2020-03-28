@@ -12,6 +12,7 @@ const GameStore = artifacts.require('GameStore')
 const GameCreation = artifacts.require('GameCreation')
 const GameVarAndFee = artifacts.require('GameVarAndFee')
 const Forfeiter = artifacts.require('Forfeiter')
+const TimeFrame = artifacts.require('TimeFrame');
 const DateTime = artifacts.require('DateTime')
 const Scheduler = artifacts.require('Scheduler')
 const Betting = artifacts.require('Betting')
@@ -29,6 +30,7 @@ const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
+
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -111,6 +113,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(GameStore))
         .then(() => deployer.deploy(GameCreation))
         .then(() => deployer.deploy(Register))
+        .then(() => deployer.deploy(TimeFrame))
         .then(() => deployer.deploy(DateTime))
         .then(() => deployer.deploy(Forfeiter))
         .then(() => deployer.deploy(Scheduler))
@@ -135,6 +138,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('ProfileDB', ProfileDB.address);
             await proxy.addContract('RoleDB', RoleDB.address);
             await proxy.addContract('Register', Register.address)
+            await proxy.addContract('TimeFrame', TimeFrame.address)
             await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
             await proxy.addContract('EndowmentFund', EndowmentFund.address)
             await proxy.addContract('EndowmentDB', EndowmentDB.address)
@@ -158,6 +162,9 @@ module.exports = (deployer, network, accounts) => {
             console.log('\nGetting contract instances...');
             // PROXY
             proxy = await KFProxy.deployed()
+
+            //Time Frame
+            timeFrame = await TimeFrame.deployed()
 
             // DATABASES
             genericDB = await GenericDB.deployed()
@@ -203,6 +210,7 @@ module.exports = (deployer, network, accounts) => {
             await genericDB.setProxy(proxy.address)
             await profileDB.setProxy(proxy.address);
             await roleDB.setProxy(proxy.address);
+            await timeFrame.setProxy(proxy.address)
             await setterDB.setProxy(proxy.address)
             await getterDB.setProxy(proxy.address)
             await endowmentFund.setProxy(proxy.address)
