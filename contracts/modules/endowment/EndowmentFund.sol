@@ -20,11 +20,12 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
+import "./HoneypotAllocationAlgo.sol";
 
 /**
  * @title EndowmentFund
  * @dev Responsible for : manage funds
- * @author @vikrammndal @wafflemakr @Xaleee
+ * @author @vikrammndal @wafflemakr @Xaleee @ziweidream
  */
 
 contract EndowmentFund is Distribution, Guard {
@@ -57,10 +58,13 @@ contract EndowmentFund is Distribution, Guard {
     function generateHoneyPot(uint256 gameId)
         external
         onlyContract(CONTRACT_NAME_GAMECREATION)
-        returns (uint) {
+        returns (uint, uint) {
 
-        uint ktyAllocated = gameVarAndFee.getTokensPerGame();
-        uint ethAllocated = gameVarAndFee.getEthPerGame();
+        (
+            uint ktyAllocated,
+            uint ethAllocated,
+            string memory honeypotClass
+        ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
 
         // + adds amount to honeypot
         endowmentDB.createHoneypot(
@@ -68,13 +72,14 @@ contract EndowmentFund is Distribution, Guard {
             uint(HoneypotState.created),
             now,
             ktyAllocated,
-            ethAllocated
+            ethAllocated,
+            honeypotClass
         );
 
         // deduct amount from endowment
         require(endowmentDB.updateEndowmentFund(ktyAllocated, ethAllocated, true));
 
-    return (ethAllocated);
+        return (ktyAllocated, ethAllocated);
     }
 
     /**
@@ -348,7 +353,7 @@ contract EndowmentFund is Distribution, Guard {
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
     }
-    
+
 
 }
 

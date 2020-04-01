@@ -33,4 +33,5 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfRarityCalculator() public view returns(address)  {return getContract(CONTRACT_NAME_RARITYCALCULATOR);}
      function addressOfWithdrawalPool() public view returns(address)    {return getContract(CONTRACT_NAME_WITHDRAWAL_POOL);}
      function addressOfTimeFrame() public view returns(address)         {return getContract(CONTRACT_NAME_TIMEFRAME);}
+     function addressOfHoneypotAllocationAlgo() public view returns(address) {return getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO);}
 }

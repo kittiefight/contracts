@@ -85,8 +85,8 @@ contract Distribution is Proxied {
         uint256[5] memory rates = gameStore.getDistributionRates(gameId);
         (, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
-        uint256 winningsETH = (totalBetsForLosingCorner.mul(rates[winningCategory])).div(100);
-        uint256 winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(100);
+        uint256 winningsETH = (totalBetsForLosingCorner.mul(rates[winningCategory])).div(1000000); //1,000,000 is the percentage base
+        uint256 winningsKTY = (totalKTYFunds.mul(rates[winningCategory])).div(1000000); //1,000,000 is the percentage base
 
         //Other bettors winnings
         if (winningCategory == 3){
@@ -132,8 +132,8 @@ contract Distribution is Proxied {
 
         (address winner, address loser, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
 
-        winningsETH = initialEth.add(totalBetsForLosingCorner.mul(rates[4]).div(100));
-        winningsKTY = (totalKTYFunds.mul(rates[4])).div(100);
+        winningsETH = initialEth.add(totalBetsForLosingCorner.mul(rates[4]).div(1000000)); //1,000,000 is the percentage base
+        winningsKTY = (totalKTYFunds.mul(rates[4])).div(1000000); //1,000,000 is the percentage base
     }
 
     function checkWinnerCategory

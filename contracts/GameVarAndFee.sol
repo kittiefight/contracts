@@ -156,18 +156,20 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, HONEY_POT_EXPIRATION);
     }
     
-    /// @notice Gets mount of initial KTY Tokens allowed to be drawn from EndowmentFund to be allocated to game
-    function getTokensPerGame() 
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TOKENS_PER_GAME);
+    /// @notice Gets the percentage of jackpot size for allocating KTY tokens to the jackpot
+    function getPercentageHoneypotAllocationKTY()
+        public view returns(uint)
+    {
+            return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_HONEYPOT_ALLOCATION_KTY);
     }
-    
+
+    // stale function
     /// @notice Gets Amount of initial ETH allowed to be drawn from EndowmentFund to be allocated to game
     function getEthPerGame() 
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ETH_PER_GAME);
     }
-    
+
     /// @notice Gets Times duration between each game per day
     function getGameTimes() 
     public view returns(uint) {
@@ -216,11 +218,10 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
     }
 
-    // stale function
     /// @notice Gets fee for players to list kitties for matching in fights
-    //function getListingFee() public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
-    //}
+    function getListingFee() public view returns(uint) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
+    }
 
     // Stale function
     /// @notice Gets ticket fee in KTY for betting participators
