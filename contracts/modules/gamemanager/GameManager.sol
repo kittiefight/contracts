@@ -56,9 +56,6 @@ contract GameManager is Proxied, Guard {
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
-    /// @dev a mapping of each epoch to the games in it
-    mapping(uint => uint[]) gamesInEpoch;
-
     //EVENTS
     event NewSupporter(uint indexed gameId, address supporter, address indexed playerSupported);
     event PressStart(uint indexed gameId, address player);
