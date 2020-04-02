@@ -35,6 +35,7 @@ const CryptoKitties = artifacts.require('MockERC721Token');
 const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
+const TimeFrame = artifacts.require('TimeFrame')
 
 function setMessage(contract, funcName, argArray) {
   	return web3.eth.abi.encodeFunctionCall(
@@ -63,7 +64,7 @@ let proxy, dateTime, genericDB, profileDB, roleDB, superDaoToken,
   	kittieFightToken, cryptoKitties, register, gameVarAndFee, endowmentFund,
   	endowmentDB, forfeiter, scheduler, betting, hitsResolve,
   	rarityCalculator, kittieHell, kittieHellDB, getterDB, setterDB, gameManager,
-  	cronJob, escrow, honeypotAllocationAlgo;
+  	cronJob, escrow, honeypotAllocationAlgo, timeFrame;
 
 contract('GameManager', (accounts) => {
 	it('instantiate contracts', async () => {
@@ -90,6 +91,9 @@ contract('GameManager', (accounts) => {
 		kittieFightToken = await KittieFightToken.deployed();
 		cryptoKitties = await CryptoKitties.deployed();
 
+		// TIMEFRAME
+		timeFrame = await TimeFrame.deployed();
+
         // MODULES
         honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
 		gameManager = await GameManager.deployed();
@@ -108,6 +112,43 @@ contract('GameManager', (accounts) => {
 
 		//ESCROW
 		escrow = await Escrow.deployed();
+	})
+
+	it('sets Epoch 0', async () => {
+		// start epoch 0 6 days + 21 hours ago, so that timeFrame.setNewEpoch() can be
+		// called by GameManager when the test game finalizes
+		const startTime = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60 + 3 * 60 * 60
+		await timeFrame.setEpoch_0(startTime)
+		const epoch_0_start_unix = await timeFrame._epochStartTime(0)
+		console.log("epoch 0 start time in unix time:", epoch_0_start_unix.toNumber())
+		const epoch_0_start_human_readable = await timeFrame.epochStartTime(0)
+		const epoch_0_end_human_readable = await timeFrame.epochEndTime(0)
+		console.log("\n******************* Epoch 0 Start Time *****************")
+		console.log(
+			'Date:',
+			epoch_0_start_human_readable[0].toNumber()+'-'+
+			epoch_0_start_human_readable[1].toNumber()+'-'+
+			epoch_0_start_human_readable[2].toNumber(), ' ',
+			'Time:',
+			epoch_0_start_human_readable[3].toNumber()+':'+
+			epoch_0_start_human_readable[4].toNumber()+':'+
+			epoch_0_start_human_readable[5].toNumber()
+			
+		)
+		console.log("\n******************* Epoch 0 End Time *******************")
+		console.log(
+			'Date:',
+			epoch_0_end_human_readable[0].toNumber()+'-'+
+			epoch_0_end_human_readable[1].toNumber()+'-'+
+			epoch_0_end_human_readable[2].toNumber(), ' ',
+			'Time:',
+			epoch_0_end_human_readable[3].toNumber()+':'+
+			epoch_0_end_human_readable[4].toNumber()+':'+
+			epoch_0_end_human_readable[5].toNumber()
+			
+		)
+		console.log('********************************************************\n')
+		
 	})
 
 	it('registers 40 users', async () => {
@@ -458,6 +499,39 @@ contract('GameManager', (accounts) => {
 	    console.log(`     TotalETH: ${web3.utils.fromWei(finalHoneypot.totalEth.toString())}   `);
 	    console.log(`     TotalKTY: ${web3.utils.fromWei(finalHoneypot.totalKty.toString())}   `);
 	    console.log('=======================\n')
+	})
+
+	it('sets new epoch when finalized', async () => {
+		console.log("Hi, new epoch!")
+		const epoch_1_start_unix = await timeFrame._epochStartTime(1)
+		console.log("epoch 1 start time in unix time:", epoch_1_start_unix.toNumber())
+		const epoch_1_start_human_readable = await timeFrame.epochStartTime(1)
+		const epoch_1_end_human_readable = await timeFrame.epochEndTime(1)
+		console.log("\n******************* Epoch 1 Start Time *****************")
+		console.log(
+			'Date:',
+			epoch_1_start_human_readable[0].toNumber()+'-'+
+			epoch_1_start_human_readable[1].toNumber()+'-'+
+			epoch_1_start_human_readable[2].toNumber(), ' ',
+			'Time:',
+			epoch_1_start_human_readable[3].toNumber()+':'+
+			epoch_1_start_human_readable[4].toNumber()+':'+
+			epoch_1_start_human_readable[5].toNumber()
+			
+		)
+		console.log("\n******************* Epoch 1 End Time *******************")
+		console.log(
+			'Date:',
+			epoch_1_end_human_readable[0].toNumber()+'-'+
+			epoch_1_end_human_readable[1].toNumber()+'-'+
+			epoch_1_end_human_readable[2].toNumber(), ' ',
+			'Time:',
+			epoch_1_end_human_readable[3].toNumber()+':'+
+			epoch_1_end_human_readable[4].toNumber()+':'+
+			epoch_1_end_human_readable[5].toNumber()
+			
+		)
+		console.log('********************************************************\n')
 	})
 
 	it('claims for everyone', async () => {

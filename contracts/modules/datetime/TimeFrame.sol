@@ -102,7 +102,7 @@ pragma solidity ^0.5.5;
          public
          onlyActiveEpoch(epoch_id)
          //temporarily comment out onlyContract for testing purpose only: TimeFrame.test.js
-         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
+         onlyContract(CONTRACT_NAME_GAMEMANAGER)
      {
          _addGamingDelayToEpoch(epoch_id, gamingDelay);
      }

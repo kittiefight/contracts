@@ -38,6 +38,7 @@ import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 import "./GameCreation.sol";
+import "../datetime/TimeFrame.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -51,8 +52,12 @@ contract GameManager is Proxied, Guard {
     KittieHell public kittieHELL;
     GameStore public gameStore;
     GameCreation public gameCreation;
+    TimeFrame public timeFrame;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
+
+    /// @dev a mapping of each epoch to the games in it
+    mapping(uint => uint[]) gamesInEpoch;
 
     //EVENTS
     event NewSupporter(uint indexed gameId, address supporter, address indexed playerSupported);
@@ -81,6 +86,7 @@ contract GameManager is Proxied, Guard {
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
+        timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
     }
 
     /**
@@ -308,6 +314,18 @@ contract GameManager is Proxied, Guard {
         endowmentFund.sendFinalizeRewards(getOriginalSender());
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
+
+        // Set new epoch when last game finalizes
+        // If now < 6 hours before the end of working days of current epoch,
+        // then this is the last game
+        // TODO: if now > 6 hours before the end of working days of current epoch,
+        // but there is no more game scheduled after this game in the current epoch,
+        // then this is the last game as well
+        uint lastEpochId = timeFrame.getLastEpochID();
+        if (!timeFrame.canStartNewGame(lastEpochId)) {
+            timeFrame.setNewEpoch();
+        }
+
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
 
         emit GameEnded(gameId, winner, loser, pointsBlack, pointsRed);
