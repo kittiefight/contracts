@@ -27,6 +27,7 @@ import '../proxy/Proxied.sol';
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
+import "../gamemanager/Scheduler.sol";
 import "./Forfeiter.sol";
 import "../algorithm/Betting.sol";
 import "../algorithm/HitsResolveAlgo.sol";
@@ -51,6 +52,7 @@ contract GameManager is Proxied, Guard {
     KittieHell public kittieHELL;
     GameStore public gameStore;
     GameCreation public gameCreation;
+    Scheduler public scheduler;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
@@ -81,6 +83,7 @@ contract GameManager is Proxied, Guard {
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
+        scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
     }
 
     /**
@@ -155,8 +158,6 @@ contract GameManager is Proxied, Guard {
             // (,,,,,,,,,uint genes) = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
             // uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
             betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
-
-            require(kittieHELL.acquireKitty(kittieId, player));
 
             address opponentPlayer = gameStore.getOpponent(gameId, player);
 
@@ -308,6 +309,10 @@ contract GameManager is Proxied, Guard {
         endowmentFund.sendFinalizeRewards(getOriginalSender());
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
+
+        //Tell scheduler to start a game
+        scheduler.startGame();
+
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
 
         emit GameEnded(gameId, winner, loser, pointsBlack, pointsRed);

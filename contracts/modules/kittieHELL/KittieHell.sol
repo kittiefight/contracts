@@ -67,7 +67,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     function acquireKitty(uint256 _kittyID, address owner)
         public
         onlyNotOwnedKitty(_kittyID)
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_SCHEDULER)
         returns (bool)
     {
         cryptoKitties.transferFrom(owner, address(this), _kittyID);
