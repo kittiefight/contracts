@@ -39,6 +39,7 @@ import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 import "./GameCreation.sol";
+import "../datetime/TimeFrame.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -53,7 +54,8 @@ contract GameManager is Proxied, Guard {
     GameStore public gameStore;
     GameCreation public gameCreation;
     Scheduler public scheduler;
- 
+    TimeFrame public timeFrame;
+
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
     //EVENTS
@@ -84,6 +86,7 @@ contract GameManager is Proxied, Guard {
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
+        timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
     }
 
     /**
@@ -312,6 +315,18 @@ contract GameManager is Proxied, Guard {
 
         //Tell scheduler to start a game
         scheduler.startGame();
+
+
+        // Set new epoch when last game finalizes
+        // If now < 6 hours before the end of working days of current epoch,
+        // then this is the last game
+        // TODO: if now > 6 hours before the end of working days of current epoch,
+        // but there is no more game scheduled after this game in the current epoch,
+        // then this is the last game as well
+        uint lastEpochId = timeFrame.getLastEpochID();
+        if (!timeFrame.canStartNewGame(lastEpochId)) {
+            timeFrame.setNewEpoch();
+        }
 
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
 

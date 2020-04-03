@@ -87,7 +87,10 @@ contract GameStore is Proxied, Guard {
         uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
         uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
 
-        return ((_eth_amount.mul(ethUsdPrice).mul(percentageHoneyPot).div(usdKTYPrice)).add((_kty_amount.mul(percentageHoneyPot)))).div(100000);
+        // 1,000,000 is the base used for percentage setting in kittieFight
+        // for example, if percentageHoneyPot is 0.03% in real world, inside this function
+        // percentageHoneyPot = 0.03% * 1,000,1000 which is 300, thus for the need of div(1000000)
+        return ((_eth_amount.mul(ethUsdPrice).mul(percentageHoneyPot).div(usdKTYPrice)).add((_kty_amount.mul(percentageHoneyPot)))).div(1000000);
     }
 
     function updateKittieRedemptionFee(uint256 gameId)

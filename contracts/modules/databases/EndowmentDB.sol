@@ -159,7 +159,8 @@ contract EndowmentDB is Proxied {
     uint state,
     uint createdTime,
     uint ktyTotal,
-    uint ethTotal
+    uint ethTotal,
+    string calldata honeypotClass
   )
     external
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
@@ -169,6 +170,7 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "createdTime")), createdTime);
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "ktyTotal")), ktyTotal);
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "ethTotal")), ethTotal);
+    genericDB.setStringStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "honeypotClass")), honeypotClass);
   }
 
   function getHoneypotState(

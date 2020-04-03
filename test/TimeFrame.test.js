@@ -1,4 +1,5 @@
-/**
+/** If you run this test, you must comment out all the modifiers 
+ * onlyContract(CONTRACT_NAME_GAMEMANAGER), since this is an isolated test.
  * When you run this test, sets the start time for epoch 0 as less than 3 weeks ago
  * to ensure epoch2 is an active epoch
  * const epoch_0_start = await timeFrame.timestampFromDateTime(

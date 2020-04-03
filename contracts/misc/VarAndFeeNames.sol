@@ -19,7 +19,7 @@ contract VarAndFeeNames {
     bytes32 constant GAME_DURATION          = keccak256(abi.encodePacked(TABLE_NAME, "gameDuration"));
     bytes32 constant KITTIE_HELL_EXPIRATION = keccak256(abi.encodePacked(TABLE_NAME, "kittieHellExpiration"));
     bytes32 constant HONEY_POT_EXPIRATION   = keccak256(abi.encodePacked(TABLE_NAME, "honeypotExpiration"));
-    bytes32 constant TOKENS_PER_GAME        = keccak256(abi.encodePacked(TABLE_NAME, "tokensPerGame"));
+    //bytes32 constant ACTUAL_FUNDS_KTY       = keccak256(abi.encodePacked(TABLE_NAME, "actualFundsKTY"));
     bytes32 constant ETH_PER_GAME           = keccak256(abi.encodePacked(TABLE_NAME, "ethPerGame"));
     bytes32 constant GAME_TIMES             = keccak256(abi.encodePacked(TABLE_NAME, "gameTimes"));
     bytes32 constant WINNING_KITTIE         = keccak256(abi.encodePacked(TABLE_NAME, "winningKittie"));
@@ -41,4 +41,5 @@ contract VarAndFeeNames {
     bytes32 constant PERCENTAGE_FOR_BETTING_FEE = keccak256(abi.encodePacked(TABLE_NAME, "percentageForBettingFee"));
     bytes32 constant USD_KTY_PRICE          = keccak256(abi.encodePacked(TABLE_NAME, "usdKTYPrice"));
     bytes32 constant REQUIRED_KITTIE_SACRIFICE_NUM = keccak256(abi.encodePacked(TABLE_NAME, "requiredKittieSacrificeNum"));
+    bytes32 constant PERCENTAGE_HONEYPOT_ALLOCATION_KTY = keccak256(abi.encodePacked(TABLE_NAME, "percentageHoneypotAllocationKTY"));
 }
