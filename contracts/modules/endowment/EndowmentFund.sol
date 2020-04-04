@@ -20,7 +20,6 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
-import "./HoneypotAllocationAlgo.sol";
 
 /**
  * @title EndowmentFund
@@ -53,34 +52,14 @@ contract EndowmentFund is Distribution, Guard {
     }
 
     /**
-    * @dev check if enough funds present and maintains balance of tokens in DB
-    */
-    function generateHoneyPot(uint256 gameId)
-        external
-        onlyContract(CONTRACT_NAME_GAMECREATION)
-        returns (uint, uint) {
-
-        (
-            uint ktyAllocated,
-            uint ethAllocated,
-            string memory honeypotClass
-        ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
-
-        // + adds amount to honeypot
-        endowmentDB.createHoneypot(
-            gameId,
-            uint(HoneypotState.created),
-            now,
-            ktyAllocated,
-            ethAllocated,
-            honeypotClass
-        );
-
-        // deduct amount from endowment
-        require(endowmentDB.updateEndowmentFund(ktyAllocated, ethAllocated, true));
-
-        return (ktyAllocated, ethAllocated);
-    }
+  * @dev check if enough funds present and maintains balance of tokens in DB
+  */
+  function generateHoneyPot(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+    returns (uint, uint) {
+    return (endowmentDB.generateHoneyPot(gameId));
+  }
 
     /**
     * @dev winner claims
@@ -91,11 +70,11 @@ contract EndowmentFund is Distribution, Guard {
         // Honeypot status
         (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
 
-        require(uint(HoneypotState.claiming) == status, "HoneypotState can not be claimed");
+        require(uint(HoneypotState.claiming) == status, "1");
 
-        require(now < claimTime, "Time to claim is over");
+        require(now < claimTime, "2");
 
-        require(!getWithdrawalState(_gameId, msgSender), "already claimed");
+        require(!getWithdrawalState(_gameId, msgSender), "3");
 
         (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
 
@@ -190,7 +169,6 @@ contract EndowmentFund is Distribution, Guard {
         external
         onlySuperAdmin
     {
-
         require(_kty_amount > 0);
 
         require(kittieFightToken.transfer(address(escrow), _kty_amount));
@@ -206,10 +184,10 @@ contract EndowmentFund is Distribution, Guard {
     function sendETHtoEscrow() external payable {
         address msgSender = getOriginalSender();
 
-        /* not very essential
-        require(address(escrow) != address(0),
-            "Error: escrow not initialized");
-        */
+         // not very essential
+        // require(address(escrow) != address(0),
+        //     "Error: escrow not initialized");
+        
 
         require(msg.value > 0);
 
@@ -223,6 +201,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
      * @dev accepts KTY. KTY is transfered to in escrow
      */
+     
     function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
 
         //require(address(escrow) != address(0), "escrow not initialized"); //  not very essential
@@ -353,7 +332,4 @@ contract EndowmentFund is Distribution, Guard {
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
     }
-
-
 }
-

@@ -33,6 +33,7 @@ import "../../libs/SafeMath.sol";
 import '../../authority/Guard.sol';
 import "../../interfaces/IKittyCore.sol";
 import "./GameStore.sol";
+import "./GameManager.sol";
 import "../../CronJob.sol";
 import "./Forfeiter.sol";
 import '../kittieHELL/KittieHell.sol';
@@ -68,7 +69,6 @@ contract GameCreation is Proxied, Guard {
     * @dev Can be called only by the owner of this contract
     */
     function initialize() external onlyOwner {
-
         gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
@@ -130,8 +130,9 @@ contract GameCreation is Proxied, Guard {
     {
         require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
         require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
-        
-        require(playerRed != address(kittieHELL) && playerBlack != address(kittieHELL), 'KittieHell owns Kitties');
+
+        require(kittieHELL.acquireKitty(kittyRed, playerRed));
+        require(kittieHELL.acquireKitty(kittyBlack, playerBlack));
 
         emit NewListing(kittyRed, playerRed, now);
         emit NewListing(kittyBlack, playerBlack, now);

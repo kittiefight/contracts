@@ -86,7 +86,7 @@ pragma solidity ^0.5.5;
      function setNewEpoch()
          public
          //temporarily comment out onlyContract for testing purpose only: TimeFrame.test.js
-         onlyContract(CONTRACT_NAME_GAMEMANAGER)
+         onlyContract(CONTRACT_NAME_GAMESTORE)
      {
          _setNewEpoch();
      }

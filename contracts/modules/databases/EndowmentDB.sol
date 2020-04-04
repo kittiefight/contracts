@@ -4,6 +4,7 @@ import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
 import "../endowment/EndowmentFund.sol";
+import "../endowment/HoneypotAllocationAlgo.sol";
 
 contract EndowmentDB is Proxied {
   using SafeMath for uint256;
@@ -111,6 +112,15 @@ contract EndowmentDB is Proxied {
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     returns (bool)
   {
+    return (_updateEndowmentFund(_kty_amount, _eth_amount, deductFunds));
+  }
+
+  function _updateEndowmentFund(
+    uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
+  )
+    internal
+    returns (bool)
+  {
 
     if (_kty_amount > 0){
 
@@ -160,10 +170,9 @@ contract EndowmentDB is Proxied {
     uint createdTime,
     uint ktyTotal,
     uint ethTotal,
-    string calldata honeypotClass
+    string memory honeypotClass
   )
-    external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    internal
   {
     require(genericDB.pushNodeToLinkedList(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT, gameId), ERROR_ALREADY_EXIST);
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state")), state);
@@ -217,6 +226,36 @@ contract EndowmentDB is Proxied {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "ktyTotal")), 0);
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "ethTotal")), 0);
 
+  }
+
+  /**
+  * @dev check if enough funds present and maintains balance of tokens in DB
+  */
+  function generateHoneyPot(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    returns (uint, uint) {
+
+    (
+      uint ktyAllocated,
+      uint ethAllocated,
+      string memory honeypotClass
+    ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
+
+    // + adds amount to honeypot
+    createHoneypot(
+      gameId,
+      0,
+      now,
+      ktyAllocated,
+      ethAllocated,
+      honeypotClass
+    );
+
+    // deduct amount from endowment
+    require(_updateEndowmentFund(ktyAllocated, ethAllocated, true));
+
+    return (ktyAllocated, ethAllocated);
   }
 
 /**

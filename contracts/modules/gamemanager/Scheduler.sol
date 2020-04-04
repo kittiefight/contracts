@@ -29,6 +29,7 @@ import "../../GameVarAndFee.sol";
 import "./GameManager.sol";
 import "./GameCreation.sol";
 import "../../interfaces/ERC721.sol";
+import "../kittieHELL/KittieHell.sol";
 
 
 /**
@@ -44,6 +45,7 @@ contract Scheduler is Proxied {
     GameManager public gameManager;
     GameCreation public gameCreation;
     GameVarAndFee public gameVarAndFee;
+    KittieHell public kittieHell;
     ERC721 public cryptoKitties;
     uint256 lastGameCreationTime;
 
@@ -68,7 +70,7 @@ contract Scheduler is Proxied {
 
     uint256 randomNonce;
 
-    mapping(uint256 => bool) private isKittyListed;
+    mapping(uint256 => bool) public isKittyListed;
 
     bool immediateStart = true;
 
@@ -102,6 +104,7 @@ contract Scheduler is Proxied {
         gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
         cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
+        kittieHell = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
     /*                                                   INITIALIZOR                                                  */
@@ -121,8 +124,8 @@ contract Scheduler is Proxied {
     onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyUnlistedKitty(_kittyId)
     {
-        require(kittieHELL.acquireKitty(_kittyId, _player));
-        isKittyListed(_kittyId) = true;
+        require(kittieHell.acquireKitty(_kittyId, _player));
+        isKittyListed[_kittyId] = true;
         kittyList[noOfKittiesListed] = _kittyId;
         kittyOwner[_kittyId] = _player;
         
@@ -144,7 +147,7 @@ contract Scheduler is Proxied {
      */
     function startGame()
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyContract(CONTRACT_NAME_GAMESTORE)
     {
         if(headGame == 0) {
             if(noOfKittiesListed < 2)
@@ -186,6 +189,17 @@ contract Scheduler is Proxied {
         return listedPlayers;
     }
 
+    /**
+     * @dev This function is returning true when kitty is in kittyList and false when not.
+     */
+    function isKittyListedForMatching(uint256 _kittyId)
+    external
+    view
+    returns(bool)
+    {
+        return isKittyListed[_kittyId];
+    }
+
     /*                                                 GETTER FUNCTIONS                                               */
     /*                                                       END                                                      */
     /* ============================================================================================================== */
@@ -208,6 +222,9 @@ contract Scheduler is Proxied {
         game.playerBlack = kittyOwner[kittyList[noOfKittiesListed.sub(2)]];
         game.kittyRed = kittyList[noOfKittiesListed.sub(1)];
         game.kittyBlack = kittyList[noOfKittiesListed.sub(2)];
+
+        isKittyListed[kittyList[noOfKittiesListed.sub(1)]] = false;
+        isKittyListed[kittyList[noOfKittiesListed.sub(2)]] = false;
 
         noOfGames = noOfGames.add(1);
         noOfKittiesListed = noOfKittiesListed.sub(2);
@@ -233,8 +250,8 @@ contract Scheduler is Proxied {
             game.kittyRed = kittyList[i];
             game.kittyBlack = kittyList[i.add(1)];
 
-            kittyList[i] = 0;
-            kittyList[i.add(1)] = 0;
+            isKittyListed[kittyList[i]] = false;
+            isKittyListed[kittyList[i.add(1)]] = false;
 
             noOfGames = noOfGames.add(1);
 

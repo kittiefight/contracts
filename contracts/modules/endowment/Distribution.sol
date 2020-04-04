@@ -61,7 +61,7 @@ contract Distribution is Proxied {
         public view
         returns(uint256 winningsETH, uint256 winningsKTY)
     {
-        (address winner, address loser, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+        (address winner, /*address loser*/, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
 
         require(winner != address(0));
 
@@ -125,12 +125,12 @@ contract Distribution is Proxied {
 
 
     function getEndowmentShare(uint gameId) public view returns(uint256 winningsETH, uint256 winningsKTY){
-        (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
+        (/*uint256 totalEthFunds*/, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
         uint256[5] memory rates = gameStore.getDistributionRates(gameId);
         (,, uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
 
-        (address winner, address loser, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+        (/*address winner*/, /*address loser*/, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
 
         winningsETH = initialEth.add(totalBetsForLosingCorner.mul(rates[4]).div(1000000)); //1,000,000 is the percentage base
         winningsKTY = (totalKTYFunds.mul(rates[4])).div(1000000); //1,000,000 is the percentage base

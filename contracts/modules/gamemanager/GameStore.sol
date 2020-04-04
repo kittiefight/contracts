@@ -6,6 +6,8 @@ import "../databases/GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import '../../authority/Guard.sol';
+import "../datetime/TimeFrame.sol";
+import "../gamemanager/Scheduler.sol";
 
 contract GameStore is Proxied, Guard {
 
@@ -14,6 +16,8 @@ contract GameStore is Proxied, Guard {
     GameVarAndFee public gameVarAndFee;
     GMGetterDB public gmGetterDB;
     HitsResolve public hitsResolve;
+    Scheduler public scheduler;
+    TimeFrame public timeFrame;
 
     struct Game {
         uint randomNum; //when pressing start
@@ -43,6 +47,8 @@ contract GameStore is Proxied, Guard {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
+        scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
+        timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
     }
 
     function lock(uint gameId) internal{
@@ -100,7 +106,9 @@ contract GameStore is Proxied, Guard {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
         (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
-        gameSettings[gameId].redemptionFee = calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);
+        gameSettings[gameId].redemptionFee = calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);        
+
+        startGameAndCalculateEpoch();
     }
 
     function updateTicketFee(uint256 gameId)
@@ -263,7 +271,25 @@ contract GameStore is Proxied, Guard {
         }
     }
 
-    function checkPerformanceHelper(uint gameId, uint gameEndTime) external returns(bool){
+    function startGameAndCalculateEpoch()
+    internal
+    {
+        //Tell scheduler to start a game
+        scheduler.startGame();
+
+        // Set new epoch when last game finalizes
+        // If now < 6 hours before the end of working days of current epoch,
+        // then this is the last game
+        // TODO: if now > 6 hours before the end of working days of current epoch,
+        // but there is no more game scheduled after this game in the current epoch,
+        // then this is the last game as well
+        uint lastEpochId = timeFrame.getLastEpochID();
+        if (!timeFrame.canStartNewGame(lastEpochId)) {
+            timeFrame.setNewEpoch();
+        }
+    }
+
+    function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
         //each time 1 minute before game ends
         uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
         
