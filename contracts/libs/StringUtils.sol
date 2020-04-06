@@ -37,7 +37,7 @@ library StringUtils {
         return string(buffer);
     }
 
-    function fromUint256(uint256 value, uint256 decimals) internal pure returns (string memory) {
+    function fromUint256(uint256 value, uint256 decimals, uint256 precision) internal pure returns (string memory) {
         if (value == 0) {
             return "0";
         }

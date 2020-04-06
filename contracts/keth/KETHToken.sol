@@ -5,10 +5,13 @@ import "../libs/openzeppelin_v2_5_0/token/ERC721/ERC721Pausable.sol";
 import "../libs/openzeppelin_v2_5_0/access/roles/MinterRole.sol";
 import "../libs/openzeppelin_v2_5_0/math/SafeMath.sol";
 import "../libs/openzeppelin_v2_5_0/drafts/Counters.sol";
+import "../libs/StringUtils.sol";
 
 contract KETHToken is ERC721Full, ERC721Pausable, MinterRole {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
+    using StringUtils for string;
+    using StringUtils for uint256;
 
     string constant NAME    = 'Kittiefight ETH';
     string constant SYMBOL  = 'KETH';
@@ -47,5 +50,14 @@ contract KETHToken is ERC721Full, ERC721Pausable, MinterRole {
 
     function incrementGeneration() public onlyMinter {
         generation.increment();
+    }
+
+    function name(uint256 tokenId) public view returns(string memory) {
+        TokenProperties memory p = properties[tokenId];
+        require(p.ethAmount > 0, "KETHToken: operator query for nonexistent token");
+        string memory gen = p.generation.fromUint256();
+        string memory lock = p.lockTime.fromUint256();
+        string memory id = tokenId.fromUint256();
+        return StringUtils.concat("G", gen).concat("_LOCK").concat(lock).concat("_").concat(id);
     }
 }
