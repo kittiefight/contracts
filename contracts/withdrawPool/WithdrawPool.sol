@@ -1,5 +1,5 @@
 /**
-* @title TimeFrame
+* @title WithdrawPool
 *
 * @author @ziweidream @Xaleee
 *
@@ -117,6 +117,12 @@ contract WithdrawPool is Proxied, Guard {
         //_;
     //}
 
+    modifier onlyActivePool(uint pool_id) {
+         require(pool_id == getActivePoolID());
+         _;
+     }
+
+
     /*                                                    MODIFIERS                                                   */
     /*                                                       END                                                      */
     /* ============================================================================================================== */
@@ -156,6 +162,11 @@ contract WithdrawPool is Proxied, Guard {
     event ReturnUnclaimedETHtoEscrow(uint256 indexed pool_id, uint256 unclaimedETH, address receiver);
     event PoolDissolved(uint256 indexed pool_id, uint256 dissolveTime);
     event NewPoolCreated(uint256 indexed newPoolId, uint256 newPoolCreationTime);
+    event GamingDelayAddedtoPool(
+        uint256 indexed _pool_id,
+        uint256 _gamingDelay,
+        uint256 newAvailableTimeForClaiming
+    );
 
     /*                                                 STAKER FUNCTIONS                                               */
     /*                                                      START                                                     */
@@ -245,6 +256,23 @@ contract WithdrawPool is Proxied, Guard {
 
         emit Pool0Set(0, now);
     }
+
+    /**
+      * @dev adds gaming delay to a pool
+      * This function should be called by GameManager when the last game
+      * in an epoch runs longer than the intended sixDayEnd
+      * @param pool_id the id of the pool
+      * @param gamingDelay gaming delay time in seconds
+      */
+     function addGamingDelayToPool(uint pool_id, uint gamingDelay)
+         public
+         onlyActivePool(pool_id)
+         onlyContract(CONTRACT_NAME_GAMEMANAGER)
+     {
+         _addGamingDelayToPool(pool_id, gamingDelay);
+     }
+
+
 
     /**
      * @dev This function is used by owner to change stakingContract's address.
@@ -368,7 +396,8 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        return timeFrame.getActiveEpochID();
+        //return timeFrame.getActiveEpochID();
+        return noOfPools.sub(1);
     }
 
     // get the initial ether available in a pool
@@ -557,6 +586,21 @@ contract WithdrawPool is Proxied, Guard {
         stakers[_staker].currentAvailablePools = stakers[_staker].currentAvailablePools > 0 ?
                                                  stakers[_staker].currentAvailablePools.sub(1) : 0;
     }
+
+    /**
+      * @dev adds gaming delay to a pool
+      * @param _pool_id the id of the pool
+      * @param _gamingDelay gaming delay time in seconds
+      */
+     function _addGamingDelayToPool(uint _pool_id, uint _gamingDelay)
+         internal
+     {
+         require(_gamingDelay > 0, "Gaming delay must be longer than 0");
+         weeklyPools[_pool_id].dateAvailable = weeklyPools[_pool_id].dateAvailable.add(_gamingDelay);
+         weeklyPools[_pool_id].dateDissolved = weeklyPools[_pool_id].dateDissolved.add(_gamingDelay);
+         emit GamingDelayAddedtoPool(_pool_id, _gamingDelay, weeklyPools[_pool_id].dateAvailable);
+     }
+
 
     // This function is too dangerous if there are too many stakers - problem :looping over a long list
     // remove a staker from a pool's list of unclaimedStakers
