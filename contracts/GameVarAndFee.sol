@@ -191,6 +191,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         rates[4] = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, ENDOWNMENT);
     }
 
+    /// @notice Gets percentage of final honeypot that is set as pool initial ether allocation
+    function getPercentageForPool() public view returns (uint256) {
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_POOL);
+    }
+
     /// @notice Gets percentage of initial honeypot that is set as kittie listing fee
     function getPercentageForListingFee() public view returns(uint256) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_LISTING_FEE);

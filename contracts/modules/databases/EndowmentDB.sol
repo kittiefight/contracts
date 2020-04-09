@@ -148,6 +148,20 @@ contract EndowmentDB is Proxied {
     return true;
   }
 
+  function returnPoolETHtoEndowment(uint256 _eth_amount)
+      external
+      onlyContract(CONTRACT_NAME_CRONJOB)
+      returns (bool)
+  {
+    uint actualFundsETH = genericDB.getUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      VAR_KEY_ACTUAL_FUNDS_ETH);
+
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH, actualFundsETH.add(_eth_amount));
+
+    return true;
+  }
+
   function getEndowmentBalance() public view
   returns (uint256 endowmentBalanceKTY, uint256 endowmentBalanceETH)  {
     endowmentBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
@@ -248,6 +262,55 @@ contract EndowmentDB is Proxied {
   return true;
   }
 
+  function setPoolIDinGame(uint _gameId, uint _poolId)
+      external
+      onlyContract(CONTRACT_NAME_GAMECREATION)
+  {
+    genericDB.setUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      keccak256(abi.encodePacked(_gameId, "poolID")),
+      _poolId
+    );
+  }
+
+  function addETHtoPool(uint _gameId, uint _eth)
+      external
+      onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+  {
+    // get total Eth availabe in the HoneyPot
+    bytes32 honeyPotEthTotalKey = keccak256(abi.encodePacked(_gameId, "ethTotal"));
+    uint256 honeyPotEthTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, honeyPotEthTotalKey);
+    genericDB.setUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      honeyPotEthTotalKey,
+      honeyPotEthTotal.sub(_eth));
+
+    // get _pool_id of the pool associated with the game with _gameId
+    uint _pool_id = getPoolID(_gameId);
+    // get previous amount of ether stored in this pool with _pool_id
+    uint prevETH = genericDB.getUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      keccak256(abi.encodePacked(_pool_id, "ETHinPool"))
+    );
+    // add _eth to the previous amount of ether in this pool
+    genericDB.setUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      keccak256(abi.encodePacked(_pool_id, "ETHinPool")),
+      prevETH.add(_eth)
+    );
+  }
+
+  function getETHinPool(uint _pool_id)
+      public
+      view
+      returns(uint)
+  {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      keccak256(abi.encodePacked(_pool_id, "ETHinPool"))
+    );
+  }
+
 
 /**
  * @dev get total debit by an a/c per game
@@ -263,6 +326,13 @@ contract EndowmentDB is Proxied {
       bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
       ethTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
       ktyTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
+  }
+
+  // get pool ID of the pool associated with a honey pot
+  function getPoolID(uint _gameId)
+      public view returns(uint poolID)
+  {
+    poolID = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "poolID")));
   }
 
 

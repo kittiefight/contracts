@@ -24,6 +24,8 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
+import "../datetime/TimeFrame.sol";
+import "../databases/EndowmentDB.sol";
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../../GameVarAndFee.sol";
@@ -158,6 +160,10 @@ contract GameCreation is Proxied, Guard {
 
         (uint initialKTY, uint initialEth) = endowmentFund.generateHoneyPot(gameId);
         gmSetterDB.setHoneypotInfo(gameId, initialKTY, initialEth);
+
+        uint poolId = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).getActiveEpochID();
+
+        EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).setPoolIDinGame(gameId, poolId);
 
         gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, gameId);
 

@@ -34,6 +34,8 @@ const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 const HoneypotAllocationAlgo = artifacts.require('HoneypotAllocationAlgo')
+const WithdrawPool = artifacts.require('WithdrawPool')
+const MockStaking = artifacts.require('MockStaking')
 
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
@@ -73,7 +75,8 @@ const WINNING_KITTIE = 300000  // 30%
 const TOP_BETTOR = 200000 // 20%
 const SECOND_RUNNER_UP = 100000 // 10%
 const OTHER_BETTORS = 250000 // 25%
-const ENDOWNMENT = 150000 //15%
+const ENDOWNMENT = 100000 //10%
+const PERCENTAGE_FOR_POOL = 50000 // 5%
 
 //Fee Percentages - fee percentages are multiplied by 1000 instead of 100
 // to ensure that the input values are integers
@@ -130,6 +133,8 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(RarityCalculator))
         .then(() => deployer.deploy(EndowmentFund))
         .then(() => deployer.deploy(KittieHELL))
+        .then(() => deployer.deploy(MockStaking))
+        .then(() => deployer.deploy(WithdrawPool))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address)
@@ -166,6 +171,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('KittieHell', KittieHELL.address)
             await proxy.addContract('KittieHellDB', KittieHellDB.address)
             await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
+            await proxy.addContract('WithdrawPool', WithdrawPool.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -212,6 +218,12 @@ module.exports = (deployer, network, accounts) => {
             kittieHELL = await KittieHELL.deployed()
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
 
+            // WithdrawPool - Pool for SuperDao token stakers
+            withdrawPool = await WithdrawPool.deployed()
+            
+            // staking - a mock contract of Aragon's staking contract
+            staking = await MockStaking.deployed()
+
             //ESCROW
             escrow = await Escrow.deployed()
 
@@ -241,6 +253,7 @@ module.exports = (deployer, network, accounts) => {
             await cronJobTarget.setProxy(proxy.address);
             await freezeInfo.setProxy(proxy.address);
             await honeypotAllocationAlgo.setProxy(proxy.address)
+            await withdrawPool.setProxy(proxy.address)
 
             console.log('\nInitializing contracts...');
             await gameStore.initialize()
@@ -255,6 +268,8 @@ module.exports = (deployer, network, accounts) => {
             await kittieHellDB.setKittieHELL()
             await kittieHELL.initialize()
             await hitsResolve.initialize()
+            await withdrawPool.initialize(MockStaking.address, SuperDaoToken.address)
+            await staking.initialize(SuperDaoToken.address)
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             await register.addSuperAdmin(accounts[0])
@@ -275,7 +290,7 @@ module.exports = (deployer, network, accounts) => {
                 'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
                 'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
                 'percentageForBettingFee', 'usdKTYPrice', 'requiredKittieSacrificeNum',
-                'percentageHoneypotAllocationKTY'
+                'percentageHoneypotAllocationKTY', 'percentageForPool'
             ];
 
             let bytesNames = [];
@@ -288,7 +303,7 @@ module.exports = (deployer, network, accounts) => {
                 HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
                 OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
                 PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM,
-                PERCENTAGE_HONEYPOT_ALLOCATION_KTY
+                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, PERCENTAGE_FOR_POOL
             ];
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {

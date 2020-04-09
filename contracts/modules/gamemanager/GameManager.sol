@@ -24,6 +24,7 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
+import "../datetime/TimeFrame.sol";
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
@@ -38,7 +39,6 @@ import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 import "./GameCreation.sol";
-import "../datetime/TimeFrame.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -52,7 +52,7 @@ contract GameManager is Proxied, Guard {
     KittieHell public kittieHELL;
     GameStore public gameStore;
     GameCreation public gameCreation;
-    TimeFrame public timeFrame;
+    //TimeFrame public timeFrame;
  
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
@@ -83,7 +83,7 @@ contract GameManager is Proxied, Guard {
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
-        timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
+       // timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
     }
 
     /**
@@ -301,6 +301,9 @@ contract GameManager is Proxied, Guard {
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
+        (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
+        endowmentFund.addETHtoPool(gameId, totalETHinHoneypot);
+
         // update kittie redemption fee dynamically to a percentage of the final honey pot
         gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
 
@@ -318,9 +321,10 @@ contract GameManager is Proxied, Guard {
         // TODO: if now > 6 hours before the end of working days of current epoch,
         // but there is no more game scheduled after this game in the current epoch,
         // then this is the last game as well
-        uint lastEpochId = timeFrame.getLastEpochID();
-        if (!timeFrame.canStartNewGame(lastEpochId)) {
-            timeFrame.setNewEpoch();
+        //timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
+        uint lastEpochId = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).getLastEpochID();
+        if (!TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).canStartNewGame(lastEpochId)) {
+            TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).setNewEpoch();
         }
 
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);

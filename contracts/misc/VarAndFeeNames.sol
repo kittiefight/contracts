@@ -42,4 +42,5 @@ contract VarAndFeeNames {
     bytes32 constant USD_KTY_PRICE          = keccak256(abi.encodePacked(TABLE_NAME, "usdKTYPrice"));
     bytes32 constant REQUIRED_KITTIE_SACRIFICE_NUM = keccak256(abi.encodePacked(TABLE_NAME, "requiredKittieSacrificeNum"));
     bytes32 constant PERCENTAGE_HONEYPOT_ALLOCATION_KTY = keccak256(abi.encodePacked(TABLE_NAME, "percentageHoneypotAllocationKTY"));
+    bytes32 constant PERCENTAGE_FOR_POOL    = keccak256(abi.encodePacked(TABLE_NAME, "percentageForPool"));
 }
