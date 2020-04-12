@@ -7,13 +7,13 @@ import "../libs/openzeppelin_v2_5_0/math/SafeMath.sol";
 import "../libs/openzeppelin_v2_5_0/drafts/Counters.sol";
 import "../libs/StringUtils.sol";
 
-contract KETHToken is ERC721Full, ERC721Pausable, MinterRole {
+contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     using StringUtils for string;
     using StringUtils for uint256;
 
-    string constant NAME    = 'Kittiefight ETH';
+    string constant NAME    = 'Kittiefight Ethie';
     string constant SYMBOL  = 'KETH';
 
     struct TokenProperties {
@@ -31,7 +31,14 @@ contract KETHToken is ERC721Full, ERC721Pausable, MinterRole {
         nextTokenId.increment();    // First token should have tokenId = 1;
     }
 
-    function mint(address to, uint256 ethAmount, uint256 lockTime) public onlyMinter returns (bool) {
+    /**
+     * @notice Mint a new Ethie token
+     * @param to Owner of a new token
+     * @param ethAmount Ether value of the new token
+     * @param lockTime 
+     * @return id of the new token
+     */
+    function mint(address to, uint256 ethAmount, uint256 lockTime) public onlyMinter returns (uint256) {
         uint256 tokenId = nextTokenId.current();
         nextTokenId.increment();
         properties[tokenId] = TokenProperties({
@@ -40,6 +47,7 @@ contract KETHToken is ERC721Full, ERC721Pausable, MinterRole {
             lockTime: lockTime
         });
         _mint(to, tokenId);
+        return tokenId;
     }
 
     function burn(uint256 tokenId) public {
@@ -54,7 +62,7 @@ contract KETHToken is ERC721Full, ERC721Pausable, MinterRole {
 
     function name(uint256 tokenId) public view returns(string memory) {
         TokenProperties memory p = properties[tokenId];
-        require(p.ethAmount > 0, "KETHToken: operator query for nonexistent token");
+        require(p.ethAmount > 0, "KETHToken: name query for nonexistent token");
         string memory gen = p.generation.fromUint256();
         string memory lock = p.lockTime.fromUint256();
         string memory id = tokenId.fromUint256();
