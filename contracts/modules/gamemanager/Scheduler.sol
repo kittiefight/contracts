@@ -31,7 +31,6 @@ import "./GameCreation.sol";
 import "../../interfaces/ERC721.sol";
 import "../kittieHELL/KittieHell.sol";
 
-
 /**
  * @title Scheduler
  * @dev Responsible for game Schedule
@@ -133,7 +132,7 @@ contract Scheduler is Proxied {
 
         if((gameVarAndFee.getRequiredNumberMatches().mul(2)) == noOfKittiesListed)
             matchKitties();
-        else if(immediateStart && noOfKittiesListed >=2) {
+        else if(immediateStart && noOfKittiesListed >= 2) {
             createFlashGame();
             immediateStart = false;
         }
@@ -283,7 +282,7 @@ contract Scheduler is Proxied {
             gameList[headGame].playerBlack,
             gameList[headGame].kittyRed,
             gameList[headGame].kittyBlack,
-            now
+            gameVarAndFee.getGameTimes().add(now)
         );
 
         headGame = gameList[headGame].next;

@@ -8,6 +8,7 @@ import "../algorithm/HitsResolveAlgo.sol";
 import '../../authority/Guard.sol';
 import "../datetime/TimeFrame.sol";
 import "../gamemanager/Scheduler.sol";
+import "../../CronJob.sol";
 
 contract GameStore is Proxied, Guard {
 
@@ -274,19 +275,29 @@ contract GameStore is Proxied, Guard {
     function startGameAndCalculateEpoch()
     internal
     {
-        //Tell scheduler to start a game
-        scheduler.startGame();
-
-        // Set new epoch when last game finalizes
-        // If now < 6 hours before the end of working days of current epoch,
-        // then this is the last game
-        // TODO: if now > 6 hours before the end of working days of current epoch,
-        // but there is no more game scheduled after this game in the current epoch,
-        // then this is the last game as well
-        uint lastEpochId = timeFrame.getLastEpochID();
-        if (!timeFrame.canStartNewGame(lastEpochId)) {
-            timeFrame.setNewEpoch();
+        uint256 lastEpochId = timeFrame.getLastEpochID();
+        uint256 currentEpochEndTime = timeFrame._epochEndTime(lastEpochId);
+        if(currentEpochEndTime.sub(60 * 60 * 30) <= gameVarAndFee.getGameTimes().add(now)) {
+            CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+            cron.addCronJob(
+                CONTRACT_NAME_GAMESTORE,
+                currentEpochEndTime,
+                abi.encodeWithSignature("createGameAndEpoch()")
+            );
         }
+        else
+            scheduler.startGame();
+    }
+
+    /**
+    * @dev added to cronjob : Creates new Game and New Epoch
+    */
+    function createGameAndEpoch()
+    external
+    onlyContract(CONTRACT_NAME_CRONJOB)
+    {
+        timeFrame.setNewEpoch();
+        scheduler.startGame();
     }
 
     function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){

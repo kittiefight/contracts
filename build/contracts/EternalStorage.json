@@ -4,22 +4,22 @@
   "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"This contract holds all the necessary state variables to carry out the storage of any contract.\",\"methods\":{},\"title\":\"EternalStorage\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/modules/databases/EternalStorage.sol\":\"EternalStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/libs/LinkedListAddrLib.sol\":{\"keccak256\":\"0xf56efbe8afb84a9cfec4503b4d77dcf9f744fba6b31eb744ac0e369bff29f6f5\",\"urls\":[\"bzz-raw://cebd2ce9c665ce8398b00a5420e6d8ac72f8743e0d0824232486f328086ce603\",\"dweb:/ipfs/QmScwTwT6mD5rKzhBYhdLzrhu6S878jZ9xxFADLFMGQz5X\"]},\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/libs/LinkedListLib.sol\":{\"keccak256\":\"0x18c6268f2a305ae1d3f828863395370c14e2b303e5d124101cd2b77a95317868\",\"urls\":[\"bzz-raw://435c103b51392363f4bfff66afdc81067c2d7ef62a1b187e60afd1e57f4bb954\",\"dweb:/ipfs/QmXTa3oPrxAamfY6Sn14jhPaF9doU18iBnNTGnkMXEyg2y\"]},\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/modules/databases/EternalStorage.sol\":{\"keccak256\":\"0x68f8c00007a50ea73c6750d887b87420cdeb8af6f11537674263a69bc16a7d46\",\"urls\":[\"bzz-raw://6c3f1303bd474b67097c656e553d5e340030e014a01a5d798bd7f4f40568d722\",\"dweb:/ipfs/QmWY9ejRs3UjwvcrvmymSzBCu39LHYA4Ng4iFHwozMUesj\"]}},\"version\":1}",
   "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820e096e1e718eba5822b7e652d320ef291988b886db56dcc9b2f6a1379a3271e0c64736f6c63430005110032",
   "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820e096e1e718eba5822b7e652d320ef291988b886db56dcc9b2f6a1379a3271e0c64736f6c63430005110032",
-  "sourceMap": "908:504:52:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;908:504:52;;;;;;;",
-  "deployedSourceMap": "908:504:52:-;;;;;",
+  "sourceMap": "908:504:80:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;908:504:80;;;;;;;",
+  "deployedSourceMap": "908:504:80:-;;;;;",
   "source": "// This program is free software: you can redistribute it and/or modify\r\n// it under the terms of the GNU General Public License as published by\r\n// the Free Software Foundation, either version 3 of the License, or\r\n// (at your option) any later version.\r\n\r\n// This program is distributed in the hope that it will be useful,\r\n// but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n// GNU General Public License for more details.\r\n\r\n// You should have received a copy of the GNU General Public License\r\n// along with this program.  If not, see <http://www.gnu.org/licenses/>.\r\npragma solidity ^0.5.5;\r\n\r\nimport \"../../libs/LinkedListLib.sol\";\r\nimport \"../../libs/LinkedListAddrLib.sol\";\r\n\r\n/**\r\n * @title EternalStorage\r\n * @dev This contract holds all the necessary state variables to carry out the storage of any contract.\r\n */\r\ncontract EternalStorage {\r\n  mapping(bytes32 => uint256) internal uintStorage;\r\n  mapping(bytes32 => string) internal stringStorage;\r\n  mapping(bytes32 => address) internal addressStorage;\r\n  mapping(bytes32 => bytes) internal bytesStorage;\r\n  mapping(bytes32 => bool) internal boolStorage;\r\n  mapping(bytes32 => int256) internal intStorage;\r\n  mapping(bytes32 => LinkedListLib.LinkedList) internal linkedListStorage;\r\n  mapping(bytes32 => LinkedListAddrLib.LinkedList) internal linkedListAddrStorage;\r\n}\r\n",
   "sourcePath": "C:\\Users\\Alex\\Desktop\\MyProjects\\alpha\\contracts\\modules\\databases\\EternalStorage.sol",
   "ast": {
     "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/modules/databases/EternalStorage.sol",
     "exportedSymbols": {
       "EternalStorage": [
-        12623
+        15750
       ]
     },
-    "id": 12624,
+    "id": 15751,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12588,
+        "id": 15715,
         "literals": [
           "solidity",
           "^",
@@ -27,27 +27,27 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "654:23:52"
+        "src": "654:23:80"
       },
       {
         "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/libs/LinkedListLib.sol",
         "file": "../../libs/LinkedListLib.sol",
-        "id": 12589,
+        "id": 15716,
         "nodeType": "ImportDirective",
-        "scope": 12624,
-        "sourceUnit": 4978,
-        "src": "681:38:52",
+        "scope": 15751,
+        "sourceUnit": 5184,
+        "src": "681:38:80",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/libs/LinkedListAddrLib.sol",
         "file": "../../libs/LinkedListAddrLib.sol",
-        "id": 12590,
+        "id": 15717,
         "nodeType": "ImportDirective",
-        "scope": 12624,
-        "sourceUnit": 4492,
-        "src": "721:42:52",
+        "scope": 15751,
+        "sourceUnit": 4698,
+        "src": "721:42:80",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -57,20 +57,20 @@
         "contractKind": "contract",
         "documentation": "@title EternalStorage\n@dev This contract holds all the necessary state variables to carry out the storage of any contract.",
         "fullyImplemented": true,
-        "id": 12623,
+        "id": 15750,
         "linearizedBaseContracts": [
-          12623
+          15750
         ],
         "name": "EternalStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 12594,
+            "id": 15721,
             "name": "uintStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "937:48:52",
+            "scope": 15750,
+            "src": "937:48:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -78,28 +78,28 @@
               "typeString": "mapping(bytes32 => uint256)"
             },
             "typeName": {
-              "id": 12593,
+              "id": 15720,
               "keyType": {
-                "id": 12591,
+                "id": 15718,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "945:7:52",
+                "src": "945:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "937:27:52",
+              "src": "937:27:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_uint256_$",
                 "typeString": "mapping(bytes32 => uint256)"
               },
               "valueType": {
-                "id": 12592,
+                "id": 15719,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "956:7:52",
+                "src": "956:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
@@ -111,11 +111,11 @@
           },
           {
             "constant": false,
-            "id": 12598,
+            "id": 15725,
             "name": "stringStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "990:49:52",
+            "scope": 15750,
+            "src": "990:49:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -123,28 +123,28 @@
               "typeString": "mapping(bytes32 => string)"
             },
             "typeName": {
-              "id": 12597,
+              "id": 15724,
               "keyType": {
-                "id": 12595,
+                "id": 15722,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "998:7:52",
+                "src": "998:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "990:26:52",
+              "src": "990:26:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_string_storage_$",
                 "typeString": "mapping(bytes32 => string)"
               },
               "valueType": {
-                "id": 12596,
+                "id": 15723,
                 "name": "string",
                 "nodeType": "ElementaryTypeName",
-                "src": "1009:6:52",
+                "src": "1009:6:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_string_storage_ptr",
                   "typeString": "string"
@@ -156,11 +156,11 @@
           },
           {
             "constant": false,
-            "id": 12602,
+            "id": 15729,
             "name": "addressStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1044:51:52",
+            "scope": 15750,
+            "src": "1044:51:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -168,28 +168,28 @@
               "typeString": "mapping(bytes32 => address)"
             },
             "typeName": {
-              "id": 12601,
+              "id": 15728,
               "keyType": {
-                "id": 12599,
+                "id": 15726,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1052:7:52",
+                "src": "1052:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1044:27:52",
+              "src": "1044:27:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_address_$",
                 "typeString": "mapping(bytes32 => address)"
               },
               "valueType": {
-                "id": 12600,
+                "id": 15727,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
-                "src": "1063:7:52",
+                "src": "1063:7:80",
                 "stateMutability": "nonpayable",
                 "typeDescriptions": {
                   "typeIdentifier": "t_address",
@@ -202,11 +202,11 @@
           },
           {
             "constant": false,
-            "id": 12606,
+            "id": 15733,
             "name": "bytesStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1100:47:52",
+            "scope": 15750,
+            "src": "1100:47:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -214,28 +214,28 @@
               "typeString": "mapping(bytes32 => bytes)"
             },
             "typeName": {
-              "id": 12605,
+              "id": 15732,
               "keyType": {
-                "id": 12603,
+                "id": 15730,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1108:7:52",
+                "src": "1108:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1100:25:52",
+              "src": "1100:25:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_bytes_storage_$",
                 "typeString": "mapping(bytes32 => bytes)"
               },
               "valueType": {
-                "id": 12604,
+                "id": 15731,
                 "name": "bytes",
                 "nodeType": "ElementaryTypeName",
-                "src": "1119:5:52",
+                "src": "1119:5:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes_storage_ptr",
                   "typeString": "bytes"
@@ -247,11 +247,11 @@
           },
           {
             "constant": false,
-            "id": 12610,
+            "id": 15737,
             "name": "boolStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1152:45:52",
+            "scope": 15750,
+            "src": "1152:45:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -259,28 +259,28 @@
               "typeString": "mapping(bytes32 => bool)"
             },
             "typeName": {
-              "id": 12609,
+              "id": 15736,
               "keyType": {
-                "id": 12607,
+                "id": 15734,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1160:7:52",
+                "src": "1160:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1152:24:52",
+              "src": "1152:24:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
                 "typeString": "mapping(bytes32 => bool)"
               },
               "valueType": {
-                "id": 12608,
+                "id": 15735,
                 "name": "bool",
                 "nodeType": "ElementaryTypeName",
-                "src": "1171:4:52",
+                "src": "1171:4:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bool",
                   "typeString": "bool"
@@ -292,11 +292,11 @@
           },
           {
             "constant": false,
-            "id": 12614,
+            "id": 15741,
             "name": "intStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1202:46:52",
+            "scope": 15750,
+            "src": "1202:46:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -304,28 +304,28 @@
               "typeString": "mapping(bytes32 => int256)"
             },
             "typeName": {
-              "id": 12613,
+              "id": 15740,
               "keyType": {
-                "id": 12611,
+                "id": 15738,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1210:7:52",
+                "src": "1210:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1202:26:52",
+              "src": "1202:26:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_int256_$",
                 "typeString": "mapping(bytes32 => int256)"
               },
               "valueType": {
-                "id": 12612,
+                "id": 15739,
                 "name": "int256",
                 "nodeType": "ElementaryTypeName",
-                "src": "1221:6:52",
+                "src": "1221:6:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_int256",
                   "typeString": "int256"
@@ -337,44 +337,44 @@
           },
           {
             "constant": false,
-            "id": 12618,
+            "id": 15745,
             "name": "linkedListStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1253:71:52",
+            "scope": 15750,
+            "src": "1253:71:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4512_storage_$",
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4718_storage_$",
               "typeString": "mapping(bytes32 => struct LinkedListLib.LinkedList)"
             },
             "typeName": {
-              "id": 12617,
+              "id": 15744,
               "keyType": {
-                "id": 12615,
+                "id": 15742,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1261:7:52",
+                "src": "1261:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1253:44:52",
+              "src": "1253:44:80",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4512_storage_$",
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4718_storage_$",
                 "typeString": "mapping(bytes32 => struct LinkedListLib.LinkedList)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 12616,
+                "id": 15743,
                 "name": "LinkedListLib.LinkedList",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 4512,
-                "src": "1272:24:52",
+                "referencedDeclaration": 4718,
+                "src": "1272:24:80",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_LinkedList_$4512_storage_ptr",
+                  "typeIdentifier": "t_struct$_LinkedList_$4718_storage_ptr",
                   "typeString": "struct LinkedListLib.LinkedList"
                 }
               }
@@ -384,44 +384,44 @@
           },
           {
             "constant": false,
-            "id": 12622,
+            "id": 15749,
             "name": "linkedListAddrStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1329:79:52",
+            "scope": 15750,
+            "src": "1329:79:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4012_storage_$",
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4218_storage_$",
               "typeString": "mapping(bytes32 => struct LinkedListAddrLib.LinkedList)"
             },
             "typeName": {
-              "id": 12621,
+              "id": 15748,
               "keyType": {
-                "id": 12619,
+                "id": 15746,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1337:7:52",
+                "src": "1337:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1329:48:52",
+              "src": "1329:48:80",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4012_storage_$",
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4218_storage_$",
                 "typeString": "mapping(bytes32 => struct LinkedListAddrLib.LinkedList)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 12620,
+                "id": 15747,
                 "name": "LinkedListAddrLib.LinkedList",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 4012,
-                "src": "1348:28:52",
+                "referencedDeclaration": 4218,
+                "src": "1348:28:80",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_LinkedList_$4012_storage_ptr",
+                  "typeIdentifier": "t_struct$_LinkedList_$4218_storage_ptr",
                   "typeString": "struct LinkedListAddrLib.LinkedList"
                 }
               }
@@ -430,24 +430,24 @@
             "visibility": "internal"
           }
         ],
-        "scope": 12624,
-        "src": "908:504:52"
+        "scope": 15751,
+        "src": "908:504:80"
       }
     ],
-    "src": "654:760:52"
+    "src": "654:760:80"
   },
   "legacyAST": {
     "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/modules/databases/EternalStorage.sol",
     "exportedSymbols": {
       "EternalStorage": [
-        12623
+        15750
       ]
     },
-    "id": 12624,
+    "id": 15751,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 12588,
+        "id": 15715,
         "literals": [
           "solidity",
           "^",
@@ -455,27 +455,27 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "654:23:52"
+        "src": "654:23:80"
       },
       {
         "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/libs/LinkedListLib.sol",
         "file": "../../libs/LinkedListLib.sol",
-        "id": 12589,
+        "id": 15716,
         "nodeType": "ImportDirective",
-        "scope": 12624,
-        "sourceUnit": 4978,
-        "src": "681:38:52",
+        "scope": 15751,
+        "sourceUnit": 5184,
+        "src": "681:38:80",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/libs/LinkedListAddrLib.sol",
         "file": "../../libs/LinkedListAddrLib.sol",
-        "id": 12590,
+        "id": 15717,
         "nodeType": "ImportDirective",
-        "scope": 12624,
-        "sourceUnit": 4492,
-        "src": "721:42:52",
+        "scope": 15751,
+        "sourceUnit": 4698,
+        "src": "721:42:80",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -485,20 +485,20 @@
         "contractKind": "contract",
         "documentation": "@title EternalStorage\n@dev This contract holds all the necessary state variables to carry out the storage of any contract.",
         "fullyImplemented": true,
-        "id": 12623,
+        "id": 15750,
         "linearizedBaseContracts": [
-          12623
+          15750
         ],
         "name": "EternalStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 12594,
+            "id": 15721,
             "name": "uintStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "937:48:52",
+            "scope": 15750,
+            "src": "937:48:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -506,28 +506,28 @@
               "typeString": "mapping(bytes32 => uint256)"
             },
             "typeName": {
-              "id": 12593,
+              "id": 15720,
               "keyType": {
-                "id": 12591,
+                "id": 15718,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "945:7:52",
+                "src": "945:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "937:27:52",
+              "src": "937:27:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_uint256_$",
                 "typeString": "mapping(bytes32 => uint256)"
               },
               "valueType": {
-                "id": 12592,
+                "id": 15719,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "956:7:52",
+                "src": "956:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
@@ -539,11 +539,11 @@
           },
           {
             "constant": false,
-            "id": 12598,
+            "id": 15725,
             "name": "stringStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "990:49:52",
+            "scope": 15750,
+            "src": "990:49:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -551,28 +551,28 @@
               "typeString": "mapping(bytes32 => string)"
             },
             "typeName": {
-              "id": 12597,
+              "id": 15724,
               "keyType": {
-                "id": 12595,
+                "id": 15722,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "998:7:52",
+                "src": "998:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "990:26:52",
+              "src": "990:26:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_string_storage_$",
                 "typeString": "mapping(bytes32 => string)"
               },
               "valueType": {
-                "id": 12596,
+                "id": 15723,
                 "name": "string",
                 "nodeType": "ElementaryTypeName",
-                "src": "1009:6:52",
+                "src": "1009:6:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_string_storage_ptr",
                   "typeString": "string"
@@ -584,11 +584,11 @@
           },
           {
             "constant": false,
-            "id": 12602,
+            "id": 15729,
             "name": "addressStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1044:51:52",
+            "scope": 15750,
+            "src": "1044:51:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -596,28 +596,28 @@
               "typeString": "mapping(bytes32 => address)"
             },
             "typeName": {
-              "id": 12601,
+              "id": 15728,
               "keyType": {
-                "id": 12599,
+                "id": 15726,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1052:7:52",
+                "src": "1052:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1044:27:52",
+              "src": "1044:27:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_address_$",
                 "typeString": "mapping(bytes32 => address)"
               },
               "valueType": {
-                "id": 12600,
+                "id": 15727,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
-                "src": "1063:7:52",
+                "src": "1063:7:80",
                 "stateMutability": "nonpayable",
                 "typeDescriptions": {
                   "typeIdentifier": "t_address",
@@ -630,11 +630,11 @@
           },
           {
             "constant": false,
-            "id": 12606,
+            "id": 15733,
             "name": "bytesStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1100:47:52",
+            "scope": 15750,
+            "src": "1100:47:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -642,28 +642,28 @@
               "typeString": "mapping(bytes32 => bytes)"
             },
             "typeName": {
-              "id": 12605,
+              "id": 15732,
               "keyType": {
-                "id": 12603,
+                "id": 15730,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1108:7:52",
+                "src": "1108:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1100:25:52",
+              "src": "1100:25:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_bytes_storage_$",
                 "typeString": "mapping(bytes32 => bytes)"
               },
               "valueType": {
-                "id": 12604,
+                "id": 15731,
                 "name": "bytes",
                 "nodeType": "ElementaryTypeName",
-                "src": "1119:5:52",
+                "src": "1119:5:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes_storage_ptr",
                   "typeString": "bytes"
@@ -675,11 +675,11 @@
           },
           {
             "constant": false,
-            "id": 12610,
+            "id": 15737,
             "name": "boolStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1152:45:52",
+            "scope": 15750,
+            "src": "1152:45:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -687,28 +687,28 @@
               "typeString": "mapping(bytes32 => bool)"
             },
             "typeName": {
-              "id": 12609,
+              "id": 15736,
               "keyType": {
-                "id": 12607,
+                "id": 15734,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1160:7:52",
+                "src": "1160:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1152:24:52",
+              "src": "1152:24:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
                 "typeString": "mapping(bytes32 => bool)"
               },
               "valueType": {
-                "id": 12608,
+                "id": 15735,
                 "name": "bool",
                 "nodeType": "ElementaryTypeName",
-                "src": "1171:4:52",
+                "src": "1171:4:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bool",
                   "typeString": "bool"
@@ -720,11 +720,11 @@
           },
           {
             "constant": false,
-            "id": 12614,
+            "id": 15741,
             "name": "intStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1202:46:52",
+            "scope": 15750,
+            "src": "1202:46:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -732,28 +732,28 @@
               "typeString": "mapping(bytes32 => int256)"
             },
             "typeName": {
-              "id": 12613,
+              "id": 15740,
               "keyType": {
-                "id": 12611,
+                "id": 15738,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1210:7:52",
+                "src": "1210:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1202:26:52",
+              "src": "1202:26:80",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_bytes32_$_t_int256_$",
                 "typeString": "mapping(bytes32 => int256)"
               },
               "valueType": {
-                "id": 12612,
+                "id": 15739,
                 "name": "int256",
                 "nodeType": "ElementaryTypeName",
-                "src": "1221:6:52",
+                "src": "1221:6:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_int256",
                   "typeString": "int256"
@@ -765,44 +765,44 @@
           },
           {
             "constant": false,
-            "id": 12618,
+            "id": 15745,
             "name": "linkedListStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1253:71:52",
+            "scope": 15750,
+            "src": "1253:71:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4512_storage_$",
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4718_storage_$",
               "typeString": "mapping(bytes32 => struct LinkedListLib.LinkedList)"
             },
             "typeName": {
-              "id": 12617,
+              "id": 15744,
               "keyType": {
-                "id": 12615,
+                "id": 15742,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1261:7:52",
+                "src": "1261:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1253:44:52",
+              "src": "1253:44:80",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4512_storage_$",
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4718_storage_$",
                 "typeString": "mapping(bytes32 => struct LinkedListLib.LinkedList)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 12616,
+                "id": 15743,
                 "name": "LinkedListLib.LinkedList",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 4512,
-                "src": "1272:24:52",
+                "referencedDeclaration": 4718,
+                "src": "1272:24:80",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_LinkedList_$4512_storage_ptr",
+                  "typeIdentifier": "t_struct$_LinkedList_$4718_storage_ptr",
                   "typeString": "struct LinkedListLib.LinkedList"
                 }
               }
@@ -812,44 +812,44 @@
           },
           {
             "constant": false,
-            "id": 12622,
+            "id": 15749,
             "name": "linkedListAddrStorage",
             "nodeType": "VariableDeclaration",
-            "scope": 12623,
-            "src": "1329:79:52",
+            "scope": 15750,
+            "src": "1329:79:80",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4012_storage_$",
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4218_storage_$",
               "typeString": "mapping(bytes32 => struct LinkedListAddrLib.LinkedList)"
             },
             "typeName": {
-              "id": 12621,
+              "id": 15748,
               "keyType": {
-                "id": 12619,
+                "id": 15746,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
-                "src": "1337:7:52",
+                "src": "1337:7:80",
                 "typeDescriptions": {
                   "typeIdentifier": "t_bytes32",
                   "typeString": "bytes32"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1329:48:52",
+              "src": "1329:48:80",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4012_storage_$",
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_LinkedList_$4218_storage_$",
                 "typeString": "mapping(bytes32 => struct LinkedListAddrLib.LinkedList)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 12620,
+                "id": 15747,
                 "name": "LinkedListAddrLib.LinkedList",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 4012,
-                "src": "1348:28:52",
+                "referencedDeclaration": 4218,
+                "src": "1348:28:80",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_LinkedList_$4012_storage_ptr",
+                  "typeIdentifier": "t_struct$_LinkedList_$4218_storage_ptr",
                   "typeString": "struct LinkedListAddrLib.LinkedList"
                 }
               }
@@ -858,11 +858,11 @@
             "visibility": "internal"
           }
         ],
-        "scope": 12624,
-        "src": "908:504:52"
+        "scope": 15751,
+        "src": "908:504:80"
       }
     ],
-    "src": "654:760:52"
+    "src": "654:760:80"
   },
   "compiler": {
     "name": "solc",
@@ -870,7 +870,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.11",
-  "updatedAt": "2020-04-04T12:17:59.591Z",
+  "updatedAt": "2020-04-12T11:25:27.917Z",
   "devdoc": {
     "details": "This contract holds all the necessary state variables to carry out the storage of any contract.",
     "methods": {},
