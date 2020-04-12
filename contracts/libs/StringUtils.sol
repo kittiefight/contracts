@@ -38,21 +38,41 @@ library StringUtils {
     }
 
     function fromUint256(uint256 value, uint256 decimals, uint256 precision) internal pure returns (string memory) {
-        if (value == 0) {
-            return "0";
-        }
+        require(precision <= decimals, "StringUtils: incorrect precision");
+        if (value == 0) return "0";
         uint256 temp = value;
         uint256 digits;
         while (temp != 0) {
             digits++;
             temp /= 10;
         }
-        bytes memory buffer = new bytes(digits);
-        uint256 index = digits - 1;
-        temp = value;
+        if(digits <= decimals) {
+            digits = decimals+2; //add "0."
+        }else{
+            digits = digits + 1; //add "."
+        }
+        uint256 truncateDecimals = decimals - precision;
+        uint256 bufferLen = digits-truncateDecimals;
+        uint256 dotIndex = bufferLen-precision-1;
+        bytes memory buffer = new bytes(bufferLen);
+        uint256 index = bufferLen;
+        temp = value / 10**truncateDecimals;
         while (temp != 0) {
-            buffer[index--] = byte(uint8(48 + temp % 10));
+            index--;
+            if(index == dotIndex) {
+                buffer[index] = '.';
+                index--;
+            }
+            buffer[index] = byte(uint8(48 + temp % 10));
             temp /= 10;
+        }
+        while(index > 0) {
+            index--;
+            if(index == dotIndex) {
+                buffer[index] = '.';
+            }else{
+                buffer[index] = '0'; 
+            }
         }
         return string(buffer);
     }

@@ -35,7 +35,7 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
      * @notice Mint a new Ethie token
      * @param to Owner of a new token
      * @param ethAmount Ether value of the new token
-     * @param lockTime 
+     * @param lockTime Lock time
      * @return id of the new token
      */
     function mint(address to, uint256 ethAmount, uint256 lockTime) public onlyMinter returns (uint256) {
