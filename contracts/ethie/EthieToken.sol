@@ -51,7 +51,7 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
     }
 
     function burn(uint256 tokenId) public {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "KETHToken: caller is not owner nor approved");
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "EthieToken: caller is not owner nor approved");
         //TODO return ETH
         _burn(tokenId);
     }
@@ -62,10 +62,10 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
 
     function name(uint256 tokenId) public view returns(string memory) {
         TokenProperties memory p = properties[tokenId];
-        require(p.ethAmount > 0, "KETHToken: name query for nonexistent token");
+        require(p.ethAmount > 0, "EthieToken: name query for nonexistent token");
+        string memory eth = p.ethAmount.fromUint256(18, 4);
         string memory gen = p.generation.fromUint256();
         string memory lock = p.lockTime.fromUint256();
-        string memory id = tokenId.fromUint256();
-        return StringUtils.concat("G", gen).concat("_LOCK").concat(lock).concat("_").concat(id);
+        return StringUtils.concat(eth,"ETH").concat("_G").concat(gen).concat("_LOCK").concat(lock).concat("_").concat(tokenId.fromUint256());
     }
 }
