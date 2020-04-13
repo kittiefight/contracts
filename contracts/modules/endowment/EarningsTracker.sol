@@ -123,6 +123,10 @@ contract EarningsTracker is Proxied, Guard {
         address currentOwner = ethieToken.ownerOf(_ethieTokenID);
         require(currentOwner == msg.sender);
 
+        uint256 lockTime = now.sub(ethieTokens[_ethieTokenID].lockedAt);
+        require(lockTime >= ethieTokens[_ethieTokenID].lockTime,
+                "The lock time limit for this token has not been reached yet");
+
         // require this token had not been burnt already
         require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
@@ -131,7 +135,6 @@ contract EarningsTracker is Proxied, Guard {
                 "Incorrect amount of KTY payment for burning Ethie token");
         
         uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
-        uint256 lockTime = ethieTokens[_ethieTokenID].lockTime;
         uint256 generation = ethieTokens[_ethieTokenID].generation;
         // burn KETH NFT
         _burn(_ethieTokenID);
