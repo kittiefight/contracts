@@ -1,7 +1,7 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
-import "../../authority/Guard.sol";
+import '../../authority/Guard.sol';
 import '../../libs/SafeMath.sol';
 import '../../ethie/EthieToken.sol';
 import '../datetime/TimeFrame.sol';
@@ -13,7 +13,7 @@ contract EarningsTracker is Proxied, Guard {
     // Contract variables
     EthieToken public ethieToken;
     TimeFrame public timeFrame;
-    EndowmentFund public endowmentFund; 
+    EndowmentFund public endowmentFund;
 
     // current funding limit - this funding limit determines the generation
     // this variable can be read by public, but can only be set by Admin
@@ -24,15 +24,6 @@ contract EarningsTracker is Proxied, Guard {
 
     uint256 constant WEEK = 7 * 24 * 60 * 60;
 
-    /*struct Funds {
-        uint256 generation;    // the generation of this funds, between number 0 and 6
-        uint256 ethValue;      // the funder's current funding balance (ether deposited - ether withdrawal)
-        uint256 lockedAt;      // the unix time at which this funds is locked
-        uint256 lockTime;      // lock duration
-        bool tokenBurnt;       // true if this token has been burnt
-        uint256 tokenBurntAt;  // the time when this token was burnt
-    }*/
-
     struct NFT {
         uint256 originalOwner; // the owner of this token at the time of minting
         uint256 generation;    // the generation of this funds, between number 0 and 6
@@ -41,13 +32,14 @@ contract EarningsTracker is Proxied, Guard {
         uint256 lockTime;      // lock duration
         bool tokenBurnt;       // true if this token has been burnt
         uint256 tokenBurntAt;  // the time when this token was burnt
+        address tokenBurntBy;  // who burnt this token (if this token was burnt)
     }
 
     struct Generation {
         uint256 start;           // time when this generation starts
         uint256 ethBalance;      // the lastest ether balance associated with this generation
         uint256 ethBalanceAt;    // the last time when the ethBlance is modified
-        bool limitReached;       
+        bool limitReached;
         uint256 numberOfNFTs;    // number of NFTs associated with this generation
     }
 
@@ -142,7 +134,7 @@ contract EarningsTracker is Proxied, Guard {
         // update generations
         _updateGeneration_burn(totalEth);
         // update funder
-        _updateFunder_burn(_ethieTokenID);
+        _updateFunder_burn(msg.sender, _ethieTokenID);
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         _returnEther(msg.sender, totalEth);
@@ -151,17 +143,21 @@ contract EarningsTracker is Proxied, Guard {
         return true;
     }
 
-    function setCurrentFundingLimit(uint256 _fundingLimit)
+    function setCurrentFundingLimit()
         public
         onlyAdmin
     {
         uint256 currentGeneration = getCurrentGeneration();
-        uint256 prevFundingLimit = currentGeneration == 0? 0 : getFundingLimit(currentGeneration.sub(1));
-        require(_fundingLimit > prevFundingLimit,
+        // get previous generation funding limit
+        uint256 _prevFundingLimit = currentGeneration == 0? 0 : fundingLimit[currentGeneration.sub(1)];
+        // get current generation funding limit (which is preset)
+        uint256 _currentFundingLimit = fundingLimit[currentGeneration];
+        require(_currentFundingLimit > _prevFundingLimit,
                 "Funding limit must be bigger than the funding limit of the previous generation");
-        currentFundingLimit = _fundingLimit;
+        currentFundingLimit = _currentFundingLimit;
     }
 
+    // modify pre-set funding limit for a generation, only called by admin
     function modifyFundingLimit(uint256 _generation, uint256 _fundingLimit)
         public
         onlyAdmin
@@ -185,6 +181,7 @@ contract EarningsTracker is Proxied, Guard {
         depositsDisabled = false;
     }
 
+    // Getters
     function getCurrentGeneration()
         public view returns (uint256)
     {
@@ -195,10 +192,14 @@ contract EarningsTracker is Proxied, Guard {
        }
     }
 
-    // Getters
     // returns the current funding limit of the current generation
     function getcurrentFundingLimit() public view returns (uint256) {
         return currentFundingLimit;
+    }
+
+    // returns the pre-set funding limit for each generation
+    function getFundingLimit(_generation) public view returns (uint256) {
+        return fundingLimit[_generation];
     }
 
     function hasReachedLimit(uint256 _generation) public view returns (bool) {
@@ -381,9 +382,10 @@ contract EarningsTracker is Proxied, Guard {
 
     function _updateFunder_burn
     (
+        address _burner,
         uint256 _ethieTokenID
     )
-        internal 
+        internal
     {
         
         ethieTokens[_ethieTokenID].ethValue = 0;
@@ -391,6 +393,7 @@ contract EarningsTracker is Proxied, Guard {
         ethieTokens[_ethieTokenID].lockTime = 0;
         ethieTokens[_ethieTokenID].tokenBurnt = true;
         ethieTokens[_ethieTokenID].tokenBurntAt = now;
+        ethieTokens[_ethieTokenID].tokenBurntBy = _burner;
     }
 
     // called by BurnNFT to destroy a specific KETH NFT by ID
