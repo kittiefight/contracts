@@ -24,7 +24,17 @@ contract EarningsTracker is Proxied, Guard {
 
     uint256 constant WEEK = 7 * 24 * 60 * 60;
 
-    struct Funds {
+    /*struct Funds {
+        uint256 generation;    // the generation of this funds, between number 0 and 6
+        uint256 ethValue;      // the funder's current funding balance (ether deposited - ether withdrawal)
+        uint256 lockedAt;      // the unix time at which this funds is locked
+        uint256 lockTime;      // lock duration
+        bool tokenBurnt;       // true if this token has been burnt
+        uint256 tokenBurntAt;  // the time when this token was burnt
+    }*/
+
+    struct NFT {
+        uint256 originalOwner; // the owner of this token at the time of minting
         uint256 generation;    // the generation of this funds, between number 0 and 6
         uint256 ethValue;      // the funder's current funding balance (ether deposited - ether withdrawal)
         uint256 lockedAt;      // the unix time at which this funds is locked
@@ -44,17 +54,8 @@ contract EarningsTracker is Proxied, Guard {
     // mapping generation to funding limit and other attributes associated with this generation
     mapping (uint256 => Generation) generations;
 
-    // mapping original funder and all his/her funds
-    // original funder => Ethie Token ID => Funds associated with this NFT
-    mapping (address => mapping(uint256 => Funds) funders;
-
-    // mapping EthieToken to its original owner (to whom the token was mintedt to)
-    // this mapping is necessary because a token may have been sold to different
-    // people before it is burnt, so its current owner may not be its original owner
-    // We cannot trace (neither is it necessary) different account addresses this token
-    // has been transferred to, but we can get the current owner address from EthieToken contract.
-    // So, here, only the mapping of the token to its original funder is necessary.
-    mapping (uint256 => address) originalOwners;
+    // mapping ethieToken NFT to its properties
+    mapping(uint256 => NFT) ethieTokens;
 
     // funding limit for each generation
     // pre-set in initialization
@@ -123,17 +124,15 @@ contract EarningsTracker is Proxied, Guard {
         uint256 currentOwner = ethieToken.ownerOf(_ethieTokenID);
         require( currentOwner == msg.sender);
 
-        // get the original owner of the token (that is, to whom this token was minted to)
-        uint256 owner = originalOwners[_ethieTokenID];
         // require this token had not been burnt already
-        require(funders[owner].tokenBurnt == false, 
+        require(ethieTokens[_ethieTokenID].tokenBurnt == false, 
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
         require(_kty_fee == KTYforBurnEthie(),
                 "Incorrect amount of KTY payment for burning Ethie token");
         
-        uint256 ethValue = funders[owner][_ethieTokenID].ethValue;
-        uint256 lockTime = funders[owner][_ethieTokenID].lockTime;
+        uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
+        uint256 lockTime = ethieTokens[_ethieTokenID].lockTime;
         // burn KETH NFT
         _burn(_ethieTokenID);
 
@@ -143,7 +142,7 @@ contract EarningsTracker is Proxied, Guard {
         // update generations
         _updateGeneration_burn(totalEth);
         // update funder
-        _updateFunder_burn(owner, _ethieTokenID)
+        _updateFunder_burn(_ethieTokenID)
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         _returnEther(msg.sender, uint256 totalEth);
@@ -269,22 +268,22 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     // Returns the next date in which an investor can withdraw lockedETH and earnings by burning KETH
-    function viewNextYieldClaimDate(address funder, uint256 ethieTokenID) 
+    function viewNextYieldClaimDate(uint256 ethieTokenID) 
         public view 
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        uint256 lockTime = funders[_funder][ethieTokenID].lockTime;
-        uint256 lockedAt = funders[_funder][ethieTokenID].lockedAt;
+        uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
+        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
         uint256 unLockAt = lockedAt.add(lockTime);
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(unLockAt);
     }
 
     // Check and return the date of locked ETH
-    function checkLockETHDate(address funder, uint256 ethieTokenID) public view
+    function checkLockETHDate(uint256 ethieTokenID) public view
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        uint256 lockedAt = funders[funder][ethieTokenID].lockedAt;
+        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(lockedAt);
 
     }
@@ -317,8 +316,8 @@ contract EarningsTracker is Proxied, Guard {
     function generateLockTime (uint256 _eth_amount)
         public view returns (uint256 lockTime)
     {
-        uint256 _generation = genGenerator(_eth_amount);
-        uint256 _fundingLimit = fundingLimit[_generation];
+        uint256 _generation = getCurrentGeneration();
+        uint256 _fundingLimit = currentFundingLimit;
         if (_generation == 6) {
             return 30 * 1000000;
         }
@@ -346,12 +345,11 @@ contract EarningsTracker is Proxied, Guard {
     )
         internal 
     {
-        funders[_funder][_ethieTokenID].generation = getCurrentGeneration();
-        funders[_funder][_ethieTokenID].ethValue = _eth_amount;
-        funders[_funder][_ethieTokenID].lockedAt = now;
-        funders[_funder][_ethieTokenID].lockTime = _lockTime;
-
-        originalOwners[_ethieTokenID] = _funder;
+        ethieTokens[_ethieTokenID].generation = getCurrentGeneration();
+        ethieTokens[_ethieTokenID].ethValue = _eth_amount;
+        ethieTokens[_ethieTokenID].lockedAt = now;
+        ethieTokens[_ethieTokenID].lockTime = _lockTime;
+        ethieTokens[_ethieTokenID].originalOwner = _funder;
     }
     
     // update generation profile when minting a new token
@@ -381,17 +379,16 @@ contract EarningsTracker is Proxied, Guard {
 
     function _updateFunder_burn
     (
-        address _funder,
         uint256 _ethieTokenID
     )
         internal 
     {
         
-        funders[_funder][_ethieTokenID].ethValue = 0;
-        funders[_funder][_ethieTokenID].lockedAt = 0;
-        funders[_funder][_ethieTokenID].lockTime = 0;
-        funders[_funder][_ethieTokenID].tokenBurnt = true;
-        funders[_funder][_ethieTokenID].tokenBurntAt = now;
+        ethieTokens[_ethieTokenID].ethValue = 0;
+        ethieTokens[_ethieTokenID].lockedAt = 0;
+        ethieTokens[_ethieTokenID].lockTime = 0;
+        ethieTokens[_ethieTokenID].tokenBurnt = true;
+        ethieTokens[_ethieTokenID].tokenBurntAt = now;
     }
 
     // called by BurnNFT to destroy a specific KETH NFT by ID
