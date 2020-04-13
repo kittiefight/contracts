@@ -14,7 +14,7 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
     using StringUtils for uint256;
 
     string constant NAME    = 'Kittiefight Ethie';
-    string constant SYMBOL  = 'KETH';
+    string constant SYMBOL  = 'Ethie';
 
     struct TokenProperties {
         uint256 ethAmount;
@@ -22,8 +22,8 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
         uint256 lockTime;
     }
 
-    Counters.Counter nextTokenId;       // Provides unique identifier for KETH token. 0 value is invalid
-    Counters.Counter generation; // Stores current genereation of KETH tokens
+    Counters.Counter nextTokenId;       // Provides unique identifier for Ethie token. 0 value is invalid
+    Counters.Counter generation; // Stores current genereation of Ethie tokens
 
     mapping (uint256 => TokenProperties) public properties;
 
