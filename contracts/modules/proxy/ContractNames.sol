@@ -38,5 +38,6 @@ contract ContractNames {
     string constant CONTRACT_NAME_WITHDRAWAL_POOL   = "WithdrawalPool";
     string constant CONTRACT_NAME_TIMEFRAME         = "TimeFrame";
     string constant CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO = "HoneypotAllocationAlgo";
+    string constant CONTRACT_NAME_EARNINGS_TRACKER  = "EarningsTracker";
 
 }

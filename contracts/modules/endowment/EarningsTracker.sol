@@ -3,17 +3,19 @@ pragma solidity ^0.5.5;
 import '../proxy/Proxied.sol';
 import '../../authority/Guard.sol';
 import '../../libs/SafeMath.sol';
-import '../../ethie/EthieToken.sol';
 import '../datetime/TimeFrame.sol';
+import '../../GameVarAndFee.sol';
 import './EndowmentFund.sol';
+import '../../interfaces/IEthieToken.sol';
+
 
 contract EarningsTracker is Proxied, Guard {
     using SafeMath for uint256;
 
     // Contract variables
-    EthieToken public ethieToken;
-    TimeFrame public timeFrame;
-    EndowmentFund public endowmentFund;
+    IEthieToken public ethieToken;
+    //TimeFrame public timeFrame;
+    //EndowmentFund public endowmentFund;
 
     // current funding limit - this funding limit determines the generation
     // this variable can be read by public, but can only be set by Admin
@@ -23,9 +25,10 @@ contract EarningsTracker is Proxied, Guard {
     bool internal depositsDisabled;
 
     uint256 constant WEEK = 7 * 24 * 60 * 60;
+    uint256 constant THIRTY_DAYS = 30 * 24 * 60 * 60;
 
     struct NFT {
-        uint256 originalOwner; // the owner of this token at the time of minting
+        address originalOwner; // the owner of this token at the time of minting
         uint256 generation;    // the generation of this funds, between number 0 and 6
         uint256 ethValue;      // the funder's current funding balance (ether deposited - ether withdrawal)
         uint256 lockedAt;      // the unix time at which this funds is locked
@@ -57,10 +60,8 @@ contract EarningsTracker is Proxied, Guard {
     // pre-set funding limit for each generation during initialization
     // No funding limit in generation 6. 2**256-1 is the maximum for uint256.
     // But 2**200 is a number big enough to be used as the maximum here.
-    function initialize() external onlyOwner {
-        EthieToken = EthieToken(proxy.getContract(CONTRACT_NAME_ETHIE_TOKEN));
-        timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
-        endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
+    function initialize(address _ethieToken) external onlyOwner {
+        ethieToken = IEthieToken(_ethieToken);
 
         fundingLimit[0] = 500 * 1e18;
         fundingLimit[1] = 1000 * 1e18;
@@ -73,11 +74,12 @@ contract EarningsTracker is Proxied, Guard {
 
     // deposit eth and receive an NFT token, which can be burned in order to retrieve
     // locked eth and interest
-    function lockETH() external  returns (bool) {
+    function lockETH() external payable  returns (bool) {
         require(depositsDisabled == false, "Deposits are not allowed at this time");
         uint256 currentGeneration = getCurrentGeneration();
         // if funding limit of current generation is reached, reject any deposit
-        require(!hasReachedLimit(currentGeneration), "Current funding limit has already been reached"); 
+        require(!hasReachedLimit(currentGeneration),
+                "Current funding limit has already been reached");
 
         uint256 _ethBalance = generations[currentGeneration].ethBalance;
         uint256 _fundingLimit = fundingLimit[currentGeneration];
@@ -87,7 +89,11 @@ contract EarningsTracker is Proxied, Guard {
         if (_fundingLimit < _totalETH) {
             uint256 _extra = _totalETH.sub(_fundingLimit);
             _lockETH(_funder, msg.value);
-            _returnEther(_funder, _extra);
+
+            //TODO: truffle compile error for _funder: Invalid implicit conversion from address to address payable requested.
+            // getOriginalSender() is not address payable
+            //_returnEther(_funder, _extra);
+            _returnEther(msg.sender, _extra);
             generations[currentGeneration].limitReached == true;
         } else if (_fundingLimit == _totalETH) {
             _lockETH(_funder, msg.value);
@@ -113,11 +119,12 @@ contract EarningsTracker is Proxied, Guard {
         // this token when it was minted.
 
         // get the current owner of the token
-        uint256 currentOwner = ethieToken.ownerOf(_ethieTokenID);
-        require( currentOwner == msg.sender);
+        //EthieToken ethieToken = EthieToken(proxy.getContract(CONTRACT_NAME_ETHIE_TOKEN));
+        address currentOwner = ethieToken.ownerOf(_ethieTokenID);
+        require(currentOwner == msg.sender);
 
         // require this token had not been burnt already
-        require(ethieTokens[_ethieTokenID].tokenBurnt == false, 
+        require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
         require(_kty_fee == KTYforBurnEthie(),
@@ -125,6 +132,7 @@ contract EarningsTracker is Proxied, Guard {
         
         uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
         uint256 lockTime = ethieTokens[_ethieTokenID].lockTime;
+        uint256 generation = ethieTokens[_ethieTokenID].generation;
         // burn KETH NFT
         _burn(_ethieTokenID);
 
@@ -132,7 +140,7 @@ contract EarningsTracker is Proxied, Guard {
         uint256 interest = calculateInterest(ethValue, lockTime);
         uint256 totalEth = ethValue.add(interest);
         // update generations
-        _updateGeneration_burn(totalEth);
+        _updateGeneration_burn(generation, totalEth);
         // update funder
         _updateFunder_burn(msg.sender, _ethieTokenID);
         // update burntTokens
@@ -153,7 +161,7 @@ contract EarningsTracker is Proxied, Guard {
         // get current generation funding limit (which is preset)
         uint256 _currentFundingLimit = fundingLimit[currentGeneration];
         require(_currentFundingLimit > _prevFundingLimit,
-                "Funding limit must be bigger than the funding limit of the previous generation");
+                "Funding limit must be bigger than the previous generation");
         currentFundingLimit = _currentFundingLimit;
     }
 
@@ -198,12 +206,12 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     // returns the pre-set funding limit for each generation
-    function getFundingLimit(_generation) public view returns (uint256) {
+    function getFundingLimit(uint256 _generation) public view returns (uint256) {
         return fundingLimit[_generation];
     }
 
     function hasReachedLimit(uint256 _generation) public view returns (bool) {
-        return generations[generation].limitReached == true;
+        return generations[_generation].limitReached == true;
     }
 
     // returns the difference between the funding limit and the actual funding in current generation
@@ -218,20 +226,23 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     function calculateInterest(uint256 _eth_amount, uint256 _lockTime)
-        public view returns (uint256 interest) 
+        public view returns (uint256 interest)
     {
         // formula for calculating simple interest: interest = A*r*t
         // A = principle money, r = interest rate, t = time
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         interest = _eth_amount.mul(gameVarAndFee.getInterestEthie()).mul(_lockTime.div(WEEK));
     }
 
     // returns current weekly epoch ID
     function getCurrentEpoch() public view returns (uint256) {
+        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         return timeFrame.getActiveEpochID();
     }
 
     // returns state, stage date and time (in unix) in a current weekly epoch
-    function _viewEpochStage() public view returns (string state, uint256 start, uint256 end) {
+    function _viewEpochStage() public view returns (string memory state, uint256 start, uint256 end) {
+        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 currentEpochID = getCurrentEpoch();
         if (timeFrame.isWorkingDay(currentEpochID)) {
             state = "Working Days";
@@ -246,9 +257,9 @@ contract EarningsTracker is Proxied, Guard {
 
     // returns state, stage date and time (human-readable) in a current weekly epoch
     function viewEpochStage()
-        public view 
+        public view
         returns (
-            string state,
+            string memory state,
             uint256 startYear,
             uint256 startMonth,
             uint256 startDay,
@@ -261,8 +272,9 @@ contract EarningsTracker is Proxied, Guard {
             uint256 endHour,
             uint256 endMinute,
             uint256 endSecond
-        ) 
+        )
     {
+        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 startTime;
         uint256 endTime;
         (state, startTime, endTime) = _viewEpochStage();
@@ -272,9 +284,10 @@ contract EarningsTracker is Proxied, Guard {
 
     // Returns the next date in which an investor can withdraw lockedETH and earnings by burning KETH
     function viewNextYieldClaimDate(uint256 ethieTokenID) 
-        public view 
+        public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
+        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
         uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
         uint256 unLockAt = lockedAt.add(lockTime);
@@ -286,6 +299,7 @@ contract EarningsTracker is Proxied, Guard {
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
+        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(lockedAt);
 
@@ -322,19 +336,22 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _generation = getCurrentGeneration();
         uint256 _fundingLimit = currentFundingLimit;
         if (_generation == 6) {
-            return 30 * 1000000;
+            //TODO: how to factor in generation 6 which doesn't have a funding limit
+            return THIRTY_DAYS.mul(1000000);
         }
-        lockTime = 30.mul(getPercentage(_fundingLimit, _eth_amount));
+        lockTime = THIRTY_DAYS.mul(getPercentage(_fundingLimit, _eth_amount));
     }
 
     function KTYforBurnEthie() public view returns (uint256) {
+        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         return gameVarAndFee.getKTYforBurnEthie();
     }
 
     // Internal Functions
-    function _returnEther(address _funder, uint256 _eth_amount)
+    function _returnEther(address payable _funder, uint256 _eth_amount)
         internal
     {
+        EndowmentFund endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         endowmentFund.transferETHfromEscrowEarningsTracker(_funder, _eth_amount);
     }
     
@@ -346,7 +363,7 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _lockTime,
         uint256 _ethieTokenID
     )
-        internal 
+        internal
     {
         ethieTokens[_ethieTokenID].generation = getCurrentGeneration();
         ethieTokens[_ethieTokenID].ethValue = _eth_amount;
@@ -359,7 +376,7 @@ contract EarningsTracker is Proxied, Guard {
     function _updateGeneration_mint(
         uint256 _eth_amount
     ) internal {
-        uint256 _generation = getCurrentGeneration;
+        uint256 _generation = getCurrentGeneration();
         generations[_generation].ethBalance = generations[_generation].ethBalance.add(_eth_amount);
         generations[_generation].ethBalanceAt = now;
         generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.add(1);
@@ -387,7 +404,7 @@ contract EarningsTracker is Proxied, Guard {
     )
         internal
     {
-        
+        // set values to 0 can get gas refund
         ethieTokens[_ethieTokenID].ethValue = 0;
         ethieTokens[_ethieTokenID].lockedAt = 0;
         ethieTokens[_ethieTokenID].lockTime = 0;
@@ -409,20 +426,21 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _lockTime
     )
         internal
-        returns (bool)
+        returns (uint256)
     {
-        ethieToken.mint(_to, _ethAmount, _lockTime);
+        return ethieToken.mint(_to, _ethAmount, _lockTime);
     }
 
     function _lockETH(address _funder, uint256 _eth_amount) internal {
         // deposit ether
+        EndowmentFund endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         endowmentFund.sendETHtoEscrow();
         // calculate locktime
         uint256 _lockTime = generateLockTime(_eth_amount);
         // receive an NFT token
         uint256 _ethieTokenID = _mint(_funder, _eth_amount, _lockTime);
         // update funder profile
-        _updateFunder_mint(_funder, _eth_amount , _lockTime, _ethieTokenID);
+        _updateFunder_mint(_funder, _eth_amount, _lockTime, _ethieTokenID);
         // update generation profile
         _updateGeneration_mint(_eth_amount);
     }
