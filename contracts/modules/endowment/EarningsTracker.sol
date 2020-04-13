@@ -13,7 +13,7 @@ contract EarningsTracker is Proxied, Guard {
     // Contract variables
     EthieToken public ethieToken;
     TimeFrame public timeFrame;
-    EndowmentFund public endowmentFund 
+    EndowmentFund public endowmentFund; 
 
     // current funding limit - this funding limit determines the generation
     // this variable can be read by public, but can only be set by Admin
@@ -142,10 +142,10 @@ contract EarningsTracker is Proxied, Guard {
         // update generations
         _updateGeneration_burn(totalEth);
         // update funder
-        _updateFunder_burn(_ethieTokenID)
+        _updateFunder_burn(_ethieTokenID);
         // update burntTokens
         // release ETH and accumulative interest to the current owner
-        _returnEther(msg.sender, uint256 totalEth);
+        _returnEther(msg.sender, totalEth);
        
         // TODO: give user lotto to redeem a high priced kitty
         return true;
@@ -178,7 +178,7 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     // re-enables any ability to continue to deposit funds
-    function enableDeposits
+    function enableDeposits()
         internal
         onlyAdmin
     {
@@ -221,7 +221,7 @@ contract EarningsTracker is Proxied, Guard {
     {
         // formula for calculating simple interest: interest = A*r*t
         // A = principle money, r = interest rate, t = time
-        interest = _eth_amount.mul(gameVarAndFee.getInterestEthie()).mul(_lockTime.div(WEEK))
+        interest = _eth_amount.mul(gameVarAndFee.getInterestEthie()).mul(_lockTime.div(WEEK));
     }
 
     // returns current weekly epoch ID
@@ -259,10 +259,12 @@ contract EarningsTracker is Proxied, Guard {
             uint256 endDay,
             uint256 endHour,
             uint256 endMinute,
-            uint256 endSecond,
+            uint256 endSecond
         ) 
     {
-        (state, uint256 startTime, uint256 endTime) = _viewEpochStage();
+        uint256 startTime;
+        uint256 endTime;
+        (state, startTime, endTime) = _viewEpochStage();
         (startYear, startMonth, startDay, startHour, startMinute, startSecond) = timeFrame.timestampToDateTime(startTime);
         (endYear, endMonth, endDay, endHour, endMinute, endSecond) = timeFrame.timestampToDateTime(endTime);
     }
@@ -279,7 +281,7 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     // Check and return the date of locked ETH
-    function checkLockETHDate(uint256 ethieTokenID) public view
+    function checkLockETHDate(uint256 ethieTokenID)
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
@@ -360,7 +362,7 @@ contract EarningsTracker is Proxied, Guard {
         generations[_generation].ethBalance = generations[_generation].ethBalance.add(_eth_amount);
         generations[_generation].ethBalanceAt = now;
         generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.add(1);
-    };
+    }
 
 
     function _updateGeneration_burn(uint256 _generation, uint256 _eth_amount)
