@@ -44,9 +44,17 @@ contract EarningsTracker is Proxied, Guard {
     // mapping generation to funding limit and other attributes associated with this generation
     mapping (uint256 => Generation) generations;
 
-    // mapping funder and all his/her funds
-    // funder => Ethie Token ID => Funds associated with this NFT
+    // mapping original funder and all his/her funds
+    // original funder => Ethie Token ID => Funds associated with this NFT
     mapping (address => mapping(uint256 => Funds) funders;
+
+    // mapping EthieToken to its original owner (to whom the token was mintedt to)
+    // this mapping is necessary because a token may have been sold to different
+    // people before it is burnt, so its current owner may not be its original owner
+    // We cannot trace (neither is it necessary) different account addresses this token
+    // has been transferred to, but we can get the current owner address from EthieToken contract.
+    // So, here, only the mapping of the token to its original funder is necessary.
+    mapping (uint256 => address) originalOwners;
 
     // funding limit for each generation
     // pre-set in initialization
@@ -107,7 +115,16 @@ contract EarningsTracker is Proxied, Guard {
     ) 
         external returns(bool)
     {
-        uint256 owner = ethieToken.ownerOf(_ethieTokenID);
+        // the token may be sold to another person, therefore,
+        // current owner may not be necessarily the original owner of
+        // this token when it was minted.
+
+        // get the current owner of the token
+        uint256 currentOwner = ethieToken.ownerOf(_ethieTokenID);
+        require( currentOwner == msg.sender);
+
+        // get the original owner of the token (that is, to whom this token was minted to)
+        uint256 owner = originalOwners[_ethieTokenID];
         // require this token had not been burnt already
         require(funders[owner].tokenBurnt == false, 
                 "This EthieToken NFT has already been burnt");
@@ -128,7 +145,7 @@ contract EarningsTracker is Proxied, Guard {
         // update funder
         _updateFunder_burn(owner, _ethieTokenID)
         // update burntTokens
-        // release ETH and accumulative interest
+        // release ETH and accumulative interest to the current owner
         _returnEther(msg.sender, uint256 totalEth);
        
         // TODO: give user lotto to redeem a high priced kitty
@@ -333,6 +350,8 @@ contract EarningsTracker is Proxied, Guard {
         funders[_funder][_ethieTokenID].ethValue = _eth_amount;
         funders[_funder][_ethieTokenID].lockedAt = now;
         funders[_funder][_ethieTokenID].lockTime = _lockTime;
+
+        originalOwners[_ethieTokenID] = _funder;
     }
     
     // update generation profile when minting a new token
