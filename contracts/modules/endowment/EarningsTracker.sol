@@ -258,8 +258,8 @@ contract EarningsTracker is Proxied, Guard {
         }
     }
 
-    // returns state, stage date and time (human-readable) in a current weekly epoch
-    function viewEpochStage()
+    // returns state, stage start date and time (human-readable) in a current weekly epoch
+    function viewEpochStartStage()
         public view
         returns (
             string memory state,
@@ -268,7 +268,20 @@ contract EarningsTracker is Proxied, Guard {
             uint256 startDay,
             uint256 startHour,
             uint256 startMinute,
-            uint256 startSecond,
+            uint256 startSecond
+        )
+    {
+        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
+        uint256 startTime;
+        (state, startTime,) = _viewEpochStage();
+        (startYear, startMonth, startDay, startHour, startMinute, startSecond) = timeFrame.timestampToDateTime(startTime);
+    }
+
+    // returns state, stage end date and time (human-readable) in a current weekly epoch
+    function viewEpochStageEndTime()
+        public view
+        returns (
+            string memory state,
             uint256 endYear,
             uint256 endMonth,
             uint256 endDay,
@@ -278,10 +291,8 @@ contract EarningsTracker is Proxied, Guard {
         )
     {
         TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
-        uint256 startTime;
         uint256 endTime;
-        (state, startTime, endTime) = _viewEpochStage();
-        (startYear, startMonth, startDay, startHour, startMinute, startSecond) = timeFrame.timestampToDateTime(startTime);
+        (state,, endTime) = _viewEpochStage();
         (endYear, endMonth, endDay, endHour, endMinute, endSecond) = timeFrame.timestampToDateTime(endTime);
     }
 
