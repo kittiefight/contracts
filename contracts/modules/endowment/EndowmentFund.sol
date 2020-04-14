@@ -240,6 +240,25 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
+    function contributeETH_Ethie() external payable returns(bool) {
+        require(address(escrow) != address(0));
+        address msgSender = getOriginalSender();
+
+        require(msg.value > 0);
+
+        // transfer ETH to Escrow
+        if (!address(escrow).send(msg.value)){
+            return false;
+        }
+
+        endowmentDB.updateEndowmentFund(0, msg.value, false);
+
+        emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
+
+        return true;
+    }
+
+
     /**
     * @notice MUST BE DONE BEFORE UPGRADING ENDOWMENT AS IT IS THE OWNER
     * @dev change Escrow contract owner before UPGRADING ENDOWMENT AS IT IS THE OWNER

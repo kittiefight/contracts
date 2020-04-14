@@ -13,6 +13,7 @@ contract EarningsTracker is Proxied, Guard {
     using SafeMath for uint256;
 
     // Contract variables
+    EndowmentFund public endowmentFund;
     IEthieToken public ethieToken;
     //TimeFrame public timeFrame;
     //EndowmentFund public endowmentFund;
@@ -62,6 +63,7 @@ contract EarningsTracker is Proxied, Guard {
     // But 2**200 is a number big enough to be used as the maximum here.
     function initialize(address _ethieToken) external onlyOwner {
         ethieToken = IEthieToken(_ethieToken);
+        endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
 
         fundingLimit[0] = 500 * 1e18;
         fundingLimit[1] = 1000 * 1e18;
@@ -74,35 +76,61 @@ contract EarningsTracker is Proxied, Guard {
 
     // deposit eth and receive an NFT token, which can be burned in order to retrieve
     // locked eth and interest
-    function lockETH() external payable  returns (bool) {
+    function lockETH()
+        external
+        payable
+        onlyProxy
+        returns (uint256)
+    {
         require(depositsDisabled == false, "Deposits are not allowed at this time");
         uint256 currentGeneration = getCurrentGeneration();
         // if funding limit of current generation is reached, reject any deposit
-        require(!hasReachedLimit(currentGeneration),
+        require(generations[currentGeneration].limitReached == false,
                 "Current funding limit has already been reached");
 
         uint256 _ethBalance = generations[currentGeneration].ethBalance;
-        uint256 _fundingLimit = fundingLimit[currentGeneration];
+        uint256 _fundingLimit = currentFundingLimit;
         uint256 _totalETH = _ethBalance.add(msg.value);
         address _funder = getOriginalSender();
-        
+
+        // transfer funds to endowmentFund
+        require(endowmentFund.contributeETH_Ethie.value(msg.value)(), "Funds deposit failed");
+
+        uint256 _lockTime;
+        uint256 _ethieTokenID;
+
         if (_fundingLimit < _totalETH) {
             uint256 _extra = _totalETH.sub(_fundingLimit);
-            _lockETH(_funder, msg.value);
-
+            uint256 _legitEthValue = (msg.value).sub(_extra);
+            // calculate locktime
+            _lockTime = generateLockTime(_legitEthValue);
+            // receive an NFT token
+            _ethieTokenID = _mint(_funder, _legitEthValue, _lockTime);
+            // update funder profile
+            _updateFunder_mint(_funder, _legitEthValue, _lockTime, _ethieTokenID);
+            // update generation profile
+            _updateGeneration_mint(_legitEthValue);
             //TODO: truffle compile error for _funder: Invalid implicit conversion from address to address payable requested.
             // getOriginalSender() is not address payable
             //_returnEther(_funder, _extra);
             _returnEther(msg.sender, _extra);
             generations[currentGeneration].limitReached == true;
-        } else if (_fundingLimit == _totalETH) {
-            _lockETH(_funder, msg.value);
-            generations[currentGeneration].limitReached == true;
         } else {
-            _lockETH(_funder, msg.value);
+            // calculate locktime
+            _lockTime = generateLockTime(msg.value);
+            // receive an NFT token
+            _ethieTokenID = _mint(_funder, msg.value, _lockTime);
+            // update funder profile
+            _updateFunder_mint(_funder, msg.value, _lockTime, _ethieTokenID);
+            // update generation profile
+            _updateGeneration_mint(msg.value);
+
+            if (_fundingLimit == _totalETH) {
+                generations[currentGeneration].limitReached == true;
+            }
         }
 
-        return true;
+        return _ethieTokenID;
     }
 
     // Release ether and cumulative interest to investor by burning KETH NFT
@@ -214,7 +242,10 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     function hasReachedLimit(uint256 _generation) public view returns (bool) {
-        return generations[_generation].limitReached == true;
+        if(generations[_generation].limitReached == true) {
+            return true;
+        }
+        return false;
     }
 
     // returns the difference between the funding limit and the actual funding in current generation
@@ -365,7 +396,6 @@ contract EarningsTracker is Proxied, Guard {
     function _returnEther(address payable _funder, uint256 _eth_amount)
         internal
     {
-        EndowmentFund endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         endowmentFund.transferETHfromEscrowEarningsTracker(_funder, _eth_amount);
     }
     
@@ -445,10 +475,10 @@ contract EarningsTracker is Proxied, Guard {
         return ethieToken.mint(_to, _ethAmount, _lockTime);
     }
 
-    function _lockETH(address _funder, uint256 _eth_amount) internal {
-        // deposit ether
-        EndowmentFund endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
-        endowmentFund.sendETHtoEscrow();
+    function _lockETH(address _funder, uint256 _eth_amount)
+        internal
+        returns(uint256)
+    {
         // calculate locktime
         uint256 _lockTime = generateLockTime(_eth_amount);
         // receive an NFT token
@@ -457,6 +487,8 @@ contract EarningsTracker is Proxied, Guard {
         _updateFunder_mint(_funder, _eth_amount, _lockTime, _ethieTokenID);
         // update generation profile
         _updateGeneration_mint(_eth_amount);
+
+        return _ethieTokenID;
     }
 
 }
