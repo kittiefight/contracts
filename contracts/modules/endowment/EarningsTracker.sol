@@ -387,7 +387,7 @@ contract EarningsTracker is Proxied, Guard {
     /**
      * @dev gets state, stage start date and time (human-readable) in a current weekly epoch
      */
-    function viewEpochStartStage()
+    function viewEpochStageStartTime()
         public view
         returns (
             string memory state,
