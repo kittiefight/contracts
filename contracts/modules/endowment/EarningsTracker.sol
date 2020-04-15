@@ -1,3 +1,9 @@
+/**
+* @title EarningsTracker
+*
+* @author @ziweidream
+*
+*/
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
@@ -13,21 +19,21 @@ contract EarningsTracker is Proxied, Guard {
     using SafeMath for uint256;
 
     // Contract variables
-    EndowmentFund public endowmentFund;
     IEthieToken public ethieToken;
-    //TimeFrame public timeFrame;
-    //EndowmentFund public endowmentFund;
+    TimeFrame public timeFrame;
+    GameVarAndFee public gameVarAndFee;
+    EndowmentFund public endowmentFund;
 
-    // current funding limit - this funding limit determines the generation
-    // this variable can be read by public, but can only be set by Admin
+    /// @dev current funding limit
     uint256 public currentFundingLimit;
 
-    // whether deposits are disabled
+    /// @dev true if deposits are disabled
     bool internal depositsDisabled;
 
     uint256 constant WEEK = 7 * 24 * 60 * 60;
     uint256 constant THIRTY_DAYS = 30 * 24 * 60 * 60;
 
+    /// @dev an EthieToken NFT's associated properties
     struct NFT {
         address originalOwner; // the owner of this token at the time of minting
         uint256 generation;    // the generation of this funds, between number 0 and 6
@@ -39,30 +45,31 @@ contract EarningsTracker is Proxied, Guard {
         address tokenBurntBy;  // who burnt this token (if this token was burnt)
     }
 
+    /// @dev a generation's associated properties
     struct Generation {
         uint256 start;           // time when this generation starts
         uint256 ethBalance;      // the lastest ether balance associated with this generation
         uint256 ethBalanceAt;    // the last time when the ethBlance is modified
-        bool limitReached;
+        bool limitReached;       // true if the funding limit of this generation is reached
         uint256 numberOfNFTs;    // number of NFTs associated with this generation
     }
 
-    // mapping generation to funding limit and other attributes associated with this generation
+    /// @dev mapping generation ID to its properties
     mapping (uint256 => Generation) generations;
 
-    // mapping ethieToken NFT to its properties
+    /// @dev mapping ethieToken NFT to its properties
     mapping(uint256 => NFT) ethieTokens;
 
-    // funding limit for each generation
-    // pre-set in initialization
-    // can only be changed by admin
+    /// @dev funding limit for each generation, pre-set in initialization, can only be changed by admin
     mapping (uint256 => uint256) public fundingLimit;
 
+    //============================ Initializer ============================
     // pre-set funding limit for each generation during initialization
     // No funding limit in generation 6. 2**256-1 is the maximum for uint256.
     // But 2**200 is a number big enough to be used as the maximum here.
     function initialize(address _ethieToken) external onlyOwner {
         ethieToken = IEthieToken(_ethieToken);
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
 
         fundingLimit[0] = 500 * 1e18;
@@ -74,12 +81,19 @@ contract EarningsTracker is Proxied, Guard {
         fundingLimit[6] = 2**200;
     }
 
-    // deposit eth and receive an NFT token, which can be burned in order to retrieve
-    // locked eth and interest
+    //============================ Events ============================
+
+    //============================ Public Functions ============================
+
+    /**
+     * @dev deposit eth and receive an NFT token, which can be burned
+     * in order to retrieve locked eth and accumulated interest
+     * @return uint256 ID of the Ethie Token NFT minted to the funder
+     */
     function lockETH()
         external
         payable
-        onlyProxy
+        //onlyProxy
         returns (uint256)
     {
         require(depositsDisabled == false, "Deposits are not allowed at this time");
@@ -110,10 +124,9 @@ contract EarningsTracker is Proxied, Guard {
             _updateFunder_mint(_funder, _legitEthValue, _lockTime, _ethieTokenID);
             // update generation profile
             _updateGeneration_mint(_legitEthValue);
-            //TODO: truffle compile error for _funder: Invalid implicit conversion from address to address payable requested.
-            // getOriginalSender() is not address payable
-            //_returnEther(_funder, _extra);
+            // return extra ether back to the funder
             _returnEther(msg.sender, _extra);
+
             generations[currentGeneration].limitReached == true;
         } else {
             // calculate locktime
@@ -126,20 +139,25 @@ contract EarningsTracker is Proxied, Guard {
             _updateGeneration_mint(msg.value);
 
             if (_fundingLimit == _totalETH) {
-                generations[currentGeneration].limitReached == true;
+                generations[currentGeneration].limitReached = true;
             }
         }
 
         return _ethieTokenID;
     }
 
-    // Release ether and cumulative interest to investor by burning KETH NFT
-    // Requires KTY token payment
-    // In the future, will give user lotto to redeem a high priced kitty
+    /**
+     * @dev Release ether and cumulative interest to investor by burning Ethie Token NFT
+     * Requires KTY token payment
+     * In the future, will give user lotto to redeem a high priced kitty from KittieHELL
+     * @param _ethieTokenID uint256 the ID of the Ethie Token NFT
+     * @return true if this NFT is burnt and locked ethers and cumulative interest
+     * are transferred to the token owner
+     */
     function burnNFT
     (
-        uint256 _ethieTokenID, uint256 _kty_fee
-    ) 
+        uint256 _ethieTokenID
+    )
         external returns(bool)
     {
         // the token may be sold to another person, therefore,
@@ -149,7 +167,7 @@ contract EarningsTracker is Proxied, Guard {
         // get the current owner of the token
         //EthieToken ethieToken = EthieToken(proxy.getContract(CONTRACT_NAME_ETHIE_TOKEN));
         address currentOwner = ethieToken.ownerOf(_ethieTokenID);
-        require(currentOwner == msg.sender);
+        require(currentOwner == msg.sender, "Only the owner of this token can burn it");
 
         uint256 lockTime = now.sub(ethieTokens[_ethieTokenID].lockedAt);
         require(lockTime >= ethieTokens[_ethieTokenID].lockTime,
@@ -159,15 +177,16 @@ contract EarningsTracker is Proxied, Guard {
         require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
-        require(_kty_fee == KTYforBurnEthie(),
-                "Incorrect amount of KTY payment for burning Ethie token");
+        uint256 _kty_fee = KTYforBurnEthie();
+        require(endowmentFund.contributeKTY(msg.sender, _kty_fee),
+                "Failed to pay KTY fee for burning Ethie Token");
         
-        uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
-        uint256 generation = ethieTokens[_ethieTokenID].generation;
-        // burn KETH NFT
-        _burn(_ethieTokenID);
+        // burn Ethie Token NFT
+        ethieToken.burn(_ethieTokenID);
 
         // calculate interest
+        uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
+        uint256 generation = ethieTokens[_ethieTokenID].generation;
         uint256 interest = calculateInterest(ethValue, lockTime);
         uint256 totalEth = ethValue.add(interest);
         // update generations
@@ -177,34 +196,61 @@ contract EarningsTracker is Proxied, Guard {
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         _returnEther(msg.sender, totalEth);
-       
+
         // TODO: give user lotto to redeem a high priced kitty
         return true;
     }
 
+    //============================ Setters ============================
+    /**
+     * @dev moves the current funding to limit to next funding limit
+     * can only be called when current funding limit is already reached
+     * can only be called by admin
+     */
     function setCurrentFundingLimit()
         public
         onlyAdmin
     {
-        uint256 currentGeneration = getCurrentGeneration();
-        // get previous generation funding limit
-        uint256 _prevFundingLimit = currentGeneration == 0? 0 : fundingLimit[currentGeneration.sub(1)];
-        // get current generation funding limit (which is preset)
-        uint256 _currentFundingLimit = fundingLimit[currentGeneration];
-        require(_currentFundingLimit > _prevFundingLimit,
-                "Funding limit must be bigger than the previous generation");
-        currentFundingLimit = _currentFundingLimit;
+        if (currentFundingLimit == 0) {
+            currentFundingLimit = fundingLimit[0];
+        } else {
+            uint256 currentGeneration = getCurrentGeneration();
+            require(generations[currentGeneration].limitReached == true, "Previous funding limit hasn't been reached");
+            uint256 nextGeneration = currentGeneration.add(1);
+            // get previous generation funding limit
+            uint256 _prevFundingLimit = fundingLimit[currentGeneration];
+            // get current generation funding limit (which is preset)
+            uint256 _currentFundingLimit = fundingLimit[nextGeneration];
+            require(_currentFundingLimit > _prevFundingLimit,
+                    "Funding limit must be bigger than the previous generation");
+            currentFundingLimit = _currentFundingLimit;
+        }
     }
 
-    // modify pre-set funding limit for a generation, only called by admin
+    /**
+     * @dev modify pre-set funding limit for a generation
+     * can only be called by admin
+     * @param _generation the id of the generation of which the funding limit is modified
+     * @param _fundingLimit the new funding limit of _generation
+     */
     function modifyFundingLimit(uint256 _generation, uint256 _fundingLimit)
         public
         onlyAdmin
     {
-        fundingLimit[_generation] = _fundingLimit;
+        if (_generation == 0) {
+            fundingLimit[_generation] = _fundingLimit;
+        } else if (_generation > 0) {
+            uint256 _prevGeneration = _generation.sub(1);
+            require(_fundingLimit > fundingLimit[_prevGeneration],
+                    "Funding limit must be higher than the previous generation");
+            fundingLimit[_generation] = _fundingLimit;
+        }
     }
 
-    // stops any ability to continue to deposit funds
+    /**
+     * @dev stops any ability to continue to deposit funds
+     * can only be called by admin
+     */
     function stopDeposits()
         internal
         onlyAdmin
@@ -212,7 +258,10 @@ contract EarningsTracker is Proxied, Guard {
         depositsDisabled = true;
     }
 
-    // re-enables any ability to continue to deposit funds
+    /**
+     * @dev re-enables any ability to continue to deposit funds
+     * can only be called by admin
+     */
     function enableDeposits()
         internal
         onlyAdmin
@@ -220,7 +269,18 @@ contract EarningsTracker is Proxied, Guard {
         depositsDisabled = false;
     }
 
-    // Getters
+    /**
+     * @dev set current generation in EthieToken contract
+     * can only be called by admin
+     */
+    function incrementGenerationInEthieToken() public onlyAdmin {
+        ethieToken.incrementGeneration();
+    }
+
+    //============================ Getters ============================
+    /**
+     * @dev gets the ID of the current generation
+     */
     function getCurrentGeneration()
         public view returns (uint256)
     {
@@ -231,25 +291,31 @@ contract EarningsTracker is Proxied, Guard {
        }
     }
 
-    // returns the current funding limit of the current generation
+    /**
+     * @dev gets the current funding limit of the current generation
+     */
     function getcurrentFundingLimit() public view returns (uint256) {
         return currentFundingLimit;
     }
 
-    // returns the pre-set funding limit for each generation
+    /**
+     * @dev gets the pre-set funding limit for the generation with id _generation
+     */
     function getFundingLimit(uint256 _generation) public view returns (uint256) {
         return fundingLimit[_generation];
     }
 
+    /**
+     * @dev true if the funding limit of the generation is reached
+     */
     function hasReachedLimit(uint256 _generation) public view returns (bool) {
-        if(generations[_generation].limitReached == true) {
-            return true;
-        }
-        return false;
+        return generations[_generation].limitReached;
     }
 
-    // returns the difference between the funding limit and the actual funding in current generation
-    function howFartoFundingLimit() public view returns (uint256) {
+    /**
+     * @dev gets the difference between the funding limit and the actual funding in current generation
+     */
+    function ethNeededToReachFundingLimit() public view returns (uint256) {
         uint256 currentGeneration = getCurrentGeneration();
         return currentFundingLimit.sub(generations[currentGeneration].ethBalance);
     }
@@ -259,24 +325,36 @@ contract EarningsTracker is Proxied, Guard {
         // todo
     }
 
+    /**
+     * @dev gets the interest accumulated for an Ethie Token NFT
+     * @param _eth_amount uint256 the amount of ethers associated with this NFT
+     * @param _lockTime uint256 the time duration during which the ethers associated
+     * with this NFT has been locked
+     * @return uint256 interest accumulated in the NFT
+     */
     function calculateInterest(uint256 _eth_amount, uint256 _lockTime)
-        public view returns (uint256 interest)
+        public view returns (uint256)
     {
         // formula for calculating simple interest: interest = A*r*t
         // A = principle money, r = interest rate, t = time
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        interest = _eth_amount.mul(gameVarAndFee.getInterestEthie()).mul(_lockTime.div(WEEK));
+        uint256 _interest_rate = gameVarAndFee.getInterestEthie();
+        uint256 _time = _lockTime.div(WEEK);
+
+        return _eth_amount.mul(_interest_rate).mul(_time).div(1000000);
     }
 
-    // returns current weekly epoch ID
+    /**
+     * @dev gets the current weekly epoch ID
+     */
     function getCurrentEpoch() public view returns (uint256) {
-        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         return timeFrame.getActiveEpochID();
     }
 
-    // returns state, stage date and time (in unix) in a current weekly epoch
+    /**
+     * @dev gets state, stage date and time (in unix) in a current weekly epoch
+     * @return string state, uint256 start time, uint256 end time
+     */
     function _viewEpochStage() public view returns (string memory state, uint256 start, uint256 end) {
-        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 currentEpochID = getCurrentEpoch();
         if (timeFrame.isWorkingDay(currentEpochID)) {
             state = "Working Days";
@@ -289,7 +367,9 @@ contract EarningsTracker is Proxied, Guard {
         }
     }
 
-    // returns state, stage start date and time (human-readable) in a current weekly epoch
+    /**
+     * @dev gets state, stage start date and time (human-readable) in a current weekly epoch
+     */
     function viewEpochStartStage()
         public view
         returns (
@@ -302,13 +382,14 @@ contract EarningsTracker is Proxied, Guard {
             uint256 startSecond
         )
     {
-        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 startTime;
         (state, startTime,) = _viewEpochStage();
         (startYear, startMonth, startDay, startHour, startMinute, startSecond) = timeFrame.timestampToDateTime(startTime);
     }
 
-    // returns state, stage end date and time (human-readable) in a current weekly epoch
+    /**
+     * @dev gets state, stage end date and time (human-readable) in a current weekly epoch
+     */
     function viewEpochStageEndTime()
         public view
         returns (
@@ -321,60 +402,44 @@ contract EarningsTracker is Proxied, Guard {
             uint256 endSecond
         )
     {
-        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 endTime;
         (state,, endTime) = _viewEpochStage();
         (endYear, endMonth, endDay, endHour, endMinute, endSecond) = timeFrame.timestampToDateTime(endTime);
     }
 
-    // Returns the next date in which an investor can withdraw lockedETH and earnings by burning KETH
-    function viewNextYieldClaimDate(uint256 ethieTokenID) 
+    /**
+     * @dev gets the next date and time in which an investor can withdraw locked ethers
+     * and earnings by burning an Ethie Token NFT
+     * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burnt
+     */
+    function viewNextYieldClaimDate(uint256 ethieTokenID)
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
         uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
         uint256 unLockAt = lockedAt.add(lockTime);
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(unLockAt);
     }
 
-    // Check and return the date of locked ETH
+    /**
+     * @dev gets the date and time at which ethers were locked for an Ethie Token NFT
+     * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burntT
+     */
     function checkLockETHDate(uint256 ethieTokenID)
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        TimeFrame timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(lockedAt);
-
     }
 
-    // stale function
-    // generate a gen for KETH to be generated based on the funding limit
-   // function genGenerator(uint256 _eth_amount) public view returns (uint256) {
-     //   for (uint i = 0; i < 6; i++) {
-       //     if (_eth_amount <= fundingLimit[i]) {
-         //       return i;
-           // }
-       // }
-        //return 6;
-    //}
-
-    // for example, 2.5 is amplified by 1000000
-    //becomes 2500000 returned to have precision of 7 digits
-    function getPercentage(uint256 numerator, uint256 denominator)
-        public view returns (uint256 quotient)
-    {
-        // amplify the numerator 10 ** 7 to get precision of 7 digits
-        uint _numerator = numerator.mul(10 ** 7);
-        // with rounding of last digit
-        quotient = (_numerator.div(denominator).add(5)).div(10);
-    }
-
-    // generate locktime based on investment SIZE, generation and funding limit
-    // Max funding limit/Value * 30 days
-    // return locktime in days * 1000000
+    /**
+     * @dev Generates locktime based on investment SIZE, generation and funding limit
+     * Max funding limit/Value * 30 days
+     * @param _eth_amount uint256 the amount of ethers to be locked
+     * @return uint256 locktime in seconds
+     */
     function generateLockTime (uint256 _eth_amount)
         public view returns (uint256 lockTime)
     {
@@ -384,22 +449,31 @@ contract EarningsTracker is Proxied, Guard {
             //TODO: how to factor in generation 6 which doesn't have a funding limit
             return THIRTY_DAYS.mul(1000000);
         }
-        lockTime = THIRTY_DAYS.mul(getPercentage(_fundingLimit, _eth_amount));
+        lockTime = THIRTY_DAYS.mul(_fundingLimit).div(_eth_amount);
     }
 
+    /**
+     * @dev gets the required KTY fee for burning an Ethie Token NFT
+     */
     function KTYforBurnEthie() public view returns (uint256) {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         return gameVarAndFee.getKTYforBurnEthie();
     }
 
-    // Internal Functions
+    //============================ Internal Functions ============================
+    /**
+     * @dev transfers ethers to an investor
+     * @param _funder account address of the investor
+     * @param _eth_amount uint256 the amount of ethers to transfer to _funder
+     */
     function _returnEther(address payable _funder, uint256 _eth_amount)
         internal
     {
         endowmentFund.transferETHfromEscrowEarningsTracker(_funder, _eth_amount);
     }
-    
-    // update funder profile when minting a new token
+
+    /**
+     * @dev Updates funder profile when minting a new token to a funder
+     */
     function _updateFunder_mint
     (
         address _funder,
@@ -415,8 +489,11 @@ contract EarningsTracker is Proxied, Guard {
         ethieTokens[_ethieTokenID].lockTime = _lockTime;
         ethieTokens[_ethieTokenID].originalOwner = _funder;
     }
-    
-    // update generation profile when minting a new token
+
+    /**
+     * @dev Updates generation profile when minting a new Ethie Token NFT
+     * @param _eth_amount uint256 the amount of ethers locked for the new Ethie Token NFT
+     */
     function _updateGeneration_mint(
         uint256 _eth_amount
     ) internal {
@@ -426,7 +503,11 @@ contract EarningsTracker is Proxied, Guard {
         generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.add(1);
     }
 
-
+    /**
+     * @dev Updates generation profile when an existing Ethie Token NFT is burnt
+     * @param _generation generation ID associated with this Ethie Token NFT
+     * @param _eth_amount uint256 the amount of ethers released for burning the Ethie Token NFT
+     */
     function _updateGeneration_burn(uint256 _generation, uint256 _eth_amount)
         internal
     {
@@ -441,6 +522,11 @@ contract EarningsTracker is Proxied, Guard {
         }
     }
 
+    /**
+     * @dev Updates funder profile when an existing Ethie Token NFT is burnt
+     * @param _burner address who burns this NFT
+     * @param _ethieTokenID uint256 the ID of the burnt Ethie Token NFT
+     */
     function _updateFunder_burn
     (
         address _burner,
@@ -457,12 +543,14 @@ contract EarningsTracker is Proxied, Guard {
         ethieTokens[_ethieTokenID].tokenBurntBy = _burner;
     }
 
-    // called by BurnNFT to destroy a specific KETH NFT by ID
-    function _burn(uint256 _tokenID) internal {
-        ethieToken.burn(_tokenID);
-    }
-
-    // Called by LockETH, pass values to generate KETH with all atrributes as listed in params
+    /**
+     * @dev Called by LockETH(), pass values to generate Ethie Token NFT with all atrributes as listed in params
+     * @param _to address who this Ethie Token NFT is minted to
+     * @param _ethAmount uint256 the amount of ethers associated with this NFT
+     * @param _lockTime uint256 the time duration during which the ethers associated
+     * with this NFT has been locked
+     * @return uint256 ID of the Ethie Token NFT minted
+     */
     function _mint
     (
         address _to,
@@ -475,7 +563,7 @@ contract EarningsTracker is Proxied, Guard {
         return ethieToken.mint(_to, _ethAmount, _lockTime);
     }
 
-    function _lockETH(address _funder, uint256 _eth_amount)
+    /*function _lockETH(address _funder, uint256 _eth_amount)
         internal
         returns(uint256)
     {
@@ -489,6 +577,6 @@ contract EarningsTracker is Proxied, Guard {
         _updateGeneration_mint(_eth_amount);
 
         return _ethieTokenID;
-    }
+    }*/
 
 }
