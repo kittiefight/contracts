@@ -63,9 +63,14 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
     function name(uint256 tokenId) public view returns(string memory) {
         TokenProperties memory p = properties[tokenId];
         require(p.ethAmount > 0, "EthieToken: name query for nonexistent token");
-        string memory eth = p.ethAmount.fromUint256(18, 4);
-        string memory gen = p.generation.fromUint256();
-        string memory lock = p.lockTime.fromUint256();
-        return StringUtils.concat(eth,"ETH").concat("_G").concat(gen).concat("_LOCK").concat(lock).concat("_").concat(tokenId.fromUint256());
+        return generateName(tokenId, p.ethAmount, p.generation, p.lockTime);
+    }
+
+    function generateName(uint256 tokenId, uint256 ethAmount, uint256 tokenGeneration, uint256 lockTime) public pure returns(string memory) {
+        string memory id  = tokenId.fromUint256();
+        string memory eth = ethAmount.fromUint256(18, 4);
+        string memory gen = tokenGeneration.fromUint256();
+        string memory lock = lockTime.fromUint256();
+        return StringUtils.concat(eth,"ETH").concat("_G").concat(gen).concat("_LOCK").concat(lock).concat("_").concat(id);
     }
 }
