@@ -82,6 +82,19 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     //============================ Events ============================
+    event EtherLocked(
+        address indexed funder,
+        uint256 indexed ethieTokenID,
+        uint256 indexed generation
+    );
+
+    event EthieTokenBurnt(
+        address indexed burner,
+        uint256 indexed ethieTokenID,
+        uint256 indexed generation,
+        uint256 principalEther,
+        uint256 interestPaid
+    );
 
     //============================ Public Functions ============================
 
@@ -143,6 +156,8 @@ contract EarningsTracker is Proxied, Guard {
             }
         }
 
+        emit EtherLocked(_funder, _ethieTokenID, currentGeneration);
+
         return _ethieTokenID;
     }
 
@@ -198,6 +213,8 @@ contract EarningsTracker is Proxied, Guard {
         _returnEther(msg.sender, totalEth);
 
         // TODO: give user lotto to redeem a high priced kitty
+
+        emit EthieTokenBurnt(msg.sender, _ethieTokenID, generation, ethValue, interest);
         return true;
     }
 
