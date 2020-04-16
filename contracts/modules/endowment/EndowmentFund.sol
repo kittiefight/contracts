@@ -286,7 +286,7 @@ contract EndowmentFund is Distribution, Guard {
 
     function transferETHfromEscrowWithdrawalPool(address payable _someAddress, uint256 _eth_amount)
         public
-        onlyContract(CONTRACT_NAME_WITHDRAWAL_POOL)
+        onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
         returns(bool)
     {
         transferETHfromEscrow(_someAddress, _eth_amount);
@@ -317,6 +317,15 @@ contract EndowmentFund is Distribution, Guard {
         require(endowmentDB.updateEndowmentFund(_kty_amount, 0, true));
 
         return true;
+    }
+
+    function addETHtoPool(uint256 gameId, uint256 totalETHinHoneypot)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        uint256 percentageETHtoPool = gameVarAndFee.getPercentageForPool();
+        uint256 ETHtoPool = totalETHinHoneypot.mul(percentageETHtoPool).div(1000000);
+        endowmentDB.addETHtoPool(gameId, ETHtoPool);
     }
 
     /**

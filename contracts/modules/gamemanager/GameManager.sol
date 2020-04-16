@@ -24,6 +24,7 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
+import "../datetime/TimeFrame.sol";
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
@@ -295,6 +296,9 @@ contract GameManager is Proxied, Guard {
 
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
+
+        (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
+        endowmentFund.addETHtoPool(gameId, totalETHinHoneypot);
 
         // update kittie redemption fee dynamically to a percentage of the final honey pot
         gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
