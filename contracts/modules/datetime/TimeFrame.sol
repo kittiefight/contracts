@@ -279,11 +279,59 @@ pragma solidity ^0.5.5;
      }
 
      /**
+      * @dev return the start time (in unix time) of the WorkingDays stage in the current active epoch
+      */
+     function workingDayStartTime()
+         public
+         view
+         returns (uint start)
+     {
+         uint activeEpoch = getActiveEpochID();
+         start = lifeTimeEpochs[activeEpoch].sixDayStart;
+     }
+
+     /**
+      * @dev return the end time (in unix time) of the WorkingDays stage in the current active epoch
+      */
+     function workingDayEndTime()
+         public
+         view
+         returns (uint end)
+     {
+         uint activeEpoch = getActiveEpochID();
+         end = lifeTimeEpochs[activeEpoch].sixDayEnd;
+     }
+
+     /**
+      * @dev return the start time (in unix time) of the RestDay stage in the current active epoch
+      */
+     function restDayStartTime()
+         public
+         view
+         returns (uint end)
+     {
+         uint activeEpoch = getActiveEpochID();
+         end = lifeTimeEpochs[activeEpoch].restDAYStart;
+     }
+
+     /**
+      * @dev return the end time (in unix time) of the RestDay stage in the current active epoch
+      */
+     function restDayEndTime()
+         public
+         view
+         returns (uint end)
+     {
+         uint activeEpoch = getActiveEpochID();
+         end = lifeTimeEpochs[activeEpoch].restDAYEnd;
+     }
+
+     /**
       * @dev return true if the epoch with epoch_id is on its working days
       * @param epoch_id the id of the epoch
       */
      function isWorkingDay(uint epoch_id) public view returns (bool) {
-         return now >= lifeTimeEpochs[epoch_id].sixDayStart && now <= lifeTimeEpochs[epoch_id].sixDayEnd;
+         return (now >= lifeTimeEpochs[epoch_id].sixDayStart) && (now <= lifeTimeEpochs[epoch_id].sixDayEnd);
      }
 
      /**
@@ -291,7 +339,7 @@ pragma solidity ^0.5.5;
       * @param epoch_id the id of the epoch
       */
      function isRestDay(uint epoch_id) public view returns (bool) {
-         return now >= lifeTimeEpochs[epoch_id].restDAYStart && now <= lifeTimeEpochs[epoch_id].restDAYEnd;
+         return (now >= lifeTimeEpochs[epoch_id].restDAYStart) && (now <= lifeTimeEpochs[epoch_id].restDAYEnd);
      }
 
      /**

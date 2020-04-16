@@ -69,6 +69,7 @@ contract EarningsTracker is Proxied, Guard {
     // But 2**200 is a number big enough to be used as the maximum here.
     function initialize(address _ethieToken) external onlyOwner {
         ethieToken = IEthieToken(_ethieToken);
+        timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
 
@@ -269,7 +270,7 @@ contract EarningsTracker is Proxied, Guard {
      * can only be called by admin
      */
     function stopDeposits()
-        internal
+        public
         onlyAdmin
     {
         depositsDisabled = true;
@@ -280,7 +281,7 @@ contract EarningsTracker is Proxied, Guard {
      * can only be called by admin
      */
     function enableDeposits()
-        internal
+        public
         onlyAdmin
     {
         depositsDisabled = false;
@@ -372,15 +373,14 @@ contract EarningsTracker is Proxied, Guard {
      * @return string state, uint256 start time, uint256 end time
      */
     function _viewEpochStage() public view returns (string memory state, uint256 start, uint256 end) {
-        uint256 currentEpochID = getCurrentEpoch();
-        if (timeFrame.isWorkingDay(currentEpochID)) {
+        if (now <= timeFrame.workingDayEndTime()) {
             state = "Working Days";
-            end = (timeFrame._epochEndTime(currentEpochID)).sub(timeFrame.REST_DAY());
-            start = timeFrame._epochStartTime(currentEpochID);
-        } else {
+            start = timeFrame.workingDayStartTime();
+            end = timeFrame.workingDayEndTime();
+        } else if (now > timeFrame.workingDayEndTime()) {
             state = "Rest Day";
-            end = timeFrame._epochEndTime(currentEpochID);
-            start = end.sub(timeFrame.REST_DAY());
+            start = timeFrame.restDayStartTime();
+            end = timeFrame.restDayEndTime();
         }
     }
 

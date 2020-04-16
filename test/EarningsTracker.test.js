@@ -150,10 +150,8 @@ contract("EarningsTracker", accounts => {
   });
 
   it("sets Epoch 0", async () => {
-    // start epoch 0 6 days + 21 hours ago, so that timeFrame.setNewEpoch() can be
-    // called by GameManager when the test game finalizes
-    const startTime = Math.floor(Date.now() / 1000) - 6 * 24 * 60 * 60 + 5 * 60;
-    await timeFrame.setEpoch_0(startTime);
+    console.log("now:", Math.floor(Date.now() / 1000))
+    await timeFrame.setEpoch_0(Math.floor(Date.now() / 1000)-2*24*60*60);
     const epoch_0_start_unix = await timeFrame._epochStartTime(0);
     console.log(
       "epoch 0 start time in unix time:",
@@ -247,18 +245,83 @@ contract("EarningsTracker", accounts => {
   it("an investor can deposit and lock ether, and receive an EthieToken NFT", async () => {
     for (let i = 0; i < 10; i++) {
       let ethAmount = web3.utils.toWei(String(40 + i), "ether");
-      /*await proxy.execute(
-        "EarningsTracker",
-        setMessage(EarningsTracker, "lockETH", []),
-        {from: accounts[i], value: ethAmount}
-      );*/
       await earningsTracker.lockETH({from: accounts[i], value: ethAmount})
       let number_ethieToken = await ethieToken.balanceOf(accounts[i]);
       assert.equal(number_ethieToken.toNumber(), 1);
       let ethieTokenID = await ethieToken.tokenOfOwnerByIndex(accounts[i], 0);
-      console.log(ethieTokenID.toNumber());
+      ethieTokenID = ethieTokenID.toNumber();
+      let tokenProperties = await ethieToken.properties(ethieTokenID);
+      let ethAmountToken = weiToEther(tokenProperties.ethAmount);
+      let generationToken = tokenProperties.generation.toNumber();
+      let lockTime = tokenProperties.lockTime.toString();
+      console.log(`\n************** Investor: accounts${i} **************`);
+      console.log("EthieToken ID:", ethieTokenID);
+      console.log("Oringinal ether amount held in this token:", ethAmountToken);
+      console.log("This token's generation:", generationToken);
+      console.log("This token's lock time(in seconds):", lockTime);
+      console.log("****************************************************\n");
     }
   });
+
+  it("A user can get the ID of the current weekly epoch", async () => {
+    let currentEpochID = await earningsTracker.getCurrentEpoch()
+    currentEpochID = currentEpochID.toNumber()
+    assert.equal(currentEpochID, 0);
+  })
+
+  it("A user can check the current stage of the current epoch, and its start and end time", async () => {
+    let startWorking = await timeFrame.workingDayStartTime()
+    console.log("start working:", startWorking.toString())
+    let endWorking = await timeFrame.workingDayEndTime()
+    console.log("end working:", endWorking.toString())
+    let startRest = await timeFrame.restDayStartTime()
+    console.log("start resting:", startRest.toString())
+    let endRest = await timeFrame.restDayEndTime()
+    console.log("end resting:", endRest.toString())
+    let blockInfo = await web3.eth.getBlock(web3.eth.blockNumber)
+    console.log("latest block timestamp:", blockInfo.timestamp)
+    let res1 = await timeFrame.isWorkingDay(0)
+    console.log("Is working day?", res1)
+    let res2 = await timeFrame.isRestDay(0)
+    console.log("Is rest day?", res2)
+    let stageStart = await earningsTracker.viewEpochStageStartTime()
+    let stageEnd = await earningsTracker.viewEpochStageEndTime()
+    console.log(`\n******************* Current Stage: ${stageStart.state} *******************`);
+    console.log("\n******************* Stage Start Time *******************");
+    console.log(
+      "Date:",
+        stageStart[1].toNumber() +
+        "-" +
+        stageStart[2].toNumber() +
+        "-" +
+        stageStart[3].toNumber(),
+      " ",
+      "Time:",
+        stageStart[4].toNumber() +
+        ":" +
+        stageStart[5].toNumber() +
+        ":" +
+        stageStart[6].toNumber()
+    );
+    console.log("********************************************************\n");
+    console.log("\n******************* Stage End Time *******************");
+    console.log(
+      "Date:",
+        stageEnd[1].toNumber() +
+        "-" +
+        stageEnd[2].toNumber() +
+        "-" +
+        stageEnd[3].toNumber(),
+      " ",
+      "Time:",
+        stageEnd[4].toNumber() +
+        ":" +
+        stageEnd[5].toNumber() +
+        ":" +
+        stageEnd[6].toNumber()
+    );
+    console.log("********************************************************\n");
+  })
 
   it("tells how many more ethers needed to reach the current funding limit", async () => {
     let ethersNeeded = await earningsTracker.ethNeededToReachFundingLimit();
@@ -267,11 +330,6 @@ contract("EarningsTracker", accounts => {
 
   it("reaches the funding limit of the current generation", async () => {
     let ethAmount_12 = web3.utils.toWei(String(55), "ether");
-    //await proxy.execute(
-      //"EarningsTracker",
-      //setMessage(EarningsTracker, "lockETH", []),
-      //{from: accounts[12], value: ethAmount_12}
-    //);
     await earningsTracker.lockETH({from: accounts[12], value: ethAmount_12})
     let number_ethieToken_12 = await ethieToken.balanceOf(accounts[12]);
     assert.equal(number_ethieToken_12.toNumber(), 1);
@@ -287,11 +345,6 @@ contract("EarningsTracker", accounts => {
 
   it("an investor cannot deposit ether if the funding limit of the current generation has been reached", async () => {
     let ethAmount_13 = web3.utils.toWei(String(10), "ether");
-    //await proxy.execute(
-      //"EarningsTracker",
-      //setMessage(EarningsTracker, "lockETH", []),
-      //{from: accounts[13], value: ethAmount_13}
-    //).should.be.rejected;
     await earningsTracker.lockETH({from: accounts[13], value: ethAmount_13}).should.be.rejected
     let number_ethieToken_13 = await ethieToken.balanceOf(accounts[13]);
     console.log(number_ethieToken_13.toNumber());
@@ -320,11 +373,6 @@ contract("EarningsTracker", accounts => {
 
   it("An investor can deposit and receive EthieToken NFT of generation 1", async () => {
     let ethAmount_13 = web3.utils.toWei(String(10), "ether");
-    //await proxy.execute(
-      //"EarningsTracker",
-      //setMessage(EarningsTracker, "lockETH", []),
-      //{from: accounts[13], value: ethAmount_13}
-    //).should.be.fulfilled;
     await await earningsTracker.lockETH({from: accounts[13], value: ethAmount_13}).should.be.fulfilled
     let number_ethieToken_13 = await ethieToken.balanceOf(accounts[13]);
     console.log(number_ethieToken_13.toNumber());
@@ -347,21 +395,14 @@ contract("EarningsTracker", accounts => {
   it("many investors deposit in generation 1", async () => {
     for (let i = 14; i < 25; i++) {
       let eth_amount = web3.utils.toWei(String(70+i), "ether");
-      //await proxy.execute(
-        //"EarningsTracker",
-        //setMessage(EarningsTracker, "lockETH", []),
-       // {from: accounts[i], value: eth_amount}
-      //).should.be.fulfilled;
       await earningsTracker.lockETH({from: accounts[i], value: eth_amount})
       let number_of_ethieToken = await ethieToken.balanceOf(accounts[i]);
-      //console.log(number_of_ethieToken.toNumber());
       assert.equal(number_of_ethieToken.toNumber(), 1);
       let ethie_token_ID = await ethieToken.tokenOfOwnerByIndex(
         accounts[i],
         0
       );
       ethie_token_ID = ethie_token_ID.toNumber();
-      //console.log(ethieTokenID_13);
       let token_properties = await ethieToken.properties(ethie_token_ID);
       let eth_amount_token = weiToEther(token_properties.ethAmount);
       let generation_token = token_properties.generation.toNumber();
@@ -382,21 +423,14 @@ contract("EarningsTracker", accounts => {
     let balance_before_26 = await web3.eth.getBalance(accounts[26])
     balance_before_26 = weiToEther(balance_before_26)
     let eth_amount_26 = web3.utils.toWei(String(ethersNeededGen1+20), "ether");
-      //await proxy.execute(
-       // "EarningsTracker",
-        //setMessage(EarningsTracker, "lockETH", []),
-        //{from: accounts[26], value: eth_amount_26}
-      //)
       await earningsTracker.lockETH({from: accounts[26], value: eth_amount_26})
       let number_of_ethieToken_26 = await ethieToken.balanceOf(accounts[26]);
-      //console.log(number_of_ethieToken.toNumber());
       assert.equal(number_of_ethieToken_26.toNumber(), 1);
       let ethie_token_ID_26 = await ethieToken.tokenOfOwnerByIndex(
         accounts[26],
         0
       );
       ethie_token_ID_26 = ethie_token_ID_26.toNumber();
-      //console.log(ethieTokenID_13);
       let token_properties_26 = await ethieToken.properties(ethie_token_ID_26);
       let eth_amount_token_26 = weiToEther(token_properties_26.ethAmount);
       let generation_token_26 = token_properties_26.generation.toNumber();
@@ -418,11 +452,6 @@ contract("EarningsTracker", accounts => {
 
   it("an investor cannot deposit because the funding limit of the current generation has been reached", async () => {
     let ethAmount_27 = web3.utils.toWei(String(10), "ether");
-    //await proxy.execute(
-      //"EarningsTracker",
-      //setMessage(EarningsTracker, "lockETH", []),
-      //{from: accounts[13], value: ethAmount_13}
-    //).should.be.rejected;
     await earningsTracker.lockETH({from: accounts[27], value: ethAmount_27}).should.be.rejected
     let number_ethieToken_27 = await ethieToken.balanceOf(accounts[27]);
     console.log(number_ethieToken_27.toNumber());
@@ -461,11 +490,6 @@ contract("EarningsTracker", accounts => {
 
   it("burning tokens of current generation frees up some space within the funding limit for more deposit", async () => {
     let ethAmount_28 = web3.utils.toWei(String(20), "ether");
-    //await proxy.execute(
-      //"EarningsTracker",
-      //setMessage(EarningsTracker, "lockETH", []),
-      //{from: accounts[13], value: ethAmount_13}
-    //).should.be.rejected;
     await earningsTracker.lockETH({from: accounts[28], value: ethAmount_28}).should.be.fulfilled
     let number_ethieToken_28 = await ethieToken.balanceOf(accounts[28]);
     console.log(number_ethieToken_28.toNumber());
