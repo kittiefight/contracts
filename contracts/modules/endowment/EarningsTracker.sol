@@ -30,8 +30,14 @@ contract EarningsTracker is Proxied, Guard {
     /// @dev true if deposits are disabled
     bool internal depositsDisabled;
 
-    uint256 constant WEEK = 7 * 24 * 60 * 60;
-    uint256 constant THIRTY_DAYS = 30 * 24 * 60 * 60;
+    uint256 constant WEEK                        = 7 * 24 * 60 * 60;
+    uint256 constant THIRTY_DAYS                 = 30 * 24 * 60 * 60;   // GEN 0
+    uint256 constant SIXTY_DAYS                  = 60 * 24 * 60 * 60;   // GEN 1
+    uint256 constant SEVENTY_FIVE_DAYS           = 75 * 24 * 60 * 60;   // GEN 2
+    uint256 constant NINETY_DAYS                 = 90 * 24 * 60 * 60;   // GEN 3
+    uint256 constant ONE_HUNDRED_AND_FIVE_DAYS   = 105 * 24 * 60 * 60;  // GEN 4
+    uint256 constant ONE_HUNDRED_AND_TWENTY_DAYS = 120 * 24 * 60 * 60;  // GEN 5
+    uint256 constant ONE_HUNDRED_AND_THIRTY_FIVE_DAYS = 135 * 24 * 60 * 60;  // GEN 6
 
     /// @dev an EthieToken NFT's associated properties
     struct NFT {
@@ -462,11 +468,28 @@ contract EarningsTracker is Proxied, Guard {
     {
         uint256 _generation = getCurrentGeneration();
         uint256 _fundingLimit = currentFundingLimit;
-        if (_generation == 6) {
-            //TODO: how to factor in generation 6 which doesn't have a funding limit
-            return THIRTY_DAYS.mul(1000000);
+        if (_generation == 0) {
+            lockTime = THIRTY_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        lockTime = THIRTY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        if (_generation == 1) {
+            lockTime = SIXTY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        }
+        if (_generation == 2) {
+            lockTime = SEVENTY_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
+        }
+        if (_generation == 3) {
+            lockTime = NINETY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        }
+        if (_generation == 4) {
+            lockTime = ONE_HUNDRED_AND_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
+        }
+        if (_generation == 5) {
+            lockTime = ONE_HUNDRED_AND_TWENTY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        }
+        if (_generation == 6) {
+            //TODO: how to factor in generation 6 the funding limit of which is extremely large
+            lockTime = ONE_HUNDRED_AND_THIRTY_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
+        }
     }
 
     /**
@@ -579,21 +602,5 @@ contract EarningsTracker is Proxied, Guard {
     {
         return ethieToken.mint(_to, _ethAmount, _lockTime);
     }
-
-    /*function _lockETH(address _funder, uint256 _eth_amount)
-        internal
-        returns(uint256)
-    {
-        // calculate locktime
-        uint256 _lockTime = generateLockTime(_eth_amount);
-        // receive an NFT token
-        uint256 _ethieTokenID = _mint(_funder, _eth_amount, _lockTime);
-        // update funder profile
-        _updateFunder_mint(_funder, _eth_amount, _lockTime, _ethieTokenID);
-        // update generation profile
-        _updateGeneration_mint(_eth_amount);
-
-        return _ethieTokenID;
-    }*/
 
 }
