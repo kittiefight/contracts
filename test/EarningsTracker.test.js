@@ -509,5 +509,13 @@ contract("EarningsTracker", accounts => {
     console.log("****************************************************\n");
   });
 
-  
+  it("calculates the total interest accumulated for all Ethie Token NFTs in all generations", async () => {
+    let totalInterest = await earningsTracker.viewTotalInterests()
+    //console.log(totalInterest.toString())
+    totalInterest = weiToEther(totalInterest)
+    console.log("\n*** Total Interest Accumulated For All Ethie Tokens Minted ***");
+    console.log(totalInterest, "Ethers!");
+    console.log("*******************************************************\n");
+  })
+
 });
