@@ -17,4 +17,13 @@ contract('EthieToken', (accounts) => {
         assert.equal(name, expected);
     });
 
+    it('should return correct token URI', async () => {
+        let tokenId = await keth.tokenOfOwnerByIndex(accounts[1], 0);
+        // let name = await keth.name(tokenId);
+        // console.log("name:", name);
+        let tokenURI = await keth.tokenURI(tokenId);
+        // console.log("tokenURI:", tokenURI);
+        let expected = "https://ethie.kittiefight.io/metadata/"+tokenId+".json";
+        assert.equal(tokenURI, expected);
+    });
 });

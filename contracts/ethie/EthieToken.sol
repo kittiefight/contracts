@@ -1,20 +1,23 @@
 pragma solidity ^0.5.5;
 
-import "../libs/openzeppelin_v2_5_0/token/ERC721/ERC721Full.sol";
+import "../libs/openzeppelin_v2_5_0/token/ERC721/ERC721.sol";
+import "../libs/openzeppelin_v2_5_0/token/ERC721/ERC721Enumerable.sol";
 import "../libs/openzeppelin_v2_5_0/token/ERC721/ERC721Pausable.sol";
 import "../libs/openzeppelin_v2_5_0/access/roles/MinterRole.sol";
 import "../libs/openzeppelin_v2_5_0/math/SafeMath.sol";
 import "../libs/openzeppelin_v2_5_0/drafts/Counters.sol";
 import "../libs/StringUtils.sol";
+import "./EthieTokenMetadata.sol";
 
-contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
+contract EthieToken is ERC721, ERC721Enumerable, ERC721Pausable, EthieTokenMetadata, MinterRole {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     using StringUtils for string;
     using StringUtils for uint256;
 
-    string constant NAME    = 'Kittiefight Ethie';
-    string constant SYMBOL  = 'Ethie';
+    string constant NAME     = "Kittiefight Ethie";
+    string constant SYMBOL   = "Ethie";
+    string constant BASE_URI = "https://ethie.kittiefight.io/metadata/";
 
     struct TokenProperties {
         uint256 ethAmount;
@@ -27,7 +30,8 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
 
     mapping (uint256 => TokenProperties) public properties;
 
-    constructor() ERC721Full(NAME, SYMBOL) public {
+    constructor() EthieTokenMetadata(NAME, SYMBOL) public {
+        _setBaseURI(BASE_URI);
         nextTokenId.increment();    // First token should have tokenId = 1;
     }
 
@@ -60,6 +64,10 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
         generation.increment();
     }
 
+    function setBaseURI(string calldata baseURI) external onlyMinter {
+        _setBaseURI(baseURI);
+    }
+
     function name(uint256 tokenId) public view returns(string memory) {
         TokenProperties memory p = properties[tokenId];
         require(p.ethAmount > 0, "EthieToken: name query for nonexistent token");
@@ -73,4 +81,5 @@ contract EthieToken is ERC721Full, ERC721Pausable, MinterRole {
         string memory lock = lockTime.fromUint256();
         return StringUtils.concat(eth,"ETH").concat("_G").concat(gen).concat("_LOCK").concat(lock).concat("_").concat(id);
     }
+
 }
