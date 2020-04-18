@@ -335,6 +335,9 @@ contract("EarningsTracker", accounts => {
   });
 
   it("many investors deposit in generation 1", async () => {
+    let bal_endowment_before = await web3.eth.getBalance(escrow.address)
+    bal_endowment_before = weiToEther(bal_endowment_before)
+    
     for (let i = 14; i < 25; i++) {
       let eth_amount = web3.utils.toWei(String(70+i), "ether");
       await earningsTracker.lockETH({from: accounts[i], value: eth_amount})
@@ -356,6 +359,13 @@ contract("EarningsTracker", accounts => {
       console.log("This token's lock time(in seconds):", lock_time);
       console.log("****************************************************\n");
     }
+
+    let bal_endowment_after = await web3.eth.getBalance(escrow.address)
+    bal_endowment_after = weiToEther(bal_endowment_after)
+    console.log("Escrow balance before investment:", bal_endowment_before)
+    console.log("Escrow balance after investment:", bal_endowment_after)
+    let diff_escrow = bal_endowment_after - bal_endowment_before
+    console.log("Escrow ether balance increased by investment from accounts[14] to accounts[24]:", diff_escrow)
   });
 
   it("returns extra ether back to the investor if the total ether exceeds funding limit after this deposit", async () => {
@@ -547,6 +557,20 @@ contract("EarningsTracker", accounts => {
     console.log("\n*** Total Interest Accumulated For All Ethie Tokens Minted ***");
     console.log(totalInterest, "Ethers!");
     console.log("*******************************************************\n");
+  })
+
+  it("an investor cannot depoist/lock ethers and receive Ethie Token NFT if the admin disables depoist", async () => {
+    await earningsTracker.stopDeposits()
+    let ethAmount_29 = web3.utils.toWei(String(10), "ether");
+    await earningsTracker.lockETH({from: accounts[29], value: ethAmount_29}).should.be.rejected
+    let number_ethieToken_29 = await ethieToken.balanceOf(accounts[29]);
+    assert.equal(number_ethieToken_29.toNumber(), 0);
+
+    await earningsTracker.enableDeposits()
+    let ethValue_29 = web3.utils.toWei(String(10), "ether");
+    await earningsTracker.lockETH({from: accounts[29], value: ethValue_29}).should.be.fulfilled
+    let num_ethieToken_29 = await ethieToken.balanceOf(accounts[29]);
+    assert.equal(num_ethieToken_29.toNumber(), 1);
   })
 
 });
