@@ -9,6 +9,9 @@ contract StringUtilsTest {
     function concat(string memory a, string memory b) public pure returns (string memory) {
         return a.concat(b);
     }
+    function concat(string memory a, string memory b, string memory c) public pure returns (string memory) {
+        return a.concat(b, c);
+    }
     function fromUint256(uint256 x) public pure returns (string memory) {
         return x.fromUint256();
     }

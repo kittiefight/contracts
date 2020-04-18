@@ -1,8 +1,7 @@
 pragma solidity ^0.5.5;
 
 /**
- * Based on 
- * - https://github.com/Arachnid/solidity-stringutils/blob/b9a6f6615cf18a87a823cbc461ce9e140a61c305/src/strings.sol (Apache License 2.0)
+ * Based on OpenZeppelin and Oraclize libraries.
  * - https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol (MIT licence)
  */
 library StringUtils {
@@ -12,9 +11,10 @@ library StringUtils {
     }
 
     function concat(string memory a, string memory b) internal pure returns(string memory) {
-        Slice memory self = toSlice(a);
-        Slice memory other = toSlice(b);
-        return concatSlice(self, other);
+        return string(abi.encodePacked(a, b));
+    }
+    function concat(string memory a, string memory b, string memory c) internal pure returns(string memory) {
+        return string(abi.encodePacked(a, b, c));
     }
     
     function fromUint256(uint256 value) internal pure returns (string memory) {
@@ -75,45 +75,6 @@ library StringUtils {
             }
         }
         return string(buffer);
-    }
-
-
-    function concatSlice(Slice memory self, Slice memory other) private pure returns(string memory) {
-        string memory ret = new string(self._len + other._len);
-        uint retptr;
-        assembly {
-            retptr := add(ret, 32)
-        }
-        memcpy(retptr, self._ptr, self._len);
-        memcpy(retptr + self._len, other._ptr, other._len);
-        return ret;        
-    }
-
-    function toSlice(string memory self) private pure returns (Slice memory) {
-        uint ptr;
-        assembly {
-            ptr := add(self, 0x20)
-        }
-        return Slice(bytes(self).length, ptr);
-    }
-
-    function memcpy(uint dest, uint src, uint len) private pure {
-        // Copy word-length chunks while possible
-        for(; len >= 32; len -= 32) {
-            assembly {
-                mstore(dest, mload(src))
-            }
-            dest += 32;
-            src += 32;
-        }
-
-        // Copy remaining bytes
-        uint mask = 256 ** (32 - len) - 1;
-        assembly {
-            let srcpart := and(mload(src), not(mask))
-            let destpart := and(mload(dest), mask)
-            mstore(dest, or(destpart, srcpart))
-        }
     }
 
 }
