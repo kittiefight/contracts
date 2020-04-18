@@ -39,8 +39,8 @@ contract EarningsTracker is Proxied, Guard {
     uint256 constant ONE_HUNDRED_AND_TWENTY_DAYS = 120 * 24 * 60 * 60;  // GEN 5
     uint256 constant ONE_HUNDRED_AND_THIRTY_FIVE_DAYS = 135 * 24 * 60 * 60;  // GEN 6
 
-    uint256 factor;               // used in calculating the total interest accumulated in all Ethie Tokens
-    uint256 interestReleased;     // interest released from all burnt Ethie token NFTs
+    uint256 internal factor;               // used in calculating the total interest accumulated in all Ethie Tokens
+    uint256 internal interestReleased;     // interest released from all burnt Ethie token NFTs
     uint256 public totalBalance;  // total ETH balance from all generations
 
     /// @dev an EthieToken NFT's associated properties
@@ -53,7 +53,7 @@ contract EarningsTracker is Proxied, Guard {
         bool tokenBurnt;       // true if this token has been burnt
         uint256 tokenBurntAt;  // the time when this token was burnt
         address tokenBurntBy;  // who burnt this token (if this token was burnt)
-        uint256 interestReleased; // interest released to the burner when this token was burnt
+        uint256 interestPaid; // interest released to the burner when this token was burnt
     }
 
     /// @dev a generation's associated properties
@@ -617,7 +617,7 @@ contract EarningsTracker is Proxied, Guard {
         ethieTokens[_ethieTokenID].tokenBurnt = true;
         ethieTokens[_ethieTokenID].tokenBurntAt = now;
         ethieTokens[_ethieTokenID].tokenBurntBy = _burner;
-        ethieTokens[_ethieTokenID].interestReleased = _interestPaid;
+        ethieTokens[_ethieTokenID].interestPaid = _interestPaid;
     }
 
     /**
