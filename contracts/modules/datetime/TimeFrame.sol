@@ -331,7 +331,7 @@ pragma solidity ^0.5.5;
       * @param epoch_id the id of the epoch
       */
      function isWorkingDay(uint epoch_id) public view returns (bool) {
-         return (now >= lifeTimeEpochs[epoch_id].sixDayStart) && (now <= lifeTimeEpochs[epoch_id].sixDayEnd);
+         return (block.timestamp >= lifeTimeEpochs[epoch_id].sixDayStart) && (block.timestamp <= lifeTimeEpochs[epoch_id].sixDayEnd);
      }
 
      /**
@@ -339,7 +339,7 @@ pragma solidity ^0.5.5;
       * @param epoch_id the id of the epoch
       */
      function isRestDay(uint epoch_id) public view returns (bool) {
-         return (now >= lifeTimeEpochs[epoch_id].restDAYStart) && (now <= lifeTimeEpochs[epoch_id].restDAYEnd);
+         return (block.timestamp >= lifeTimeEpochs[epoch_id].restDAYStart) && (block.timestamp <= lifeTimeEpochs[epoch_id].restDAYEnd);
      }
 
      /**

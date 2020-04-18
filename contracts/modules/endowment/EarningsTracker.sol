@@ -53,6 +53,7 @@ contract EarningsTracker is Proxied, Guard {
         bool tokenBurnt;       // true if this token has been burnt
         uint256 tokenBurntAt;  // the time when this token was burnt
         address tokenBurntBy;  // who burnt this token (if this token was burnt)
+        uint256 interestReleased; // interest released to the burner when this token was burnt
     }
 
     /// @dev a generation's associated properties
@@ -187,6 +188,9 @@ contract EarningsTracker is Proxied, Guard {
     )
         external returns(bool)
     {
+        // Ethie Tokens can only be burnt on a Rest Day in the current epoch
+        require(isWorkingDay() == false, "Can only burn on Rest Day");
+
         // the token may be sold to another person, therefore,
         // current owner may not be necessarily the original owner of
         // this token when it was minted.
@@ -196,11 +200,6 @@ contract EarningsTracker is Proxied, Guard {
         address currentOwner = ethieToken.ownerOf(_ethieTokenID);
         require(currentOwner == msg.sender, "Only the owner of this token can burn it");
 
-        uint256 tokenLockedAt = ethieTokens[_ethieTokenID].lockedAt;
-        uint256 lockTime = now.sub(tokenLockedAt);
-        require(lockTime >= ethieTokens[_ethieTokenID].lockTime,
-                "The lock time limit for this token has not been reached yet");
-
         // require this token had not been burnt already
         require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
@@ -208,19 +207,21 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _kty_fee = KTYforBurnEthie();
         require(endowmentFund.contributeKTY(msg.sender, _kty_fee),
                 "Failed to pay KTY fee for burning Ethie Token");
-        
+
         // burn Ethie Token NFT
         ethieToken.burn(_ethieTokenID);
 
+        uint256 tokenLockedAt = ethieTokens[_ethieTokenID].lockedAt;
+        uint256 lockTime = now.sub(tokenLockedAt);
         // calculate interest
         uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
         uint256 generation = ethieTokens[_ethieTokenID].generation;
         uint256 interest = calculateInterest(ethValue, lockTime);
         uint256 totalEth = ethValue.add(interest);
         // update generations
-        _updateGeneration_burn(generation, totalEth);
+        _updateGeneration_burn(generation, ethValue);
         // update funder
-        _updateFunder_burn(msg.sender, _ethieTokenID);
+        _updateFunder_burn(msg.sender, _ethieTokenID, interest);
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         _returnEther(msg.sender, totalEth);
@@ -228,8 +229,6 @@ contract EarningsTracker is Proxied, Guard {
         factor = factor.sub(ethValue.mul(tokenLockedAt));
         interestReleased = interestReleased.add(interest);
         totalBalance = totalBalance.sub(ethValue);
-
-        // TODO: give user lotto to redeem a high priced kitty
 
         emit EthieTokenBurnt(msg.sender, _ethieTokenID, generation, ethValue, interest);
         return true;
@@ -397,15 +396,25 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
+     * @dev ture if now is in the stage of Six-Working-Days in a current weekly epoch
+     */
+    function isWorkingDay() public view returns (bool) {
+        if (block.timestamp <= timeFrame.workingDayEndTime()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @dev gets state, stage date and time (in unix) in a current weekly epoch
      * @return string state, uint256 start time, uint256 end time
      */
     function _viewEpochStage() public view returns (string memory state, uint256 start, uint256 end) {
-        if (now <= timeFrame.workingDayEndTime()) {
+        if (block.timestamp <= timeFrame.workingDayEndTime()) {
             state = "Working Days";
             start = timeFrame.workingDayStartTime();
             end = timeFrame.workingDayEndTime();
-        } else if (now > timeFrame.workingDayEndTime()) {
+        } else if (block.timestamp > timeFrame.workingDayEndTime()) {
             state = "Rest Day";
             start = timeFrame.restDayStartTime();
             end = timeFrame.restDayEndTime();
@@ -596,7 +605,8 @@ contract EarningsTracker is Proxied, Guard {
     function _updateFunder_burn
     (
         address _burner,
-        uint256 _ethieTokenID
+        uint256 _ethieTokenID,
+        uint256 _interestPaid
     )
         internal
     {
@@ -607,6 +617,7 @@ contract EarningsTracker is Proxied, Guard {
         ethieTokens[_ethieTokenID].tokenBurnt = true;
         ethieTokens[_ethieTokenID].tokenBurntAt = now;
         ethieTokens[_ethieTokenID].tokenBurntBy = _burner;
+        ethieTokens[_ethieTokenID].interestReleased = _interestPaid;
     }
 
     /**
