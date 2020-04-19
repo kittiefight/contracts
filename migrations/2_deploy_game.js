@@ -58,16 +58,16 @@ const INITIAL_ETH_ENDOWMENT = new BigNumber(
 );
 
 // ================ GAME VARS AND FEES ================ //
-const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
+const LISTING_FEE = new BigNumber(web3.utils.toWei("125", "ether"));
 const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
-const GAME_PRESTART = 50 // 2 min
+const GAME_PRESTART = 30 // 2 min
 const GAME_DURATION = 80 // 5 min
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
-const GAME_TIMES = 10*60 //Scheduled games 10 min apart
+const GAME_TIMES = 60 //Scheduled games 10 min apart
 const KITTIE_HELL_EXPIRATION = 60*60*24 //1 day
 const HONEY_POT_EXPIRATION = 60*60*23// 23 hours
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("100", "ether")); //37,500 KTY
@@ -77,7 +77,7 @@ const WINNING_KITTIE = 300000  // 30%
 const TOP_BETTOR = 200000 // 20%
 const SECOND_RUNNER_UP = 100000 // 10%
 const OTHER_BETTORS = 250000 // 25%
-const ENDOWNMENT = 100000 //10%
+const ENDOWNMENT = 150000 //15%
 const PERCENTAGE_FOR_POOL = 50000 // 5%
 
 //Fee Percentages - fee percentages are multiplied by 1000 instead of 100
@@ -91,7 +91,7 @@ const PERCENTAGE_FOR_TICKET_FEE = 300  // 0.03%
 const PERCENTAGE_FOR_BETTING_FEE = 20  // 0.002%
 const PERCENTAGE_HONEYPOT_ALLOCATION_KTY = 100000  //10%
 const KTY_FOR_BURN_ETHIE = new BigNumber(web3.utils.toWei("100", "ether"));
-const INTEREST_ETHIE = 40000 // 4%
+const INTEREST_ETHIE = 100000 // 10%
 // =================================================== //
 
 function setMessage(contract, funcName, argArray) {
@@ -292,7 +292,7 @@ module.exports = (deployer, network, accounts) => {
             await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
             await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT, {from: accounts[0]});
             //Transfer ETH
-            await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+            // await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
 
             console.log('\nSetting game vars and fees...');
             let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',

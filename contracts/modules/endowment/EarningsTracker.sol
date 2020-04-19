@@ -54,7 +54,15 @@ contract EarningsTracker is Proxied, Guard {
         uint256 tokenBurntAt;  // the time when this token was burnt
         address tokenBurntBy;  // who burnt this token (if this token was burnt)
         uint256 interestPaid; // interest released to the burner when this token was burnt
+        uint256 startingEpochID; //The epochId this token started to contribute.
     }
+
+    struct AmountsEpoch {
+        uint256 investment;
+        uint256 interest;
+    }
+
+    mapping(uint256 => AmountsEpoch) public amountsPerEpoch;
 
     /// @dev a generation's associated properties
     struct Generation {
@@ -110,6 +118,20 @@ contract EarningsTracker is Proxied, Guard {
 
     //============================ Public Functions ============================
 
+    function setInvestment(uint256 epoch_id, uint256 _investment)
+    external
+    onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+    {
+        amountsPerEpoch[epoch_id].investment = _investment;
+    }
+
+    function setInterest(uint256 epoch_id, uint256 _total)
+    external
+    onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+    {
+        amountsPerEpoch[epoch_id].interest = _total.sub(amountsPerEpoch[epoch_id].investment);
+    }
+
     /**
      * @dev deposit eth and receive an NFT token, which can be burned
      * in order to retrieve locked eth and accumulated interest
@@ -132,7 +154,7 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _totalETH = _ethBalance.add(msg.value);
         address _funder = getOriginalSender();
 
-        // transfer funds to endowmentFund
+        // // transfer funds to endowmentFund
         require(endowmentFund.contributeETH_Ethie.value(msg.value)(), "Funds deposit failed");
 
         uint256 _lockTime;
@@ -140,7 +162,7 @@ contract EarningsTracker is Proxied, Guard {
 
         if (_fundingLimit < _totalETH) {
             uint256 _extra = _totalETH.sub(_fundingLimit);
-            uint256 _legitEthValue = (msg.value).sub(_extra);
+            uint256 _legitEthValue = msg.value.sub(_extra);
             // calculate locktime
             _lockTime = generateLockTime(_legitEthValue);
             // receive an NFT token
@@ -150,7 +172,7 @@ contract EarningsTracker is Proxied, Guard {
             // update generation profile
             _updateGeneration_mint(_legitEthValue);
             // return extra ether back to the funder
-            _returnEther(msg.sender, _extra);
+            _returnEther(msg.sender, _extra, false);
 
             generations[currentGeneration].limitReached == true;
 
@@ -168,6 +190,9 @@ contract EarningsTracker is Proxied, Guard {
                 generations[currentGeneration].limitReached = true;
             }
         }
+
+        uint256 nextEpoch = getCurrentEpoch().add(1);
+        ethieTokens[_ethieTokenID].startingEpochID = nextEpoch;
 
         emit EtherLocked(_funder, _ethieTokenID, currentGeneration);
 
@@ -216,7 +241,7 @@ contract EarningsTracker is Proxied, Guard {
         // calculate interest
         uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
         uint256 generation = ethieTokens[_ethieTokenID].generation;
-        uint256 interest = calculateInterest(ethValue, lockTime);
+        uint256 interest = calculateInterest(ethValue, ethieTokens[_ethieTokenID].startingEpochID);
         uint256 totalEth = ethValue.add(interest);
         // update generations
         _updateGeneration_burn(generation, ethValue);
@@ -224,7 +249,11 @@ contract EarningsTracker is Proxied, Guard {
         _updateFunder_burn(msg.sender, _ethieTokenID, interest);
         // update burntTokens
         // release ETH and accumulative interest to the current owner
-        _returnEther(msg.sender, totalEth);
+        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        if(ethieTokens[_ethieTokenID].startingEpochID < activeEpochID)
+            _returnEther(msg.sender, totalEth, false);
+        else
+            _returnEther(msg.sender, totalEth, true);
 
         factor = factor.sub(ethValue.mul(tokenLockedAt));
         interestReleased = interestReleased.add(interest);
@@ -322,6 +351,7 @@ contract EarningsTracker is Proxied, Guard {
                return i;
            }
        }
+       return 6;
     }
 
     /**
@@ -373,19 +403,24 @@ contract EarningsTracker is Proxied, Guard {
     /**
      * @dev gets the interest accumulated for an Ethie Token NFT
      * @param _eth_amount uint256 the amount of ethers associated with this NFT
-     * @param _lockTime uint256 the time duration during which the ethers associated
      * with this NFT has been locked
      * @return uint256 interest accumulated in the NFT
      */
-    function calculateInterest(uint256 _eth_amount, uint256 _lockTime)
+    function calculateInterest(uint256 _eth_amount, uint256 _startingEpoch)
         public view returns (uint256)
     {
-        // formula for calculating simple interest: interest = A*r*t
-        // A = principle money, r = interest rate, t = time
-        uint256 _interest_rate = gameVarAndFee.getInterestEthie();
-        uint256 _time = _lockTime.div(WEEK);
-
-        return _eth_amount.mul(_interest_rate).mul(_time).div(1000000);
+        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        if(_startingEpoch < activeEpochID) {
+            return 0;
+        }
+        else {
+            uint256 proportion = _eth_amount;
+            for(uint256 i = _startingEpoch; i < activeEpochID.add(1); i++) {
+                uint256 epochInterest = proportion.mul(amountsPerEpoch[i].interest).div(amountsPerEpoch[i].investment);
+                proportion = proportion.add(epochInterest);
+            }
+            return proportion;
+        }
     }
 
     /**
@@ -399,7 +434,7 @@ contract EarningsTracker is Proxied, Guard {
      * @dev ture if now is in the stage of Six-Working-Days in a current weekly epoch
      */
     function isWorkingDay() public view returns (bool) {
-        if (block.timestamp <= timeFrame.workingDayEndTime()) {
+        if (now <= timeFrame.workingDayEndTime()) {
             return true;
         }
         return false;
@@ -410,11 +445,11 @@ contract EarningsTracker is Proxied, Guard {
      * @return string state, uint256 start time, uint256 end time
      */
     function _viewEpochStage() public view returns (string memory state, uint256 start, uint256 end) {
-        if (block.timestamp <= timeFrame.workingDayEndTime()) {
+        if (now <= timeFrame.workingDayEndTime()) {
             state = "Working Days";
             start = timeFrame.workingDayStartTime();
             end = timeFrame.workingDayEndTime();
-        } else if (block.timestamp > timeFrame.workingDayEndTime()) {
+        } else if (now > timeFrame.workingDayEndTime()) {
             state = "Rest Day";
             start = timeFrame.restDayStartTime();
             end = timeFrame.restDayEndTime();
@@ -495,31 +530,31 @@ contract EarningsTracker is Proxied, Guard {
      * @return uint256 locktime in seconds
      */
     function generateLockTime (uint256 _eth_amount)
-        public view returns (uint256 lockTime)
+        public view returns (uint256)
     {
         uint256 _generation = getCurrentGeneration();
         uint256 _fundingLimit = currentFundingLimit;
         if (_generation == 0) {
-            lockTime = THIRTY_DAYS.mul(_fundingLimit).div(_eth_amount);
+            return THIRTY_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        if (_generation == 1) {
-            lockTime = SIXTY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        else if (_generation == 1) {
+            return SIXTY_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        if (_generation == 2) {
-            lockTime = SEVENTY_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
+        else if (_generation == 2) {
+            return SEVENTY_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        if (_generation == 3) {
-            lockTime = NINETY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        else if (_generation == 3) {
+            return NINETY_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        if (_generation == 4) {
-            lockTime = ONE_HUNDRED_AND_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
+        else if (_generation == 4) {
+            return ONE_HUNDRED_AND_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        if (_generation == 5) {
-            lockTime = ONE_HUNDRED_AND_TWENTY_DAYS.mul(_fundingLimit).div(_eth_amount);
+        else if (_generation == 5) {
+            return ONE_HUNDRED_AND_TWENTY_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
-        if (_generation == 6) {
+        else{
             //TODO: how to factor in generation 6 the funding limit of which is extremely large
-            lockTime = ONE_HUNDRED_AND_THIRTY_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
+            return ONE_HUNDRED_AND_THIRTY_FIVE_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
     }
 
@@ -536,10 +571,10 @@ contract EarningsTracker is Proxied, Guard {
      * @param _funder account address of the investor
      * @param _eth_amount uint256 the amount of ethers to transfer to _funder
      */
-    function _returnEther(address payable _funder, uint256 _eth_amount)
+    function _returnEther(address payable _funder, uint256 _eth_amount, bool invested)
         internal
     {
-        endowmentFund.transferETHfromEscrowEarningsTracker(_funder, _eth_amount);
+        endowmentFund.transferETHfromEscrowEarningsTracker(_funder, _eth_amount, invested);
     }
 
     /**

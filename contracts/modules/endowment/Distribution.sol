@@ -23,7 +23,7 @@ import "../databases/EndowmentDB.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
 import "../gamemanager/GameStore.sol";
-import "../../CronJob.sol";
+// import "../../CronJob.sol";
 
 /**
  * @title Distribution Contract

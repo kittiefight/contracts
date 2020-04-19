@@ -185,9 +185,9 @@ contract GameManager is Proxied, Guard {
         uint timeExtension = gameStore.getTimeExtension(gameId);
 
         if(gameStore.checkPerformanceHelper(gameId, gameEndTime)){
-            gmSetterDB.updateEndTime(gameId, now.add(timeExtension));
+            gmSetterDB.updateEndTime(gameId, gameEndTime.add(60));
             gameCreation.rescheduleCronJob(gameId);
-            emit GameExtended(gameId, now.add(timeExtension));
+            emit GameExtended(gameId, gameEndTime.add(60));
         }
     }
 
@@ -298,7 +298,7 @@ contract GameManager is Proxied, Guard {
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
         (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
-        endowmentFund.addETHtoPool(gameId, totalETHinHoneypot);
+        endowmentFund.addETHtoPool(gameId, loser);
 
         // update kittie redemption fee dynamically to a percentage of the final honey pot
         gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
@@ -332,6 +332,7 @@ contract GameManager is Proxied, Guard {
         gameCreation.removeKitties(gameId);
 
         gameCreation.deleteCronjob(gameId);
+        gameStore.startAfterCancel();
 
     }
 }

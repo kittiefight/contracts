@@ -52,14 +52,14 @@ contract EndowmentFund is Distribution, Guard {
     }
 
     /**
-  * @dev check if enough funds present and maintains balance of tokens in DB
-  */
-  function generateHoneyPot(uint256 gameId)
+    * @dev check if enough funds present and maintains balance of tokens in DB
+    */
+    function generateHoneyPot(uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (uint, uint) {
-    return (endowmentDB.generateHoneyPot(gameId));
-  }
+        return (endowmentDB.generateHoneyPot(gameId));
+    }
 
     /**
     * @dev winner claims
@@ -68,11 +68,11 @@ contract EndowmentFund is Distribution, Guard {
         address payable msgSender = address(uint160(getOriginalSender()));
 
         // Honeypot status
-        (uint status, uint256 claimTime) = endowmentDB.getHoneypotState(_gameId);
+        (uint status, /*uint256 claimTime*/) = endowmentDB.getHoneypotState(_gameId);
 
         require(uint(HoneypotState.claiming) == status, "1");
 
-        require(now < claimTime, "2");
+        // require(now < claimTime, "2");
 
         require(!getWithdrawalState(_gameId, msgSender), "3");
 
@@ -82,11 +82,14 @@ contract EndowmentFund is Distribution, Guard {
         require(endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true));
 
         if (winningsKTY > 0){
-            transferKTYfromEscrow(msgSender, winningsKTY);
+            // transfer the KTY
+            require(escrow.transferKTY(msgSender, winningsKTY));
         }
 
         if (winningsETH > 0){
-            transferETHfromEscrow(msgSender, winningsETH);
+            // transfer the ETH
+            require(escrow.transferETH(msgSender, winningsETH));
+            // transferETHfromEscrow(msgSender, winningsETH);
         }
 
         // log tokens sent to an address
@@ -119,48 +122,56 @@ contract EndowmentFund is Distribution, Guard {
     function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
         uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
+            //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
+            (uint256 winningsETH, uint256 winningsKTY) = getEndowmentShare(_gameId);
+            endowmentDB.updateEndowmentFund(winningsKTY, winningsETH, false);
+            endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
 
-            claimTime = now.add(gameStore.getHoneypotExpiration(_gameId));
+            // claimTime = now.add(gameStore.getHoneypotExpiration(_gameId));
 
             //add to cron: schedule desolve of HoneyPot
-            CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-            uint256 scheduledJob = cron.addCronJob(
-                                            CONTRACT_NAME_ENDOWMENT_FUND,
-                                            claimTime,
-                                            abi.encodeWithSignature("scheduleDissolve(uint256)", _gameId)
-                                            );
-            scheduledJobs[_gameId] = scheduledJob;
-            emit Scheduled(scheduledJob, claimTime, _gameId);
+            // CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+            // uint256 scheduledJob = cron.addCronJob(
+            //                                 CONTRACT_NAME_ENDOWMENT_FUND,
+            //                                 claimTime,
+            //                                 abi.encodeWithSignature("scheduleDissolve(uint256)", _gameId)
+            //                                 );
+            // scheduledJobs[_gameId] = scheduledJob;
+            // emit Scheduled(scheduledJob, claimTime, _gameId);
         }
-        endowmentDB.setHoneypotState(_gameId, _state, claimTime);
+        if(_state == uint(HoneypotState.forefeited)) {
+            (uint256 eth, uint256 kty) = endowmentDB.getHoneypotTotal(_gameId);
+            endowmentDB.updateEndowmentFund(eth, kty, false);
+        }
+        endowmentDB.setHoneypotState(_gameId, _state);
     }
 
-    function deleteCronJob(uint _gameId)
-        external
-        onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
-    {
-       CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-       cron.deleteCronJob(CONTRACT_NAME_ENDOWMENT_FUND, scheduledJobs[_gameId]);
-    }
+    // function deleteCronJob(uint _gameId)
+    //     external
+    //     onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
+    // {
+    //    CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
+    //    cron.deleteCronJob(CONTRACT_NAME_ENDOWMENT_FUND, scheduledJobs[_gameId]);
+    // }
 
     /**
     * @dev added to cronjob : schedule Honey pot dissolve
     */
-    function scheduleDissolve(uint256 _gameId)
-        external
-        onlyContract(CONTRACT_NAME_CRONJOB)
-    {
+    // function scheduleDissolve(uint256 _gameId)
+    //     external
+    //     onlyContract(CONTRACT_NAME_CRONJOB)
+    // {
 
-        // move left over funds from honey pot to endowment
-        (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH) = endowmentDB.getHoneyPotBalance(_gameId);
+    //     // move left over funds from honey pot to endowment
+    //     (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH) = endowmentDB.getHoneyPotBalance(_gameId);
 
-        // update endowmentFund
-        require(endowmentDB.updateEndowmentFund(honeyPotBalanceKTY, honeyPotBalanceETH, false));
+    //     // update endowmentFund
+    //     require(endowmentDB.updateEndowmentFund(honeyPotBalanceKTY, honeyPotBalanceETH, false));
 
-        // change state to dissolved
-        endowmentDB.dissolveHoneypot(_gameId, uint(HoneypotState.dissolved));
+    //     // change state to dissolved
+    //     endowmentDB.dissolveHoneypot(_gameId, uint(HoneypotState.dissolved));
 
-    }
+    // }
 
     /**
      * @dev Send KTY from EndowmentFund to Escrow
@@ -233,14 +244,19 @@ contract EndowmentFund is Distribution, Guard {
         }
 
         endowmentDB.updateHoneyPotFund(_gameId, 0, msg.value, false);
-        endowmentDB.updateEndowmentFund(0, msg.value, false);
+        //endowmentDB.updateEndowmentFund(0, msg.value, false);
 
         emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
 
         return true;
     }
 
-    function contributeETH_Ethie() external payable returns(bool) {
+    function contributeETH_Ethie()
+    external
+    onlyContract(CONTRACT_NAME_EARNINGS_TRACKER)
+    payable
+    returns(bool)
+    {
         require(address(escrow) != address(0));
         address msgSender = getOriginalSender();
 
@@ -251,7 +267,7 @@ contract EndowmentFund is Distribution, Guard {
             return false;
         }
 
-        endowmentDB.updateEndowmentFund(0, msg.value, false);
+        endowmentDB.updateInvestment(msg.value);
 
         emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
 
@@ -284,21 +300,27 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
-    function transferETHfromEscrowWithdrawalPool(address payable _someAddress, uint256 _eth_amount)
+    function transferETHfromEscrowWithdrawalPool(address payable _someAddress, uint256 _eth_amount, uint256 _pool_id)
         public
         onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
         returns(bool)
     {
+        endowmentDB.subETHfromPool(_eth_amount, _pool_id);
         transferETHfromEscrow(_someAddress, _eth_amount);
         return true;
     }
 
-    function transferETHfromEscrowEarningsTracker(address payable _someAddress, uint256 _eth_amount)
+    function transferETHfromEscrowEarningsTracker(address payable _someAddress, uint256 _eth_amount, bool invested)
         public
         onlyContract(CONTRACT_NAME_EARNINGS_TRACKER)
         returns(bool)
     {
-        transferETHfromEscrow(_someAddress, _eth_amount);
+        if(!invested) {
+            endowmentDB.subInvestment(_eth_amount);
+            require(escrow.transferETH(_someAddress, _eth_amount));
+        }
+        else
+            transferETHfromEscrow(_someAddress, _eth_amount);
         return true;
     }
 
@@ -319,12 +341,12 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
-    function addETHtoPool(uint256 gameId, uint256 totalETHinHoneypot)
+    function addETHtoPool(uint256 gameId, address loser)
         external
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
-        uint256 percentageETHtoPool = gameVarAndFee.getPercentageForPool();
-        uint256 ETHtoPool = totalETHinHoneypot.mul(percentageETHtoPool).div(1000000);
+        uint256 totalEthForLoser = gmGetterDB.getTotalBet(gameId, loser);
+        uint256 ETHtoPool = totalEthForLoser.mul(gameVarAndFee.getPercentageForPool()).div(1000000);
         endowmentDB.addETHtoPool(gameId, ETHtoPool);
     }
 

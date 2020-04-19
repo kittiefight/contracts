@@ -3,36 +3,6 @@ const expect = require('chai').expect;
 exports.test = (f, amount) => {
   const context = f;
 
-  it('should let owner to add some projects', async () => {
-    const projectTitles = [];
-    const projectIpfsData = [];
-    const projectIpfsHash = [];
-    const projectIpfsSize = [];
-
-    for (let i = 0; i < 10; i++) {
-      if (i < amount) {
-        projectTitles.push(web3.utils.fromAscii(`Project${i}`));
-      } else {
-        projectTitles.push('0x0');
-      }
-      projectIpfsData.push('0x0');
-      projectIpfsHash.push(0);
-      projectIpfsSize.push(0);
-    }
-
-    expect(await context.projectVoting.addProjects(
-      projectTitles,
-      projectIpfsData,
-      projectIpfsHash,
-      projectIpfsSize,
-      { gas: 900000, from: context.accounts[0] }))
-      .to.have.nested.property('receipt.status', true);
-  });
-
-  it('should have VOTE state', async () => {
-    expect(await context.projectVoting.state()).to.be.bignumber.equal('1');
-  });
-
   it('registers 40 users', async () => {
     let users = 40;
 

@@ -102,7 +102,7 @@ contract HoneypotAllocationAlgo is Proxied {
     function calculateAllocationToHoneypot()
         public
         view
-        onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+        onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
         returns (uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
     {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
@@ -115,7 +115,7 @@ contract HoneypotAllocationAlgo is Proxied {
 
         uint256 actualFundsUSD = convertETHtoUSD(actualFundsETH);
         uint256 percentageETH;
-        if (actualFundsUSD > 4000) {
+        if (actualFundsUSD > 40000) {
             (percentageETH, honeypotClass) = _honeypotAllocationETH_incredible(actualFundsUSD);
         } else {
             (percentageETH, honeypotClass) = _honeypotAllocationETH_great(actualFundsUSD);

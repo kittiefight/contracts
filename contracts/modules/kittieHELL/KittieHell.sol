@@ -70,6 +70,38 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyContract(CONTRACT_NAME_SCHEDULER)
         returns (bool)
     {
+        return _acquireKitty(_kittyID, owner);
+    }
+
+    /**
+     * @author @ugwu @ziweidream
+     * @notice transfer the ownership of a kittie to this contract
+     * @dev The last owner must be stored as a returned reference
+     * @dev This function can only be carried out via proxy
+     * @param _kittyID the kittie to acquire
+     * @return true if the acquisition was successful
+     */
+    function manualAcquireKitty(uint256 _kittyID, address owner)
+        public
+        onlyNotOwnedKitty(_kittyID)
+        onlyContract(CONTRACT_NAME_GAMECREATION)
+        returns (bool)
+    {
+        return _acquireKitty(_kittyID, owner);
+    }
+
+    /**
+     * @author @ugwu @ziweidream
+     * @notice transfer the ownership of a kittie to this contract
+     * @dev The last owner must be stored as a returned reference
+     * @dev This function can only be carried out via proxy
+     * @param _kittyID the kittie to acquire
+     * @return true if the acquisition was successful
+     */
+    function _acquireKitty(uint256 _kittyID, address owner)
+        internal
+        returns (bool)
+    {
         cryptoKitties.transferFrom(owner, address(this), _kittyID);
         require(cryptoKitties.ownerOf(_kittyID) == address(this));
         kitties[_kittyID].owner = owner;

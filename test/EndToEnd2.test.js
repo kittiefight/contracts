@@ -188,53 +188,6 @@ contract("GameManager", accounts => {
     }
   });
 
-  it("sets Epoch 0", async () => {
-    // start epoch 0 6 days + 21 hours ago, so that timeFrame.setNewEpoch() can be
-    // called by GameManager when the test game finalizes
-    const startTime = Math.floor(Date.now() / 1000) - 6 * 24 * 60 * 60 + 5 * 60;
-    await timeFrame.setEpoch_0(startTime);
-    const epoch_0_start_unix = await timeFrame._epochStartTime(0);
-    console.log(
-      "epoch 0 start time in unix time:",
-      epoch_0_start_unix.toNumber()
-    );
-    const epoch_0_start_human_readable = await timeFrame.epochStartTime(0);
-    const epoch_0_end_human_readable = await timeFrame.epochEndTime(0);
-    console.log("\n******************* Epoch 0 Start Time *****************");
-    console.log(
-      "Date:",
-      epoch_0_start_human_readable[0].toNumber() +
-        "-" +
-        epoch_0_start_human_readable[1].toNumber() +
-        "-" +
-        epoch_0_start_human_readable[2].toNumber(),
-      " ",
-      "Time:",
-      epoch_0_start_human_readable[3].toNumber() +
-        ":" +
-        epoch_0_start_human_readable[4].toNumber() +
-        ":" +
-        epoch_0_start_human_readable[5].toNumber()
-    );
-    console.log("\n******************* Epoch 0 End Time *******************");
-    console.log(
-      "Date:",
-      epoch_0_end_human_readable[0].toNumber() +
-        "-" +
-        epoch_0_end_human_readable[1].toNumber() +
-        "-" +
-        epoch_0_end_human_readable[2].toNumber(),
-      " ",
-      "Time:",
-      epoch_0_end_human_readable[3].toNumber() +
-        ":" +
-        epoch_0_end_human_readable[4].toNumber() +
-        ":" +
-        epoch_0_end_human_readable[5].toNumber()
-    );
-    console.log("********************************************************\n");
-  });
-
   it("sets Pool 0", async () => {
     await withdrawPool.setPool_0();
     const numberOfPools = await withdrawPool.getTotalNumberOfPools();
@@ -276,6 +229,55 @@ contract("GameManager", accounts => {
     console.log("********************************************************\n");
   });
 
+
+
+  it("sets Epoch 0", async () => {
+    // start epoch 0 6 days + 21 hours ago, so that timeFrame.setNewEpoch() can be
+    // called by GameManager when the test game finalizes
+    // const startTime = Math.floor(Date.now() / 1000) - 6 * 24 * 60 * 60 + 5 * 60;
+    // await timeFrame.setEpoch_0(startTime);
+    // const epoch_0_start_unix = await timeFrame._epochStartTime(0);
+    // console.log(
+    //   "epoch 0 start time in unix time:",
+    //   epoch_0_start_unix.toNumber()
+    // );
+    const epoch_0_start_human_readable = await timeFrame.epochStartTime(0);
+    const epoch_0_end_human_readable = await timeFrame.epochEndTime(0);
+    console.log("\n******************* Epoch 0 Start Time *****************");
+    console.log(
+      "Date:",
+      epoch_0_start_human_readable[0].toNumber() +
+        "-" +
+        epoch_0_start_human_readable[1].toNumber() +
+        "-" +
+        epoch_0_start_human_readable[2].toNumber(),
+      " ",
+      "Time:",
+      epoch_0_start_human_readable[3].toNumber() +
+        ":" +
+        epoch_0_start_human_readable[4].toNumber() +
+        ":" +
+        epoch_0_start_human_readable[5].toNumber()
+    );
+    console.log("\n******************* Epoch 0 End Time *******************");
+    console.log(
+      "Date:",
+      epoch_0_end_human_readable[0].toNumber() +
+        "-" +
+        epoch_0_end_human_readable[1].toNumber() +
+        "-" +
+        epoch_0_end_human_readable[2].toNumber(),
+      " ",
+      "Time:",
+      epoch_0_end_human_readable[3].toNumber() +
+        ":" +
+        epoch_0_end_human_readable[4].toNumber() +
+        ":" +
+        epoch_0_end_human_readable[5].toNumber()
+    );
+    console.log("********************************************************\n");
+  });
+
   it("registers 40 users", async () => {
     let users = 40;
 
@@ -283,8 +285,6 @@ contract("GameManager", accounts => {
       await proxy.execute("Register", setMessage(register, "register", []), {
         from: accounts[i]
       }).should.be.fulfilled;
-
-      let isRegistered = await register.isRegistered(accounts[i]);
     }
   });
 
@@ -306,8 +306,6 @@ contract("GameManager", accounts => {
         web3.utils.toWei(String(amountKTY)),
         {from: accounts[i]}
       ).should.be.fulfilled;
-
-      let userBalance = await kittieFightToken.balanceOf(accounts[i]);
     }
   });
 
@@ -751,552 +749,552 @@ contract("GameManager", accounts => {
     console.log("=======================\n");
   });
 
-  it("sets new epoch when finalized", async () => {
-    console.log("Hi, new epoch!");
-    const epoch_1_start_unix = await timeFrame._epochStartTime(1);
-    console.log(
-      "epoch 1 start time in unix time:",
-      epoch_1_start_unix.toNumber()
-    );
-    const epoch_1_start_human_readable = await timeFrame.epochStartTime(1);
-    const epoch_1_end_human_readable = await timeFrame.epochEndTime(1);
-    console.log("\n******************* Epoch 1 Start Time *****************");
-    console.log(
-      "Date:",
-      epoch_1_start_human_readable[0].toNumber() +
-        "-" +
-        epoch_1_start_human_readable[1].toNumber() +
-        "-" +
-        epoch_1_start_human_readable[2].toNumber(),
-      " ",
-      "Time:",
-      epoch_1_start_human_readable[3].toNumber() +
-        ":" +
-        epoch_1_start_human_readable[4].toNumber() +
-        ":" +
-        epoch_1_start_human_readable[5].toNumber()
-    );
-    console.log("\n******************* Epoch 1 End Time *******************");
-    console.log(
-      "Date:",
-      epoch_1_end_human_readable[0].toNumber() +
-        "-" +
-        epoch_1_end_human_readable[1].toNumber() +
-        "-" +
-        epoch_1_end_human_readable[2].toNumber(),
-      " ",
-      "Time:",
-      epoch_1_end_human_readable[3].toNumber() +
-        ":" +
-        epoch_1_end_human_readable[4].toNumber() +
-        ":" +
-        epoch_1_end_human_readable[5].toNumber()
-    );
-    console.log("********************************************************\n");
-  });
+ //  it("sets new epoch when finalized", async () => {
+ //    console.log("Hi, new epoch!");
+ //    const epoch_1_start_unix = await timeFrame._epochStartTime(1);
+ //    console.log(
+ //      "epoch 1 start time in unix time:",
+ //      epoch_1_start_unix.toNumber()
+ //    );
+ //    const epoch_1_start_human_readable = await timeFrame.epochStartTime(1);
+ //    const epoch_1_end_human_readable = await timeFrame.epochEndTime(1);
+ //    console.log("\n******************* Epoch 1 Start Time *****************");
+ //    console.log(
+ //      "Date:",
+ //      epoch_1_start_human_readable[0].toNumber() +
+ //        "-" +
+ //        epoch_1_start_human_readable[1].toNumber() +
+ //        "-" +
+ //        epoch_1_start_human_readable[2].toNumber(),
+ //      " ",
+ //      "Time:",
+ //      epoch_1_start_human_readable[3].toNumber() +
+ //        ":" +
+ //        epoch_1_start_human_readable[4].toNumber() +
+ //        ":" +
+ //        epoch_1_start_human_readable[5].toNumber()
+ //    );
+ //    console.log("\n******************* Epoch 1 End Time *******************");
+ //    console.log(
+ //      "Date:",
+ //      epoch_1_end_human_readable[0].toNumber() +
+ //        "-" +
+ //        epoch_1_end_human_readable[1].toNumber() +
+ //        "-" +
+ //        epoch_1_end_human_readable[2].toNumber(),
+ //      " ",
+ //      "Time:",
+ //      epoch_1_end_human_readable[3].toNumber() +
+ //        ":" +
+ //        epoch_1_end_human_readable[4].toNumber() +
+ //        ":" +
+ //        epoch_1_end_human_readable[5].toNumber()
+ //    );
+ //    console.log("********************************************************\n");
+ //  });
 
-  it("adds ether to pool associated with the active epoch", async () => {
-    const initialETH_pool_0_wei = await endowmentDB.getETHinPool(0);
-    const initialETH_pool_0 = weiToEther(initialETH_pool_0_wei);
-    console.log(
-      "\n******************* Initial Ethers Distributed to Pool 0 *******************"
-    );
-    console.log("intial ether in pool 0: " + initialETH_pool_0);
-  });
+ //  it("adds ether to pool associated with the active epoch", async () => {
+ //    const initialETH_pool_0_wei = await endowmentDB.getETHinPool(0);
+ //    const initialETH_pool_0 = weiToEther(initialETH_pool_0_wei);
+ //    console.log(
+ //      "\n******************* Initial Ethers Distributed to Pool 0 *******************"
+ //    );
+ //    console.log("intial ether in pool 0: " + initialETH_pool_0);
+ //  });
 
-  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming(0);
-    console.log(
-      "Time (in seconds) till claiming:",
-      timeTillClaiming.toNumber()
-    );
-    await timeout(timeTillClaiming.toNumber());
-    console.log("Available for claiming...");
-    for (let i = 1; i < 4; i++) {
-      await withdrawPool.claimYield(0, {from: accounts[i]});
-    }
-    const pool_0_details = await withdrawPool.weeklyPools(0);
-    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
-    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
-    console.log(
-      "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
-    );
-    console.log(
-      "epoch ID associated with this pool",
-      pool_0_details.epochID.toString()
-    );
-    console.log(
-      "block number when this pool was created",
-      pool_0_details.blockNumber.toString()
-    );
-    console.log(
-      "initial ether available in this pool:",
-      weiToEther(pool_0_details.initialETHAvailable)
-    );
-    console.log(
-      "ether available in this pool:",
-      weiToEther(pool_0_details.ETHAvailable)
-    );
-    console.log(
-      "date available for claiming from this pool:",
-      pool_0_details.dateAvailable.toString()
-    );
-    console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_0_details.initialETHadded
-    );
-    console.log(
-      "time when this pool is dissolved:",
-      pool_0_details.dateDissolved.toString()
-    );
-    console.log(
-      "Number of stakers who have claimed from this pool:",
-      numberOfClaimers
-    );
-    console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
-    console.log("-------- Stakers who have claimed from this pool ------");
+ //  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
+ //    let timeTillClaiming = await withdrawPool.timeUntilClaiming(0);
+ //    console.log(
+ //      "Time (in seconds) till claiming:",
+ //      timeTillClaiming.toNumber()
+ //    );
+ //    await timeout(timeTillClaiming.toNumber());
+ //    console.log("Available for claiming...");
+ //    for (let i = 1; i < 4; i++) {
+ //      await withdrawPool.claimYield(0, {from: accounts[i]});
+ //    }
+ //    const pool_0_details = await withdrawPool.weeklyPools(0);
+ //    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
+ //    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
+ //    console.log(
+ //      "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
+ //    );
+ //    console.log(
+ //      "epoch ID associated with this pool",
+ //      pool_0_details.epochID.toString()
+ //    );
+ //    console.log(
+ //      "block number when this pool was created",
+ //      pool_0_details.blockNumber.toString()
+ //    );
+ //    console.log(
+ //      "initial ether available in this pool:",
+ //      weiToEther(pool_0_details.initialETHAvailable)
+ //    );
+ //    console.log(
+ //      "ether available in this pool:",
+ //      weiToEther(pool_0_details.ETHAvailable)
+ //    );
+ //    console.log(
+ //      "date available for claiming from this pool:",
+ //      pool_0_details.dateAvailable.toString()
+ //    );
+ //    console.log(
+ //      "whether initial ether has been distributed to this pool:",
+ //      pool_0_details.initialETHadded
+ //    );
+ //    console.log(
+ //      "time when this pool is dissolved:",
+ //      pool_0_details.dateDissolved.toString()
+ //    );
+ //    console.log(
+ //      "Number of stakers who have claimed from this pool:",
+ //      numberOfClaimers
+ //    );
+ //    console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
+ //    console.log("-------- Stakers who have claimed from this pool ------");
 
-    let claimers = await withdrawPool.getAllClaimersForPool(0);
-    console.log(claimers);
+ //    let claimers = await withdrawPool.getAllClaimersForPool(0);
+ //    console.log(claimers);
 
-    console.log("********************************************************\n");
-  });
+ //    console.log("********************************************************\n");
+ //  });
 
-  it("calculates the yields for an eligible staker who can clamis from a pool", async () => {
-    let stakedByAllStakers = await staking.totalStaked();
-    console.log(
-      "SuperDao tokens staked by all stakers:",
-      weiToEther(stakedByAllStakers)
-    );
-    for (let i = 1; i < 4; i++) {
-      let stakedByStaker = await staking.totalStakedFor(accounts[i]);
-      console.log(
-        `SuperDao tokens staked by staker ${i} is:`,
-        weiToEther(stakedByStaker)
-      );
+ //  it("calculates the yields for an eligible staker who can clamis from a pool", async () => {
+ //    let stakedByAllStakers = await staking.totalStaked();
+ //    console.log(
+ //      "SuperDao tokens staked by all stakers:",
+ //      weiToEther(stakedByAllStakers)
+ //    );
+ //    for (let i = 1; i < 4; i++) {
+ //      let stakedByStaker = await staking.totalStakedFor(accounts[i]);
+ //      console.log(
+ //        `SuperDao tokens staked by staker ${i} is:`,
+ //        weiToEther(stakedByStaker)
+ //      );
 
-      let yields = await withdrawPool.checkYield(accounts[i], 0);
-      console.log(`yields for staker ${i} is:`, weiToEther(yields));
-    }
-  });
+ //      let yields = await withdrawPool.checkYield(accounts[i], 0);
+ //      console.log(`yields for staker ${i} is:`, weiToEther(yields));
+ //    }
+ //  });
 
-  it("claims for everyone", async () => {
-    let gameId = 1;
+ //  it("claims for everyone", async () => {
+ //    let gameId = 1;
 
-    let winners = await getterDB.getWinners(gameId);
-    let winner = winners.winner;
-    let numberOfSupporters;
-    let incrementingNumber;
-    let claimer;
+ //    let winners = await getterDB.getWinners(gameId);
+ //    let winner = winners.winner;
+ //    let numberOfSupporters;
+ //    let incrementingNumber;
+ //    let claimer;
 
-    let winnerShare = await endowmentFund.getWinnerShare(
-      gameId,
-      winners.winner
-    );
-    console.log(
-      "\nWinner withdrawing ",
-      String(web3.utils.fromWei(winnerShare.winningsETH.toString())),
-      "ETH"
-    );
-    console.log(
-      "Winner withdrawing ",
-      String(web3.utils.fromWei(winnerShare.winningsKTY.toString())),
-      "KTY"
-    );
-    await proxy.execute(
-      "EndowmentFund",
-      setMessage(endowmentFund, "claim", [gameId]),
-      {from: winners.winner}
-    ).should.be.fulfilled;
-    let withdrawalState = await endowmentFund.getWithdrawalState(
-      gameId,
-      winners.winner
-    );
-    console.log("Withdrew funds from Winner? ", withdrawalState);
+ //    let winnerShare = await endowmentFund.getWinnerShare(
+ //      gameId,
+ //      winners.winner
+ //    );
+ //    console.log(
+ //      "\nWinner withdrawing ",
+ //      String(web3.utils.fromWei(winnerShare.winningsETH.toString())),
+ //      "ETH"
+ //    );
+ //    console.log(
+ //      "Winner withdrawing ",
+ //      String(web3.utils.fromWei(winnerShare.winningsKTY.toString())),
+ //      "KTY"
+ //    );
+ //    await proxy.execute(
+ //      "EndowmentFund",
+ //      setMessage(endowmentFund, "claim", [gameId]),
+ //      {from: winners.winner}
+ //    ).should.be.fulfilled;
+ //    let withdrawalState = await endowmentFund.getWithdrawalState(
+ //      gameId,
+ //      winners.winner
+ //    );
+ //    console.log("Withdrew funds from Winner? ", withdrawalState);
 
-    let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
+ //    let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
 
-    console.log(`\n==== HONEYPOT INFO ==== `);
-    console.log(
-      `     InitialEtH: ${web3.utils.fromWei(
-        honeyPotInfo.initialEth.toString()
-      )}   `
-    );
-    console.log(
-      `     TotalETH: ${web3.utils.fromWei(
-        honeyPotInfo.ethTotal.toString()
-      )}   `
-    );
-    console.log(
-      `     TotalKTY: ${web3.utils.fromWei(
-        honeyPotInfo.ktyTotal.toString()
-      )}   `
-    );
-    console.log("=======================\n");
+ //    console.log(`\n==== HONEYPOT INFO ==== `);
+ //    console.log(
+ //      `     InitialEtH: ${web3.utils.fromWei(
+ //        honeyPotInfo.initialEth.toString()
+ //      )}   `
+ //    );
+ //    console.log(
+ //      `     TotalETH: ${web3.utils.fromWei(
+ //        honeyPotInfo.ethTotal.toString()
+ //      )}   `
+ //    );
+ //    console.log(
+ //      `     TotalKTY: ${web3.utils.fromWei(
+ //        honeyPotInfo.ktyTotal.toString()
+ //      )}   `
+ //    );
+ //    console.log("=======================\n");
 
-    await timeout(1);
+ //    await timeout(1);
 
-    let topBettorsShare = await endowmentFund.getWinnerShare(
-      gameId,
-      winners.topBettor
-    );
-    console.log(
-      "\nTop Bettor withdrawing ",
-      String(web3.utils.fromWei(topBettorsShare.winningsETH.toString())),
-      "ETH"
-    );
-    console.log(
-      "Top Bettor withdrawing ",
-      String(web3.utils.fromWei(topBettorsShare.winningsKTY.toString())),
-      "KTY"
-    );
-    await proxy.execute(
-      "EndowmentFund",
-      setMessage(endowmentFund, "claim", [gameId]),
-      {from: winners.topBettor}
-    ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
-      gameId,
-      winners.topBettor
-    );
-    console.log("Withdrew funds from Top Bettor? ", withdrawalState);
+ //    let topBettorsShare = await endowmentFund.getWinnerShare(
+ //      gameId,
+ //      winners.topBettor
+ //    );
+ //    console.log(
+ //      "\nTop Bettor withdrawing ",
+ //      String(web3.utils.fromWei(topBettorsShare.winningsETH.toString())),
+ //      "ETH"
+ //    );
+ //    console.log(
+ //      "Top Bettor withdrawing ",
+ //      String(web3.utils.fromWei(topBettorsShare.winningsKTY.toString())),
+ //      "KTY"
+ //    );
+ //    await proxy.execute(
+ //      "EndowmentFund",
+ //      setMessage(endowmentFund, "claim", [gameId]),
+ //      {from: winners.topBettor}
+ //    ).should.be.fulfilled;
+ //    withdrawalState = await endowmentFund.getWithdrawalState(
+ //      gameId,
+ //      winners.topBettor
+ //    );
+ //    console.log("Withdrew funds from Top Bettor? ", withdrawalState);
 
-    honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
+ //    honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
 
-    console.log(`\n==== HONEYPOT INFO ==== `);
-    console.log(
-      `     InitialEtH: ${web3.utils.fromWei(
-        honeyPotInfo.initialEth.toString()
-      )}   `
-    );
-    console.log(
-      `     TotalETH: ${web3.utils.fromWei(
-        honeyPotInfo.ethTotal.toString()
-      )}   `
-    );
-    console.log(
-      `     TotalKTY: ${web3.utils.fromWei(
-        honeyPotInfo.ktyTotal.toString()
-      )}   `
-    );
-    console.log("=======================\n");
+ //    console.log(`\n==== HONEYPOT INFO ==== `);
+ //    console.log(
+ //      `     InitialEtH: ${web3.utils.fromWei(
+ //        honeyPotInfo.initialEth.toString()
+ //      )}   `
+ //    );
+ //    console.log(
+ //      `     TotalETH: ${web3.utils.fromWei(
+ //        honeyPotInfo.ethTotal.toString()
+ //      )}   `
+ //    );
+ //    console.log(
+ //      `     TotalKTY: ${web3.utils.fromWei(
+ //        honeyPotInfo.ktyTotal.toString()
+ //      )}   `
+ //    );
+ //    console.log("=======================\n");
 
-    await timeout(1);
+ //    await timeout(1);
 
-    let secondTopBettorsShare = await endowmentFund.getWinnerShare(
-      gameId,
-      winners.secondTopBettor
-    );
-    console.log(
-      "\nSecond Top Bettor withdrawing ",
-      String(web3.utils.fromWei(secondTopBettorsShare.winningsETH.toString())),
-      "ETH"
-    );
-    console.log(
-      "Second Top Bettor withdrawing ",
-      String(web3.utils.fromWei(secondTopBettorsShare.winningsKTY.toString())),
-      "KTY"
-    );
-    await proxy.execute(
-      "EndowmentFund",
-      setMessage(endowmentFund, "claim", [gameId]),
-      {from: winners.secondTopBettor}
-    ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
-      gameId,
-      winners.secondTopBettor
-    );
-    console.log("Withdrew funds from Second Top Bettor? ", withdrawalState);
+ //    let secondTopBettorsShare = await endowmentFund.getWinnerShare(
+ //      gameId,
+ //      winners.secondTopBettor
+ //    );
+ //    console.log(
+ //      "\nSecond Top Bettor withdrawing ",
+ //      String(web3.utils.fromWei(secondTopBettorsShare.winningsETH.toString())),
+ //      "ETH"
+ //    );
+ //    console.log(
+ //      "Second Top Bettor withdrawing ",
+ //      String(web3.utils.fromWei(secondTopBettorsShare.winningsKTY.toString())),
+ //      "KTY"
+ //    );
+ //    await proxy.execute(
+ //      "EndowmentFund",
+ //      setMessage(endowmentFund, "claim", [gameId]),
+ //      {from: winners.secondTopBettor}
+ //    ).should.be.fulfilled;
+ //    withdrawalState = await endowmentFund.getWithdrawalState(
+ //      gameId,
+ //      winners.secondTopBettor
+ //    );
+ //    console.log("Withdrew funds from Second Top Bettor? ", withdrawalState);
 
-    honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
+ //    honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
 
-    console.log(`\n==== HONEYPOT INFO ==== `);
-    console.log(
-      `     InitialEtH: ${web3.utils.fromWei(
-        honeyPotInfo.initialEth.toString()
-      )}   `
-    );
-    console.log(
-      `     TotalETH: ${web3.utils.fromWei(
-        honeyPotInfo.ethTotal.toString()
-      )}   `
-    );
-    console.log(
-      `     TotalKTY: ${web3.utils.fromWei(
-        honeyPotInfo.ktyTotal.toString()
-      )}   `
-    );
-    console.log("=======================\n");
+ //    console.log(`\n==== HONEYPOT INFO ==== `);
+ //    console.log(
+ //      `     InitialEtH: ${web3.utils.fromWei(
+ //        honeyPotInfo.initialEth.toString()
+ //      )}   `
+ //    );
+ //    console.log(
+ //      `     TotalETH: ${web3.utils.fromWei(
+ //        honeyPotInfo.ethTotal.toString()
+ //      )}   `
+ //    );
+ //    console.log(
+ //      `     TotalKTY: ${web3.utils.fromWei(
+ //        honeyPotInfo.ktyTotal.toString()
+ //      )}   `
+ //    );
+ //    console.log("=======================\n");
 
-    await timeout(1);
+ //    await timeout(1);
 
-    let {
-      playerBlack,
-      playerRed,
-      kittyBlack,
-      kittyRed
-    } = await getterDB.getGamePlayers(gameId);
+ //    let {
+ //      playerBlack,
+ //      playerRed,
+ //      kittyBlack,
+ //      kittyRed
+ //    } = await getterDB.getGamePlayers(gameId);
 
-    if (winner === playerBlack) {
-      numberOfSupporters = await getterDB.getSupporters(gameId, playerBlack);
-      incrementingNumber = 10;
-    } else {
-      numberOfSupporters = await getterDB.getSupporters(gameId, playerRed);
-      incrementingNumber = 30;
-    }
+ //    if (winner === playerBlack) {
+ //      numberOfSupporters = await getterDB.getSupporters(gameId, playerBlack);
+ //      incrementingNumber = 10;
+ //    } else {
+ //      numberOfSupporters = await getterDB.getSupporters(gameId, playerRed);
+ //      incrementingNumber = 30;
+ //    }
 
-    for (let i = 0; i < numberOfSupporters; i++) {
-      claimer = accounts[i + incrementingNumber];
-      if (claimer === winners.topBettor) continue;
-      else if (claimer === winners.secondTopBettor) continue;
-      else {
-        share = await endowmentFund.getWinnerShare(gameId, claimer);
-        console.log(
-          "\nClaimer withdrawing ",
-          String(web3.utils.fromWei(share.winningsETH.toString())),
-          "ETH"
-        );
-        console.log(
-          "Claimer withdrawing ",
-          String(web3.utils.fromWei(share.winningsKTY.toString())),
-          "KTY"
-        );
-        if (
-          Number(String(web3.utils.fromWei(share.winningsETH.toString()))) != 0
-        ) {
-          await proxy.execute(
-            "EndowmentFund",
-            setMessage(endowmentFund, "claim", [gameId]),
-            {from: claimer}
-          ).should.be.fulfilled;
-          withdrawalState = await endowmentFund.getWithdrawalState(
-            gameId,
-            claimer
-          );
-          console.log("Withdrew funds from Claimer? ", withdrawalState);
-        }
+ //    for (let i = 0; i < numberOfSupporters; i++) {
+ //      claimer = accounts[i + incrementingNumber];
+ //      if (claimer === winners.topBettor) continue;
+ //      else if (claimer === winners.secondTopBettor) continue;
+ //      else {
+ //        share = await endowmentFund.getWinnerShare(gameId, claimer);
+ //        console.log(
+ //          "\nClaimer withdrawing ",
+ //          String(web3.utils.fromWei(share.winningsETH.toString())),
+ //          "ETH"
+ //        );
+ //        console.log(
+ //          "Claimer withdrawing ",
+ //          String(web3.utils.fromWei(share.winningsKTY.toString())),
+ //          "KTY"
+ //        );
+ //        if (
+ //          Number(String(web3.utils.fromWei(share.winningsETH.toString()))) != 0
+ //        ) {
+ //          await proxy.execute(
+ //            "EndowmentFund",
+ //            setMessage(endowmentFund, "claim", [gameId]),
+ //            {from: claimer}
+ //          ).should.be.fulfilled;
+ //          withdrawalState = await endowmentFund.getWithdrawalState(
+ //            gameId,
+ //            claimer
+ //          );
+ //          console.log("Withdrew funds from Claimer? ", withdrawalState);
+ //        }
 
-        honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
+ //        honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
 
-        console.log(`\n==== HONEYPOT INFO ==== `);
-        console.log(
-          `     InitialEtH: ${web3.utils.fromWei(
-            honeyPotInfo.initialEth.toString()
-          )}   `
-        );
-        console.log(
-          `     TotalETH: ${web3.utils.fromWei(
-            honeyPotInfo.ethTotal.toString()
-          )}   `
-        );
-        console.log(
-          `     TotalKTY: ${web3.utils.fromWei(
-            honeyPotInfo.ktyTotal.toString()
-          )}   `
-        );
-        console.log("=======================\n");
+ //        console.log(`\n==== HONEYPOT INFO ==== `);
+ //        console.log(
+ //          `     InitialEtH: ${web3.utils.fromWei(
+ //            honeyPotInfo.initialEth.toString()
+ //          )}   `
+ //        );
+ //        console.log(
+ //          `     TotalETH: ${web3.utils.fromWei(
+ //            honeyPotInfo.ethTotal.toString()
+ //          )}   `
+ //        );
+ //        console.log(
+ //          `     TotalKTY: ${web3.utils.fromWei(
+ //            honeyPotInfo.ktyTotal.toString()
+ //          )}   `
+ //        );
+ //        console.log("=======================\n");
 
-        await timeout(1);
-      }
+ //        await timeout(1);
+ //      }
 
-      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
-      console.log(`\n==== ENDOWMENT INFO ==== `);
-      console.log(
-        "\nEndowmentShare: ",
-        String(web3.utils.fromWei(endowmentShare.winningsETH.toString())),
-        "ETH"
-      );
-      console.log(
-        "EndowmentShare: ",
-        String(web3.utils.fromWei(endowmentShare.winningsKTY.toString())),
-        "KTY"
-      );
-      console.log("=======================\n");
-    }
-  });
+ //      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+ //      console.log(`\n==== ENDOWMENT INFO ==== `);
+ //      console.log(
+ //        "\nEndowmentShare: ",
+ //        String(web3.utils.fromWei(endowmentShare.winningsETH.toString())),
+ //        "ETH"
+ //      );
+ //      console.log(
+ //        "EndowmentShare: ",
+ //        String(web3.utils.fromWei(endowmentShare.winningsKTY.toString())),
+ //        "KTY"
+ //      );
+ //      console.log("=======================\n");
+ //    }
+ //  });
 
-  it("the loser can redeem his/her kitty, dynamic redemption fee is burnt to kittieHELL, replacement kitties become permanent ghosts in kittieHELL", async () => {
-    let gameId = 1;
-    let winners = await getterDB.getWinners(gameId);
+ //  it("the loser can redeem his/her kitty, dynamic redemption fee is burnt to kittieHELL, replacement kitties become permanent ghosts in kittieHELL", async () => {
+ //    let gameId = 1;
+ //    let winners = await getterDB.getWinners(gameId);
 
-    let {
-      playerBlack,
-      playerRed,
-      kittyBlack,
-      kittyRed
-    } = await getterDB.getGamePlayers(gameId);
+ //    let {
+ //      playerBlack,
+ //      playerRed,
+ //      kittyBlack,
+ //      kittyRed
+ //    } = await getterDB.getGamePlayers(gameId);
 
-    let loserKitty;
-    let loser;
+ //    let loserKitty;
+ //    let loser;
 
-    if (winners.winner === playerRed) {
-      loser = playerBlack;
-      loserKitty = Number(kittyBlack);
-    } else {
-      loser = playerRed;
-      loserKitty = Number(kittyRed);
-    }
+ //    if (winners.winner === playerRed) {
+ //      loser = playerBlack;
+ //      loserKitty = Number(kittyBlack);
+ //    } else {
+ //      loser = playerRed;
+ //      loserKitty = Number(kittyRed);
+ //    }
 
-    console.log("Loser's Kitty: " + loserKitty);
+ //    console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionCost = await kittieHell.getResurrectionCost(
-      loserKitty,
-      gameId
-    );
-    const redemptionFee = web3.utils.fromWei(
-      resurrectionCost.toString(),
-      "ether"
-    );
-    const kittieRedemptionFee = parseFloat(redemptionFee);
-    console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee);
+ //    let resurrectionCost = await kittieHell.getResurrectionCost(
+ //      loserKitty,
+ //      gameId
+ //    );
+ //    const redemptionFee = web3.utils.fromWei(
+ //      resurrectionCost.toString(),
+ //      "ether"
+ //    );
+ //    const kittieRedemptionFee = parseFloat(redemptionFee);
+ //    console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee);
 
-    const sacrificeKitties = [1017555, 413830, 888];
+ //    const sacrificeKitties = [1017555, 413830, 888];
 
-    for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.mint(loser, sacrificeKitties[i]);
-    }
+ //    for (let i = 0; i < sacrificeKitties.length; i++) {
+ //      await cryptoKitties.mint(loser, sacrificeKitties[i]);
+ //    }
 
-    for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], {
-        from: loser
-      });
-    }
+ //    for (let i = 0; i < sacrificeKitties.length; i++) {
+ //      await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], {
+ //        from: loser
+ //      });
+ //    }
 
-    await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
-      from: loser
-    });
+ //    await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
+ //      from: loser
+ //    });
 
-    await proxy.execute(
-      "KittieHell",
-      setMessage(kittieHell, "payForResurrection", [
-        loserKitty,
-        gameId,
-        loser,
-        sacrificeKitties
-      ]),
-      {from: loser}
-    ).should.be.fulfilled;
+ //    await proxy.execute(
+ //      "KittieHell",
+ //      setMessage(kittieHell, "payForResurrection", [
+ //        loserKitty,
+ //        gameId,
+ //        loser,
+ //        sacrificeKitties
+ //      ]),
+ //      {from: loser}
+ //    ).should.be.fulfilled;
 
-    let owner = await cryptoKitties.ownerOf(loserKitty);
+ //    let owner = await cryptoKitties.ownerOf(loserKitty);
 
-    if (owner === kittieHellDB.address) {
-      console.log("Loser kitty became ghost in kittieHELL FOREVER :(");
-    }
+ //    if (owner === kittieHellDB.address) {
+ //      console.log("Loser kitty became ghost in kittieHELL FOREVER :(");
+ //    }
 
-    if (owner === loser) {
-      console.log("Kitty Redeemed :)");
-    }
+ //    if (owner === loser) {
+ //      console.log("Kitty Redeemed :)");
+ //    }
 
-    let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(
-      loserKitty
-    );
-    console.log(
-      "Number of sacrificing kitties in kittieHELL for " +
-        loserKitty +
-        ": " +
-        numberOfSacrificeKitties.toNumber()
-    );
+ //    let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(
+ //      loserKitty
+ //    );
+ //    console.log(
+ //      "Number of sacrificing kitties in kittieHELL for " +
+ //        loserKitty +
+ //        ": " +
+ //        numberOfSacrificeKitties.toNumber()
+ //    );
 
-    let KTYsLockedInKittieHell = await kittieHellDB.getTotalKTYsLockedInKittieHell();
-    const ktys = web3.utils.fromWei(KTYsLockedInKittieHell.toString(), "ether");
-    const ktysLocked = Math.round(parseFloat(ktys));
-    console.log("KTYs locked in kittieHELL: " + ktysLocked);
+ //    let KTYsLockedInKittieHell = await kittieHellDB.getTotalKTYsLockedInKittieHell();
+ //    const ktys = web3.utils.fromWei(KTYsLockedInKittieHell.toString(), "ether");
+ //    const ktysLocked = Math.round(parseFloat(ktys));
+ //    console.log("KTYs locked in kittieHELL: " + ktysLocked);
 
-    const isLoserKittyInHell = await kittieHellDB.isKittieGhost(loserKitty);
-    console.log("Is Loser's kitty in Hell? " + isLoserKittyInHell);
+ //    const isLoserKittyInHell = await kittieHellDB.isKittieGhost(loserKitty);
+ //    console.log("Is Loser's kitty in Hell? " + isLoserKittyInHell);
 
-    const isSacrificeKittyOneInHell = await kittieHellDB.isKittieGhost(
-      sacrificeKitties[0]
-    );
-    console.log("Is sacrificing kitty 1 in Hell? " + isSacrificeKittyOneInHell);
+ //    const isSacrificeKittyOneInHell = await kittieHellDB.isKittieGhost(
+ //      sacrificeKitties[0]
+ //    );
+ //    console.log("Is sacrificing kitty 1 in Hell? " + isSacrificeKittyOneInHell);
 
-    const isSacrificeKittyTwoInHell = await kittieHellDB.isKittieGhost(
-      sacrificeKitties[1]
-    );
-    console.log("Is sacrificing kitty 2 in Hell? " + isSacrificeKittyTwoInHell);
+ //    const isSacrificeKittyTwoInHell = await kittieHellDB.isKittieGhost(
+ //      sacrificeKitties[1]
+ //    );
+ //    console.log("Is sacrificing kitty 2 in Hell? " + isSacrificeKittyTwoInHell);
 
-    const isSacrificeKittyThreeInHell = await kittieHellDB.isKittieGhost(
-      sacrificeKitties[2]
-    );
-    console.log(
-      "Is sacrificing kitty 3 in Hell? " + isSacrificeKittyThreeInHell
-    );
-  });
+ //    const isSacrificeKittyThreeInHell = await kittieHellDB.isKittieGhost(
+ //      sacrificeKitties[2]
+ //    );
+ //    console.log(
+ //      "Is sacrificing kitty 3 in Hell? " + isSacrificeKittyThreeInHell
+ //    );
+ //  });
 
-  it("creates a new pool when the current pool is dissolved", async () => {
-    const cronJobID = await withdrawPool.scheduledJob();
-    console.log("cronJobID:", cronJobID.toNumber());
+ //  it("creates a new pool when the current pool is dissolved", async () => {
+ //    const cronJobID = await withdrawPool.scheduledJob();
+ //    console.log("cronJobID:", cronJobID.toNumber());
 
-    const timeUntilDissolve = await withdrawPool.timeUntilPoolDissolve(0);
-    console.log(
-      "time (in seconds) until pool 0 dissolves:",
-      timeUntilDissolve.toNumber()
-    );
+ //    const timeUntilDissolve = await withdrawPool.timeUntilPoolDissolve(0);
+ //    console.log(
+ //      "time (in seconds) until pool 0 dissolves:",
+ //      timeUntilDissolve.toNumber()
+ //    );
 
-    if (timeUntilDissolve.toNumber() > 0) {
-      console.log("time elapsing until pool 0 dissolves...");
-      console.log("time elapsing...");
-      evm.increaseTime(web3, timeUntilDissolve.toNumber());
-    }
+ //    if (timeUntilDissolve.toNumber() > 0) {
+ //      console.log("time elapsing until pool 0 dissolves...");
+ //      console.log("time elapsing...");
+ //      evm.increaseTime(web3, timeUntilDissolve.toNumber());
+ //    }
 
-    await proxy.executeScheduledJobs();
+ //    await proxy.executeScheduledJobs();
 
-    console.log("Pool 0 is being dissolved...");
-    console.log("New pool is being created...");
+ //    console.log("Pool 0 is being dissolved...");
+ //    console.log("New pool is being created...");
 
-    const numberOfDissolvedPools = await withdrawPool.getNumberOfDissolvedPools();
-    console.log(
-      "Total number of dissolved Pools:",
-      numberOfDissolvedPools.toNumber()
-    );
-    const numberOfPools = await withdrawPool.getTotalNumberOfPools();
-    console.log("Total number of pools:", numberOfPools.toNumber());
+ //    const numberOfDissolvedPools = await withdrawPool.getNumberOfDissolvedPools();
+ //    console.log(
+ //      "Total number of dissolved Pools:",
+ //      numberOfDissolvedPools.toNumber()
+ //    );
+ //    const numberOfPools = await withdrawPool.getTotalNumberOfPools();
+ //    console.log("Total number of pools:", numberOfPools.toNumber());
 
-    console.log("************* Details of New Pool Created ************");
-    const pool_1_details = await withdrawPool.weeklyPools(1);
-    const numberOfClaimers = pool_1_details.stakersClaimed.toNumber();
-    console.log(
-      "epoch ID associated with this pool",
-      pool_1_details.epochID.toString()
-    );
-    console.log(
-      "block number when this pool was created",
-      pool_1_details.blockNumber.toString()
-    );
-    console.log(
-      "initial ether available in this pool:",
-      pool_1_details.initialETHAvailable.toString()
-    );
-    console.log(
-      "ether available in this pool:",
-      pool_1_details.ETHAvailable.toString()
-    );
-    console.log(
-      "date available for claiming from this pool:",
-      pool_1_details.dateAvailable.toString()
-    );
-    console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_1_details.initialETHadded
-    );
-    console.log(
-      "time when this pool is dissolved:",
-      pool_1_details.dateDissolved.toString()
-    );
-    console.log(
-      "time (in seconds) till this pool will be dissolved: ",
-      pool_1_details.dateDissolved.toNumber() - Math.floor(Date.now() / 1000)
-    );
-    console.log(
-      "Number of stakers who have claimed from this pool:",
-      numberOfClaimers
-    );
+ //    console.log("************* Details of New Pool Created ************");
+ //    const pool_1_details = await withdrawPool.weeklyPools(1);
+ //    const numberOfClaimers = pool_1_details.stakersClaimed.toNumber();
+ //    console.log(
+ //      "epoch ID associated with this pool",
+ //      pool_1_details.epochID.toString()
+ //    );
+ //    console.log(
+ //      "block number when this pool was created",
+ //      pool_1_details.blockNumber.toString()
+ //    );
+ //    console.log(
+ //      "initial ether available in this pool:",
+ //      pool_1_details.initialETHAvailable.toString()
+ //    );
+ //    console.log(
+ //      "ether available in this pool:",
+ //      pool_1_details.ETHAvailable.toString()
+ //    );
+ //    console.log(
+ //      "date available for claiming from this pool:",
+ //      pool_1_details.dateAvailable.toString()
+ //    );
+ //    console.log(
+ //      "whether initial ether has been distributed to this pool:",
+ //      pool_1_details.initialETHadded
+ //    );
+ //    console.log(
+ //      "time when this pool is dissolved:",
+ //      pool_1_details.dateDissolved.toString()
+ //    );
+ //    console.log(
+ //      "time (in seconds) till this pool will be dissolved: ",
+ //      pool_1_details.dateDissolved.toNumber() - Math.floor(Date.now() / 1000)
+ //    );
+ //    console.log(
+ //      "Number of stakers who have claimed from this pool:",
+ //      numberOfClaimers
+ //    );
 
-    console.log("-------- Stakers who have claimed from this pool ------");
+ //    console.log("-------- Stakers who have claimed from this pool ------");
 
-    let claimers = await withdrawPool.getAllClaimersForPool(1);
-    console.log(claimers);
+ //    let claimers = await withdrawPool.getAllClaimersForPool(1);
+ //    console.log(claimers);
 
-    console.log("********************************************************\n");
-  });
+ //    console.log("********************************************************\n");
+ //  });
 });

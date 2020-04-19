@@ -42,11 +42,17 @@ module.exports = async (callback) => {
 
     let gameId = process.argv[4];
 
+    let extension = await gameStore.getTimeExtension(1);
+    console.log(extension);
     let {preStartTime, startTime, endTime} = await getterDB.getGameTimes(gameId);
 
     let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
     
     let finalizer = accounts[20];
+
+    let state = await getterDB.getGameState(gameId);
+
+    console.log(state);
 
     console.log('\n==== WAITING FOR GAME OVER: ', formatDate(endTime))
 
@@ -62,7 +68,7 @@ module.exports = async (callback) => {
       toBlock: 'latest'
     })
 
-    let state = await getterDB.getGameState(gameId);
+    state = await getterDB.getGameState(gameId);
     console.log(state);
 
     let { pointsBlack, pointsRed, loser } = gameEnd[0].returnValues;

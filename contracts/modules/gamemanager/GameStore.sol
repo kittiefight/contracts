@@ -7,8 +7,10 @@ import "../../libs/SafeMath.sol";
 import "../algorithm/HitsResolveAlgo.sol";
 import '../../authority/Guard.sol';
 import "../datetime/TimeFrame.sol";
+import "../../withdrawPool/WithdrawPool.sol";
 import "../gamemanager/Scheduler.sol";
 import "../../CronJob.sol";
+import "../databases/EndowmentDB.sol";
 
 contract GameStore is Proxied, Guard {
 
@@ -272,17 +274,29 @@ contract GameStore is Proxied, Guard {
         }
     }
 
+    function startAfterCancel()
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        startGameAndCalculateEpoch();
+    }
+
     function startGameAndCalculateEpoch()
     internal
     {
-        uint256 lastEpochId = timeFrame.getLastEpochID();
-        uint256 currentEpochEndTime = timeFrame._epochEndTime(lastEpochId);
-        if(currentEpochEndTime.sub(60 * 60 * 30) <= gameVarAndFee.getGameTimes().add(now)) {
+        uint256 activeEpochId = timeFrame.getActiveEpochID();
+        uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
+        if(currentEpochEndTime.sub(190/*60 * 60 * 30*/) <= gameVarAndFee.getGameTimes().add(now)) {
             CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
             cron.addCronJob(
                 CONTRACT_NAME_GAMESTORE,
                 currentEpochEndTime,
                 abi.encodeWithSignature("createGameAndEpoch()")
+            );
+
+            WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).setInterestToEarningsTracker(
+                activeEpochId,
+                EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).checkTotalForEpoch(activeEpochId)
             );
         }
         else
@@ -298,13 +312,14 @@ contract GameStore is Proxied, Guard {
     {
         timeFrame.setNewEpoch();
         scheduler.startGame();
+        WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).dissolveOldCreateNew();
     }
 
     function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
         //each time 1 minute before game ends
-        uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
+        // uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
         
-        if(gameEndTime.sub(performanceTimeCheck) <= now) {
+        if(gameEndTime.sub(60) <= now) {
             //get initial jackpot, need endowment to send this when creating honeypot
             (,,uint initialEth, uint currentJackpotEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
 

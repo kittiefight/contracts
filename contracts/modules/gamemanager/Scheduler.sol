@@ -123,7 +123,7 @@ contract Scheduler is Proxied {
     onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyUnlistedKitty(_kittyId)
     {
-        require(kittieHell.acquireKitty(_kittyId, _player));
+        require(kittieHell.acquireKitty(_kittyId, _player), "1");
         isKittyListed[_kittyId] = true;
         kittyList[noOfKittiesListed] = _kittyId;
         kittyOwner[_kittyId] = _player;

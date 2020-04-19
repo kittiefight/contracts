@@ -25,8 +25,8 @@ pragma solidity ^0.5.5;
      using SafeMath for uint;
      using BokkyPooBahsDateTimeLibrary for uint;
 
-     uint constant public SIX_WORKING_DAYS = 6 * 24 * 60 * 60;
-     uint constant public REST_DAY = 24 * 60 * 60;
+     uint constant public SIX_WORKING_DAYS = 600;
+     uint constant public REST_DAY = 100;
      uint constant public SIX_HOURS = 6 * 60 * 60;
 
      /// @dev total number of epochs
@@ -66,16 +66,18 @@ pragma solidity ^0.5.5;
      //===================== setters ===================
      /**
       * @dev sets epoch 0
-      * @param start the start time (in unix time) of epoch 0
       */
-     function setEpoch_0(uint start) public onlyOwner {
-         lifeTimeEpochs[0].sixDayStart = start;
-         lifeTimeEpochs[0].sixDayEnd = start.add(SIX_WORKING_DAYS);
-         lifeTimeEpochs[0].restDAYStart = start.add(SIX_WORKING_DAYS);
-         lifeTimeEpochs[0].restDAYEnd = start.add(SIX_WORKING_DAYS).add(REST_DAY);
+     function setEpoch_0()
+     public
+     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+     {
+         lifeTimeEpochs[0].sixDayStart = now;
+         lifeTimeEpochs[0].sixDayEnd = now.add(SIX_WORKING_DAYS);
+         lifeTimeEpochs[0].restDAYStart = now.add(SIX_WORKING_DAYS);
+         lifeTimeEpochs[0].restDAYEnd = now.add(SIX_WORKING_DAYS).add(REST_DAY);
          numberOfEpochs = numberOfEpochs.add(1);
 
-         emit Epoch0Set(0, start);
+         emit Epoch0Set(0, now);
      }
 
      /**

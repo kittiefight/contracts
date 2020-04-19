@@ -1,15 +1,15 @@
 {
   "contractName": "BasicControls",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0x703d0a6bb0e105ef824314fb8c80c281461c22c71ac6730151a5f3c090392dfd\",\"urls\":[\"bzz-raw://f550feed155ec6987ea3b3c1bf5d0667a0507063c79c419340c22b16826bc151\",\"dweb:/ipfs/QmdgdMu1Xhq3hrpTd74hGh22xJeGUxMnpM35VJJbZzXmSg\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820c8868e79945654a89dd103e3176fa90ad0b36c4c198e448917f40d9cb977a56764736f6c63430005110032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820c8868e79945654a89dd103e3176fa90ad0b36c4c198e448917f40d9cb977a56764736f6c63430005110032",
-  "sourceMap": "138:509:58:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;138:509:58;;;;;;;",
-  "deployedSourceMap": "138:509:58:-;;;;;",
-  "source": "pragma solidity ^0.5.5;\n\n\n/**\n * @title BasicControls\n * @dev this contract implement basic controls needed in a variety of contracts\n */\ncontract BasicControls {\n\n    /**\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n     * @param _addr the given address to check\n     * @return true or false if the address is a contract or not\n     */\n    function isContract(address _addr) internal view returns (bool) {\n        // retrieve the size of the code on target address, this needs assembly\n        uint length;\n        assembly { length := extcodesize(_addr) }\n        return length > 0;\n    }\n}\n",
-  "sourcePath": "/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/misc/BasicControls.sol",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0xc01216aaec733594df8c7f7dbc49a6051c4943cdf0d10d31c4dbf5c2afe1f528\",\"urls\":[\"bzz-raw://15030b1c110553cfe1ac3eabb2eb6382955243f062f86991eb09fc3e1df42553\",\"dweb:/ipfs/QmRHEvqY5bW3dGBp4Tg3nUUhWmwFgK5nV4L3ZZ1TF3F27E\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723158200238790dea08a6348f1217639d7a65c9d390df107cc9010f778669fcd8f7e0d264736f6c63430005110032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a723158200238790dea08a6348f1217639d7a65c9d390df107cc9010f778669fcd8f7e0d264736f6c63430005110032",
+  "sourceMap": "145:522:58:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;145:522:58;;;;;;;",
+  "deployedSourceMap": "145:522:58:-;;;;;",
+  "source": "pragma solidity ^0.5.5;\r\n\r\n\r\n/**\r\n * @title BasicControls\r\n * @dev this contract implement basic controls needed in a variety of contracts\r\n */\r\ncontract BasicControls {\r\n\r\n    /**\r\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\r\n     * @param _addr the given address to check\r\n     * @return true or false if the address is a contract or not\r\n     */\r\n    function isContract(address _addr) internal view returns (bool) {\r\n        // retrieve the size of the code on target address, this needs assembly\r\n        uint length;\r\n        assembly { length := extcodesize(_addr) }\r\n        return length > 0;\r\n    }\r\n}\r\n",
+  "sourcePath": "C:\\Users\\Alex\\Desktop\\MyProjects\\alpha\\contracts\\misc\\BasicControls.sol",
   "ast": {
-    "absolutePath": "/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
         8483
@@ -46,7 +46,7 @@
             "body": {
               "id": 8481,
               "nodeType": "Block",
-              "src": "460:185:58",
+              "src": "474:190:58",
               "statements": [
                 {
                   "assignments": [
@@ -59,7 +59,7 @@
                       "name": "length",
                       "nodeType": "VariableDeclaration",
                       "scope": 8481,
-                      "src": "550:11:58",
+                      "src": "566:11:58",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
@@ -70,7 +70,7 @@
                         "id": 8473,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
-                        "src": "550:4:58",
+                        "src": "566:4:58",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -83,7 +83,7 @@
                   "id": 8475,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "550:11:58"
+                  "src": "566:11:58"
                 },
                 {
                   "externalReferences": [
@@ -92,7 +92,7 @@
                         "declaration": 8474,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "582:6:58",
+                        "src": "599:6:58",
                         "valueSize": 1
                       }
                     },
@@ -101,7 +101,7 @@
                         "declaration": 8468,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "604:5:58",
+                        "src": "621:5:58",
                         "valueSize": 1
                       }
                     }
@@ -109,7 +109,7 @@
                   "id": 8476,
                   "nodeType": "InlineAssembly",
                   "operations": "{ length := extcodesize(_addr) }",
-                  "src": "571:41:58"
+                  "src": "588:41:58"
                 },
                 {
                   "expression": {
@@ -130,7 +130,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 8474,
-                      "src": "628:6:58",
+                      "src": "646:6:58",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -148,7 +148,7 @@
                       "kind": "number",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "637:1:58",
+                      "src": "655:1:58",
                       "subdenomination": null,
                       "typeDescriptions": {
                         "typeIdentifier": "t_rational_0_by_1",
@@ -156,7 +156,7 @@
                       },
                       "value": "0"
                     },
-                    "src": "628:10:58",
+                    "src": "646:10:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -165,7 +165,7 @@
                   "functionReturnParameters": 8472,
                   "id": 8480,
                   "nodeType": "Return",
-                  "src": "621:17:58"
+                  "src": "639:17:58"
                 }
               ]
             },
@@ -186,7 +186,7 @@
                   "name": "_addr",
                   "nodeType": "VariableDeclaration",
                   "scope": 8482,
-                  "src": "416:13:58",
+                  "src": "430:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -197,7 +197,7 @@
                     "id": 8467,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "416:7:58",
+                    "src": "430:7:58",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -208,7 +208,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "415:15:58"
+              "src": "429:15:58"
             },
             "returnParameters": {
               "id": 8472,
@@ -220,7 +220,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 8482,
-                  "src": "454:4:58",
+                  "src": "468:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -231,7 +231,7 @@
                     "id": 8470,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "454:4:58",
+                    "src": "468:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -241,23 +241,23 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "453:6:58"
+              "src": "467:6:58"
             },
             "scope": 8483,
-            "src": "396:249:58",
+            "src": "410:254:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
         "scope": 8484,
-        "src": "138:509:58"
+        "src": "145:522:58"
       }
     ],
-    "src": "0:648:58"
+    "src": "0:669:58"
   },
   "legacyAST": {
-    "absolutePath": "/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/alpha/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
         8483
@@ -294,7 +294,7 @@
             "body": {
               "id": 8481,
               "nodeType": "Block",
-              "src": "460:185:58",
+              "src": "474:190:58",
               "statements": [
                 {
                   "assignments": [
@@ -307,7 +307,7 @@
                       "name": "length",
                       "nodeType": "VariableDeclaration",
                       "scope": 8481,
-                      "src": "550:11:58",
+                      "src": "566:11:58",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
@@ -318,7 +318,7 @@
                         "id": 8473,
                         "name": "uint",
                         "nodeType": "ElementaryTypeName",
-                        "src": "550:4:58",
+                        "src": "566:4:58",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -331,7 +331,7 @@
                   "id": 8475,
                   "initialValue": null,
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "550:11:58"
+                  "src": "566:11:58"
                 },
                 {
                   "externalReferences": [
@@ -340,7 +340,7 @@
                         "declaration": 8474,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "582:6:58",
+                        "src": "599:6:58",
                         "valueSize": 1
                       }
                     },
@@ -349,7 +349,7 @@
                         "declaration": 8468,
                         "isOffset": false,
                         "isSlot": false,
-                        "src": "604:5:58",
+                        "src": "621:5:58",
                         "valueSize": 1
                       }
                     }
@@ -357,7 +357,7 @@
                   "id": 8476,
                   "nodeType": "InlineAssembly",
                   "operations": "{ length := extcodesize(_addr) }",
-                  "src": "571:41:58"
+                  "src": "588:41:58"
                 },
                 {
                   "expression": {
@@ -378,7 +378,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 8474,
-                      "src": "628:6:58",
+                      "src": "646:6:58",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -396,7 +396,7 @@
                       "kind": "number",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "637:1:58",
+                      "src": "655:1:58",
                       "subdenomination": null,
                       "typeDescriptions": {
                         "typeIdentifier": "t_rational_0_by_1",
@@ -404,7 +404,7 @@
                       },
                       "value": "0"
                     },
-                    "src": "628:10:58",
+                    "src": "646:10:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -413,7 +413,7 @@
                   "functionReturnParameters": 8472,
                   "id": 8480,
                   "nodeType": "Return",
-                  "src": "621:17:58"
+                  "src": "639:17:58"
                 }
               ]
             },
@@ -434,7 +434,7 @@
                   "name": "_addr",
                   "nodeType": "VariableDeclaration",
                   "scope": 8482,
-                  "src": "416:13:58",
+                  "src": "430:13:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -445,7 +445,7 @@
                     "id": 8467,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "416:7:58",
+                    "src": "430:7:58",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -456,7 +456,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "415:15:58"
+              "src": "429:15:58"
             },
             "returnParameters": {
               "id": 8472,
@@ -468,7 +468,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 8482,
-                  "src": "454:4:58",
+                  "src": "468:4:58",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -479,7 +479,7 @@
                     "id": 8470,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "454:4:58",
+                    "src": "468:4:58",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -489,28 +489,28 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "453:6:58"
+              "src": "467:6:58"
             },
             "scope": 8483,
-            "src": "396:249:58",
+            "src": "410:254:58",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "internal"
           }
         ],
         "scope": 8484,
-        "src": "138:509:58"
+        "src": "145:522:58"
       }
     ],
-    "src": "0:648:58"
+    "src": "0:669:58"
   },
   "compiler": {
     "name": "solc",
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-18T02:31:56.892Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-04-19T21:46:37.954Z",
   "devdoc": {
     "details": "this contract implement basic controls needed in a variety of contracts",
     "methods": {},

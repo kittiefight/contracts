@@ -15,6 +15,7 @@ import "../interfaces/IStaking.sol";
 import "../interfaces/ERC20Standard.sol";
 import "../modules/databases/EndowmentDB.sol";
 import "../modules/endowment/EndowmentFund.sol";
+import "../modules/endowment/EarningsTracker.sol";
 
 contract WithdrawPool is Proxied, Guard {
 
@@ -35,6 +36,8 @@ contract WithdrawPool is Proxied, Guard {
     EndowmentDB public endowmentDB;
 
     EndowmentFund public endowmentFund;
+
+    EarningsTracker public earningsTracker;
 
 
     uint256 staking_period; //Time needed a staker to stake, so as to be able to claim.
@@ -91,9 +94,9 @@ contract WithdrawPool is Proxied, Guard {
 
     mapping(address => Staker) internal stakers; //Stake information about this address
 
-    mapping(uint256 => bool) internal dissolveScheduled; //True if a pool is already scheduled for dissolve
-    uint256 public scheduledJob;                 //Current cronJob ID of the cronJob scheduled for pool dissolving
-    mapping (uint => uint) public scheduledJobs; // Mapping pool_id to cronJob ID which schdules dissolving this pool
+    // mapping(uint256 => bool) internal dissolveScheduled; //True if a pool is already scheduled for dissolve
+    // uint256 public scheduledJob;                 //Current cronJob ID of the cronJob scheduled for pool dissolving
+    // mapping (uint => uint) public scheduledJobs; // Mapping pool_id to cronJob ID which schdules dissolving this pool
 
     //address[] internal potentialStakers; // A list of the addresses of SuperDao holders who stake their tokens,
                                          // may not eligible for claiming yields
@@ -141,6 +144,7 @@ contract WithdrawPool is Proxied, Guard {
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         superDaoToken = ERC20Standard(_superDaoToken);
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+        earningsTracker = EarningsTracker(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER));
     }
 
     /*                                                   CONSTRUCTOR                                                  */
@@ -158,7 +162,7 @@ contract WithdrawPool is Proxied, Guard {
         uint256 totalEthPaidOut
     );
     event ClaimYield(uint256 indexed pool_id, address indexed account, uint256 yield);
-    event PoolDissolveScheduled(uint256 indexed scheduledJob, uint256 dissolveTime, uint256 indexed pool_id);
+    //event PoolDissolveScheduled(uint256 indexed scheduledJob, uint256 dissolveTime, uint256 indexed pool_id);
     event ReturnUnclaimedETHtoEscrow(uint256 indexed pool_id, uint256 unclaimedETH, address receiver);
     event PoolDissolved(uint256 indexed pool_id, uint256 dissolveTime);
     event NewPoolCreated(uint256 indexed newPoolId, uint256 newPoolCreationTime);
@@ -189,12 +193,12 @@ contract WithdrawPool is Proxied, Guard {
         require(lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber, "You are not eligible to claim for this pool");
         require(stakers[msg.sender].claimed[pool_id] == false, "You have already claimed from this pool");
 
-        // schedule dissolving this pool if its dissolving has not been scheduled yet
-        if (dissolveScheduled[pool_id] == false) {
-            //scheduleDissolvePool(pool_id);
-            scheduleDissolveOldCreateNew(pool_id);
-            dissolveScheduled[pool_id] = true;
-        }
+        // // schedule dissolving this pool if its dissolving has not been scheduled yet
+        // if (dissolveScheduled[pool_id] == false) {
+        //     //scheduleDissolvePool(pool_id);
+        //     scheduleDissolveOldCreateNew(pool_id);
+        //     dissolveScheduled[pool_id] = true;
+        // }
         // record initial ether in pool in withdrawPool struct
         // only need to be called once for each pool
         if (weeklyPools[pool_id].initialETHadded == false &&
@@ -209,7 +213,7 @@ contract WithdrawPool is Proxied, Guard {
         // update pool data
         _updatePool(msg.sender, pool_id, yield);
         // pay dividend to the caller
-        require(endowmentFund.transferETHfromEscrowWithdrawalPool(msg.sender, yield));
+        require(endowmentFund.transferETHfromEscrowWithdrawalPool(msg.sender, yield, pool_id));
 
         emit ClaimYield(pool_id, msg.sender, yield);
         return true;
@@ -243,7 +247,8 @@ contract WithdrawPool is Proxied, Guard {
 
     function setPool_0() public onlyOwner {
         require(noOfPools == 0, "Pool 0 already exists");
-        uint256 epoch0StartTime = timeFrame._epochStartTime(0);
+        timeFrame.setEpoch_0();
+        uint256 epoch0StartTime = now;
         WithdrawalPool memory withdrawalPool;
         withdrawalPool.epochID = 0; // poolId is the same as its associated epoch
         withdrawalPool.blockNumber = block.number;
@@ -251,6 +256,7 @@ contract WithdrawPool is Proxied, Guard {
         withdrawalPool.dateDissolved = epoch0StartTime.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
         
         weeklyPools[0] = withdrawalPool;
+        earningsTracker.setInvestment(0, endowmentDB.checkInvestment(0));
 
         noOfPools = noOfPools.add(1);
 
@@ -272,7 +278,12 @@ contract WithdrawPool is Proxied, Guard {
          _addGamingDelayToPool(pool_id, gamingDelay);
      }
 
-
+     function setInterestToEarningsTracker(uint256 pool_id, uint256 total)
+     external
+     onlyContract(CONTRACT_NAME_GAMESTORE)
+     {
+        earningsTracker.setInterest(pool_id, total);
+     }
 
     /**
      * @dev This function is used by owner to change stakingContract's address.
@@ -490,25 +501,12 @@ contract WithdrawPool is Proxied, Guard {
      * @dev This function is used by cronJob to dissolve an old pool at its dissolving time
      * and create a new pool.
      * @dev Any unclaimed ethers left in the old pool is returned to endowmentFund upon the pool's dissolution
-     * @param pool_id The pool id that is going to be dissolved.
      */
-    function dissolveOldCreateNew(uint256 pool_id)
+    function dissolveOldCreateNew()
     public
-    onlyContract(CONTRACT_NAME_CRONJOB)
+    onlyContract(CONTRACT_NAME_GAMESTORE)
     {
-        // returns any unclaimed ethers back to endowmentFund
-        uint256 unclaimedETH = weeklyPools[pool_id].ETHAvailable;
-
-        if (unclaimedETH > 0) {
-            weeklyPools[pool_id].ETHAvailable = 0;
-            endowmentDB.returnPoolETHtoEndowment(unclaimedETH);
-
-            emit ReturnUnclaimedETHtoEscrow(
-                pool_id,
-                unclaimedETH,
-                proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
-        }
-
+        uint256 pool_id = noOfPools.sub(1);
         // dissolve the old pool
         weeklyPools[pool_id].dissolved = true;
 
@@ -519,8 +517,9 @@ contract WithdrawPool is Proxied, Guard {
         weeklyPools[newPoolId].epochID = newPoolId; // poolId is always the same as its associated epoch
         weeklyPools[newPoolId].blockNumber = block.number;
         weeklyPools[newPoolId].dateAvailable = now.add(6 * 24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS());
-        weeklyPools[newPoolId].dateDissolved = now.add(6 * 24 * 60 * 60).add(24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
+        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
 
+        earningsTracker.setInvestment(newPoolId, endowmentDB.checkInvestment(newPoolId));
         noOfPools = noOfPools.add(1);
 
         emit PoolDissolved(pool_id, now);
@@ -528,29 +527,29 @@ contract WithdrawPool is Proxied, Guard {
         emit NewPoolCreated(newPoolId, now);
     }
 
-    /**
-     * @dev This function schedules dissolving an old pool at its dissolving time
-     * and create a new pool by the cronJob.
-     * @dev This function is called only once, when the first claimer claims from this pool
-     * @param _pool_id The pool id of the pool for which dissolving is scheduled
-     * @return True if the cronJob is scheduled
-     */
+    // *
+    //  * @dev This function schedules dissolving an old pool at its dissolving time
+    //  * and create a new pool by the cronJob.
+    //  * @dev This function is called only once, when the first claimer claims from this pool
+    //  * @param _pool_id The pool id of the pool for which dissolving is scheduled
+    //  * @return True if the cronJob is scheduled
+     
 
-    function scheduleDissolveOldCreateNew(uint256 _pool_id)
-        internal
-        returns (bool)
-    {
-        uint256 _time = weeklyPools[_pool_id].dateDissolved;
-        scheduledJob = cronJob.addCronJob(
-            CONTRACT_NAME_WITHDRAW_POOL,
-            _time,
-            abi.encodeWithSignature("dissolveOldCreateNew(uint256)", _pool_id)
-        );
-        scheduledJobs[_pool_id] = scheduledJob;
+    // function scheduleDissolveOldCreateNew(uint256 _pool_id)
+    //     internal
+    //     returns (bool)
+    // {
+    //     uint256 _time = weeklyPools[_pool_id].dateDissolved;
+    //     scheduledJob = cronJob.addCronJob(
+    //         CONTRACT_NAME_WITHDRAW_POOL,
+    //         _time,
+    //         abi.encodeWithSignature("dissolveOldCreateNew(uint256)", _pool_id)
+    //     );
+    //     scheduledJobs[_pool_id] = scheduledJob;
 
-        emit PoolDissolveScheduled(scheduledJob, _time, _pool_id);
-        return true;
-    }
+    //     emit PoolDissolveScheduled(scheduledJob, _time, _pool_id);
+    //     return true;
+    // }
 
     /**
      * @dev This function is used to update pool data, when a claim occurs.
