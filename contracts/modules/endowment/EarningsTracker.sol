@@ -80,7 +80,7 @@ contract EarningsTracker is Proxied, Guard {
     mapping(uint256 => NFT) ethieTokens;
 
     /// @dev mapping user to NFTs
-    mapping(address => NFT[]) public user-ethieTokens;
+    mapping(address => NFT[]) public user_ethieTokens;
 
     /// @dev funding limit for each generation, pre-set in initialization, can only be changed by admin
     mapping (uint256 => uint256) public fundingLimit;
