@@ -77,7 +77,7 @@ contract EarningsTracker is Proxied, Guard {
     mapping (uint256 => Generation) generations;
 
     /// @dev mapping ethieToken NFT to its properties
-    mapping(uint256 => NFT) ethieTokens;
+    mapping(uint256 => NFT) public ethieTokens;
 
     /// @dev mapping user to NFTs
     mapping(address => NFT[]) public user_ethieTokens;
