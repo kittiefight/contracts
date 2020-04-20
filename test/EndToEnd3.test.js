@@ -875,73 +875,64 @@ contract("GameManager", accounts => {
     console.log("intial ether in pool 0: " + initialETH_pool_0);
   });
 
+  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
+    let timeTillClaiming = await withdrawPool.timeUntilClaiming(0);
+    console.log(
+      "Time (in seconds) till claiming:",
+      timeTillClaiming.toNumber()
+    );
+    await timeout(timeTillClaiming.toNumber());
+    console.log("Available for claiming...");
+    for (let i = 1; i < 4; i++) {
+      await withdrawPool.claimYield(0, {from: accounts[i]});
+    }
+    const pool_0_details = await withdrawPool.weeklyPools(0);
+    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
+    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
+    console.log(
+      "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
+    );
+    console.log(
+      "epoch ID associated with this pool",
+      pool_0_details.epochID.toString()
+    );
+    console.log(
+      "block number when this pool was created",
+      pool_0_details.blockNumber.toString()
+    );
+    console.log(
+      "initial ether available in this pool:",
+      weiToEther(pool_0_details.initialETHAvailable)
+    );
+    console.log(
+      "ether available in this pool:",
+      weiToEther(pool_0_details.ETHAvailable)
+    );
+    console.log(
+      "date available for claiming from this pool:",
+      pool_0_details.dateAvailable.toString()
+    );
+    console.log(
+      "whether initial ether has been distributed to this pool:",
+      pool_0_details.initialETHadded
+    );
+    console.log(
+      "time when this pool is dissolved:",
+      pool_0_details.dateDissolved.toString()
+    );
+    console.log(
+      "Number of stakers who have claimed from this pool:",
+      numberOfClaimers
+    );
+    console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
+    console.log("-------- Stakers who have claimed from this pool ------");
 
-  //  it("adds ether to pool associated with the active epoch", async () => {
-  //    const initialETH_pool_0_wei = await endowmentDB.getETHinPool(0);
-  //    const initialETH_pool_0 = weiToEther(initialETH_pool_0_wei);
-  //    console.log(
-  //      "\n******************* Initial Ethers Distributed to Pool 0 *******************"
-  //    );
-  //    console.log("intial ether in pool 0: " + initialETH_pool_0);
-  //  });
+    let claimers = await withdrawPool.getAllClaimersForPool(0);
+    console.log(claimers);
 
-  //  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
-  //    let timeTillClaiming = await withdrawPool.timeUntilClaiming(0);
-  //    console.log(
-  //      "Time (in seconds) till claiming:",
-  //      timeTillClaiming.toNumber()
-  //    );
-  //    await timeout(timeTillClaiming.toNumber());
-  //    console.log("Available for claiming...");
-  //    for (let i = 1; i < 4; i++) {
-  //      await withdrawPool.claimYield(0, {from: accounts[i]});
-  //    }
-  //    const pool_0_details = await withdrawPool.weeklyPools(0);
-  //    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
-  //    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
-  //    console.log(
-  //      "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
-  //    );
-  //    console.log(
-  //      "epoch ID associated with this pool",
-  //      pool_0_details.epochID.toString()
-  //    );
-  //    console.log(
-  //      "block number when this pool was created",
-  //      pool_0_details.blockNumber.toString()
-  //    );
-  //    console.log(
-  //      "initial ether available in this pool:",
-  //      weiToEther(pool_0_details.initialETHAvailable)
-  //    );
-  //    console.log(
-  //      "ether available in this pool:",
-  //      weiToEther(pool_0_details.ETHAvailable)
-  //    );
-  //    console.log(
-  //      "date available for claiming from this pool:",
-  //      pool_0_details.dateAvailable.toString()
-  //    );
-  //    console.log(
-  //      "whether initial ether has been distributed to this pool:",
-  //      pool_0_details.initialETHadded
-  //    );
-  //    console.log(
-  //      "time when this pool is dissolved:",
-  //      pool_0_details.dateDissolved.toString()
-  //    );
-  //    console.log(
-  //      "Number of stakers who have claimed from this pool:",
-  //      numberOfClaimers
-  //    );
-  //    console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
-  //    console.log("-------- Stakers who have claimed from this pool ------");
+    console.log("********************************************************\n");
+  });
 
-  //    let claimers = await withdrawPool.getAllClaimersForPool(0);
-  //    console.log(claimers);
-
-  //    console.log("********************************************************\n");
-  //  });
 
   //  it("calculates the yields for an eligible staker who can clamis from a pool", async () => {
   //    let stakedByAllStakers = await staking.totalStaked();
@@ -1381,11 +1372,81 @@ contract("GameManager", accounts => {
   });*/
 
   
-  it("sets new epoch when finalized", async () => {
+  it("an investor can burn his Ethie Token NFT and receive ethers locked and interest accumulated", async () => {
+    let _epoch_end = await timeFrame.timeUntilEpochEnd(0)
+    let _rest_start = _epoch_end.toNumber() - 100
+    if (_rest_start > 0) {
+        await timeout(_rest_start)
+    }
     
-    //await proxy.executeScheduledJobs();
+    let balance_before_2 = await web3.eth.getBalance(accounts[2])
+    balance_before_2 = weiToEther(balance_before_2)
+
+    let ethie_token_ID_2 = await ethieToken.tokenOfOwnerByIndex(
+      accounts[2],
+      0
+    );
+    ethie_token_ID_2 = ethie_token_ID_2.toNumber()
+
+    let res11 = await earningsTracker.isWorkingDay()
+    console.log("Is working day?", res11)
+    let stageStart1 = await earningsTracker.viewEpochStageStartTime()
+    let stageEnd1 = await earningsTracker.viewEpochStageEndTime()
+    console.log(`\n******************* Current Stage: ${stageStart1.state} *******************`);
+    console.log("\n******************* Stage Start Time *******************");
+    console.log(
+      "Date:",
+        stageStart1[1].toNumber() +
+        "-" +
+        stageStart1[2].toNumber() +
+        "-" +
+        stageStart1[3].toNumber(),
+      " ",
+      "Time:",
+        stageStart1[4].toNumber() +
+        ":" +
+        stageStart1[5].toNumber() +
+        ":" +
+        stageStart1[6].toNumber()
+    );
+    console.log("********************************************************\n");
+    console.log("\n******************* Stage End Time *******************");
+    console.log(
+      "Date:",
+        stageEnd1[1].toNumber() +
+        "-" +
+        stageEnd1[2].toNumber() +
+        "-" +
+        stageEnd1[3].toNumber(),
+      " ",
+      "Time:",
+        stageEnd1[4].toNumber() +
+        ":" +
+        stageEnd1[5].toNumber() +
+        ":" +
+        stageEnd1[6].toNumber()
+    );
+    console.log("********************************************************\n");
+
+    await ethieToken.approve(earningsTracker.address, ethie_token_ID_2, { from: accounts[2] })
+    await earningsTracker.burnNFT(ethie_token_ID_2, { from: accounts[2] }).should.be.fulfilled;
+    let balance_after_2 = await web3.eth.getBalance(accounts[2])
+    balance_after_2 = weiToEther(balance_after_2)
+
+    console.log("balance of accounts[2] before burning:", balance_before_2)
+    console.log("balance of accounts[2] after burning:", balance_after_2)
+  })
+
+  
+  it("sets new epoch when finalized", async () => {
+    let _wait = await timeFrame.timeUntilEpochEnd(0);
+    _wait = _wait.toNumber()
+    console.log(_wait)
+    await timeout(_wait)
+    // evm.increaseTime(web3, _wait)
+    await proxy.executeScheduledJobs();
     console.log("Hi, new epoch!");
-    evm.increaseTime(web3, 1000)
+    
     const epoch_1_start_unix = await timeFrame._epochStartTime(1);
     console.log(
       "epoch 1 start time in unix time:",
@@ -1427,4 +1488,5 @@ contract("GameManager", accounts => {
     );
     console.log("********************************************************\n");
   });
+
 });
