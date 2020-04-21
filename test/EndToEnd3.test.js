@@ -159,131 +159,6 @@ contract("GameManager", accounts => {
     staking = await MockStaking.deployed();
   });
 
-  /* it("stakes superDao tokens", async () => {
-    const stakedTokens = new BigNumber(
-      web3.utils.toWei("10000", "ether") //
-    );
-
-    for (let i = 1; i < 4; i++) {
-      await superDaoToken.transfer(accounts[i], stakedTokens, {
-        from: accounts[0]
-      });
-      let balBefore = await superDaoToken.balanceOf(accounts[i]);
-      console.log(
-        `Balance of staker ${i} before staking:`,
-        weiToEther(balBefore)
-      );
-
-      await superDaoToken.approve(staking.address, stakedTokens, {
-        from: accounts[i]
-      });
-
-      await staking.stake(stakedTokens, {from: accounts[i]});
-
-      let balStaking = await superDaoToken.balanceOf(staking.address);
-      console.log(
-        "Balance of staking contract after staking:",
-        weiToEther(balStaking)
-      );
-
-      let balAfter = await superDaoToken.balanceOf(accounts[i]);
-      console.log(
-        `Balance of staker ${i} after staking:`,
-        weiToEther(balAfter)
-      );
-    }
-  });
-
-  it("sets Pool 0", async () => {
-    await withdrawPool.setPool_0();
-    const numberOfPools = await withdrawPool.getTotalNumberOfPools();
-    console.log("Number of pools:", numberOfPools.toNumber());
-    console.log("\n******************* Pool 0 Created*******************");
-    const pool_0_details = await withdrawPool.weeklyPools(0);
-    console.log(
-      "epoch ID associated with this pool",
-      pool_0_details.epochID.toString()
-    );
-    console.log(
-      "block number when this pool was created",
-      pool_0_details.blockNumber.toString()
-    );
-    console.log(
-      "initial ether available in this pool:",
-      pool_0_details.initialETHAvailable.toString()
-    );
-    console.log(
-      "ether available in this pool:",
-      pool_0_details.ETHAvailable.toString()
-    );
-    console.log(
-      "date available for claiming from this pool:",
-      pool_0_details.dateAvailable.toString()
-    );
-    console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_0_details.initialETHadded
-    );
-    console.log(
-      "time when this pool is dissolved:",
-      pool_0_details.dateDissolved.toString()
-    );
-    console.log(
-      "stakers who have claimed from this pool:",
-      pool_0_details.stakersClaimed[0]
-    );
-    console.log("********************************************************\n");
-  });
-
-
-
-  it("sets Epoch 0", async () => {
-    // start epoch 0 6 days + 21 hours ago, so that timeFrame.setNewEpoch() can be
-    // called by GameManager when the test game finalizes
-    // const startTime = Math.floor(Date.now() / 1000) - 6 * 24 * 60 * 60 + 5 * 60;
-    // await timeFrame.setEpoch_0(startTime);
-    // const epoch_0_start_unix = await timeFrame._epochStartTime(0);
-    // console.log(
-    //   "epoch 0 start time in unix time:",
-    //   epoch_0_start_unix.toNumber()
-    // );
-    const epoch_0_start_human_readable = await timeFrame.epochStartTime(0);
-    const epoch_0_end_human_readable = await timeFrame.epochEndTime(0);
-    console.log("\n******************* Epoch 0 Start Time *****************");
-    console.log(
-      "Date:",
-      epoch_0_start_human_readable[0].toNumber() +
-        "-" +
-        epoch_0_start_human_readable[1].toNumber() +
-        "-" +
-        epoch_0_start_human_readable[2].toNumber(),
-      " ",
-      "Time:",
-      epoch_0_start_human_readable[3].toNumber() +
-        ":" +
-        epoch_0_start_human_readable[4].toNumber() +
-        ":" +
-        epoch_0_start_human_readable[5].toNumber()
-    );
-    console.log("\n******************* Epoch 0 End Time *******************");
-    console.log(
-      "Date:",
-      epoch_0_end_human_readable[0].toNumber() +
-        "-" +
-        epoch_0_end_human_readable[1].toNumber() +
-        "-" +
-        epoch_0_end_human_readable[2].toNumber(),
-      " ",
-      "Time:",
-      epoch_0_end_human_readable[3].toNumber() +
-        ":" +
-        epoch_0_end_human_readable[4].toNumber() +
-        ":" +
-        epoch_0_end_human_readable[5].toNumber()
-    );
-    console.log("********************************************************\n");
-  });*/
-
   it("registers 40 users", async () => {
     let users = 40;
 
@@ -348,7 +223,7 @@ contract("GameManager", accounts => {
     console.log(`New Player ${accounts[2]} with Kitty ${kitties[1]}`);
   });
 
-  it("stake and invest", async () => {
+  it("superDaoToken holders stake superDaoToken, and investors invest via EthieToken NFTs", async () => {
     const stakedTokens = new BigNumber(
       web3.utils.toWei("10000", "ether") //
     );
@@ -410,7 +285,7 @@ contract("GameManager", accounts => {
     }
   });
 
-  it("sets Epoch 0, Pool 0, and set investment for Epoch 0", async () => {
+  it("sets Epoch 0, Pool 0, and sets investment for Epoch 0", async () => {
     await withdrawPool.setPool_0();
 
     let amounts = await earningsTracker.amountsPerEpoch(0);
@@ -789,11 +664,6 @@ contract("GameManager", accounts => {
 
     let finalizer = accounts[20];
 
-    //let currentEpochEndTime = await timeFrame._epochEndTime(0);
-    //console.log("current epoch end time:", currentEpochEndTime.toString())
-    //let timeFactor = 60 + Math.floor(Date.now() / 1000)
-    //console.log("timeFactor:", timeFactor)
-
     console.log("\n==== WAITING FOR GAME OVER: ", formatDate(endTime));
 
     await timeout(2);
@@ -866,91 +736,6 @@ contract("GameManager", accounts => {
     console.log("=======================\n");
   });
 
-  it("adds ether to pool associated with the active epoch", async () => {
-    const initialETH_pool_0_wei = await endowmentDB.getETHinPool(0);
-    const initialETH_pool_0 = weiToEther(initialETH_pool_0_wei);
-    console.log(
-      "\n******************* Initial Ethers Distributed to Pool 0 *******************"
-    );
-    console.log("intial ether in pool 0: " + initialETH_pool_0);
-  });
-
-  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming(0);
-    console.log(
-      "Time (in seconds) till claiming:",
-      timeTillClaiming.toNumber()
-    );
-    await timeout(timeTillClaiming.toNumber());
-    console.log("Available for claiming...");
-    for (let i = 1; i < 4; i++) {
-      await withdrawPool.claimYield(0, {from: accounts[i]});
-    }
-    const pool_0_details = await withdrawPool.weeklyPools(0);
-    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
-    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
-    console.log(
-      "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
-    );
-    console.log(
-      "epoch ID associated with this pool",
-      pool_0_details.epochID.toString()
-    );
-    console.log(
-      "block number when this pool was created",
-      pool_0_details.blockNumber.toString()
-    );
-    console.log(
-      "initial ether available in this pool:",
-      weiToEther(pool_0_details.initialETHAvailable)
-    );
-    console.log(
-      "ether available in this pool:",
-      weiToEther(pool_0_details.ETHAvailable)
-    );
-    console.log(
-      "date available for claiming from this pool:",
-      pool_0_details.dateAvailable.toString()
-    );
-    console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_0_details.initialETHadded
-    );
-    console.log(
-      "time when this pool is dissolved:",
-      pool_0_details.dateDissolved.toString()
-    );
-    console.log(
-      "Number of stakers who have claimed from this pool:",
-      numberOfClaimers
-    );
-    console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
-    console.log("-------- Stakers who have claimed from this pool ------");
-
-    let claimers = await withdrawPool.getAllClaimersForPool(0);
-    console.log(claimers);
-
-    console.log("********************************************************\n");
-  });
-
-
-  //  it("calculates the yields for an eligible staker who can clamis from a pool", async () => {
-  //    let stakedByAllStakers = await staking.totalStaked();
-  //    console.log(
-  //      "SuperDao tokens staked by all stakers:",
-  //      weiToEther(stakedByAllStakers)
-  //    );
-  //    for (let i = 1; i < 4; i++) {
-  //      let stakedByStaker = await staking.totalStakedFor(accounts[i]);
-  //      console.log(
-  //        `SuperDao tokens staked by staker ${i} is:`,
-  //        weiToEther(stakedByStaker)
-  //      );
-
-  //      let yields = await withdrawPool.checkYield(accounts[i], 0);
-  //      console.log(`yields for staker ${i} is:`, weiToEther(yields));
-  //    }
-  //  });
   it("claims for everyone", async () => {
     let gameId = 1;
 
@@ -1294,83 +1079,72 @@ contract("GameManager", accounts => {
     );
   });
 
- /* it("creates a new pool when the current pool is dissolved", async () => {
-    const cronJobID = await withdrawPool.scheduledJob();
-    console.log("cronJobID:", cronJobID.toNumber());
-
-    const timeUntilDissolve = await withdrawPool.timeUntilPoolDissolve(0);
+  it("adds ether to pool associated with the active epoch", async () => {
+    const initialETH_pool_0_wei = await endowmentDB.getETHinPool(0);
+    const initialETH_pool_0 = weiToEther(initialETH_pool_0_wei);
     console.log(
-      "time (in seconds) until pool 0 dissolves:",
-      timeUntilDissolve.toNumber()
+      "\n******************* Initial Ethers Distributed to Pool 0 *******************"
     );
+    console.log("Initial ether in pool 0: " + initialETH_pool_0);
+  });
 
-    if (timeUntilDissolve.toNumber() > 0) {
-      console.log("time elapsing until pool 0 dissolves...");
-      console.log("time elapsing...");
-      evm.increaseTime(web3, timeUntilDissolve.toNumber());
+  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
+    let timeTillClaiming = await withdrawPool.timeUntilClaiming(0);
+    console.log(
+      "Time (in seconds) till claiming from the current pool:",
+      timeTillClaiming.toNumber()
+    );
+    await timeout(timeTillClaiming.toNumber());
+    console.log("Available for claiming...");
+    for (let i = 1; i < 4; i++) {
+      await withdrawPool.claimYield(0, {from: accounts[i]});
     }
-
-    await proxy.executeScheduledJobs();
-
-    console.log("Pool 0 is being dissolved...");
-    console.log("New pool is being created...");
-
-    const numberOfDissolvedPools = await withdrawPool.getNumberOfDissolvedPools();
+    const pool_0_details = await withdrawPool.weeklyPools(0);
+    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
+    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
     console.log(
-      "Total number of dissolved Pools:",
-      numberOfDissolvedPools.toNumber()
+      "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
     );
-    const numberOfPools = await withdrawPool.getTotalNumberOfPools();
-    console.log("Total number of pools:", numberOfPools.toNumber());
-
-    console.log("************* Details of New Pool Created ************");
-    const pool_1_details = await withdrawPool.weeklyPools(1);
-    const numberOfClaimers = pool_1_details.stakersClaimed.toNumber();
     console.log(
       "epoch ID associated with this pool",
-      pool_1_details.epochID.toString()
+      pool_0_details.epochID.toString()
     );
     console.log(
       "block number when this pool was created",
-      pool_1_details.blockNumber.toString()
+      pool_0_details.blockNumber.toString()
     );
     console.log(
       "initial ether available in this pool:",
-      pool_1_details.initialETHAvailable.toString()
+      weiToEther(pool_0_details.initialETHAvailable)
     );
     console.log(
       "ether available in this pool:",
-      pool_1_details.ETHAvailable.toString()
+      weiToEther(pool_0_details.ETHAvailable)
     );
     console.log(
       "date available for claiming from this pool:",
-      pool_1_details.dateAvailable.toString()
+      pool_0_details.dateAvailable.toString()
     );
     console.log(
       "whether initial ether has been distributed to this pool:",
-      pool_1_details.initialETHadded
+      pool_0_details.initialETHadded
     );
     console.log(
       "time when this pool is dissolved:",
-      pool_1_details.dateDissolved.toString()
-    );
-    console.log(
-      "time (in seconds) till this pool will be dissolved: ",
-      pool_1_details.dateDissolved.toNumber() - Math.floor(Date.now() / 1000)
+      pool_0_details.dateDissolved.toString()
     );
     console.log(
       "Number of stakers who have claimed from this pool:",
       numberOfClaimers
     );
-
+    console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
     console.log("-------- Stakers who have claimed from this pool ------");
 
-    let claimers = await withdrawPool.getAllClaimersForPool(1);
+    let claimers = await withdrawPool.getAllClaimersForPool(0);
     console.log(claimers);
 
     console.log("********************************************************\n");
-  });*/
-
+  });
   
   it("an investor can burn his Ethie Token NFT and receive ethers locked and interest accumulated", async () => {
     let _epoch_end = await timeFrame.timeUntilEpochEnd(0)
