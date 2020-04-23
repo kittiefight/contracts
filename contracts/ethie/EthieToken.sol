@@ -22,7 +22,8 @@ contract EthieToken is ERC721, ERC721Enumerable, ERC721Pausable, EthieTokenMetad
     struct TokenProperties {
         uint256 ethAmount;
         uint256 generation;
-        uint256 lockTime;
+        uint256 creationTime;
+        uint256 lockPeriod;
     }
 
     Counters.Counter nextTokenId;       // Provides unique identifier for Ethie token. 0 value is invalid
@@ -39,16 +40,17 @@ contract EthieToken is ERC721, ERC721Enumerable, ERC721Pausable, EthieTokenMetad
      * @notice Mint a new Ethie token
      * @param to Owner of a new token
      * @param ethAmount Ether value of the new token
-     * @param lockTime Lock time
+     * @param lockPeriod Lock time
      * @return id of the new token
      */
-    function mint(address to, uint256 ethAmount, uint256 lockTime) public onlyMinter returns (uint256) {
+    function mint(address to, uint256 ethAmount, uint256 lockPeriod) public onlyMinter returns (uint256) {
         uint256 tokenId = nextTokenId.current();
         nextTokenId.increment();
         properties[tokenId] = TokenProperties({
             ethAmount: ethAmount,
             generation: generation.current(),
-            lockTime: lockTime
+            creationTime: now,
+            lockPeriod: lockPeriod
         });
         _mint(to, tokenId);
         return tokenId;
@@ -71,14 +73,14 @@ contract EthieToken is ERC721, ERC721Enumerable, ERC721Pausable, EthieTokenMetad
     function name(uint256 tokenId) public view returns(string memory) {
         TokenProperties memory p = properties[tokenId];
         require(p.ethAmount > 0, "EthieToken: name query for nonexistent token");
-        return generateName(tokenId, p.ethAmount, p.generation, p.lockTime);
+        return generateName(tokenId, p.ethAmount, p.generation, p.lockPeriod);
     }
 
-    function generateName(uint256 tokenId, uint256 ethAmount, uint256 tokenGeneration, uint256 lockTime) public pure returns(string memory) {
+    function generateName(uint256 tokenId, uint256 ethAmount, uint256 tokenGeneration, uint256 lockPeriod) public pure returns(string memory) {
         string memory id  = tokenId.fromUint256();
         string memory eth = ethAmount.fromUint256(18, 4);
         string memory gen = tokenGeneration.fromUint256();
-        string memory lock = lockTime.fromUint256();
+        string memory lock = lockPeriod.fromUint256();
         return StringUtils.concat(eth,"ETH").concat("_G").concat(gen).concat("_LOCK").concat(lock).concat("_").concat(id);
     }
 
