@@ -53,9 +53,9 @@ const INITIAL_KTY_ENDOWMENT = new BigNumber(
     web3.utils.toWei("100000", "ether") //10.000 KTY
 );
 
-const INITIAL_ETH_ENDOWMENT = new BigNumber(
-    web3.utils.toWei("30", "ether") //650 ETH
-);
+//const INITIAL_ETH_ENDOWMENT = new BigNumber(
+  //  web3.utils.toWei("30", "ether") //650 ETH
+//);
 
 // ================ GAME VARS AND FEES ================ //
 const LISTING_FEE = new BigNumber(web3.utils.toWei("1250", "ether"));
@@ -293,7 +293,7 @@ module.exports = (deployer, network, accounts) => {
             await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
             await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT, {from: accounts[0]});
             //Transfer ETH
-            await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+           // await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
 
             console.log('\nSetting game vars and fees...');
             let names = ['listingFee', 'ticketFee', 'bettingFee', 'gamePrestart', 'gameDuration',
