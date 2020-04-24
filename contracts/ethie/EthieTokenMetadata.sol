@@ -70,6 +70,10 @@ contract EthieTokenMetadata is Context, ERC165, ERC721, IERC721Metadata {
         return _baseURI.concat(tokenId.fromUint256(), ".json");
     }
 
+    function contractURI() public view returns (string memory) {
+        return _baseURI.concat("contract.json");
+    }
+
     /**
      * @dev Internal function to set the base URI for all token IDs. It is
      * automatically added as a prefix to the value returned in {tokenURI}.
