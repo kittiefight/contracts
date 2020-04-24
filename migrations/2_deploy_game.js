@@ -34,6 +34,8 @@ const CronJob = artifacts.require('CronJob');
 const FreezeInfo = artifacts.require('FreezeInfo');
 const CronJobTarget = artifacts.require('CronJobTarget');
 const HoneypotAllocationAlgo = artifacts.require('HoneypotAllocationAlgo')
+const EthieToken = artifacts.require('EthieToken')
+const EarningsTracker = artifacts.require('EarningsTracker')
 const WithdrawPool = artifacts.require('WithdrawPool')
 const MockStaking = artifacts.require('MockStaking')
 
@@ -52,7 +54,7 @@ const INITIAL_KTY_ENDOWMENT = new BigNumber(
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
-    web3.utils.toWei("2000", "ether") //650 ETH
+    web3.utils.toWei("30", "ether") //650 ETH
 );
 
 // ================ GAME VARS AND FEES ================ //
@@ -63,6 +65,7 @@ const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
 const GAME_PRESTART = 50 // 2 min
 const GAME_DURATION = 80 // 5 min
+const TIME_EXTENSION = 1 
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
 const GAME_TIMES = 10*60 //Scheduled games 10 min apart
@@ -88,6 +91,8 @@ const PERCENTAGE_FOR_LISTING_FEE = 10000 // 1%
 const PERCENTAGE_FOR_TICKET_FEE = 300  // 0.03%
 const PERCENTAGE_FOR_BETTING_FEE = 20  // 0.002%
 const PERCENTAGE_HONEYPOT_ALLOCATION_KTY = 100000  //10%
+const KTY_FOR_BURN_ETHIE = new BigNumber(web3.utils.toWei("100", "ether"));
+const INTEREST_ETHIE = 40000 // 4%
 // =================================================== //
 
 function setMessage(contract, funcName, argArray) {
@@ -133,6 +138,8 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(RarityCalculator))
         .then(() => deployer.deploy(EndowmentFund))
         .then(() => deployer.deploy(KittieHELL))
+        .then(() => deployer.deploy(EthieToken))
+        .then(() => deployer.deploy(EarningsTracker))
         .then(() => deployer.deploy(MockStaking))
         .then(() => deployer.deploy(WithdrawPool))
         .then(() => deployer.deploy(Escrow))
@@ -171,6 +178,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('KittieHell', KittieHELL.address)
             await proxy.addContract('KittieHellDB', KittieHellDB.address)
             await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
+            await proxy.addContract('EarningsTracker', EarningsTracker.address)
             await proxy.addContract('WithdrawPool', WithdrawPool.address)
         })
         .then(async() => {
@@ -201,6 +209,7 @@ module.exports = (deployer, network, accounts) => {
             kittieFightToken = await KittieFightToken.deployed();
             //kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
             cryptoKitties = await CryptoKitties.deployed();
+            ethieToken = await EthieToken.deployed()
 
             // MODULES
             gameManager = await GameManager.deployed()
@@ -217,6 +226,7 @@ module.exports = (deployer, network, accounts) => {
             endowmentFund = await EndowmentFund.deployed()
             kittieHELL = await KittieHELL.deployed()
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
+            earningsTracker = await EarningsTracker.deployed()
 
             // WithdrawPool - Pool for SuperDao token stakers
             withdrawPool = await WithdrawPool.deployed()
@@ -253,6 +263,7 @@ module.exports = (deployer, network, accounts) => {
             await cronJobTarget.setProxy(proxy.address);
             await freezeInfo.setProxy(proxy.address);
             await honeypotAllocationAlgo.setProxy(proxy.address)
+            await earningsTracker.setProxy(proxy.address)
             await withdrawPool.setProxy(proxy.address)
 
             console.log('\nInitializing contracts...');
@@ -268,6 +279,7 @@ module.exports = (deployer, network, accounts) => {
             await kittieHellDB.setKittieHELL()
             await kittieHELL.initialize()
             await hitsResolve.initialize()
+            await earningsTracker.initialize(EthieToken.address)
             await withdrawPool.initialize(MockStaking.address, SuperDaoToken.address)
             await staking.initialize(SuperDaoToken.address)
 
@@ -290,7 +302,7 @@ module.exports = (deployer, network, accounts) => {
                 'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
                 'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
                 'percentageForBettingFee', 'usdKTYPrice', 'requiredKittieSacrificeNum',
-                'percentageHoneypotAllocationKTY', 'percentageForPool'
+                'percentageHoneypotAllocationKTY', 'ktyForBurnEthie', 'interestEthie', 'percentageForPool', 'timeExtension'
             ];
 
             let bytesNames = [];
@@ -303,7 +315,7 @@ module.exports = (deployer, network, accounts) => {
                 HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
                 OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
                 PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM,
-                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, PERCENTAGE_FOR_POOL
+                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, KTY_FOR_BURN_ETHIE.toString(), INTEREST_ETHIE, PERCENTAGE_FOR_POOL, TIME_EXTENSION
             ];
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {

@@ -261,6 +261,24 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
+    function contributeETH_Ethie() external payable returns(bool) {
+        require(address(escrow) != address(0));
+        address msgSender = getOriginalSender();
+
+        require(msg.value > 0);
+
+        // transfer ETH to Escrow
+        if (!address(escrow).send(msg.value)){
+            return false;
+        }
+
+        endowmentDB.updateEndowmentFund(0, msg.value, false);
+
+        emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
+
+        return true;
+    }
+
     /**
     * @notice MUST BE DONE BEFORE UPGRADING ENDOWMENT AS IT IS THE OWNER
     * @dev change Escrow contract owner before UPGRADING ENDOWMENT AS IT IS THE OWNER
@@ -289,6 +307,15 @@ contract EndowmentFund is Distribution, Guard {
     function transferETHfromEscrowWithdrawalPool(address payable _someAddress, uint256 _eth_amount)
         public
         onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+        returns(bool)
+    {
+        transferETHfromEscrow(_someAddress, _eth_amount);
+        return true;
+    }
+
+    function transferETHfromEscrowEarningsTracker(address payable _someAddress, uint256 _eth_amount)
+        public
+        onlyContract(CONTRACT_NAME_EARNINGS_TRACKER)
         returns(bool)
     {
         transferETHfromEscrow(_someAddress, _eth_amount);

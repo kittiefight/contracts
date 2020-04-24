@@ -115,7 +115,7 @@ contract HoneypotAllocationAlgo is Proxied {
 
         uint256 actualFundsUSD = convertETHtoUSD(actualFundsETH);
         uint256 percentageETH;
-        if (actualFundsUSD > 4000) {
+        if (actualFundsUSD > 40000) {
             (percentageETH, honeypotClass) = _honeypotAllocationETH_incredible(actualFundsUSD);
         } else {
             (percentageETH, honeypotClass) = _honeypotAllocationETH_great(actualFundsUSD);

@@ -62,42 +62,36 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     struct WithdrawalPool {
-        uint256 epochID;            // epochID of the epoch asscoated with this pool
-        uint256 blockNumber;        //The block number of the block in which this pool was created
+        uint256 epochID;             // epochID of the epoch asscoated with this pool
+        uint256 blockNumber;         // The block number of the block in which this pool was created
         uint256 initialETHAvailable; // How much Eth this pool initially has, which is the amount of eth distributed
                                      // to this pool when the associated honeypot dissolves
-        uint256 ETHAvailable;       //How much Eth this pool contains.
-        uint256 dateAvailable;      //When this pool's Eth will be available for withdrawal, in unix time
-        bool initialETHadded;    // check whether initial ether is recorded in withdrawPool
-        bool dissolved;             //If this is true the pool has been dissolved, otherwise has not.
-        uint256 dateDissolved;      //The date this pool got dissolved in unix time.
-        //uint256 stakersEligible;    //How many stakers are eligible to claim from this pool.
-        uint256 stakersClaimed;     //How many stakers claimed from this pool.
-        address[] allClaimedStakers; //Addresses of all stakers who have claimed from this pool.
-        //address[] eligibleStakers; //Addresses of all stakers that are eligible to claim from this pool.
+        uint256 ETHRemaining;        // How much remaining Eth this pool contains.
+        uint256 ETHReleased;         // The amount of ether this pool releases
+        uint256 dateAvailable;       // When this pool's Eth will be available for withdrawal, in unix time
+        bool initialETHadded;        // Check whether initial ether is recorded in withdrawPool
+        //bool dissolved;            // If this is true the pool has been dissolved, otherwise has not.
+        uint256 dateDissolved;       // The date this pool got dissolved in unix time.
+        uint256 stakersClaimed;      // How many stakers claimed from this pool.
+        address[] allClaimedStakers; // Addresses of all stakers who have claimed from this pool.
     }
 
     struct Staker{
-        //uint256 stakeStartDate;        //Timestamp of the date this staker started to stake.
-        uint256 previousStartTime;      //Block Number of the block in which this staker started to stake the previous time.
-        uint256 stakeStartTime;         //Block Number of the block in which this staker started to lock superDao.
+        //uint256 stakeStartDate;         // Timestamp of the date this staker started to stake.
+        uint256 previousStartTime;        // Block Number of the block in which this staker started to stake the previous time.
+        uint256 stakeStartTime;           // Block Number of the block in which this staker started to lock superDao.
         mapping(uint256 => bool) staking;                   //
-        mapping(uint256 => bool) claimed; // true if this staker has already claimed from this pool
-        uint256 totalPoolsClaimed;      //From how many pools this staker claimed funds.
-        uint256 currentAvailablePools;  //From how many pools this staker hasn't yet claimed, while he is eligible.
+        mapping(uint256 => bool) claimed; // True if this staker has already claimed from this pool
+        uint256 totalPoolsClaimed;        // From how many pools this staker claimed funds.
+        uint256 currentAvailablePools;    // From how many pools this staker hasn't yet claimed, while he is eligible.
     }
 
     mapping(uint256 => WithdrawalPool) public weeklyPools; //Ids for all weekly pools
 
     mapping(address => Staker) internal stakers; //Stake information about this address
 
-    mapping(uint256 => bool) internal dissolveScheduled; //True if a pool is already scheduled for dissolve
-    uint256 public scheduledJob;                 //Current cronJob ID of the cronJob scheduled for pool dissolving
-    mapping (uint => uint) public scheduledJobs; // Mapping pool_id to cronJob ID which schdules dissolving this pool
-
-    //address[] internal potentialStakers; // A list of the addresses of SuperDao holders who stake their tokens,
-                                         // may not eligible for claiming yields
-                                         //if not meeting staking period requirement
+    uint256 public scheduledJob;                 //Current cronJob ID of the cronJob scheduled for setting up new epoch and pool
+    mapping (uint => uint) public scheduledJobs; // Mapping epochID to cronJob ID which schdules creating this epoch and pool
 
     /*                                                 POOL VARIABLES                                                 */
     /*                                                      END                                                       */
@@ -106,16 +100,6 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                   MODIFIERS                                                    */
     /*                                                     START                                                      */
     /* ============================================================================================================== */
-
-    //modifier onlyCronJob() {
-      //  require(msg.sender == cronJob, "WithdrawPool: Only CronJob");
-        //_;
-    //}
-
-    //modifier onlyEndowmentFund() {
-      //  require(msg.sender == endowmentFund, "WithdrawPool: Only EndowmentFund");
-        //_;
-    //}
 
     modifier onlyActivePool(uint pool_id) {
          require(pool_id == getActivePoolID());
@@ -162,6 +146,7 @@ contract WithdrawPool is Proxied, Guard {
     event ReturnUnclaimedETHtoEscrow(uint256 indexed pool_id, uint256 unclaimedETH, address receiver);
     event PoolDissolved(uint256 indexed pool_id, uint256 dissolveTime);
     event NewPoolCreated(uint256 indexed newPoolId, uint256 newPoolCreationTime);
+    event PoolExtended(uint256 _activePoolID, uint256 newAvailableTime, uint256 newDissolveTime);
     event GamingDelayAddedtoPool(
         uint256 indexed _pool_id,
         uint256 _gamingDelay,
@@ -174,14 +159,15 @@ contract WithdrawPool is Proxied, Guard {
 
     /**
      * @dev This function is used by stakers to claim their yields.
-     * @param pool_id The pool from which they would like to claim.
      */
-    function claimYield(uint256 pool_id)
+    function claimYield()
     external returns(bool)
     {
+        // can only claim from the current pool
+        uint256 pool_id = getActivePoolID();
         // must be the open pool
         require(weeklyPools[pool_id].dateAvailable <= now, "This pool is not available for claiming yet");
-        require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
+        require(weeklyPools[pool_id].dateDissolved > now, "This pool is already dissolved");
 
         // get the last time that the claimer's staked token amount has been changed
         // the tokens need to be staked before the the current epoch started
@@ -189,12 +175,6 @@ contract WithdrawPool is Proxied, Guard {
         require(lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber, "You are not eligible to claim for this pool");
         require(stakers[msg.sender].claimed[pool_id] == false, "You have already claimed from this pool");
 
-        // schedule dissolving this pool if its dissolving has not been scheduled yet
-        if (dissolveScheduled[pool_id] == false) {
-            //scheduleDissolvePool(pool_id);
-            scheduleDissolveOldCreateNew(pool_id);
-            dissolveScheduled[pool_id] = true;
-        }
         // record initial ether in pool in withdrawPool struct
         // only need to be called once for each pool
         if (weeklyPools[pool_id].initialETHadded == false &&
@@ -205,7 +185,7 @@ contract WithdrawPool is Proxied, Guard {
         // update staker
         _updateStaker(msg.sender, pool_id, lastModifiedBlockNumber);
         // calculate the amount of ether entitled to the caller
-        uint256 yield = checkYield(msg.sender, pool_id);
+        uint256 yield = checkYield(msg.sender);
         // update pool data
         _updatePool(msg.sender, pool_id, yield);
         // pay dividend to the caller
@@ -216,17 +196,15 @@ contract WithdrawPool is Proxied, Guard {
     }
 
     /**
-     * @dev This function is used, so as to check how much Eth a staker can withdraw from a specific pool.
-     * @param pool_id The pool from which they would like to claim.
+     * @dev This function is used, so as to check how much Eth a staker can withdraw from the current pool.
      * @param staker The address of the staker we would like to check.
      */
-    function checkYield(address staker, uint256 pool_id)
+    function checkYield(address staker)
         public
         view
     returns(uint256)
     {
-        // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
-        //return getPercentageSuperDao(staker).mul(weeklyPools[pool_id].initialETHAvailable).div(1000000000);
+        uint256 pool_id = getActivePoolID();
         uint256 stakedByStaker = staking.totalStakedFor(staker);
         uint256 stakedByAllStakers = staking.totalStaked();
         uint256 initialETHinPool = weeklyPools[pool_id].initialETHAvailable;
@@ -259,20 +237,28 @@ contract WithdrawPool is Proxied, Guard {
 
     /**
       * @dev adds gaming delay to a pool
-      * This function should be called by GameManager when the last game
+      * This function should be called by GameManager when a game
       * in an epoch runs longer than the intended sixDayEnd
-      * @param pool_id the id of the pool
       * @param gamingDelay gaming delay time in seconds
       */
-     function addGamingDelayToPool(uint pool_id, uint gamingDelay)
+     function addGamingDelayToPool(uint gamingDelay)
          public
-         onlyActivePool(pool_id)
-         onlyContract(CONTRACT_NAME_GAMEMANAGER)
+         //onlyContract(CONTRACT_NAME_GAMEMANAGER)
      {
+         uint256 pool_id = getActivePoolID();
          _addGamingDelayToPool(pool_id, gamingDelay);
      }
 
+     function gameExtension()
+         external
+         onlyContract(CONTRACT_NAME_GAMEMANAGER)
+     {
+         uint256 _activePoolID = getActivePoolID();
+         weeklyPools[_activePoolID].dateAvailable = now;
+         weeklyPools[_activePoolID].dateDissolved = now.add(24 * 60 * 60);
 
+         emit PoolExtended(_activePoolID, weeklyPools[_activePoolID].dateAvailable, weeklyPools[_activePoolID].dateDissolved);
+     }
 
     /**
      * @dev This function is used by owner to change stakingContract's address.
@@ -283,6 +269,14 @@ contract WithdrawPool is Proxied, Guard {
     onlyOwner()
     {
         staking = IStaking(_stakingContract);
+    }
+
+    function createPool()
+        public
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        returns (uint256)
+    {
+        _createPool();
     }
 
     /*                                                 SETTER FUNCTIONS                                               */
@@ -323,7 +317,7 @@ contract WithdrawPool is Proxied, Guard {
     view
     returns(uint256)
     {
-        return noOfDissolvedPools;
+        return noOfPools.sub(1);
     }
 
     //TODO: there should always be only 1 open pool at any time, so this function is stale.
@@ -360,34 +354,6 @@ contract WithdrawPool is Proxied, Guard {
         return staking.totalStaked();
     }
 
-    // return true if the staker has already claimed
-    // from this pool with pool_id
-    //function hasClaimed(address account, uint256 pool_id)
-      //  internal
-       // view
-        //returns(bool)
-    //{
-      //  address[] memory unclaimed = weeklyPools[pool_id].unclaimedStakers;
-        //for (uint256 i=0; i<unclaimed.length-1; i++) {
-          //  if (account == unclaimed[i]) {
-            //    return true;
-            //}
-        //}
-        //return false;
-    //}
-
-    // calculate the percentage of a staker's token staked in the total SuperDao tokens minted
-    function getPercentageSuperDao(address account)
-        //internal
-        public
-        view
-        returns (uint256)
-    {
-        uint256 total = superDaoToken.totalSupply(); // TODO: total minted
-        uint256 stakedAmount = staking.totalStakedFor(account);
-        uint256 percentagePool = stakedAmount.mul(1000000000).div(total); // multiply 1000000000 to ensure it is always an integer
-        return percentagePool;
-    }
 
     // get the pool ID of the currently active pool
     // The ID of the active pool is the same as the ID of the active epoch
@@ -396,8 +362,7 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        //return timeFrame.getActiveEpochID();
-        return noOfPools.sub(1);
+        return timeFrame.getActiveEpochID();
     }
 
     // get the initial ether available in a pool
@@ -419,48 +384,32 @@ contract WithdrawPool is Proxied, Guard {
     }
 
     /**
-      * @dev return the time remaining (in seconds) until time availabe for claiming the pool with pool_id
-      * @param pool_id the id of the pool
+      * @dev return the time remaining (in seconds) until time availabe for claiming the current pool
       */
-     function timeUntilClaiming(uint256 pool_id) public view returns (uint256) {
-         require(weeklyPools[pool_id].dissolved == false, "Pool already dissolved");
-         return weeklyPools[pool_id].dateAvailable.sub(now);
+     function timeUntilClaiming() public view returns (uint256) {
+         uint256 pool_id = getActivePoolID();
+         require(now < weeklyPools[pool_id].dateDissolved, "Pool already dissolved");
+         uint256 claimTime = weeklyPools[pool_id].dateAvailable;
+         if (claimTime > now) {
+             return claimTime.sub(now);
+         } else {
+             return 0;
+         }
      }
 
      /**
-      * @dev return the time remaining (in seconds) until time for dissolving the pool with pool_id
-      * @param pool_id the id of the pool
+      * @dev return the time remaining (in seconds) until time for dissolving the current pool
+      * If the pool is already dissolved, returns 0.
       */
-     function timeUntilPoolDissolve(uint256 pool_id) public view returns (uint256) {
-         require(weeklyPools[pool_id].dissolved == false, "Pool already dissolved");
-         return weeklyPools[pool_id].dateDissolved.sub(now);
+     function timeUntilPoolDissolve() public view returns (uint256) {
+         uint256 pool_id = getActivePoolID();
+         uint256 dissolveTime = weeklyPools[pool_id].dateDissolved;
+         if (dissolveTime > now) {
+             return dissolveTime.sub(now);
+         } else {
+             return 0;
+         }
      }
-
-
-    // This function is dangersou if there are too many takers - problem: looping over a long list
-    // The sum of the percentages of each individual staker's token staked in the total SuperDao tokens minted
-    //function getSumOfPercentagePool(uint256 pool_id)
-      //  internal
-        //view
-        //returns (uint256)
-    //{
-      //  uint256 sum;
-       // address[] memory allEligibleStakers = weeklyPools[pool_id].eligibleStakers;
-       // for (uint256 i=0; i<allEligibleStakers.length; i++) {
-         //   sum = sum.add(getPercentageSuperDao(allEligibleStakers[i]));
-        //}
-        //return sum;
-   // }
-
-    // calculate the share of a staker in a pool
-
-    //function getPercentagePool(address account, uint256 pool_id)
-      //  internal
-        //view
-        //returns (uint256)
-    //{
-      //  return getPercentageSuperDao(account).div(getSumOfPercentagePool(pool_id));
-    //}
 
 
     /*                                                 GETTER FUNCTIONS                                               */
@@ -481,75 +430,27 @@ contract WithdrawPool is Proxied, Guard {
         uint256 totalETHtoPool = endowmentDB.getETHinPool(pool_id);
         weeklyPools[pool_id].initialETHadded = true;
         weeklyPools[pool_id].initialETHAvailable = totalETHtoPool;
-        weeklyPools[pool_id].ETHAvailable = totalETHtoPool;
+        weeklyPools[pool_id].ETHRemaining = totalETHtoPool;
         emit AddETHtoPool(pool_id, totalETHtoPool);
         return true;
     }
 
-    /**
-     * @dev This function is used by cronJob to dissolve an old pool at its dissolving time
-     * and create a new pool.
-     * @dev Any unclaimed ethers left in the old pool is returned to endowmentFund upon the pool's dissolution
-     * @param pool_id The pool id that is going to be dissolved.
-     */
-    function dissolveOldCreateNew(uint256 pool_id)
-    public
-    onlyContract(CONTRACT_NAME_CRONJOB)
+    function _createPool()
+        internal
+        returns (uint256)
     {
-        // returns any unclaimed ethers back to endowmentFund
-        uint256 unclaimedETH = weeklyPools[pool_id].ETHAvailable;
-
-        if (unclaimedETH > 0) {
-            weeklyPools[pool_id].ETHAvailable = 0;
-            endowmentDB.returnPoolETHtoEndowment(unclaimedETH);
-
-            emit ReturnUnclaimedETHtoEscrow(
-                pool_id,
-                unclaimedETH,
-                proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
-        }
-
-        // dissolve the old pool
-        weeklyPools[pool_id].dissolved = true;
-
-        noOfDissolvedPools = noOfDissolvedPools.add(1);
-
-        // create new pool
-        uint256 newPoolId = pool_id.add(1);
+        uint256 newPoolId = noOfPools;
         weeklyPools[newPoolId].epochID = newPoolId; // poolId is always the same as its associated epoch
         weeklyPools[newPoolId].blockNumber = block.number;
         weeklyPools[newPoolId].dateAvailable = now.add(6 * 24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS());
-        weeklyPools[newPoolId].dateDissolved = now.add(6 * 24 * 60 * 60).add(24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
+        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable
+                                               .add(24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
 
         noOfPools = noOfPools.add(1);
 
-        emit PoolDissolved(pool_id, now);
-
         emit NewPoolCreated(newPoolId, now);
-    }
 
-    /**
-     * @dev This function schedules dissolving an old pool at its dissolving time
-     * and create a new pool by the cronJob.
-     * @dev This function is called only once, when the first claimer claims from this pool
-     * @param _pool_id The pool id of the pool for which dissolving is scheduled
-     * @return True if the cronJob is scheduled
-     */
-
-    function scheduleDissolveOldCreateNew(uint256 _pool_id)
-        internal
-        returns (bool)
-    {
-        uint256 _time = weeklyPools[_pool_id].dateDissolved;
-        scheduledJob = cronJob.addCronJob(
-            CONTRACT_NAME_WITHDRAW_POOL,
-            _time,
-            abi.encodeWithSignature("dissolveOldCreateNew(uint256)", _pool_id)
-        );
-        scheduledJobs[_pool_id] = scheduledJob;
-
-        emit PoolDissolveScheduled(scheduledJob, _time, _pool_id);
-        return true;
+        return newPoolId;
     }
 
     /**
@@ -559,14 +460,15 @@ contract WithdrawPool is Proxied, Guard {
     function _updatePool(address _staker, uint256 pool_id, uint256 _yield)
     internal
     {
-        weeklyPools[pool_id].ETHAvailable = weeklyPools[pool_id].ETHAvailable.sub(_yield);
+        weeklyPools[pool_id].ETHRemaining = weeklyPools[pool_id].ETHRemaining.sub(_yield);
         weeklyPools[pool_id].stakersClaimed = weeklyPools[pool_id].stakersClaimed.add(1);
         weeklyPools[pool_id].allClaimedStakers.push(_staker);
+        weeklyPools[pool_id].ETHReleased = weeklyPools[pool_id].ETHReleased.add(_yield);
         totalEthPaidOut = totalEthPaidOut.add(_yield);
 
         emit PoolUpdated(
             pool_id,
-            weeklyPools[pool_id].ETHAvailable,
+            weeklyPools[pool_id].ETHRemaining,
             weeklyPools[pool_id].stakersClaimed,
             totalEthPaidOut
         );
@@ -601,39 +503,6 @@ contract WithdrawPool is Proxied, Guard {
          emit GamingDelayAddedtoPool(_pool_id, _gamingDelay, weeklyPools[_pool_id].dateAvailable);
      }
 
-
-    // This function is too dangerous if there are too many stakers - problem :looping over a long list
-    // remove a staker from a pool's list of unclaimedStakers
-   // function _removeFromUnclaimed(address _account, uint256 pool_id)
-     //   internal
-    //{
-      //  uint256 len = weeklyPools[pool_id].unclaimedStakers.length;
-        //for (uint256 i=0; i<len-1; i++) {
-          //  if (_account == weeklyPools[pool_id].unclaimedStakers[i]) {
-            //    weeklyPools[pool_id].unclaimedStakers[i] = weeklyPools[pool_id].unclaimedStakers[len-1];
-            //}
-        //}
-        //weeklyPools[pool_id].unclaimedStakers.length.sub(1);
-    //}
-
-    // this function is too dangerous if there are many stakers - looping over a long list is dangerous
-    //function checkEligibility(uint256 pool_id) internal {
-      //  for (uint256 i = 0; i < potentialStakers.length; i++) {
-        //    uint256 lastModifiedBlockNumber = stakingContract.lastStakedFor(potentialStakers[i]);
-          //  if (lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber) {
-            //    weeklyPools[pool_id].eligibleStakers.push(potentialStakers[i]);
-              //  weeklyPools[pool_id].unclaimedStakers.push(potentialStakers[i]);
-                //stakers[potentialStakers[i]].currentAvailablePools.add(1);
-                //stakers[potentialStakers[i]].stakeStartDate = lastModifiedBlockNumber;
-            //}
-        //}
-
-        //weeklyPools[pool_id].stakersEligible = weeklyPools[pool_id].eligibleStakers.length;
-        //weeklyPools[pool_id].eligibilityChecked = true;
-
-        //emit CheckStakersEligibility(pool_id, weeklyPools[pool_id].stakersEligible, now);
-    //}
-    
     /*                                                INTERNAL FUNCTIONS                                              */
     /*                                                       END                                                      */
     /* ============================================================================================================== */

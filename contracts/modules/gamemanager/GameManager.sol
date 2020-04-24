@@ -39,6 +39,7 @@ import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 import "./GameCreation.sol";
+import "../../withdrawPool/WithdrawPool.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -315,16 +316,14 @@ contract GameManager is Proxied, Guard {
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
 
-        // Set new epoch when last game finalizes
-        // If now < 6 hours before the end of working days of current epoch,
-        // then this is the last game
-        // TODO: if now > 6 hours before the end of working days of current epoch,
-        // but there is no more game scheduled after this game in the current epoch,
-        // then this is the last game as well
-        //timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
-        uint lastEpochId = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).getLastEpochID();
-        if (!TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).canStartNewGame(lastEpochId)) {
+        if (!TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).canStartNewGame()) {
             TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).setNewEpoch();
+            WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).createPool();
+        }
+
+        if (TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).workingDayEndTime() < now) {
+            TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).gameExtension();
+            WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).gameExtension();
         }
 
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);

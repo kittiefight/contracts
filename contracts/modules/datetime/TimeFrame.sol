@@ -51,6 +51,7 @@ pragma solidity ^0.5.5;
      //===================== events ===================
      event Epoch0Set(uint indexed epoch_0_id, uint epoch_0_startTime);
      event NewEpochSet(uint indexed newEpochId, uint newEpochStartTime);
+     event EpochExtended(uint indexed currentEpochID, uint newEpochEndTime);
      event GamingDelayAdded(
          uint indexed epoch_id,
          uint gamingDelay,
@@ -92,19 +93,29 @@ pragma solidity ^0.5.5;
      }
 
      /**
-      * @dev adds gaming delay to an epoch
-      * This function should be called by GameManager when the last game
-      * in an epoch runs longer than the intended sixDayEnd
-      * @param epoch_id the id of the epoch
+      * @dev adds gaming delay to the current epoch
+      * This function should be called by GameManager when the game
+      * in the current epoch runs longer than the intended sixDayEnd
       * @param gamingDelay gaming delay time in seconds
       */
-     function addGamingDelayToEpoch(uint epoch_id, uint gamingDelay)
+     function addGamingDelayToEpoch(uint gamingDelay)
          public
-         onlyActiveEpoch(epoch_id)
-         //temporarily comment out onlyContract for testing purpose only: TimeFrame.test.js
+        // onlyContract(CONTRACT_NAME_GAMEMANAGER)
+     {
+         uint epoch_id = getActiveEpochID();
+         _addGamingDelayToEpoch(epoch_id, gamingDelay);
+     }
+
+     function gameExtension()
+         external
          onlyContract(CONTRACT_NAME_GAMEMANAGER)
      {
-         _addGamingDelayToEpoch(epoch_id, gamingDelay);
+         uint _activeEpochID = getLastEpochID();
+         lifeTimeEpochs[_activeEpochID].sixDayEnd = now;
+         lifeTimeEpochs[_activeEpochID].restDAYStart = now;
+         lifeTimeEpochs[_activeEpochID].restDAYEnd = now.add(REST_DAY);
+
+         emit EpochExtended(_activeEpochID, lifeTimeEpochs[_activeEpochID].restDAYEnd);
      }
 
      //===================== public functions ===================
@@ -173,10 +184,10 @@ pragma solidity ^0.5.5;
      }
 
      /**
-      * @dev return true if game can start in the the epoch with epoch_id
-      * @param epoch_id the id of the epoch
+      * @dev return true if game can start in the current epoch
       */
-     function canStartNewGame(uint epoch_id) public view returns (bool) {
+     function canStartNewGame() public view returns (bool) {
+         uint256 epoch_id = getActiveEpochID();
          return now >= lifeTimeEpochs[epoch_id].sixDayStart && now <= lifeTimeEpochs[epoch_id].sixDayEnd.sub(SIX_HOURS);
      }
 
@@ -276,6 +287,54 @@ pragma solidity ^0.5.5;
      function timeUntilEpochEnd(uint epoch_id) public view returns (uint) {
          require(now <= lifeTimeEpochs[epoch_id].restDAYEnd, "Already ended");
          return lifeTimeEpochs[epoch_id].restDAYEnd.sub(now);
+     }
+
+     /**
+      * @dev return the start time (in unix time) of the WorkingDays stage in the current active epoch
+      */
+     function workingDayStartTime()
+         public
+         view
+         returns (uint start)
+     {
+         uint activeEpoch = getActiveEpochID();
+         start = lifeTimeEpochs[activeEpoch].sixDayStart;
+     }
+
+     /**
+      * @dev return the end time (in unix time) of the WorkingDays stage in the current active epoch
+      */
+     function workingDayEndTime()
+         public
+         view
+         returns (uint end)
+     {
+         uint activeEpoch = getActiveEpochID();
+         end = lifeTimeEpochs[activeEpoch].sixDayEnd;
+     }
+
+     /**
+      * @dev return the start time (in unix time) of the RestDay stage in the current active epoch
+      */
+     function restDayStartTime()
+         public
+         view
+         returns (uint end)
+     {
+         uint activeEpoch = getActiveEpochID();
+         end = lifeTimeEpochs[activeEpoch].restDAYStart;
+     }
+
+     /**
+      * @dev return the end time (in unix time) of the RestDay stage in the current active epoch
+      */
+     function restDayEndTime()
+         public
+         view
+         returns (uint end)
+     {
+         uint activeEpoch = getActiveEpochID();
+         end = lifeTimeEpochs[activeEpoch].restDAYEnd;
      }
 
      /**

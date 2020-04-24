@@ -148,6 +148,7 @@ contract EndowmentDB is Proxied {
     return true;
   }
 
+/*
   function returnPoolETHtoEndowment(uint256 _eth_amount)
       external
       onlyContract(CONTRACT_NAME_CRONJOB)
@@ -161,7 +162,7 @@ contract EndowmentDB is Proxied {
 
     return true;
   }
-
+*/
   function getEndowmentBalance() public view
   returns (uint256 endowmentBalanceKTY, uint256 endowmentBalanceETH)  {
     endowmentBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_KTY);
@@ -290,12 +291,12 @@ contract EndowmentDB is Proxied {
     // get previous amount of ether stored in this pool with _pool_id
     uint prevETH = genericDB.getUintStorage(
       CONTRACT_NAME_ENDOWMENT_DB,
-      keccak256(abi.encodePacked(_pool_id, "ETHinPool"))
+      keccak256(abi.encodePacked(_pool_id, "initialETHinPool"))
     );
     // add _eth to the previous amount of ether in this pool
     genericDB.setUintStorage(
       CONTRACT_NAME_ENDOWMENT_DB,
-      keccak256(abi.encodePacked(_pool_id, "ETHinPool")),
+      keccak256(abi.encodePacked(_pool_id, "initialETHinPool")),
       prevETH.add(_eth)
     );
   }
@@ -307,7 +308,7 @@ contract EndowmentDB is Proxied {
   {
     return genericDB.getUintStorage(
       CONTRACT_NAME_ENDOWMENT_DB,
-      keccak256(abi.encodePacked(_pool_id, "ETHinPool"))
+      keccak256(abi.encodePacked(_pool_id, "initialETHinPool"))
     );
   }
 
