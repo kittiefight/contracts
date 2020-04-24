@@ -76,6 +76,19 @@ contract EthieToken is ERC721, ERC721Enumerable, ERC721Pausable, EthieTokenMetad
         return generateName(tokenId, p.ethAmount, p.generation, p.lockPeriod);
     }
 
+    function allTokenOf(address holder) public view returns(uint256[] memory, uint256) {
+        uint256 ethBalance = 0;
+        uint256 balance = balanceOf(holder);
+        uint256[] memory tokens = new uint256[](balance);
+        for(uint256 i = 0; i < balance; i++){
+            uint256 idx = tokenOfOwnerByIndex(holder, i);
+            tokens[i] = idx;
+            ethBalance += properties[idx].ethAmount;
+        }
+        return (tokens, ethBalance);
+    }
+
+
     function generateName(uint256 tokenId, uint256 ethAmount, uint256 tokenGeneration, uint256 lockPeriod) public pure returns(string memory) {
         string memory id  = tokenId.fromUint256();
         string memory eth = ethAmount.fromUint256(18, 4);
