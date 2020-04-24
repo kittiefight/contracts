@@ -39,10 +39,6 @@ contract EarningsTracker is Proxied, Guard {
     uint256 constant ONE_HUNDRED_AND_TWENTY_DAYS = 120 * 24 * 60 * 60;  // GEN 5
     uint256 constant ONE_HUNDRED_AND_THIRTY_FIVE_DAYS = 135 * 24 * 60 * 60;  // GEN 6
 
-    uint256 internal factor;               // used in calculating the total interest accumulated in all Ethie Tokens
-    uint256 internal interestReleased;     // interest released from all burnt Ethie token NFTs
-    uint256 public totalBalance;  // total ETH balance from all generations
-
     /// @dev an EthieToken NFT's associated properties
     struct NFT {
         address originalOwner; // the owner of this token at the time of minting
@@ -50,6 +46,7 @@ contract EarningsTracker is Proxied, Guard {
         uint256 ethValue;      // the funder's current funding balance (ether deposited - ether withdrawal)
         uint256 lockedAt;      // the unix time at which this funds is locked
         uint256 lockTime;      // lock duration
+        uint256 startingEpoch; // the epoch ID when this NFT was minted
         bool tokenBurnt;       // true if this token has been burnt
         uint256 tokenBurntAt;  // the time when this token was burnt
         address tokenBurntBy;  // who burnt this token (if this token was burnt)
@@ -73,6 +70,9 @@ contract EarningsTracker is Proxied, Guard {
 
     /// @dev funding limit for each generation, pre-set in initialization, can only be changed by admin
     mapping (uint256 => uint256) public fundingLimit;
+
+    /// @dev investment per epoch
+    mapping (uint256 => uint256) investmentEpoch;
 
     //============================ Initializer ============================
     // pre-set funding limit for each generation during initialization
@@ -216,7 +216,7 @@ contract EarningsTracker is Proxied, Guard {
         // calculate interest
         uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
         uint256 generation = ethieTokens[_ethieTokenID].generation;
-        uint256 interest = calculateInterest(ethValue, lockTime);
+        uint256 interest = calculateInterest(_ethieTokenID);
         uint256 totalEth = ethValue.add(interest);
         // update generations
         _updateGeneration_burn(generation, ethValue);
@@ -225,10 +225,6 @@ contract EarningsTracker is Proxied, Guard {
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         _returnEther(msg.sender, totalEth);
-
-        factor = factor.sub(ethValue.mul(tokenLockedAt));
-        interestReleased = interestReleased.add(interest);
-        totalBalance = totalBalance.sub(ethValue);
 
         emit EthieTokenBurnt(msg.sender, _ethieTokenID, generation, ethValue, interest);
         return true;
@@ -355,37 +351,51 @@ contract EarningsTracker is Proxied, Guard {
 
     /**
      * @dev calculates the total interest accumulated for all Ethie Token NFTs in all generations
-     * Formula: Total interest =
-     *   weekly interest x (total ether balance from all generations x now – factor) / WEEK
-     *   + total interest from burnt tokens
-     * @return uint256 total interest accumulated for all Ethie Token NFTs
+     * for the latest 250 epochs
+     * @return uint256 total interest accumulated for all Ethie Token NFTs for the past 250 epochs
      */
     function viewTotalInterests() public view returns (uint256) {
-        uint256 r = gameVarAndFee.getInterestEthie();
-        uint256 total = totalBalance.mul(now).div(WEEK);
-        uint256 f = factor.div(WEEK);
-        uint256 dif = total.sub(f);
-        uint256 interest = r.mul(dif).div(1000000);
-        uint256 totalInterest = interest.add(interestReleased);
+        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        uint256 totalInterest = 0;
+        uint256 startID = activeEpochID < 250 ? 0 : activeEpochID - 250;
+        for (uint256 i = startID; i < activeEpochID; i++) {
+            totalInterest = totalInterest.add(calculateInterestEpoch(i));
+        }
         return totalInterest;
+    }
+
+    // returns the collective interest from the total investment in an epoch with an _epochID
+    function calculateInterestEpoch(uint256 _epochID)
+        public view returns (uint256)
+    {
+        uint256 interestRate = gameVarAndFee.getInterestEthie();
+        uint256 interestEpoch = investmentEpoch[_epochID].mul(interestRate).div(1000000);
+        return interestEpoch;
+    }
+
+    // returns the ratio of the _eth_amount per investment in an epoch
+    function calculateInvestmentRatioEpoch(uint256 _eth_amount, uint256 _epochID)
+        public view returns (uint256)
+    {
+        return _eth_amount.mul(1000000).div(investmentEpoch[_epochID]);
     }
 
     /**
      * @dev gets the interest accumulated for an Ethie Token NFT
-     * @param _eth_amount uint256 the amount of ethers associated with this NFT
-     * @param _lockTime uint256 the time duration during which the ethers associated
-     * with this NFT has been locked
      * @return uint256 interest accumulated in the NFT
      */
-    function calculateInterest(uint256 _eth_amount, uint256 _lockTime)
+    function calculateInterest(uint256 _ethieTokenID)
         public view returns (uint256)
     {
-        // formula for calculating simple interest: interest = A*r*t
-        // A = principle money, r = interest rate, t = time
-        uint256 _interest_rate = gameVarAndFee.getInterestEthie();
-        uint256 _time = _lockTime.div(WEEK);
-
-        return _eth_amount.mul(_interest_rate).mul(_time).div(1000000);
+        uint256 _totalInterest;
+        uint256 _ethValue = ethieTokens[_ethieTokenID].ethValue;
+        uint256 _startingEpoch = ethieTokens[_ethieTokenID].startingEpoch;
+        uint256 _currentEpoch = timeFrame.getActiveEpochID();
+        for (uint256 i = _startingEpoch; i <= _currentEpoch; i++) {
+            _totalInterest = _totalInterest
+                             .add(calculateInterestEpoch(i).mul(calculateInvestmentRatioEpoch(_ethValue, i)).div(1000000));
+        }
+        return _totalInterest;
     }
 
     /**
@@ -462,18 +472,45 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
+     * @dev gets the next unix time in which an investor can withdraw locked ethers
+     * and earnings by burning an Ethie Token NFT and get future benefits like access to
+     * pricy kitties in KittiHELL and lottery benefits
+     * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burnt
+     */
+    function _viewNextYieldClaimDate(uint256 ethieTokenID)
+        public view
+        returns(uint256)
+    {
+        uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
+        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        uint256 unLockAt = lockedAt.add(lockTime);
+        return unLockAt;
+    }
+
+    /**
      * @dev gets the next date and time in which an investor can withdraw locked ethers
-     * and earnings by burning an Ethie Token NFT
+     * and earnings by burning an Ethie Token NFT and get future benefits like access to
+     * pricy kitties in KittiHELL and lottery benefits
      * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burnt
      */
     function viewNextYieldClaimDate(uint256 ethieTokenID)
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
-        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
-        uint256 unLockAt = lockedAt.add(lockTime);
+        uint256 unLockAt = _viewNextYieldClaimDate(ethieTokenID);
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(unLockAt);
+    }
+
+    /**
+     * @dev gets unix time at which ethers were locked for an Ethie Token NFT
+     * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burntT
+     */
+    function _checkLockETHDate(uint256 ethieTokenID)
+        public view
+        returns(uint256)
+    {
+        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        return lockedAt;
     }
 
     /**
@@ -554,13 +591,23 @@ contract EarningsTracker is Proxied, Guard {
     )
         internal
     {
+        uint256 activeEpoch = timeFrame.getActiveEpochID();
+        uint256 startingEpoch;
+        if (timeFrame.canStartNewGame()) {
+            startingEpoch = activeEpoch;
+        } else {
+            startingEpoch = activeEpoch.add(1);
+        }
+
         ethieTokens[_ethieTokenID].generation = getCurrentGeneration();
         ethieTokens[_ethieTokenID].ethValue = _eth_amount;
         ethieTokens[_ethieTokenID].lockedAt = now;
         ethieTokens[_ethieTokenID].lockTime = _lockTime;
         ethieTokens[_ethieTokenID].originalOwner = _funder;
 
-        factor = factor.add(now.mul(_eth_amount));
+        ethieTokens[_ethieTokenID].startingEpoch = startingEpoch;
+
+        investmentEpoch[startingEpoch] = investmentEpoch[startingEpoch].add(_eth_amount);
     }
 
     /**
@@ -574,8 +621,6 @@ contract EarningsTracker is Proxied, Guard {
         generations[_generation].ethBalance = generations[_generation].ethBalance.add(_eth_amount);
         generations[_generation].ethBalanceAt = now;
         generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.add(1);
-
-        totalBalance = totalBalance.add(_eth_amount);
     }
 
     /**
@@ -610,6 +655,9 @@ contract EarningsTracker is Proxied, Guard {
     )
         internal
     {
+        uint256 startingEpoch = ethieTokens[_ethieTokenID].startingEpoch;
+        investmentEpoch[startingEpoch] = investmentEpoch[startingEpoch]
+                                         .sub(ethieTokens[_ethieTokenID].ethValue);
         // set values to 0 can get gas refund
         ethieTokens[_ethieTokenID].ethValue = 0;
         ethieTokens[_ethieTokenID].lockedAt = 0;

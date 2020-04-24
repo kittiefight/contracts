@@ -52,25 +52,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"getPerformanceTimeCheck\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTimeExtension\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setVarAndFee\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{},\"title\":\"Interface to use in GameVarAndFeeProxy to avoid inheritance problems\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/interfaces/IGameVarAndFee.sol\":\"IGameVarAndFee\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/interfaces/IGameVarAndFee.sol\":{\"keccak256\":\"0x97280f79e6952b0b0f7327aa24d29c5da5a0107d516848eaa9398a969784fc29\",\"urls\":[\"bzz-raw://8d00941d79b2b9c8a8bf3e13b7090fcc824dbcc9f2f90c8f73b592d50760020c\",\"dweb:/ipfs/QmegoU6H28HzCqCEoVHbA6fKhDcZw19CXEKrRYJgNWjQHn\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"getPerformanceTimeCheck\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getTimeExtension\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"key\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"setVarAndFee\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{},\"title\":\"Interface to use in GameVarAndFeeProxy to avoid inheritance problems\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/development/alpha/contracts/interfaces/IGameVarAndFee.sol\":\"IGameVarAndFee\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/development/alpha/contracts/interfaces/IGameVarAndFee.sol\":{\"keccak256\":\"0x97280f79e6952b0b0f7327aa24d29c5da5a0107d516848eaa9398a969784fc29\",\"urls\":[\"bzz-raw://8d00941d79b2b9c8a8bf3e13b7090fcc824dbcc9f2f90c8f73b592d50760020c\",\"dweb:/ipfs/QmegoU6H28HzCqCEoVHbA6fKhDcZw19CXEKrRYJgNWjQHn\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "/**\n * @title GameVarAndFee\n *\n * @author @wafflemakr @hamaad\n *\n */\n\npragma solidity ^0.5.5;\n\n/**\n * @title Interface to use in GameVarAndFeeProxy to avoid inheritance problems\n */\ninterface IGameVarAndFee {    \n    function setVarAndFee(bytes32 key, uint value) external;\n    function getTimeExtension() external view returns(uint);\n    function getPerformanceTimeCheck() external view returns(uint);\n\n}\n",
-  "sourcePath": "/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/interfaces/IGameVarAndFee.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/development/alpha/contracts/interfaces/IGameVarAndFee.sol",
   "ast": {
-    "absolutePath": "/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/interfaces/IGameVarAndFee.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/development/alpha/contracts/interfaces/IGameVarAndFee.sol",
     "exportedSymbols": {
       "IGameVarAndFee": [
-        2618
+        2832
       ]
     },
-    "id": 2619,
+    "id": 2833,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2600,
+        "id": 2814,
         "literals": [
           "solidity",
           "^",
@@ -78,7 +78,7 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "70:23:22"
+        "src": "70:23:23"
       },
       {
         "baseContracts": [],
@@ -86,9 +86,9 @@
         "contractKind": "interface",
         "documentation": "@title Interface to use in GameVarAndFeeProxy to avoid inheritance problems",
         "fullyImplemented": false,
-        "id": 2618,
+        "id": 2832,
         "linearizedBaseContracts": [
-          2618
+          2832
         ],
         "name": "IGameVarAndFee",
         "nodeType": "ContractDefinition",
@@ -96,23 +96,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2607,
+            "id": 2821,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "setVarAndFee",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2605,
+              "id": 2819,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2602,
+                  "id": 2816,
                   "name": "key",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2607,
-                  "src": "239:11:22",
+                  "scope": 2821,
+                  "src": "239:11:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -120,10 +120,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2601,
+                    "id": 2815,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "239:7:22",
+                    "src": "239:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -134,11 +134,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 2604,
+                  "id": 2818,
                   "name": "value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2607,
-                  "src": "252:10:22",
+                  "scope": 2821,
+                  "src": "252:10:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -146,10 +146,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2603,
+                    "id": 2817,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "252:4:22",
+                    "src": "252:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -159,16 +159,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "238:25:22"
+              "src": "238:25:23"
             },
             "returnParameters": {
-              "id": 2606,
+              "id": 2820,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "272:0:22"
+              "src": "272:0:23"
             },
-            "scope": 2618,
-            "src": "217:56:22",
+            "scope": 2832,
+            "src": "217:56:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -176,29 +176,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2612,
+            "id": 2826,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getTimeExtension",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2608,
+              "id": 2822,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "303:2:22"
+              "src": "303:2:23"
             },
             "returnParameters": {
-              "id": 2611,
+              "id": 2825,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2610,
+                  "id": 2824,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2612,
-                  "src": "328:4:22",
+                  "scope": 2826,
+                  "src": "328:4:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -206,10 +206,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2609,
+                    "id": 2823,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "328:4:22",
+                    "src": "328:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -219,10 +219,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "327:6:22"
+              "src": "327:6:23"
             },
-            "scope": 2618,
-            "src": "278:56:22",
+            "scope": 2832,
+            "src": "278:56:23",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
@@ -230,29 +230,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2617,
+            "id": 2831,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPerformanceTimeCheck",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2613,
+              "id": 2827,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "371:2:22"
+              "src": "371:2:23"
             },
             "returnParameters": {
-              "id": 2616,
+              "id": 2830,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2615,
+                  "id": 2829,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2617,
-                  "src": "396:4:22",
+                  "scope": 2831,
+                  "src": "396:4:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -260,10 +260,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2614,
+                    "id": 2828,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "396:4:22",
+                    "src": "396:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -273,33 +273,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "395:6:22"
+              "src": "395:6:23"
             },
-            "scope": 2618,
-            "src": "339:63:22",
+            "scope": 2832,
+            "src": "339:63:23",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2619,
-        "src": "182:223:22"
+        "scope": 2833,
+        "src": "182:223:23"
       }
     ],
-    "src": "70:336:22"
+    "src": "70:336:23"
   },
   "legacyAST": {
-    "absolutePath": "/Users/ziweizhang/Desktop/EarningsTracker/alpha/contracts/interfaces/IGameVarAndFee.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/development/alpha/contracts/interfaces/IGameVarAndFee.sol",
     "exportedSymbols": {
       "IGameVarAndFee": [
-        2618
+        2832
       ]
     },
-    "id": 2619,
+    "id": 2833,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2600,
+        "id": 2814,
         "literals": [
           "solidity",
           "^",
@@ -307,7 +307,7 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "70:23:22"
+        "src": "70:23:23"
       },
       {
         "baseContracts": [],
@@ -315,9 +315,9 @@
         "contractKind": "interface",
         "documentation": "@title Interface to use in GameVarAndFeeProxy to avoid inheritance problems",
         "fullyImplemented": false,
-        "id": 2618,
+        "id": 2832,
         "linearizedBaseContracts": [
-          2618
+          2832
         ],
         "name": "IGameVarAndFee",
         "nodeType": "ContractDefinition",
@@ -325,23 +325,23 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2607,
+            "id": 2821,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "setVarAndFee",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2605,
+              "id": 2819,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2602,
+                  "id": 2816,
                   "name": "key",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2607,
-                  "src": "239:11:22",
+                  "scope": 2821,
+                  "src": "239:11:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -349,10 +349,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2601,
+                    "id": 2815,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "239:7:22",
+                    "src": "239:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -363,11 +363,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 2604,
+                  "id": 2818,
                   "name": "value",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2607,
-                  "src": "252:10:22",
+                  "scope": 2821,
+                  "src": "252:10:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -375,10 +375,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2603,
+                    "id": 2817,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "252:4:22",
+                    "src": "252:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -388,16 +388,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "238:25:22"
+              "src": "238:25:23"
             },
             "returnParameters": {
-              "id": 2606,
+              "id": 2820,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "272:0:22"
+              "src": "272:0:23"
             },
-            "scope": 2618,
-            "src": "217:56:22",
+            "scope": 2832,
+            "src": "217:56:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -405,29 +405,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2612,
+            "id": 2826,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getTimeExtension",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2608,
+              "id": 2822,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "303:2:22"
+              "src": "303:2:23"
             },
             "returnParameters": {
-              "id": 2611,
+              "id": 2825,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2610,
+                  "id": 2824,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2612,
-                  "src": "328:4:22",
+                  "scope": 2826,
+                  "src": "328:4:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -435,10 +435,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2609,
+                    "id": 2823,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "328:4:22",
+                    "src": "328:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -448,10 +448,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "327:6:22"
+              "src": "327:6:23"
             },
-            "scope": 2618,
-            "src": "278:56:22",
+            "scope": 2832,
+            "src": "278:56:23",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
@@ -459,29 +459,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 2617,
+            "id": 2831,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getPerformanceTimeCheck",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2613,
+              "id": 2827,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "371:2:22"
+              "src": "371:2:23"
             },
             "returnParameters": {
-              "id": 2616,
+              "id": 2830,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2615,
+                  "id": 2829,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2617,
-                  "src": "396:4:22",
+                  "scope": 2831,
+                  "src": "396:4:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -489,10 +489,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 2614,
+                    "id": 2828,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "396:4:22",
+                    "src": "396:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -502,20 +502,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "395:6:22"
+              "src": "395:6:23"
             },
-            "scope": 2618,
-            "src": "339:63:22",
+            "scope": 2832,
+            "src": "339:63:23",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 2619,
-        "src": "182:223:22"
+        "scope": 2833,
+        "src": "182:223:23"
       }
     ],
-    "src": "70:336:22"
+    "src": "70:336:23"
   },
   "compiler": {
     "name": "solc",
@@ -523,7 +523,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-18T02:31:56.776Z",
+  "updatedAt": "2020-04-24T21:19:45.863Z",
   "devdoc": {
     "methods": {},
     "title": "Interface to use in GameVarAndFeeProxy to avoid inheritance problems"
