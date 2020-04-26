@@ -8,7 +8,13 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/stake_and_invest.js <#users> <amountKTY>
+function formatDate(timestamp) {
+  let date = new Date(null);
+  date.setSeconds(timestamp);
+  return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+}
+
+//truffle exec scripts/FE/setNewEpoch.js
 
 module.exports = async (callback) => {    
 
@@ -44,7 +50,7 @@ module.exports = async (callback) => {
     );
     console.log(
       "date available for claiming from this pool:",
-      pool_0_details.dateAvailable.toString()
+      formatDate(pool_0_details.dateAvailable)
     );
     console.log(
       "whether initial ether has been distributed to this pool:",
@@ -52,7 +58,7 @@ module.exports = async (callback) => {
     );
     console.log(
       "time when this pool is dissolved:",
-      pool_0_details.dateDissolved.toString()
+      formatDate(pool_0_details.dateDissolved)
     );
     console.log(
       "stakers who have claimed from this pool:",

@@ -24,7 +24,6 @@
 pragma solidity ^0.5.5;
 
 import '../proxy/Proxied.sol';
-import "../datetime/TimeFrame.sol";
 import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
@@ -276,7 +275,7 @@ contract GameManager is Proxied, Guard {
      * @dev Determine winner of game based on  **HitResolver **
      */
     function finalize(uint gameId, uint randomNum) external {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER));
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER), "1");
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 
@@ -287,7 +286,7 @@ contract GameManager is Proxied, Guard {
         //Store Winners in DB
         gmSetterDB.setWinners(gameId, winner, gameStore.getTopBettor(gameId, winner),
             gameStore.getSecondTopBettor(gameId, winner));
-        
+
         //Lock Honeypot Final Details
         gmSetterDB.storeHoneypotDetails(gameId);
 
@@ -300,11 +299,11 @@ contract GameManager is Proxied, Guard {
         (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
         endowmentFund.addETHtoPool(gameId, loser);
 
-        // update kittie redemption fee dynamically to a percentage of the final honey pot
-        gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
-
         //Set to claiming
         endowmentFund.updateHoneyPotState(gameId, 5);
+
+        // update kittie redemption fee dynamically to a percentage of the final honey pot
+        gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
 
         //Send Finalize reward
         endowmentFund.sendFinalizeRewards(getOriginalSender());

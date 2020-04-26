@@ -34,4 +34,3 @@ module.exports = async (callback) => {
   }
   catch(e){callback(e)}
 }
-

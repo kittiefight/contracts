@@ -2,6 +2,7 @@ const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const GameManager = artifacts.require('GameManager')
 const Betting = artifacts.require('Betting')
+const DateTime = artifacts.require('DateTime')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -25,7 +26,7 @@ function timeout(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
-//truffle exec scripts/FE/placeBets.js gameId(uint) noOfBets(uint) timeBetweenBets[uint(seconds)]
+//truffle exec scripts/FE/placeBets.js gameId(uint) noOfBets(uint) timeBetweenBets[uint(seconds)] maxAmountToBet
 
 module.exports = async (callback) => {
   try{
@@ -33,12 +34,14 @@ module.exports = async (callback) => {
     let gameManager = await GameManager.deployed();
     let getterDB = await GMGetterDB.deployed();
     let betting = await Betting.deployed();
+    let dateTime = await DateTime.deployed();
 
     accounts = await web3.eth.getAccounts();
 
     let gameId = process.argv[4];
     let noOfBets = process.argv[5];
     let timeInterval = process.argv[6];
+    let maxLimit = process.argv[7];
 
     let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
 
@@ -74,7 +77,7 @@ module.exports = async (callback) => {
       //PlayerBlack
       if(randomPlayer == 1){
         randomSupporter = randomValue((supportersBlack) - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(maxLimit);
         player = 'playerBlack';
         supportedPlayer = accounts[((Number(randomSupporter)) + 10)];
 
@@ -86,7 +89,7 @@ module.exports = async (callback) => {
       //PlayerRed
       else{
         randomSupporter = randomValue(Number(supportersRed) - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(maxLimit);
         player = 'playerRed';
         supportedPlayer = accounts[((Number(randomSupporter)) + 30)];
 
@@ -146,8 +149,7 @@ module.exports = async (callback) => {
     console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
     console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
     console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
-    console.log('=======================\n')
-    
+    console.log('=======================\n')    
     
 
     callback()

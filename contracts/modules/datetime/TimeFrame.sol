@@ -25,8 +25,8 @@ pragma solidity ^0.5.5;
      using SafeMath for uint;
      using BokkyPooBahsDateTimeLibrary for uint;
 
-     uint constant public SIX_WORKING_DAYS = 600;
-     uint constant public REST_DAY = 100;
+     uint constant public SIX_WORKING_DAYS = 200;
+     uint constant public REST_DAY = 60;
      uint constant public SIX_HOURS = 6 * 60 * 60;
 
      /// @dev total number of epochs
@@ -43,6 +43,7 @@ pragma solidity ^0.5.5;
          uint restDAYStart;
          /// @dev Unix time of the end of a rest day (restDAYStart+24hours)
          uint restDAYEnd;
+         bool unlocked;
      }
 
      /// @dev a list of all epochs throughout lifetime of system
@@ -100,13 +101,14 @@ pragma solidity ^0.5.5;
       * @param epoch_id the id of the epoch
       * @param gamingDelay gaming delay time in seconds
       */
-     function addGamingDelayToEpoch(uint epoch_id, uint gamingDelay)
+     function unlockAndAddDelay(uint epoch_id, uint gamingDelay)
          public
          onlyActiveEpoch(epoch_id)
-         //temporarily comment out onlyContract for testing purpose only: TimeFrame.test.js
-         onlyContract(CONTRACT_NAME_GAMEMANAGER)
+         onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
      {
-         _addGamingDelayToEpoch(epoch_id, gamingDelay);
+         lifeTimeEpochs[epoch_id].unlocked = true;
+         if(gamingDelay != 0)
+             _addGamingDelayToEpoch(epoch_id, gamingDelay);
      }
 
      //===================== public functions ===================
@@ -151,9 +153,9 @@ pragma solidity ^0.5.5;
          if (numberOfEpochs < 2) {
              return 0;
          }
-         if (now <= lifeTimeEpochs[numberOfEpochs.sub(1)].sixDayStart) {
-             return numberOfEpochs.sub(2);
-         }
+         // if (now <= lifeTimeEpochs[numberOfEpochs.sub(1)].sixDayStart) {
+         //     return numberOfEpochs.sub(2);
+         // }
          return numberOfEpochs.sub(1);
      }
 
@@ -304,6 +306,17 @@ pragma solidity ^0.5.5;
          end = lifeTimeEpochs[activeEpoch].sixDayEnd;
      }
 
+     function checkBurn()
+     external
+     view
+     returns(bool)
+     {
+        uint activeEpoch = getActiveEpochID();
+        if(lifeTimeEpochs[activeEpoch].unlocked && now > lifeTimeEpochs[activeEpoch].sixDayEnd)
+            return true;
+        return false;
+     }
+
      /**
       * @dev return the start time (in unix time) of the RestDay stage in the current active epoch
       */
@@ -371,7 +384,7 @@ pragma solidity ^0.5.5;
          epoch.sixDayStart = prevEpochEnd;
          epoch.sixDayEnd = prevEpochEnd.add(SIX_WORKING_DAYS);
          epoch.restDAYStart = prevEpochEnd.add(SIX_WORKING_DAYS);
-         epoch.restDAYEnd = prevEpochEnd.add(SIX_WORKING_DAYS).add(REST_DAY);
+         epoch.restDAYEnd = epoch.restDAYStart.add(REST_DAY);
 
          lifeTimeEpochs[newEpochId] = epoch;
          numberOfEpochs = numberOfEpochs.add(1);

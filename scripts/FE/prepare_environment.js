@@ -10,7 +10,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/prepare_environment.js noOfUsersToBePlayers(uint) (please max 8 players)
+//truffle exec scripts/FE/prepare_environment.js noOfUsersToBePlayers(uint) (please max 10 players)
 
 module.exports = async (callback) => {
   try{
@@ -24,8 +24,8 @@ module.exports = async (callback) => {
 
     let noOfPlayers = process.argv[4];
 
-    const kitties = [324, 1001, 1555108, 1267904, 454545, 333, 6666, 2111];
-    const cividIds = [1, 2, 3, 4, 5, 6, 7, 8];
+    const kitties = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+    const cividIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 41];
 
     for (let i = 0; i < noOfPlayers; i++) {
       await cryptoKitties.mint(accounts[i + 1], kitties[i]);

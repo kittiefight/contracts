@@ -22,7 +22,7 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
-//truffle exec scripts/FE/stake_and_invest.js <#users> <amountKTY>
+//truffle exec scripts/FE/stake_and_invest.js
 
 module.exports = async (callback) => {    
 
@@ -35,7 +35,7 @@ module.exports = async (callback) => {
     accounts = await web3.eth.getAccounts();
 
     const stakedTokens = new BigNumber(
-      web3.utils.toWei("10000", "ether") //
+      web3.utils.toWei("5", "ether")
     );
 
     for (let i = 1; i < 4; i++) {

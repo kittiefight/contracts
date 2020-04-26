@@ -26,10 +26,10 @@ pragma solidity ^0.5.5;
 import '../proxy/Proxied.sol';
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
-import "./GameManager.sol";
 import "./GameCreation.sol";
 import "../../interfaces/ERC721.sol";
 import "../kittieHELL/KittieHell.sol";
+import "./GameStore.sol";
 
 /**
  * @title Scheduler
@@ -40,13 +40,11 @@ import "../kittieHELL/KittieHell.sol";
 contract Scheduler is Proxied {
     using SafeMath for uint256;
 
-    //Contract Variables
-    GameManager public gameManager;
     GameCreation public gameCreation;
     GameVarAndFee public gameVarAndFee;
     KittieHell public kittieHell;
     ERC721 public cryptoKitties;
-    uint256 lastGameCreationTime;
+    GameStore public gameStore;
 
     struct Game {
         address playerRed;
@@ -84,8 +82,7 @@ contract Scheduler is Proxied {
     modifier onlyUnlistedKitty(uint256 _kittyId) { 
         require(!isKittyListed[_kittyId], "Scheduler: Cannot list same Kitty again");
         _;
-    }
-    
+    }    
 
     /*                                                    MODIFIERS                                                   */
     /*                                                       END                                                      */
@@ -100,10 +97,10 @@ contract Scheduler is Proxied {
     */
     function initialize() public onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        gameManager = GameManager(proxy.getContract(CONTRACT_NAME_GAMEMANAGER));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
         cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         kittieHell = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     }
 
     /*                                                   INITIALIZOR                                                  */
@@ -123,18 +120,21 @@ contract Scheduler is Proxied {
     onlyContract(CONTRACT_NAME_GAMECREATION)
     onlyUnlistedKitty(_kittyId)
     {
-        require(kittieHell.acquireKitty(_kittyId, _player), "1");
+        require(kittieHell.acquireKitty(_kittyId, _player));
         isKittyListed[_kittyId] = true;
         kittyList[noOfKittiesListed] = _kittyId;
         kittyOwner[_kittyId] = _player;
         
         noOfKittiesListed = noOfKittiesListed.add(1);
 
-        if((gameVarAndFee.getRequiredNumberMatches().mul(2)) == noOfKittiesListed)
-            matchKitties();
-        else if(immediateStart && noOfKittiesListed >= 2) {
-            createFlashGame();
-            immediateStart = false;
+        if(noOfKittiesListed >= 2) {
+            immediateStart = gameStore.checkGame();
+            if((gameVarAndFee.getRequiredNumberMatches().mul(2)) == noOfKittiesListed)
+                matchKitties();
+            else if(immediateStart) {
+                createFlashGame();
+                immediateStart = false;
+            }
         }
     }
 
@@ -147,15 +147,18 @@ contract Scheduler is Proxied {
     function startGame()
     external
     onlyContract(CONTRACT_NAME_GAMESTORE)
+    returns(bool)
     {
         if(headGame == 0) {
-            if(noOfKittiesListed < 2)
-                immediateStart = true;
-            else
+            if(noOfKittiesListed >= 2)
                 createFlashGame();
+            else
+                return false;
         }
         else
             _startGame();
+
+        return true;
     }
     
     /*                                                 ACTION FUNCTIONS                                               */

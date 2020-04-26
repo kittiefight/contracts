@@ -10,7 +10,6 @@ import "../modules/proxy/Proxied.sol";
 import "../authority/Guard.sol";
 import "../modules/datetime/TimeFrame.sol";
 import "../libs/SafeMath.sol";
-import "../CronJob.sol";
 import "../interfaces/IStaking.sol";
 import "../interfaces/ERC20Standard.sol";
 import "../modules/databases/EndowmentDB.sol";
@@ -28,8 +27,6 @@ contract WithdrawPool is Proxied, Guard {
     IStaking public staking;
 
     ERC20Standard public superDaoToken;
-
-    CronJob public cronJob;
 
     TimeFrame public timeFrame;
 
@@ -54,8 +51,6 @@ contract WithdrawPool is Proxied, Guard {
 
     uint256 noOfTotalStakers; //The number of total stakers that withdrew from this contract.
 
-    //uint256 noOfTokensStaked; //The number of tokens that we know for sure are staked right now.
-
     /*                                               GENERAL VARIABLES                                                */
     /*                                                      END                                                       */
     /* ============================================================================================================== */
@@ -72,6 +67,7 @@ contract WithdrawPool is Proxied, Guard {
         uint256 ETHAvailable;       //How much Eth this pool contains.
         uint256 dateAvailable;      //When this pool's Eth will be available for withdrawal, in unix time
         bool initialETHadded;    // check whether initial ether is recorded in withdrawPool
+        bool unlocked;              //If this is true when rest_day starts stakers will be able to claim.
         bool dissolved;             //If this is true the pool has been dissolved, otherwise has not.
         uint256 dateDissolved;      //The date this pool got dissolved in unix time.
         //uint256 stakersEligible;    //How many stakers are eligible to claim from this pool.
@@ -138,7 +134,6 @@ contract WithdrawPool is Proxied, Guard {
         external
         onlyOwner
     {
-        cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
         timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         staking = IStaking(_stakingContract);
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
@@ -185,6 +180,7 @@ contract WithdrawPool is Proxied, Guard {
     {
         // must be the open pool
         require(weeklyPools[pool_id].dateAvailable <= now, "This pool is not available for claiming yet");
+        require(weeklyPools[pool_id].unlocked == true, "This pool is locked");
         require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
 
         // get the last time that the claimer's staked token amount has been changed
@@ -193,12 +189,6 @@ contract WithdrawPool is Proxied, Guard {
         require(lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber, "You are not eligible to claim for this pool");
         require(stakers[msg.sender].claimed[pool_id] == false, "You have already claimed from this pool");
 
-        // // schedule dissolving this pool if its dissolving has not been scheduled yet
-        // if (dissolveScheduled[pool_id] == false) {
-        //     //scheduleDissolvePool(pool_id);
-        //     scheduleDissolveOldCreateNew(pool_id);
-        //     dissolveScheduled[pool_id] = true;
-        // }
         // record initial ether in pool in withdrawPool struct
         // only need to be called once for each pool
         if (weeklyPools[pool_id].initialETHadded == false &&
@@ -252,8 +242,8 @@ contract WithdrawPool is Proxied, Guard {
         WithdrawalPool memory withdrawalPool;
         withdrawalPool.epochID = 0; // poolId is the same as its associated epoch
         withdrawalPool.blockNumber = block.number;
-        withdrawalPool.dateAvailable = epoch0StartTime.add(timeFrame.SIX_WORKING_DAYS());
-        withdrawalPool.dateDissolved = epoch0StartTime.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
+        withdrawalPool.dateAvailable = epoch0StartTime.add(200/*timeFrame.SIX_WORKING_DAYS()*/);
+        withdrawalPool.dateDissolved = withdrawalPool.dateAvailable.add(60/*timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY()*/);
         
         weeklyPools[0] = withdrawalPool;
         earningsTracker.setInvestment(0, endowmentDB.checkInvestment(0));
@@ -282,6 +272,15 @@ contract WithdrawPool is Proxied, Guard {
      external
      onlyContract(CONTRACT_NAME_GAMESTORE)
      {
+        weeklyPools[pool_id].unlocked = true;
+        uint256 delay;
+        if(now > weeklyPools[pool_id].dateAvailable) {
+            delay = now.sub(weeklyPools[pool_id].dateAvailable);
+            weeklyPools[pool_id].dateDissolved =
+                weeklyPools[pool_id].dateDissolved.add(delay);
+            weeklyPools[pool_id].dateAvailable = now;
+        }
+        timeFrame.unlockAndAddDelay(pool_id, delay);
         earningsTracker.setInterest(pool_id, total);
      }
 
@@ -371,22 +370,6 @@ contract WithdrawPool is Proxied, Guard {
         return staking.totalStaked();
     }
 
-    // return true if the staker has already claimed
-    // from this pool with pool_id
-    //function hasClaimed(address account, uint256 pool_id)
-      //  internal
-       // view
-        //returns(bool)
-    //{
-      //  address[] memory unclaimed = weeklyPools[pool_id].unclaimedStakers;
-        //for (uint256 i=0; i<unclaimed.length-1; i++) {
-          //  if (account == unclaimed[i]) {
-            //    return true;
-            //}
-        //}
-        //return false;
-    //}
-
     // calculate the percentage of a staker's token staked in the total SuperDao tokens minted
     function getPercentageSuperDao(address account)
         //internal
@@ -447,33 +430,6 @@ contract WithdrawPool is Proxied, Guard {
          return weeklyPools[pool_id].dateDissolved.sub(now);
      }
 
-
-    // This function is dangersou if there are too many takers - problem: looping over a long list
-    // The sum of the percentages of each individual staker's token staked in the total SuperDao tokens minted
-    //function getSumOfPercentagePool(uint256 pool_id)
-      //  internal
-        //view
-        //returns (uint256)
-    //{
-      //  uint256 sum;
-       // address[] memory allEligibleStakers = weeklyPools[pool_id].eligibleStakers;
-       // for (uint256 i=0; i<allEligibleStakers.length; i++) {
-         //   sum = sum.add(getPercentageSuperDao(allEligibleStakers[i]));
-        //}
-        //return sum;
-   // }
-
-    // calculate the share of a staker in a pool
-
-    //function getPercentagePool(address account, uint256 pool_id)
-      //  internal
-        //view
-        //returns (uint256)
-    //{
-      //  return getPercentageSuperDao(account).div(getSumOfPercentagePool(pool_id));
-    //}
-
-
     /*                                                 GETTER FUNCTIONS                                               */
     /*                                                       END                                                      */
     /* ============================================================================================================== */
@@ -516,8 +472,8 @@ contract WithdrawPool is Proxied, Guard {
         uint256 newPoolId = pool_id.add(1);
         weeklyPools[newPoolId].epochID = newPoolId; // poolId is always the same as its associated epoch
         weeklyPools[newPoolId].blockNumber = block.number;
-        weeklyPools[newPoolId].dateAvailable = now.add(6 * 24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS());
-        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(24 * 60 * 60);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
+        weeklyPools[newPoolId].dateAvailable = now.add(200/*6 * 24 * 60 * 60*/);//now.add(timeFrame.SIX_WORKING_DAYS());
+        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(60/*24 * 60 * 60*/);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
 
         earningsTracker.setInvestment(newPoolId, endowmentDB.checkInvestment(newPoolId));
         noOfPools = noOfPools.add(1);
@@ -526,30 +482,6 @@ contract WithdrawPool is Proxied, Guard {
 
         emit NewPoolCreated(newPoolId, now);
     }
-
-    // *
-    //  * @dev This function schedules dissolving an old pool at its dissolving time
-    //  * and create a new pool by the cronJob.
-    //  * @dev This function is called only once, when the first claimer claims from this pool
-    //  * @param _pool_id The pool id of the pool for which dissolving is scheduled
-    //  * @return True if the cronJob is scheduled
-     
-
-    // function scheduleDissolveOldCreateNew(uint256 _pool_id)
-    //     internal
-    //     returns (bool)
-    // {
-    //     uint256 _time = weeklyPools[_pool_id].dateDissolved;
-    //     scheduledJob = cronJob.addCronJob(
-    //         CONTRACT_NAME_WITHDRAW_POOL,
-    //         _time,
-    //         abi.encodeWithSignature("dissolveOldCreateNew(uint256)", _pool_id)
-    //     );
-    //     scheduledJobs[_pool_id] = scheduledJob;
-
-    //     emit PoolDissolveScheduled(scheduledJob, _time, _pool_id);
-    //     return true;
-    // }
 
     /**
      * @dev This function is used to update pool data, when a claim occurs.
@@ -599,39 +531,6 @@ contract WithdrawPool is Proxied, Guard {
          weeklyPools[_pool_id].dateDissolved = weeklyPools[_pool_id].dateDissolved.add(_gamingDelay);
          emit GamingDelayAddedtoPool(_pool_id, _gamingDelay, weeklyPools[_pool_id].dateAvailable);
      }
-
-
-    // This function is too dangerous if there are too many stakers - problem :looping over a long list
-    // remove a staker from a pool's list of unclaimedStakers
-   // function _removeFromUnclaimed(address _account, uint256 pool_id)
-     //   internal
-    //{
-      //  uint256 len = weeklyPools[pool_id].unclaimedStakers.length;
-        //for (uint256 i=0; i<len-1; i++) {
-          //  if (_account == weeklyPools[pool_id].unclaimedStakers[i]) {
-            //    weeklyPools[pool_id].unclaimedStakers[i] = weeklyPools[pool_id].unclaimedStakers[len-1];
-            //}
-        //}
-        //weeklyPools[pool_id].unclaimedStakers.length.sub(1);
-    //}
-
-    // this function is too dangerous if there are many stakers - looping over a long list is dangerous
-    //function checkEligibility(uint256 pool_id) internal {
-      //  for (uint256 i = 0; i < potentialStakers.length; i++) {
-        //    uint256 lastModifiedBlockNumber = stakingContract.lastStakedFor(potentialStakers[i]);
-          //  if (lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber) {
-            //    weeklyPools[pool_id].eligibleStakers.push(potentialStakers[i]);
-              //  weeklyPools[pool_id].unclaimedStakers.push(potentialStakers[i]);
-                //stakers[potentialStakers[i]].currentAvailablePools.add(1);
-                //stakers[potentialStakers[i]].stakeStartDate = lastModifiedBlockNumber;
-            //}
-        //}
-
-        //weeklyPools[pool_id].stakersEligible = weeklyPools[pool_id].eligibleStakers.length;
-        //weeklyPools[pool_id].eligibilityChecked = true;
-
-        //emit CheckStakersEligibility(pool_id, weeklyPools[pool_id].stakersEligible, now);
-    //}
     
     /*                                                INTERNAL FUNCTIONS                                              */
     /*                                                       END                                                      */

@@ -191,8 +191,12 @@ contract EarningsTracker is Proxied, Guard {
             }
         }
 
-        uint256 nextEpoch = getCurrentEpoch().add(1);
-        ethieTokens[_ethieTokenID].startingEpochID = nextEpoch;
+        if(amountsPerEpoch[0].investment == 0)
+            ethieTokens[_ethieTokenID].startingEpochID = 0;
+        else {
+            uint256 nextEpoch = getCurrentEpoch().add(1);
+            ethieTokens[_ethieTokenID].startingEpochID = nextEpoch;
+        }
 
         emit EtherLocked(_funder, _ethieTokenID, currentGeneration);
 
@@ -214,7 +218,7 @@ contract EarningsTracker is Proxied, Guard {
         external returns(bool)
     {
         // Ethie Tokens can only be burnt on a Rest Day in the current epoch
-        require(isWorkingDay() == false, "Can only burn on Rest Day");
+        require(timeFrame.checkBurn(), "Can only burn on Rest Day");
 
         // the token may be sold to another person, therefore,
         // current owner may not be necessarily the original owner of
@@ -241,8 +245,8 @@ contract EarningsTracker is Proxied, Guard {
         // calculate interest
         uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
         uint256 generation = ethieTokens[_ethieTokenID].generation;
-        uint256 interest = calculateInterest(ethValue, ethieTokens[_ethieTokenID].startingEpochID);
-        uint256 totalEth = ethValue.add(interest);
+        uint256 totalEth = calculateTotal(ethValue, ethieTokens[_ethieTokenID].startingEpochID);
+        uint256 interest = totalEth.sub(ethValue);
         // update generations
         _updateGeneration_burn(generation, ethValue);
         // update funder
@@ -406,12 +410,12 @@ contract EarningsTracker is Proxied, Guard {
      * with this NFT has been locked
      * @return uint256 interest accumulated in the NFT
      */
-    function calculateInterest(uint256 _eth_amount, uint256 _startingEpoch)
+    function calculateTotal(uint256 _eth_amount, uint256 _startingEpoch)
         public view returns (uint256)
     {
         uint256 activeEpochID = timeFrame.getActiveEpochID();
-        if(_startingEpoch < activeEpochID) {
-            return 0;
+        if(_startingEpoch > activeEpochID) {
+            return _eth_amount;
         }
         else {
             uint256 proportion = _eth_amount;
@@ -434,6 +438,13 @@ contract EarningsTracker is Proxied, Guard {
      * @dev ture if now is in the stage of Six-Working-Days in a current weekly epoch
      */
     function isWorkingDay() public view returns (bool) {
+        if (now <= timeFrame.workingDayEndTime()) {
+            return true;
+        }
+        return false;
+    }
+
+    function canBurn() public view returns (bool) {
         if (now <= timeFrame.workingDayEndTime()) {
             return true;
         }

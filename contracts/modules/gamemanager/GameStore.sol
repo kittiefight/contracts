@@ -46,6 +46,8 @@ contract GameStore is Proxied, Guard {
     mapping(uint => mapping(address => Game)) public gameByPlayer;
     mapping(uint => GlobalSettings) public gameSettings;
 
+    bool gameScheduled;
+
     function initialize() external onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
@@ -111,7 +113,7 @@ contract GameStore is Proxied, Guard {
 
         gameSettings[gameId].redemptionFee = calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);        
 
-        startGameAndCalculateEpoch();
+        startGameAndCalculateEpoch(gameVarAndFee.getGameTimes().add(now));
     }
 
     function updateTicketFee(uint256 gameId)
@@ -264,7 +266,7 @@ contract GameStore is Proxied, Guard {
         {
             (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
             if(ethByCorner[0] > ethByCorner[1] ){
-               winner = playerBlack;
+                winner = playerBlack;
                 loser = playerRed;
             }
             else{
@@ -274,23 +276,69 @@ contract GameStore is Proxied, Guard {
         }
     }
 
+    /**
+    * @dev This function is called if a game gets cancelled, so as to start a new game.
+    */
     function startAfterCancel()
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
-        startGameAndCalculateEpoch();
+        startGameAndCalculateEpoch(gameVarAndFee.getGameTimes().add(now));
     }
 
-    function startGameAndCalculateEpoch()
+    /**
+    * @dev This function is called from manualMatching, to check if game can be scheduled.
+    */
+    function startManually(uint256 gameStartTime)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+    returns(bool)
+    {
+        uint256 activeEpochId = timeFrame.getActiveEpochID();
+        uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
+        return checkIfGameCanStart(gameStartTime, currentEpochEndTime);
+    }
+
+    function checkGame()
+    external
+    onlyContract(CONTRACT_NAME_SCHEDULER)
+    returns(bool)
+    {
+        uint256 activeEpochId = timeFrame.getActiveEpochID();
+        uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
+        return checkIfGameCanStart(gameVarAndFee.getGameTimes().add(now), currentEpochEndTime);
+    }
+
+    function checkIfGameCanStart(uint256 gameStartTime, uint256 currentEpochEndTime)
+    internal
+    returns(bool)
+    {
+        //If less than "some time" from epoch's ending or anotherGame is scheduled, cannot create.
+        if(currentEpochEndTime.sub(100/*60 * 60 * 30*/) <= gameStartTime || gameScheduled)
+            return false;
+
+        gameScheduled = true;
+        return true;
+    }
+
+    function startGameAndCalculateEpoch(uint256 gameStartTime)
     internal
     {
         uint256 activeEpochId = timeFrame.getActiveEpochID();
         uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
-        if(currentEpochEndTime.sub(190/*60 * 60 * 30*/) <= gameVarAndFee.getGameTimes().add(now)) {
+        gameScheduled = false;
+
+        if(checkIfGameCanStart(gameVarAndFee.getGameTimes().add(now), currentEpochEndTime))
+            gameScheduled = scheduler.startGame();
+        else {
+            uint256 delay;
+            if(now > currentEpochEndTime.sub(60/*1 DAY*/))
+                delay = now.sub(currentEpochEndTime.sub(60));
+
             CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
             cron.addCronJob(
                 CONTRACT_NAME_GAMESTORE,
-                currentEpochEndTime,
+                currentEpochEndTime.add(delay),
                 abi.encodeWithSignature("createGameAndEpoch()")
             );
 
@@ -299,8 +347,6 @@ contract GameStore is Proxied, Guard {
                 EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).checkTotalForEpoch(activeEpochId)
             );
         }
-        else
-            scheduler.startGame();
     }
 
     /**
@@ -311,7 +357,7 @@ contract GameStore is Proxied, Guard {
     onlyContract(CONTRACT_NAME_CRONJOB)
     {
         timeFrame.setNewEpoch();
-        scheduler.startGame();
+        gameScheduled = scheduler.startGame();
         WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).dissolveOldCreateNew();
     }
 

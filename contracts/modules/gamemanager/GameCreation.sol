@@ -136,6 +136,8 @@ contract GameCreation is Proxied, Guard {
         require(kittieHELL.manualAcquireKitty(kittyRed, playerRed));
         require(kittieHELL.manualAcquireKitty(kittyBlack, playerBlack));
 
+        require(gameStore.startManually(gameStartTime));
+
         emit NewListing(kittyRed, playerRed, now);
         emit NewListing(kittyBlack, playerBlack, now);
 
@@ -281,7 +283,4 @@ contract GameCreation is Proxied, Guard {
         uint256 jobId = cronJobsForGames[gameId];
         cronJob.deleteCronJob(CONTRACT_NAME_GAMECREATION, jobId);
     }
-
-
-
 }

@@ -1,6 +1,7 @@
 const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const EndowmentFund = artifacts.require('EndowmentFund')
+const EndowmentDB = artifacts.require('EndowmentDB')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -17,6 +18,11 @@ module.exports = async (callback) => {
     let proxy = await KFProxy.deployed();
     let getterDB = await GMGetterDB.deployed();
     let endowmentFund = await EndowmentFund.deployed();
+    let endowmentDB = await EndowmentDB.deployed();
+
+    let balance = await endowmentDB.getEndowmentBalance();
+    console.log(balance.endowmentBalanceETH.toString());
+    console.log(balance.endowmentBalanceKTY.toString());
 
     accounts = await web3.eth.getAccounts();
 
