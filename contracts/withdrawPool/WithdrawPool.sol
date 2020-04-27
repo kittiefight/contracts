@@ -389,8 +389,8 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        //return timeFrame.getActiveEpochID();
-        return noOfPools.sub(1);
+        return timeFrame.getActiveEpochID();
+        //return noOfPools.sub(1);
     }
 
     // get the initial ether available in a pool

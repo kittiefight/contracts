@@ -39,10 +39,6 @@ contract EarningsTracker is Proxied, Guard {
     uint256 constant ONE_HUNDRED_AND_TWENTY_DAYS = 120 * 24 * 60 * 60;  // GEN 5
     uint256 constant ONE_HUNDRED_AND_THIRTY_FIVE_DAYS = 135 * 24 * 60 * 60;  // GEN 6
 
-    uint256 internal factor;               // used in calculating the total interest accumulated in all Ethie Tokens
-    uint256 internal interestReleased;     // interest released from all burnt Ethie token NFTs
-    uint256 public totalBalance;  // total ETH balance from all generations
-
     /// @dev an EthieToken NFT's associated properties
     struct NFT {
         address originalOwner; // the owner of this token at the time of minting
@@ -77,7 +73,7 @@ contract EarningsTracker is Proxied, Guard {
     mapping (uint256 => Generation) generations;
 
     /// @dev mapping ethieToken NFT to its properties
-    mapping(uint256 => NFT) ethieTokens;
+    mapping(uint256 => NFT) public ethieTokens;
 
     /// @dev funding limit for each generation, pre-set in initialization, can only be changed by admin
     mapping (uint256 => uint256) public fundingLimit;
@@ -254,14 +250,10 @@ contract EarningsTracker is Proxied, Guard {
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         uint256 activeEpochID = timeFrame.getActiveEpochID();
-        if(ethieTokens[_ethieTokenID].startingEpochID < activeEpochID)
+        if(ethieTokens[_ethieTokenID].startingEpochID > activeEpochID)
             _returnEther(msg.sender, totalEth, false);
         else
             _returnEther(msg.sender, totalEth, true);
-
-        factor = factor.sub(ethValue.mul(tokenLockedAt));
-        interestReleased = interestReleased.add(interest);
-        totalBalance = totalBalance.sub(ethValue);
 
         emit EthieTokenBurnt(msg.sender, _ethieTokenID, generation, ethValue, interest);
         return true;
@@ -387,27 +379,25 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
-     * @dev calculates the total interest accumulated for all Ethie Token NFTs in all generations
-     * Formula: Total interest =
-     *   weekly interest x (total ether balance from all generations x now – factor) / WEEK
-     *   + total interest from burnt tokens
-     * @return uint256 total interest accumulated for all Ethie Token NFTs
+     * @dev calculates the total interest accumulated for all Ethie Token NFTs in the latest 250 epochs
+     * @return uint256 total interest accumulated for all Ethie Token NFTs in the last 250 epochs
      */
     function viewTotalInterests() public view returns (uint256) {
-        uint256 r = gameVarAndFee.getInterestEthie();
-        uint256 total = totalBalance.mul(now).div(WEEK);
-        uint256 f = factor.div(WEEK);
-        uint256 dif = total.sub(f);
-        uint256 interest = r.mul(dif).div(1000000);
-        uint256 totalInterest = interest.add(interestReleased);
+        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        uint256 totalInterest = 0;
+        uint256 startID = activeEpochID < 250 ? 0 : activeEpochID - 250;
+        for (uint256 i = startID; i < activeEpochID; i++) {
+            totalInterest = totalInterest.add(amountsPerEpoch[i].interest);
+        }
         return totalInterest;
+
     }
 
     /**
-     * @dev gets the interest accumulated for an Ethie Token NFT
+     * @dev gets principal ethers locked plus the interest accumulated for an Ethie Token NFT
      * @param _eth_amount uint256 the amount of ethers associated with this NFT
      * with this NFT has been locked
-     * @return uint256 interest accumulated in the NFT
+     * @return uint256 principal ethers locked and interest accumulated in the NFT
      */
     function calculateTotal(uint256 _eth_amount, uint256 _startingEpoch)
         public view returns (uint256)
@@ -631,8 +621,6 @@ contract EarningsTracker is Proxied, Guard {
         ethieTokens[_ethieTokenID].lockedAt = now;
         ethieTokens[_ethieTokenID].lockTime = _lockTime;
         ethieTokens[_ethieTokenID].originalOwner = _funder;
-
-        factor = factor.add(now.mul(_eth_amount));
     }
 
     /**
@@ -646,8 +634,6 @@ contract EarningsTracker is Proxied, Guard {
         generations[_generation].ethBalance = generations[_generation].ethBalance.add(_eth_amount);
         generations[_generation].ethBalanceAt = now;
         generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.add(1);
-
-        totalBalance = totalBalance.add(_eth_amount);
     }
 
     /**
