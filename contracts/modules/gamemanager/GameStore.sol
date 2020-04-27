@@ -331,14 +331,14 @@ contract GameStore is Proxied, Guard {
         if(checkIfGameCanStart(gameVarAndFee.getGameTimes().add(now), currentEpochEndTime))
             gameScheduled = scheduler.startGame();
         else {
-            uint256 delay;
-            if(now > currentEpochEndTime.sub(60/*1 DAY*/))
-                delay = now.sub(currentEpochEndTime.sub(60));
+            //uint256 delay;
+            //if(now > currentEpochEndTime.sub(60/*1 DAY*/))
+              //  delay = now.sub(currentEpochEndTime.sub(60));
 
             CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
             cron.addCronJob(
                 CONTRACT_NAME_GAMESTORE,
-                currentEpochEndTime.add(delay),
+                now.add(timeFrame.REST_DAY()),//currentEpochEndTime.add(delay),
                 abi.encodeWithSignature("createGameAndEpoch()")
             );
 

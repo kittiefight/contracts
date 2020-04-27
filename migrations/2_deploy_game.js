@@ -65,6 +65,7 @@ const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
 const GAME_PRESTART = 30 // 2 min
 const GAME_DURATION = 80 // 5 min
+const TIME_EXTENSION = 1 
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
 const GAME_TIMES = 60 //Scheduled games 10 min apart
@@ -301,7 +302,8 @@ module.exports = (deployer, network, accounts) => {
                 'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
                 'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
                 'percentageForBettingFee', 'usdKTYPrice', 'requiredKittieSacrificeNum',
-                'percentageHoneypotAllocationKTY', 'ktyForBurnEthie', 'interestEthie', 'percentageForPool'
+                'percentageHoneypotAllocationKTY', 'ktyForBurnEthie', 'interestEthie', 'percentageForPool',
+                'timeExtension'
             ];
 
             let bytesNames = [];
@@ -314,7 +316,8 @@ module.exports = (deployer, network, accounts) => {
                 HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
                 OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
                 PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM,
-                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, KTY_FOR_BURN_ETHIE.toString(), INTEREST_ETHIE, PERCENTAGE_FOR_POOL
+                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, KTY_FOR_BURN_ETHIE.toString(), INTEREST_ETHIE, PERCENTAGE_FOR_POOL,
+                TIME_EXTENSION
             ];
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {

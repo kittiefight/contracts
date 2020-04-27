@@ -178,7 +178,6 @@ contract WithdrawPool is Proxied, Guard {
     function claimYield(uint256 pool_id)
     external returns(bool)
     {
-        // must be the open pool
         require(weeklyPools[pool_id].dateAvailable <= now, "This pool is not available for claiming yet");
         require(weeklyPools[pool_id].unlocked == true, "This pool is locked");
         require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
@@ -276,9 +275,9 @@ contract WithdrawPool is Proxied, Guard {
         uint256 delay;
         if(now > weeklyPools[pool_id].dateAvailable) {
             delay = now.sub(weeklyPools[pool_id].dateAvailable);
-            weeklyPools[pool_id].dateDissolved =
-                weeklyPools[pool_id].dateDissolved.add(delay);
             weeklyPools[pool_id].dateAvailable = now;
+            weeklyPools[pool_id].dateDissolved =
+                weeklyPools[pool_id].dateAvailable.add(timeFrame.REST_DAY());
         }
         timeFrame.unlockAndAddDelay(pool_id, delay);
         earningsTracker.setInterest(pool_id, total);
@@ -412,22 +411,34 @@ contract WithdrawPool is Proxied, Guard {
         return weeklyPools[_poolID].allClaimedStakers;
     }
 
-    /**
-      * @dev return the time remaining (in seconds) until time availabe for claiming the pool with pool_id
-      * @param pool_id the id of the pool
+     /**
+      * @dev return the time remaining (in seconds) until time availabe for claiming the current pool
+      * only current pool can be claimed
       */
-     function timeUntilClaiming(uint256 pool_id) public view returns (uint256) {
+     function timeUntilClaiming() public view returns (uint256) {
+         uint256 pool_id = getActivePoolID();
          require(weeklyPools[pool_id].dissolved == false, "Pool already dissolved");
-         return weeklyPools[pool_id].dateAvailable.sub(now);
+         uint256 claimTime = weeklyPools[pool_id].dateAvailable;
+         if (claimTime > now) {
+             return claimTime.sub(now);
+         } else {
+             return 0;
+         }
+
      }
 
      /**
-      * @dev return the time remaining (in seconds) until time for dissolving the pool with pool_id
-      * @param pool_id the id of the pool
+      * @dev return the time remaining (in seconds) until time for dissolving the current pool
+      * If the pool is already dissolved, returns 0.
       */
-     function timeUntilPoolDissolve(uint256 pool_id) public view returns (uint256) {
-         require(weeklyPools[pool_id].dissolved == false, "Pool already dissolved");
-         return weeklyPools[pool_id].dateDissolved.sub(now);
+     function timeUntilPoolDissolve() public view returns (uint256) {
+         uint256 pool_id = getActivePoolID();
+         uint256 dissolveTime = weeklyPools[pool_id].dateDissolved;
+         if (dissolveTime > now) {
+             return dissolveTime.sub(now);
+         } else {
+             return 0;
+         }
      }
 
     /*                                                 GETTER FUNCTIONS                                               */

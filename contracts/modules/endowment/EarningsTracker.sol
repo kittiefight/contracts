@@ -154,7 +154,7 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _totalETH = _ethBalance.add(msg.value);
         address _funder = getOriginalSender();
 
-        // // transfer funds to endowmentFund
+        // transfer funds to endowmentFund
         require(endowmentFund.contributeETH_Ethie.value(msg.value)(), "Funds deposit failed");
 
         uint256 _lockTime;
@@ -350,12 +350,11 @@ contract EarningsTracker is Proxied, Guard {
     function getCurrentGeneration()
         public view returns (uint256)
     {
-       for (uint256 i = 0; i < 6; i++) {
+       for (uint256 i = 0; i < 7; i++) {
            if (fundingLimit[i] == currentFundingLimit) {
                return i;
            }
        }
-       return 6;
     }
 
     /**
@@ -508,18 +507,45 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
+     * @dev gets the next unix time in which an investor can withdraw locked ethers
+     * and earnings by burning an Ethie Token NFT and get future benefits like access to
+     * pricy kitties in KittiHELL and lottery benefits
+     * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burnt
+     */
+    function _viewNextYieldClaimDate(uint256 ethieTokenID)
+        public view
+        returns(uint256)
+    {
+        uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
+        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        uint256 unLockAt = lockedAt.add(lockTime);
+        return unLockAt;
+    }
+
+    /**
      * @dev gets the next date and time in which an investor can withdraw locked ethers
-     * and earnings by burning an Ethie Token NFT
+     * and earnings by burning an Ethie Token NFT and get future benefits like access to
+     * pricy kitties in KittiHELL and lottery benefits
      * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burnt
      */
     function viewNextYieldClaimDate(uint256 ethieTokenID)
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
-        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
-        uint256 unLockAt = lockedAt.add(lockTime);
+        uint256 unLockAt = _viewNextYieldClaimDate(ethieTokenID);
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(unLockAt);
+    }
+
+    /**
+     * @dev gets unix time at which ethers were locked for an Ethie Token NFT
+     * @param ethieTokenID uint256 the ID of the Ethie Token NFT to be burntT
+     */
+    function _checkLockETHDate(uint256 ethieTokenID)
+        public view
+        returns(uint256)
+    {
+        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        return lockedAt;
     }
 
     /**
