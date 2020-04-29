@@ -278,11 +278,14 @@ contract("GameManager", accounts => {
       let ethAmountToken = weiToEther(tokenProperties.ethAmount);
       let generationToken = tokenProperties.generation.toNumber();
       let lockTime = tokenProperties.lockTime.toString();
+      let result1 = await earningsTracker.ethieTokens(ethieTokenID);
+      let startingEpoch1 = result1.startingEpochID
       console.log(`\n************** Investor: accounts${i} **************`);
       console.log("EthieToken ID:", ethieTokenID);
       console.log("Oringinal ether amount held in this token:", ethAmountToken);
       console.log("This token's generation:", generationToken);
       console.log("This token's lock time(in seconds):", lockTime);
+      console.log("This token's starting Epoch:", startingEpoch1.toNumber())
       console.log("****************************************************\n");
     }
   });
@@ -338,6 +341,7 @@ contract("GameManager", accounts => {
     console.log("********************************************************\n");
 
     let amounts = await earningsTracker.amountsPerEpoch(0);
+    let endowmentBalance_0 = await web3.eth.getBalance(escrow.address)
     const numberOfPools = await withdrawPool.getTotalNumberOfPools();
     console.log("Number of pools:", numberOfPools.toNumber());
     console.log("\n******************* Pool 0 Created*******************");
@@ -376,7 +380,8 @@ contract("GameManager", accounts => {
     );
     initial_pool_0_available_time = pool_0_details.dateAvailable.toNumber()
     initial_pool_0_dissolve_time = pool_0_details.dateDissolved.toNumber()
-    console.log("Investments in Pool:", weiToEther(amounts.investment));
+    console.log("Investments in Endowment from Ethie Token NFTs:", weiToEther(amounts.investment));
+    console.log("Ether balance in endowmentFund:", endowmentBalance_0)
     console.log("********************************************************\n");
   });
 
@@ -1290,6 +1295,72 @@ contract("GameManager", accounts => {
     console.log("balance of accounts[2] before burning:", balance_before_2)
     console.log("balance of accounts[2] after burning:", balance_after_2)
   })
+
+  it("superDaoToken holders stake superDaoToken, and investors invest via EthieToken NFTs for next epoch", async () => {
+    const stakedTokens = new BigNumber(
+      web3.utils.toWei("20000", "ether") //
+    );
+
+    for (let i = 4; i < 7; i++) {
+      await superDaoToken.transfer(accounts[i], stakedTokens, {
+        from: accounts[0]
+      });
+      let balBefore = await superDaoToken.balanceOf(accounts[i]);
+      console.log(
+        `Balance of staker ${i} before staking:`,
+        weiToEther(balBefore)
+      );
+
+      await superDaoToken.approve(staking.address, stakedTokens, {
+        from: accounts[i]
+      });
+
+      await staking.stake(stakedTokens, {from: accounts[i]});
+
+      let balStaking = await superDaoToken.balanceOf(staking.address);
+      console.log(
+        "Balance of staking contract after staking:",
+        weiToEther(balStaking)
+      );
+
+      let balAfter = await superDaoToken.balanceOf(accounts[i]);
+      console.log(
+        `Balance of staker ${i} after staking:`,
+        weiToEther(balAfter)
+      );
+    }
+
+    //await ethieToken.addMinter(earningsTracker.address);
+   // await earningsTracker.setCurrentFundingLimit();
+
+    for (let i = 6; i < 11; i++) {
+      let ethAmount = web3.utils.toWei(String(10 + i), "ether");
+      console.log(ethAmount.toString());
+      console.log(accounts[i]);
+      await earningsTracker.lockETH({
+        gas: 900000,
+        from: accounts[i],
+        value: ethAmount.toString()
+      });
+      let number_ethieToken = await ethieToken.balanceOf(accounts[i]);
+      let ethieTokenID = await ethieToken.tokenOfOwnerByIndex(accounts[i], 0);
+      ethieTokenID = ethieTokenID.toNumber();
+      let tokenProperties = await ethieToken.properties(ethieTokenID);
+      let result2 = await earningsTracker.ethieTokens(ethieTokenID);
+      let startingEpoch2 = result2.startingEpochID
+      let ethAmountToken = weiToEther(tokenProperties.ethAmount);
+      let generationToken = tokenProperties.generation.toNumber();
+      let lockTime = tokenProperties.lockTime.toString();
+      console.log(`\n************** Investor: accounts${i} **************`);
+      console.log("EthieToken ID:", ethieTokenID);
+      console.log("Oringinal ether amount held in this token:", ethAmountToken);
+      console.log("This token's generation:", generationToken);
+      console.log("This token's lock time(in seconds):", lockTime);
+      console.log("This token's starting Epoch:", startingEpoch2.toNumber())
+      console.log("****************************************************\n");
+    }
+  });
+
 
   
   it("sets new epoch when finalized", async () => {

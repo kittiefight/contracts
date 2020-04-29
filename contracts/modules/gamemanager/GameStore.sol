@@ -314,7 +314,7 @@ contract GameStore is Proxied, Guard {
     returns(bool)
     {
         //If less than "some time" from epoch's ending or anotherGame is scheduled, cannot create.
-        if(currentEpochEndTime.sub(100/*60 * 60 * 30*/) <= gameStartTime || gameScheduled)
+        if(currentEpochEndTime.sub(timeFrame.REST_DAY().add(timeFrame.SIX_HOURS())) <= gameStartTime || gameScheduled)
             return false;
 
         gameScheduled = true;
@@ -363,9 +363,9 @@ contract GameStore is Proxied, Guard {
 
     function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
         //each time 1 minute before game ends
-        // uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
+        uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
         
-        if(gameEndTime.sub(60) <= now) {
+        if(gameEndTime.sub(performanceTimeCheck) <= now) {
             //get initial jackpot, need endowment to send this when creating honeypot
             (,,uint initialEth, uint currentJackpotEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
 

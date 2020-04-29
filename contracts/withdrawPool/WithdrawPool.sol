@@ -241,8 +241,8 @@ contract WithdrawPool is Proxied, Guard {
         WithdrawalPool memory withdrawalPool;
         withdrawalPool.epochID = 0; // poolId is the same as its associated epoch
         withdrawalPool.blockNumber = block.number;
-        withdrawalPool.dateAvailable = epoch0StartTime.add(200/*timeFrame.SIX_WORKING_DAYS()*/);
-        withdrawalPool.dateDissolved = withdrawalPool.dateAvailable.add(60/*timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY()*/);
+        withdrawalPool.dateAvailable = epoch0StartTime.add(timeFrame.SIX_WORKING_DAYS());
+        withdrawalPool.dateDissolved = withdrawalPool.dateAvailable.add(timeFrame.REST_DAY());
         
         weeklyPools[0] = withdrawalPool;
         earningsTracker.setInvestment(0, endowmentDB.checkInvestment(0));
@@ -483,8 +483,8 @@ contract WithdrawPool is Proxied, Guard {
         uint256 newPoolId = pool_id.add(1);
         weeklyPools[newPoolId].epochID = newPoolId; // poolId is always the same as its associated epoch
         weeklyPools[newPoolId].blockNumber = block.number;
-        weeklyPools[newPoolId].dateAvailable = now.add(200/*6 * 24 * 60 * 60*/);//now.add(timeFrame.SIX_WORKING_DAYS());
-        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(60/*24 * 60 * 60*/);//now.add(timeFrame.SIX_WORKING_DAYS()).add(timeFrame.REST_DAY());
+        weeklyPools[newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
+        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(timeFrame.REST_DAY());
 
         earningsTracker.setInvestment(newPoolId, endowmentDB.checkInvestment(newPoolId));
         noOfPools = noOfPools.add(1);

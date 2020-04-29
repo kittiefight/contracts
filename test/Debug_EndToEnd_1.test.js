@@ -383,7 +383,7 @@ contract("GameManager", accounts => {
   it("manual matches kitties", async () => {
     let kittyRed = 324;
     let kittyBlack = 1001;
-    let gameStartTimeGiven = Math.floor(Date.now() / 1000) + 100; //now + 80 secs, so for prestart 30 secs 50 secs to participate
+    let gameStartTimeGiven = Math.floor(Date.now() / 1000) + 100 + 250; //now + 80 secs, so for prestart 30 secs 50 secs to participate
 
     //Must take owners of Kitties here
     let playerBlack = await cryptoKitties.ownerOf(kittyBlack);
@@ -1227,11 +1227,6 @@ contract("GameManager", accounts => {
   });
   
   it("an investor can burn his Ethie Token NFT and receive ethers locked and interest accumulated", async () => {
-    let _epoch_end = await timeFrame.timeUntilEpochEnd(0)
-    let _rest_start = _epoch_end.toNumber() - 100
-    if (_rest_start > 0) {
-        await timeout(_rest_start)
-    }
     
     let balance_before_2 = await web3.eth.getBalance(accounts[2])
     balance_before_2 = weiToEther(balance_before_2)

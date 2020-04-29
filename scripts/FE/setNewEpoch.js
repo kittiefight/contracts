@@ -1,5 +1,6 @@
 const WithdrawPool = artifacts.require("WithdrawPool");
 const EarningsTracker = artifacts.require("EarningsTracker");
+const TimeFrame = artifacts.require("TimeFrame")
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -21,11 +22,25 @@ module.exports = async (callback) => {
   try{
     let withdrawPool = await WithdrawPool.deployed();
     let earningsTracker = await EarningsTracker.deployed();
+    let timeFrame = await TimeFrame.deployed()
 
     accounts = await web3.eth.getAccounts();
 
     await withdrawPool.setPool_0();
 
+    const epoch_0_start_unix = await timeFrame._epochStartTime(0);
+    const epoch_0_end_unix = await timeFrame._epochEndTime(0);
+ 
+    console.log("\n******************* Epoch 0 *****************");
+    console.log(
+      "epoch 0 start time in unix time:",
+      epoch_0_start_unix.toNumber()
+    );
+    console.log(
+      "epoch 0 end time in unix time:",
+      epoch_0_end_unix.toNumber()
+    );
+    console.log("********************************************************\n");
 
     let amounts = await earningsTracker.amountsPerEpoch(0);
     const numberOfPools = await withdrawPool.getTotalNumberOfPools();

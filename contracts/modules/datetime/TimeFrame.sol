@@ -25,9 +25,9 @@ pragma solidity ^0.5.5;
      using SafeMath for uint;
      using BokkyPooBahsDateTimeLibrary for uint;
 
-     uint constant public SIX_WORKING_DAYS = 200;
-     uint constant public REST_DAY = 60;
-     uint constant public SIX_HOURS = 6 * 60 * 60;
+     uint constant public SIX_WORKING_DAYS = 720;//6 * 24 * 60 * 60;
+     uint constant public REST_DAY = 180;//24 * 60 * 60;
+     uint constant public SIX_HOURS = 90;//6 * 60 * 60;
 
      /// @dev total number of epochs
      uint public numberOfEpochs;
