@@ -35,7 +35,7 @@ contract EndowmentDB is Proxied {
   string internal constant ERROR_ALREADY_EXIST = "Already exists";
   string internal constant ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
 
-  // temporarily set investmentForNext for testing purpose
+  // temporarily set investmentForNext as public for testing purpose
   uint256 public investmentForNext;
 
   constructor(GenericDB _genericDB) public {
