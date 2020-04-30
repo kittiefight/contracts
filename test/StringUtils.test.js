@@ -15,6 +15,15 @@ contract('StringUtilsTest', (accounts) => {
         assert.equal(result, expected);
     });
 
+    it('should concat three strings', async () => {
+        let a = "string 1";
+        let b = "string 2";
+        let c = "string 3";
+        let expected = a+b+c;
+        let result = await contract.concat(a, b, c);
+        assert.equal(result, expected);
+    });
+
     it('should convert unsigned integer to string', async () => {
         let x = Math.round(Math.random()*100000);
         let expected = String(x);

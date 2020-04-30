@@ -177,10 +177,10 @@ pragma solidity ^0.5.5;
      }
 
      /**
-      * @dev return true if game can start in the the epoch with epoch_id
-      * @param epoch_id the id of the epoch
+      * @dev return true if game can start in the current epoch
       */
-     function canStartNewGame(uint epoch_id) public view returns (bool) {
+     function canStartNewGame() public view returns (bool) {
+         uint256 epoch_id = getActiveEpochID();
          return now >= lifeTimeEpochs[epoch_id].sixDayStart && now <= lifeTimeEpochs[epoch_id].sixDayEnd.sub(SIX_HOURS);
      }
 
