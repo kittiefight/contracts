@@ -376,7 +376,7 @@ contract("GameManager", accounts => {
     );
     initial_pool_0_available_time = pool_0_details.dateAvailable.toNumber()
     initial_pool_0_dissolve_time = pool_0_details.dateDissolved.toNumber()
-    console.log("Investments in Pool:", weiToEther(amounts.investment));
+    console.log("Investments from Ethie Token NFTs:", weiToEther(amounts.investment));
     console.log("********************************************************\n");
   });
 

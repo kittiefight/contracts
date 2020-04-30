@@ -385,10 +385,15 @@ contract("GameManager", accounts => {
     console.log("********************************************************\n");
   });
 
+  it("has investment for Epoch 0", async () => {
+    const investment_0 = await endowmentDB.investmentForNext.call()
+    console.log("Investment for Epoch 0", weiToEther(investment_0))
+  })
+
   it("manual matches kitties", async () => {
     let kittyRed = 324;
     let kittyBlack = 1001;
-    let gameStartTimeGiven = Math.floor(Date.now() / 1000) + 100; //now + 80 secs, so for prestart 30 secs 50 secs to participate
+    let gameStartTimeGiven = Math.floor(Date.now() / 1000) + 100 + 250; //now + 80 secs, so for prestart 30 secs 50 secs to participate
 
     //Must take owners of Kitties here
     let playerBlack = await cryptoKitties.ownerOf(kittyBlack);
@@ -1360,8 +1365,6 @@ contract("GameManager", accounts => {
       console.log("****************************************************\n");
     }
   });
-
-
   
   it("sets new epoch when finalized", async () => {
     let _wait = await timeFrame.timeUntilEpochEnd(0);
@@ -1540,10 +1543,15 @@ contract("GameManager", accounts => {
     console.log(`New Player ${accounts[2]} with Kitty ${kitties[1]}`);
   });
 
+  it("has investment for Epoch 1", async () => {
+    const investment_1 = await endowmentDB.investmentForNext.call()
+    console.log("Investment for Epoch 1", weiToEther(investment_1))
+  })
+
   it("manual matches kitties", async () => {
     let kittyRed = 325;
     let kittyBlack = 1002;
-    let gameStartTimeGiven = Math.floor(Date.now() / 1000) + 80; //now + 80 secs, so for prestart 30 secs 50 secs to participate
+    let gameStartTimeGiven = Math.floor(Date.now() / 1000) + 100 + 250; //now + 80 secs, so for prestart 30 secs 50 secs to participate
 
     //Must take owners of Kitties here
     let playerBlack = await cryptoKitties.ownerOf(kittyBlack);
@@ -1761,7 +1769,7 @@ contract("GameManager", accounts => {
       //PlayerBlack
       if (randomPlayer == 1) {
         randomSupporter = randomValue(supportersBlack - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(100);
         player = "playerBlack";
         supportedPlayer = accounts[Number(randomSupporter) + 10];
 
@@ -1882,6 +1890,12 @@ contract("GameManager", accounts => {
     let finalizer = accounts[20];
 
     console.log("\n==== WAITING FOR GAME OVER: ", formatDate(endTime));
+
+    let _waitGameOver = endTime - Math.floor(Date.now() / 1000)
+
+    if (_waitGameOver > 0) {
+      await timeout(_waitGameOver)
+    }
 
     await timeout(2);
 
@@ -2195,7 +2209,7 @@ contract("GameManager", accounts => {
     console.log(
       "\n******************* Initial Ethers Distributed to Pool 1 *******************"
     );
-    console.log("Initial ether in pool 0: " + initialETH_pool_1);
+    console.log("Initial ether in pool 1: " + initialETH_pool_1);
   });
 
   it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
