@@ -277,7 +277,7 @@ contract("GameManager", accounts => {
       let tokenProperties = await ethieToken.properties(ethieTokenID);
       let ethAmountToken = weiToEther(tokenProperties.ethAmount);
       let generationToken = tokenProperties.generation.toNumber();
-      let lockTime = tokenProperties.lockTime.toString();
+      let lockTime = tokenProperties.lockPeriod.toString();
       console.log(`\n************** Investor: accounts${i} **************`);
       console.log("EthieToken ID:", ethieTokenID);
       console.log("Oringinal ether amount held in this token:", ethAmountToken);

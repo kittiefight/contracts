@@ -277,7 +277,7 @@ contract("GameManager", accounts => {
       let tokenProperties = await ethieToken.properties(ethieTokenID);
       let ethAmountToken = weiToEther(tokenProperties.ethAmount);
       let generationToken = tokenProperties.generation.toNumber();
-      let lockTime = tokenProperties.lockTime.toString();
+      let lockTime = tokenProperties.lockPeriod.toString();
       let result1 = await earningsTracker.ethieTokens(ethieTokenID);
       let startingEpoch1 = result1.startingEpochID
       console.log(`\n************** Investor: accounts${i} **************`);
@@ -1237,12 +1237,6 @@ contract("GameManager", accounts => {
   });
   
   it("an investor can burn his Ethie Token NFT and receive ethers locked and interest accumulated", async () => {
-    let _epoch_end = await timeFrame.timeUntilEpochEnd(0)
-    let _rest_start = _epoch_end.toNumber() - 100
-    if (_rest_start > 0) {
-        await timeout(_rest_start)
-    }
-    
     let balance_before_2 = await web3.eth.getBalance(accounts[2])
     balance_before_2 = weiToEther(balance_before_2)
 
@@ -1355,7 +1349,7 @@ contract("GameManager", accounts => {
       let startingEpoch2 = result2.startingEpochID
       let ethAmountToken = weiToEther(tokenProperties.ethAmount);
       let generationToken = tokenProperties.generation.toNumber();
-      let lockTime = tokenProperties.lockTime.toString();
+      let lockTime = tokenProperties.lockPeriod.toString();
       console.log(`\n************** Investor: accounts${i} **************`);
       console.log("EthieToken ID:", ethieTokenID);
       console.log("Oringinal ether amount held in this token:", ethAmountToken);
