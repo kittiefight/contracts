@@ -186,7 +186,7 @@ contract Forfeiter is Proxied {
    * @param gameStartTime uint256 time when 2 min countdown ends
    */
   function didPlayersStartGame(uint gameId, bool blackStarted, bool redStarted, uint gameStartTime)
-    public
+    internal
   {
     if (gameStartTime <= now){
       if(!blackStarted || !redStarted) forfeitGame(gameId, "Did not hit start");
