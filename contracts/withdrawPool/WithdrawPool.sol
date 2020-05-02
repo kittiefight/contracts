@@ -288,11 +288,36 @@ contract WithdrawPool is Proxied, Guard {
      * @param _stakingContract The address of the new stakingContract.
      */
     function setStakingContract(address _stakingContract)
-    external
-    onlyOwner()
+        external
+        onlyOwner
     {
         staking = IStaking(_stakingContract);
     }
+
+    function terminateEpochAndPoolManually()
+        public
+        onlySuperAdmin
+    {
+        timeFrame.terminateEpochManually();
+        _terminatePool();
+    }
+
+    function setNewEpochAndPoolManually()
+        public
+        onlySuperAdmin
+    {
+        timeFrame.setNewEpochManually();
+        uint256 _newPoolId = noOfPools;
+        weeklyPools[_newPoolId].epochID = _newPoolId; // poolId is always the same as its associated epoch
+        weeklyPools[_newPoolId].blockNumber = block.number;
+        weeklyPools[_newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
+        weeklyPools[_newPoolId].dateDissolved = weeklyPools[_newPoolId].dateAvailable.add(timeFrame.REST_DAY());
+
+        noOfPools = noOfPools.add(1);
+
+        emit NewPoolCreated(_newPoolId, now);
+    }
+
 
     /*                                                 SETTER FUNCTIONS                                               */
     /*                                                       END                                                      */
@@ -389,8 +414,8 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        return timeFrame.getActiveEpochID();
-        //return noOfPools.sub(1);
+        //return timeFrame.getActiveEpochID();
+        return noOfPools.sub(1);
     }
 
     // get the initial ether available in a pool
@@ -542,6 +567,19 @@ contract WithdrawPool is Proxied, Guard {
          weeklyPools[_pool_id].dateDissolved = weeklyPools[_pool_id].dateDissolved.add(_gamingDelay);
          emit GamingDelayAddedtoPool(_pool_id, _gamingDelay, weeklyPools[_pool_id].dateAvailable);
      }
+
+    /**
+      * @dev terminates a pool
+      */
+    function _terminatePool() internal {
+        uint256 _pool_id = getActivePoolID();
+        require(now <= weeklyPools[_pool_id].dateDissolved, "Pool has already dissolved");
+        weeklyPools[_pool_id].dateDissolved = now.sub(1);
+        weeklyPools[_pool_id].unlocked = false;
+        weeklyPools[_pool_id].dissolved = true;
+
+        emit PoolDissolved(_pool_id, now);
+    }
     
     /*                                                INTERNAL FUNCTIONS                                              */
     /*                                                       END                                                      */

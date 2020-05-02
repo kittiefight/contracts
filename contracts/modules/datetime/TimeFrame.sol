@@ -20,8 +20,9 @@ pragma solidity ^0.5.5;
  import "../../libs/SafeMath.sol";
  import "../../libs/BokkyPooBahsDateTimeLibrary.sol";
  import "../proxy/Proxied.sol";
+ import "../../authority/Guard.sol";
 
- contract TimeFrame is Proxied {
+ contract TimeFrame is Proxied, Guard {
      using SafeMath for uint;
      using BokkyPooBahsDateTimeLibrary for uint;
 
@@ -88,7 +89,6 @@ pragma solidity ^0.5.5;
       */
      function setNewEpoch()
          public
-         //temporarily comment out onlyContract for testing purpose only: TimeFrame.test.js
          onlyContract(CONTRACT_NAME_GAMESTORE)
      {
          _setNewEpoch();
@@ -110,6 +110,32 @@ pragma solidity ^0.5.5;
          if(gamingDelay != 0)
              _addGamingDelayToEpoch(epoch_id, gamingDelay);
      }
+
+    function terminateEpochManually()
+        public
+        onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+    {
+        uint epoch_id = getActiveEpochID();
+        _terminateEpoch(epoch_id);
+    }
+
+    function setNewEpochManually()
+        public
+        onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+    {
+        uint epoch_id = numberOfEpochs;
+
+        Epoch memory epoch;
+
+        epoch.sixDayStart = now;
+        epoch.sixDayEnd = epoch.sixDayStart.add(SIX_WORKING_DAYS);
+        epoch.restDAYStart = epoch.sixDayEnd;
+        epoch.restDAYEnd = epoch.restDAYStart.add(REST_DAY);
+
+        lifeTimeEpochs[epoch_id] = epoch;
+        numberOfEpochs = numberOfEpochs.add(1);
+        emit NewEpochSet(epoch_id, lifeTimeEpochs[epoch_id].sixDayStart);
+    }
 
      //===================== public functions ===================
 
@@ -411,7 +437,7 @@ pragma solidity ^0.5.5;
       * @dev terminates an epoch
       * @param epoch_id the id of the epoch
       */
-     function terminateEpoch(uint epoch_id) internal onlyOwner {
+     function _terminateEpoch(uint epoch_id) internal {
          require(now <= lifeTimeEpochs[epoch_id].restDAYEnd, "Epoch has already ended");
          lifeTimeEpochs[epoch_id].restDAYEnd = now.sub(1);
      }
