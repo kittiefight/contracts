@@ -20,4 +20,10 @@ contract KittyCore {
         require(kitties[_tokenId] == _from);
         kitties[_tokenId] = _to;
     }
+
+    function mint(address to, uint256 _tokenId) public {
+        require(to != address(0));
+  
+        kitties[_tokenId] = to;
+    }
 }

@@ -17,8 +17,23 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfKittieHell() public view returns(address)        {return getContract(CONTRACT_NAME_KITTIEHELL);}
      function addressOfKittieHellDB() public view returns(address)      {return getContract(CONTRACT_NAME_KITTIEHELL_DB);}
      function addressOfGameManager() public view returns(address)       {return getContract(CONTRACT_NAME_GAMEMANAGER);}
-     function addressOfGameManagerDB() public view returns(address)     {return getContract(CONTRACT_NAME_GAMEMANAGER_DB);}
+     function addressOfGMSetterDB() public view returns(address)        {return getContract(CONTRACT_NAME_GM_SETTER_DB);}
+     function addressOfGMGetterDB() public view returns(address)        {return getContract(CONTRACT_NAME_GM_GETTER_DB);}
+     function addressOfEndowmentDB() public view returns(address)       {return getContract(CONTRACT_NAME_ENDOWMENT_DB);}
      function addressOfTimeContract() public view returns(address)      {return getContract(CONTRACT_NAME_TIMECONTRACT);}
      function addressOfCronJob() public view returns(address)           {return getContract(CONTRACT_NAME_CRONJOB);}
      function addressOfRoleDB() public view returns(address)            {return getContract(CONTRACT_NAME_ROLE_DB);}
+     function addressOfEndowmentFund() public view returns(address)     {return getContract(CONTRACT_NAME_ENDOWMENT_FUND);}
+     function addressOfDistribution() public view returns(address)      {return getContract(CONTRACT_NAME_DISTRIBUTION);}
+     function addressOfGameVarAndFee() public view returns(address)     {return getContract(CONTRACT_NAME_GAMEVARANDFEE);}
+     function addressOfForfeiter() public view returns(address)         {return getContract(CONTRACT_NAME_FORFEITER);}
+     function addressOfScheduler() public view returns(address)         {return getContract(CONTRACT_NAME_SCHEDULER);}
+     function addressOfHitsResolve() public view returns(address)       {return getContract(CONTRACT_NAME_HITSRESOLVE);}
+     function addressOfBetting() public view returns(address)           {return getContract(CONTRACT_NAME_BETTING);}
+     function addressOfRarityCalculator() public view returns(address)  {return getContract(CONTRACT_NAME_RARITYCALCULATOR);}
+     function addressOfWithdrawalPool() public view returns(address)    {return getContract(CONTRACT_NAME_WITHDRAWAL_POOL);}
+     function addressOfTimeFrame() public view returns(address)         {return getContract(CONTRACT_NAME_TIMEFRAME);}
+     function addressOfHoneypotAllocationAlgo() public view returns(address) {return getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO);}
+     function addressOfEarningsTracker() public view returns(address)   {return getContract(CONTRACT_NAME_EARNINGS_TRACKER);}
+     function addressOfWithdrawaPool() public view returns(address)     {return getContract(CONTRACT_NAME_WITHDRAW_POOL);}
 }

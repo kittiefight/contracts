@@ -1,5 +1,6 @@
 const GenericDB = artifacts.require('GenericDB');
 const Proxy = artifacts.require('KFProxy');
+const CronJob = artifacts.require('CronJob');
 const BigNumber = require('bignumber.js');
 const { ZERO_ADDRESS } = require('./utils/constants');
 const CONTRACT_NAME = 'ProfileDB';
@@ -19,6 +20,8 @@ contract('GenericDB', ([creator, unauthorizedAddr, randomAddr]) => {
   beforeEach(async () => {
     this.genericDB = await GenericDB.new();
     this.proxy = await Proxy.new();
+    this.cronJob = await CronJob.new(this.genericDB.address);
+    await this.proxy.addContract('CronJob', this.cronJob.address);
 
     // Set the primary address as if it is ProfileDB Contract to use GenericDB for testing purpose
     await this.proxy.addContract('ProfileDB', creator);

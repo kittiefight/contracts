@@ -9,6 +9,10 @@ import "../authority/Owned.sol";
 contract MockERC721Token is ERC721, Owned {
   using SafeMath for uint256;
 
+  event KittieMinted(uint indexed kittyId, address indexed owner);
+
+  uint private supply;
+
   // Mapping from token ID to owner
   mapping (uint256 => address) private _tokenOwner;
 
@@ -21,13 +25,13 @@ contract MockERC721Token is ERC721, Owned {
   // Mapping from owner to operator approvals
   mapping (address => mapping (address => bool)) private _operatorApprovals;
 
-
   function mint(address to, uint256 tokenId) public onlyOwner {
     _mint(to, tokenId);
+    emit KittieMinted(tokenId, to);
   }
 
   function totalSupply() public view returns (uint256) {
-    return 0;
+    return supply;
   }
 
   function balanceOf(address owner) public view returns (uint256) {
@@ -90,6 +94,7 @@ contract MockERC721Token is ERC721, Owned {
 
     _tokenOwner[tokenId] = to;
     _ownedTokensCount[to] = _ownedTokensCount[to].add(1);
+    supply = supply.add(1);
 
     emit Transfer(address(0), to, tokenId);
   }
@@ -101,6 +106,7 @@ contract MockERC721Token is ERC721, Owned {
 
     _ownedTokensCount[owner]= _ownedTokensCount[owner].sub(1);
     _tokenOwner[tokenId] = address(0);
+    supply = supply.sub(1);
 
     emit Transfer(owner, address(0), tokenId);
   }
@@ -128,4 +134,18 @@ contract MockERC721Token is ERC721, Owned {
       _tokenApprovals[tokenId] = address(0);
     }
   }
+
+  function getKitty(uint256 _id)
+        external
+        pure
+        returns (uint256)
+    {
+        if(_id == 1001) return 512955438081049600613224346938352058409509756310147795204209859701881294;
+        if(_id == 1555108) return 24171491821178068054575826800486891805334952029503890331493652557302916;
+        if(_id == 1267904) return 290372710203698797209297887795752417072070342201768110150904359522134138;
+        if(_id == 454545) return 513122167084233935341778471073524505661220812329150746642689453393853933;
+        if(_id == 333) return 456127237212346560521864475286743916398626059323515127575007554868490605;
+        return 511337893886015327651810532254687708359836376674173654352922270547520878; // kittieId 888
+
+    }
 }
