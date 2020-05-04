@@ -182,6 +182,9 @@ contract WithdrawPool is Proxied, Guard {
         require(weeklyPools[pool_id].unlocked == true, "This pool is locked");
         require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
 
+        // the claimer must have tokens staked in the staking contract at this moment
+        require(staking.totalStakedFor(msg.sender) > 0, "You don't have any superDao tokens staked currently");
+
         // get the last time that the claimer's staked token amount has been changed
         // the tokens need to be staked before the the current epoch started
         uint256 lastModifiedBlockNumber = staking.lastStakedFor(msg.sender);

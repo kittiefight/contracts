@@ -104,8 +104,12 @@ let proxy,
   earningsTracker,
   ethieToken;
 
-let initial_epoch_0_end_time, initial_pool_0_available_time, initial_pool_0_dissolve_time
-let initial_epoch_1_end_time, initial_pool_1_available_time, initial_pool_1_dissolve_time
+let initial_epoch_0_end_time,
+  initial_pool_0_available_time,
+  initial_pool_0_dissolve_time;
+let initial_epoch_1_end_time,
+  initial_pool_1_available_time,
+  initial_pool_1_dissolve_time;
 
 contract("GameManager", accounts => {
   it("instantiate contracts", async () => {
@@ -280,13 +284,13 @@ contract("GameManager", accounts => {
       let generationToken = tokenProperties.generation.toNumber();
       let lockTime = tokenProperties.lockPeriod.toString();
       let result1 = await earningsTracker.ethieTokens(ethieTokenID);
-      let startingEpoch1 = result1.startingEpochID
+      let startingEpoch1 = result1.startingEpochID;
       console.log(`\n************** Investor: accounts${i} **************`);
       console.log("EthieToken ID:", ethieTokenID);
       console.log("Oringinal ether amount held in this token:", ethAmountToken);
       console.log("This token's generation:", generationToken);
       console.log("This token's lock time(in seconds):", lockTime);
-      console.log("This token's starting Epoch:", startingEpoch1.toNumber())
+      console.log("This token's starting Epoch:", startingEpoch1.toNumber());
       console.log("****************************************************\n");
     }
   });
@@ -301,10 +305,7 @@ contract("GameManager", accounts => {
       "epoch 0 start time in unix time:",
       epoch_0_start_unix.toNumber()
     );
-    console.log(
-      "epoch 0 end time in unix time:",
-      epoch_0_end_unix.toNumber()
-    );
+    console.log("epoch 0 end time in unix time:", epoch_0_end_unix.toNumber());
     const epoch_0_start_human_readable = await timeFrame.epochStartTime(0);
     const epoch_0_end_human_readable = await timeFrame.epochEndTime(0);
     console.log("\n******************* Epoch 0 Start Time *****************");
@@ -342,7 +343,7 @@ contract("GameManager", accounts => {
     console.log("********************************************************\n");
 
     let amounts = await earningsTracker.amountsPerEpoch(0);
-    let endowmentBalance_0 = await web3.eth.getBalance(escrow.address)
+    let endowmentBalance_0 = await web3.eth.getBalance(escrow.address);
     const numberOfPools = await withdrawPool.getTotalNumberOfPools();
     console.log("Number of pools:", numberOfPools.toNumber());
     console.log("\n******************* Pool 0 Created*******************");
@@ -379,10 +380,13 @@ contract("GameManager", accounts => {
       "stakers who have claimed from this pool:",
       pool_0_details.stakersClaimed[0]
     );
-    initial_pool_0_available_time = pool_0_details.dateAvailable.toNumber()
-    initial_pool_0_dissolve_time = pool_0_details.dateDissolved.toNumber()
-    console.log("Investments in Endowment from Ethie Token NFTs:", weiToEther(amounts.investment));
-    console.log("Ether balance in endowmentFund:", endowmentBalance_0)
+    initial_pool_0_available_time = pool_0_details.dateAvailable.toNumber();
+    initial_pool_0_dissolve_time = pool_0_details.dateDissolved.toNumber();
+    console.log(
+      "Investments in Endowment from Ethie Token NFTs:",
+      weiToEther(amounts.investment)
+    );
+    console.log("Ether balance in endowmentFund:", endowmentBalance_0);
     console.log("********************************************************\n");
   });
 
@@ -1154,16 +1158,18 @@ contract("GameManager", accounts => {
     console.log(
       "epoch 0 end time extended by:",
       epoch_0_end_unix_extended.toNumber() - initial_epoch_0_end_time
-    )
+    );
     console.log(
       "pool 0 available time extended by:",
-      pool_0_extended_details.dateAvailable.toNumber() - initial_pool_0_available_time
-    )
+      pool_0_extended_details.dateAvailable.toNumber() -
+        initial_pool_0_available_time
+    );
     console.log(
       "pool 0 dissolve time extended by:",
-      pool_0_extended_details.dateDissolved.toNumber() - initial_pool_0_dissolve_time
-    )
-  })
+      pool_0_extended_details.dateDissolved.toNumber() -
+        initial_pool_0_dissolve_time
+    );
+  });
 
   it("adds ether to pool associated with the active epoch", async () => {
     const initialETH_pool_0_wei = await endowmentDB.getETHinPool(0);
@@ -1231,33 +1237,32 @@ contract("GameManager", accounts => {
 
     console.log("********************************************************\n");
   });
-  
+
   it("an investor can burn his Ethie Token NFT and receive ethers locked and interest accumulated", async () => {
-    let balance_before_2 = await web3.eth.getBalance(accounts[2])
-    balance_before_2 = weiToEther(balance_before_2)
+    let balance_before_2 = await web3.eth.getBalance(accounts[2]);
+    balance_before_2 = weiToEther(balance_before_2);
 
-    let ethie_token_ID_2 = await ethieToken.tokenOfOwnerByIndex(
-      accounts[2],
-      0
+    let ethie_token_ID_2 = await ethieToken.tokenOfOwnerByIndex(accounts[2], 0);
+    ethie_token_ID_2 = ethie_token_ID_2.toNumber();
+
+    let res11 = await earningsTracker.isWorkingDay();
+    console.log("Is working day?", res11);
+    let stageStart1 = await earningsTracker.viewEpochStageStartTime();
+    let stageEnd1 = await earningsTracker.viewEpochStageEndTime();
+    console.log(
+      `\n******************* Current Stage: ${stageStart1.state} *******************`
     );
-    ethie_token_ID_2 = ethie_token_ID_2.toNumber()
-
-    let res11 = await earningsTracker.isWorkingDay()
-    console.log("Is working day?", res11)
-    let stageStart1 = await earningsTracker.viewEpochStageStartTime()
-    let stageEnd1 = await earningsTracker.viewEpochStageEndTime()
-    console.log(`\n******************* Current Stage: ${stageStart1.state} *******************`);
     console.log("\n******************* Stage Start Time *******************");
     console.log(
       "Date:",
-        stageStart1[1].toNumber() +
+      stageStart1[1].toNumber() +
         "-" +
         stageStart1[2].toNumber() +
         "-" +
         stageStart1[3].toNumber(),
       " ",
       "Time:",
-        stageStart1[4].toNumber() +
+      stageStart1[4].toNumber() +
         ":" +
         stageStart1[5].toNumber() +
         ":" +
@@ -1267,14 +1272,14 @@ contract("GameManager", accounts => {
     console.log("\n******************* Stage End Time *******************");
     console.log(
       "Date:",
-        stageEnd1[1].toNumber() +
+      stageEnd1[1].toNumber() +
         "-" +
         stageEnd1[2].toNumber() +
         "-" +
         stageEnd1[3].toNumber(),
       " ",
       "Time:",
-        stageEnd1[4].toNumber() +
+      stageEnd1[4].toNumber() +
         ":" +
         stageEnd1[5].toNumber() +
         ":" +
@@ -1282,19 +1287,50 @@ contract("GameManager", accounts => {
     );
     console.log("********************************************************\n");
 
-    await ethieToken.approve(earningsTracker.address, ethie_token_ID_2, { from: accounts[2] })
-    await earningsTracker.burnNFT(ethie_token_ID_2, { from: accounts[2] }).should.be.fulfilled;
-    let balance_after_2 = await web3.eth.getBalance(accounts[2])
-    balance_after_2 = weiToEther(balance_after_2)
+    await ethieToken.approve(earningsTracker.address, ethie_token_ID_2, {
+      from: accounts[2]
+    });
+    await earningsTracker.burnNFT(ethie_token_ID_2, {from: accounts[2]}).should
+      .be.fulfilled;
+    let balance_after_2 = await web3.eth.getBalance(accounts[2]);
+    balance_after_2 = weiToEther(balance_after_2);
 
-    console.log("balance of accounts[2] before burning:", balance_before_2)
-    console.log("balance of accounts[2] after burning:", balance_after_2)
-    const res2 = await earningsTracker.ethieTokens(ethie_token_ID_2)
+    console.log("balance of accounts[2] before burning:", balance_before_2);
+    console.log("balance of accounts[2] after burning:", balance_after_2);
+    const res2 = await earningsTracker.ethieTokens(ethie_token_ID_2);
     const interestPaid2 = res2.interestPaid;
-    console.log("interest paid to accounts[2] who burnt this token:", weiToEther(interestPaid2))
-  })
+    console.log(
+      "interest paid to accounts[2] who burnt this token:",
+      weiToEther(interestPaid2)
+    );
+  });
 
-  it("superDaoToken holders stake superDaoToken, and investors invest via EthieToken NFTs for next epoch", async () => {
+  it("a superDaoToken holder unstakes superDaoToken", async () => {
+    let balStakingBefore = await superDaoToken.balanceOf(staking.address);
+    console.log(
+      "Balance of staking contract before unstaking:",
+      weiToEther(balStakingBefore)
+    );
+
+    let balBefore1 = await superDaoToken.balanceOf(accounts[1]);
+    console.log(`Balance of staker accounts[1] before unstaking:`, weiToEther(balBefore1));
+
+    const tokensStaked = new BigNumber(
+      web3.utils.toWei("10000", "ether") //
+    );
+    await staking.unstake(tokensStaked, {from: accounts[1]});
+
+    let balStakingAfter = await superDaoToken.balanceOf(staking.address);
+    console.log(
+      "Balance of staking contract after unstaking:",
+      weiToEther(balStakingAfter)
+    );
+
+    let balAfter1 = await superDaoToken.balanceOf(accounts[1]);
+    console.log(`Balance of staker accounts[1] after unstaking:`, weiToEther(balAfter1));
+  });
+
+  it("more superDaoToken holders stake superDaoToken, and more investors invest via EthieToken NFTs for next epoch", async () => {
     const stakedTokens = new BigNumber(
       web3.utils.toWei("20000", "ether") //
     );
@@ -1342,7 +1378,7 @@ contract("GameManager", accounts => {
       ethieTokenID = ethieTokenID.toNumber();
       let tokenProperties = await ethieToken.properties(ethieTokenID);
       let result2 = await earningsTracker.ethieTokens(ethieTokenID);
-      let startingEpoch2 = result2.startingEpochID
+      let startingEpoch2 = result2.startingEpochID;
       let ethAmountToken = weiToEther(tokenProperties.ethAmount);
       let generationToken = tokenProperties.generation.toNumber();
       let lockTime = tokenProperties.lockPeriod.toString();
@@ -1351,31 +1387,28 @@ contract("GameManager", accounts => {
       console.log("Oringinal ether amount held in this token:", ethAmountToken);
       console.log("This token's generation:", generationToken);
       console.log("This token's lock time(in seconds):", lockTime);
-      console.log("This token's starting Epoch:", startingEpoch2.toNumber())
+      console.log("This token's starting Epoch:", startingEpoch2.toNumber());
       console.log("****************************************************\n");
     }
   });
-  
+
   it("sets new epoch when finalized", async () => {
     let _wait = await timeFrame.timeUntilEpochEnd(0);
-    _wait = _wait.toNumber()
-    console.log(_wait)
-    await timeout(_wait)
+    _wait = _wait.toNumber();
+    console.log(_wait);
+    await timeout(_wait);
     // evm.increaseTime(web3, _wait)
     await proxy.executeScheduledJobs();
     console.log("Hi, new epoch!");
-    
+
     const epoch_1_start_unix = await timeFrame._epochStartTime(1);
     console.log(
       "epoch 1 start time in unix time:",
       epoch_1_start_unix.toNumber()
     );
     const epoch_1_end_unix = await timeFrame._epochEndTime(1);
-    console.log(
-      "epoch 1 end time in unix time:",
-      epoch_1_end_unix.toNumber()
-    );
-    initial_epoch_1_end_time = epoch_1_end_unix.toNumber()
+    console.log("epoch 1 end time in unix time:", epoch_1_end_unix.toNumber());
+    initial_epoch_1_end_time = epoch_1_end_unix.toNumber();
     const epoch_1_start_human_readable = await timeFrame.epochStartTime(1);
     const epoch_1_end_human_readable = await timeFrame.epochEndTime(1);
     console.log("\n******************* Epoch 1 Start Time *****************");
@@ -1425,8 +1458,8 @@ contract("GameManager", accounts => {
     console.log("************* Details of New Pool Created ************");
     const pool_1_details = await withdrawPool.weeklyPools(1);
     const numberOfClaimers = pool_1_details.stakersClaimed.toNumber();
-    initial_pool_1_available_time = pool_1_details.dateAvailable.toNumber()
-    initial_pool_1_dissolve_time = pool_1_details.dateDissolved.toNumber()
+    initial_pool_1_available_time = pool_1_details.dateAvailable.toNumber();
+    initial_pool_1_dissolve_time = pool_1_details.dateDissolved.toNumber();
     console.log(
       "epoch ID associated with this pool",
       pool_1_details.epochID.toString()
@@ -1473,10 +1506,12 @@ contract("GameManager", accounts => {
   });
 
   it("tells the active epoch", async () => {
-    const currentEpoch = await timeFrame.getActiveEpochID()
-    console.log("Current epoch:", currentEpoch.toNumber())
-    console.log(`\n*********************************** Epoch  ${currentEpoch.toNumber()} Starts ***********************************`)
-  })
+    const currentEpoch = await timeFrame.getActiveEpochID();
+    console.log("Current epoch:", currentEpoch.toNumber());
+    console.log(
+      `\n*********************************** Epoch  ${currentEpoch.toNumber()} Starts ***********************************`
+    );
+  });
 
   it("Starts game 2 in Epoch 1", async () => {
     console.log(
@@ -1499,14 +1534,14 @@ contract("GameManager", accounts => {
         accounts[i],
         web3.utils.toWei(String(amountKTY)),
         {
-          from: accounts[0],
+          from: accounts[0]
         }
       ).should.be.fulfilled;
 
       await kittieFightToken.approve(
         endowmentFund.address,
         web3.utils.toWei(String(amountKTY)),
-        { from: accounts[i] }
+        {from: accounts[i]}
       ).should.be.fulfilled;
 
       let userBalance = await kittieFightToken.balanceOf(accounts[i]);
@@ -1519,20 +1554,20 @@ contract("GameManager", accounts => {
     let kitties = [325, 1002, 1556108, 1267905, 454546, 334, 6667, 2112];
     let cividIds = [1, 2, 3, 4, 5, 6, 7, 8];
 
-    await cryptoKitties.mint(accounts[1], kitties[0], { from: accounts[0] })
+    await cryptoKitties.mint(accounts[1], kitties[0], {from: accounts[0]})
       .should.be.fulfilled;
     await cryptoKitties.approve(kittieHell.address, kitties[0], {
-      from: accounts[1],
+      from: accounts[1]
     }).should.be.fulfilled;
     //await proxy.execute('Register', setMessage(register, 'verifyAccount', [cividIds[0]]), { from: accounts[1]}).should.be.fulfilled;
     let player1CivicId = await profileDB.getCivicId(accounts[1]);
     assert.equal(player1CivicId.toNumber(), cividIds[0]);
     console.log(`New Player ${accounts[1]} with Kitty ${kitties[0]}`);
 
-    await cryptoKitties.mint(accounts[2], kitties[1], { from: accounts[0] })
+    await cryptoKitties.mint(accounts[2], kitties[1], {from: accounts[0]})
       .should.be.fulfilled;
     await cryptoKitties.approve(kittieHell.address, kitties[1], {
-      from: accounts[2],
+      from: accounts[2]
     }).should.be.fulfilled;
     //  await proxy.execute('Register', setMessage(register, 'verifyAccount', [cividIds[1]]), { from: accounts[2]}).should.be.fulfilled;
     let player2CivicId = await profileDB.getCivicId(accounts[2]);
@@ -1560,19 +1595,19 @@ contract("GameManager", accounts => {
         playerBlack,
         kittyRed,
         kittyBlack,
-        gameStartTimeGiven,
+        gameStartTimeGiven
       ]),
-      { from: accounts[0] }
+      {from: accounts[0]}
     ).should.be.fulfilled;
 
     await timeout(3);
 
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {
       fromBlock: 0,
-      toBlock: "latest",
+      toBlock: "latest"
     });
 
-    newGameEvents.map(async (e) => {
+    newGameEvents.map(async e => {
       console.log("e.returnValues\n", e.returnValues);
       let gameInfo = await getterDB.getGameTimes(e.returnValues.gameId);
 
@@ -1597,7 +1632,7 @@ contract("GameManager", accounts => {
     if (gameId3 === gameId4) console.log("\nGameId: ", gameId3);
 
     //Take gameStartTime from blockchain to see if it is same as the one we gave
-    let { preStartTime, startTime, endTime } = await getterDB.getGameTimes(
+    let {preStartTime, startTime, endTime} = await getterDB.getGameTimes(
       gameId3
     );
 
@@ -1622,7 +1657,7 @@ contract("GameManager", accounts => {
       playerBlack,
       playerRed,
       kittyBlack,
-      kittyRed,
+      kittyRed
     } = await getterDB.getGamePlayers(gameId);
     let participator;
 
@@ -1636,7 +1671,7 @@ contract("GameManager", accounts => {
       await proxy.execute(
         "GameManager",
         setMessage(gameManager, "participate", [gameId, playerBlack]),
-        { from: participator }
+        {from: participator}
       ).should.be.fulfilled;
       console.log("\nNew Participator for playerBlack: ", participator);
       supportersForBlack.push(participator);
@@ -1650,7 +1685,7 @@ contract("GameManager", accounts => {
         let block = await dateTime.getBlockTimeStamp();
         console.log("\nblocktime: ", formatDate(block));
 
-        let { preStartTime } = await getterDB.getGameTimes(gameId);
+        let {preStartTime} = await getterDB.getGameTimes(gameId);
 
         while (block < preStartTime) {
           block = Math.floor(Date.now() / 1000);
@@ -1660,7 +1695,7 @@ contract("GameManager", accounts => {
       await proxy.execute(
         "GameManager",
         setMessage(gameManager, "participate", [gameId, playerRed]),
-        { from: participator }
+        {from: participator}
       ).should.be.fulfilled;
       console.log("\nNew Participator for playerRed: ", participator);
       supportersForRed.push(participator);
@@ -1684,7 +1719,7 @@ contract("GameManager", accounts => {
       playerBlack,
       playerRed,
       kittyBlack,
-      kittyRed,
+      kittyRed
     } = await getterDB.getGamePlayers(gameId);
 
     await proxy.execute(
@@ -1692,9 +1727,9 @@ contract("GameManager", accounts => {
       setMessage(gameManager, "startGame", [
         gameId,
         randomValue(22),
-        "512955438081049600613224346938352058409509756310147795204209859701881294",
+        "512955438081049600613224346938352058409509756310147795204209859701881294"
       ]),
-      { from: playerBlack }
+      {from: playerBlack}
     ).should.be.fulfilled;
 
     await timeout(3);
@@ -1704,9 +1739,9 @@ contract("GameManager", accounts => {
       setMessage(gameManager, "startGame", [
         gameId,
         randomValue(11),
-        "24171491821178068054575826800486891805334952029503890331493652557302916",
+        "24171491821178068054575826800486891805334952029503890331493652557302916"
       ]),
-      { from: playerRed }
+      {from: playerRed}
     ).should.be.fulfilled;
 
     console.log("\nGame Started: ", gameId);
@@ -1725,7 +1760,7 @@ contract("GameManager", accounts => {
       playerBlack,
       playerRed,
       kittyBlack,
-      kittyRed,
+      kittyRed
     } = await getterDB.getGamePlayers(gameId);
 
     let supportersRed = await getterDB.getSupporters(gameId, playerRed);
@@ -1751,7 +1786,7 @@ contract("GameManager", accounts => {
           formatDate(block)
         );
 
-        let { endTime } = await getterDB.getGameTimes(gameId);
+        let {endTime} = await getterDB.getGameTimes(gameId);
         console.log("\nEnd Time: ", endTime);
 
         while (block < endTime) {
@@ -1769,7 +1804,7 @@ contract("GameManager", accounts => {
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          { from: supportedPlayer, value: web3.utils.toWei(String(betAmount)) }
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
         ).should.be.fulfilled;
 
         betsBlack.push(betAmount);
@@ -1784,16 +1819,16 @@ contract("GameManager", accounts => {
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          { from: supportedPlayer, value: web3.utils.toWei(String(betAmount)) }
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
         ).should.be.fulfilled;
 
         betsRed.push(betAmount);
       }
 
       let betEvents = await betting.getPastEvents("BetPlaced", {
-        filter: { gameId },
+        filter: {gameId},
         fromBlock: 0,
-        toBlock: "latest",
+        toBlock: "latest"
       });
 
       let betDetails = betEvents[betEvents.length - 1].returnValues;
@@ -1812,7 +1847,7 @@ contract("GameManager", accounts => {
       );
       console.log(" Defense Opponent:", betDetails.defenseLevelOpponent);
 
-      let { endTime } = await getterDB.getGameTimes(gameId);
+      let {endTime} = await getterDB.getGameTimes(gameId);
 
       if (player === "playerBlack") {
         let lastBetTimestamp = await betting.lastBetTimestamp(
@@ -1869,7 +1904,7 @@ contract("GameManager", accounts => {
   it("game is getting finalized", async () => {
     let gameId = 2;
 
-    let { preStartTime, startTime, endTime } = await getterDB.getGameTimes(
+    let {preStartTime, startTime, endTime} = await getterDB.getGameTimes(
       gameId
     );
 
@@ -1877,17 +1912,17 @@ contract("GameManager", accounts => {
       playerBlack,
       playerRed,
       kittyBlack,
-      kittyRed,
+      kittyRed
     } = await getterDB.getGamePlayers(gameId);
 
     let finalizer = accounts[20];
 
     console.log("\n==== WAITING FOR GAME OVER: ", formatDate(endTime));
 
-    let _waitGameOver = endTime - Math.floor(Date.now() / 1000)
+    let _waitGameOver = endTime - Math.floor(Date.now() / 1000);
 
     if (_waitGameOver > 0) {
-      await timeout(_waitGameOver)
+      await timeout(_waitGameOver);
     }
 
     await timeout(2);
@@ -1895,19 +1930,19 @@ contract("GameManager", accounts => {
     await proxy.execute(
       "GameManager",
       setMessage(gameManager, "finalize", [gameId, randomValue(30)]),
-      { from: finalizer }
+      {from: finalizer}
     ).should.be.fulfilled;
 
     let gameEnd = await gameManager.getPastEvents("GameEnded", {
-      filter: { gameId },
+      filter: {gameId},
       fromBlock: 0,
-      toBlock: "latest",
+      toBlock: "latest"
     });
 
     let state = await getterDB.getGameState(gameId);
     console.log(state);
 
-    let { pointsBlack, pointsRed, loser } = gameEnd[0].returnValues;
+    let {pointsBlack, pointsRed, loser} = gameEnd[0].returnValues;
 
     let winners = await getterDB.getWinners(gameId);
 
@@ -1986,7 +2021,7 @@ contract("GameManager", accounts => {
     await proxy.execute(
       "EndowmentFund",
       setMessage(endowmentFund, "claim", [gameId]),
-      { from: winners.winner }
+      {from: winners.winner}
     ).should.be.fulfilled;
     let withdrawalState = await endowmentFund.getWithdrawalState(
       gameId,
@@ -2033,7 +2068,7 @@ contract("GameManager", accounts => {
     await proxy.execute(
       "EndowmentFund",
       setMessage(endowmentFund, "claim", [gameId]),
-      { from: winners.topBettor }
+      {from: winners.topBettor}
     ).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(
       gameId,
@@ -2080,7 +2115,7 @@ contract("GameManager", accounts => {
     await proxy.execute(
       "EndowmentFund",
       setMessage(endowmentFund, "claim", [gameId]),
-      { from: winners.secondTopBettor }
+      {from: winners.secondTopBettor}
     ).should.be.fulfilled;
     withdrawalState = await endowmentFund.getWithdrawalState(
       gameId,
@@ -2114,7 +2149,7 @@ contract("GameManager", accounts => {
       playerBlack,
       playerRed,
       kittyBlack,
-      kittyRed,
+      kittyRed
     } = await getterDB.getGamePlayers(gameId);
 
     if (winner === playerBlack) {
@@ -2147,7 +2182,7 @@ contract("GameManager", accounts => {
           await proxy.execute(
             "EndowmentFund",
             setMessage(endowmentFund, "claim", [gameId]),
-            { from: claimer }
+            {from: claimer}
           ).should.be.fulfilled;
           withdrawalState = await endowmentFund.getWithdrawalState(
             gameId,
@@ -2213,18 +2248,19 @@ contract("GameManager", accounts => {
     console.log(
       "epoch 1 end time extended by:",
       epoch_1_end_unix_extended.toNumber() - initial_epoch_1_end_time
-    )
+    );
     console.log(
       "pool 1 available time extended by:",
-      pool_1_extended_details.dateAvailable.toNumber() - initial_pool_1_available_time
-    )
+      pool_1_extended_details.dateAvailable.toNumber() -
+        initial_pool_1_available_time
+    );
     console.log(
       "pool 1 dissolve time extended by:",
-      pool_1_extended_details.dateDissolved.toNumber() - initial_pool_1_dissolve_time
-    )
-  })
+      pool_1_extended_details.dateDissolved.toNumber() -
+        initial_pool_1_dissolve_time
+    );
+  });
 
-  
   it("adds ether to pool associated with the active epoch", async () => {
     const initialETH_pool_1_wei = await endowmentDB.getETHinPool(1);
     const initialETH_pool_1 = weiToEther(initialETH_pool_1_wei);
@@ -2234,7 +2270,7 @@ contract("GameManager", accounts => {
     console.log("Initial ether in pool 1: " + initialETH_pool_1);
   });
 
-  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
+  it("a superDao token holder who unstaked superDao tokens before the current epoch cannot claim from current pool", async () => {
     let timeTillClaiming = await withdrawPool.timeUntilClaiming();
     console.log(
       "Time (in seconds) till claiming from the current pool:",
@@ -2242,8 +2278,13 @@ contract("GameManager", accounts => {
     );
     await timeout(timeTillClaiming.toNumber());
     console.log("Available for claiming...");
-    for (let i = 1; i < 4; i++) {
-      await withdrawPool.claimYield(1, { from: accounts[i] });
+
+    await withdrawPool.claimYield(1, {from: accounts[1]}).should.be.rejected;
+  })
+
+  it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
+    for (let i = 2; i < 7; i++) {
+      await withdrawPool.claimYield(1, {from: accounts[i]});
     }
     const pool_1_details = await withdrawPool.weeklyPools(1);
     const numberOfClaimers = pool_1_details.stakersClaimed.toNumber();
@@ -2283,7 +2324,7 @@ contract("GameManager", accounts => {
       "Number of stakers who have claimed from this pool:",
       numberOfClaimers
     );
-    console.log("ether paid out by pool 1:", weiToEther(etherPaidOutPool1));
+    console.log("ether paid out by all pools since pool 0:", weiToEther(etherPaidOutPool1));
     console.log("-------- Stakers who have claimed from this pool ------");
 
     let claimers = await withdrawPool.getAllClaimersForPool(1);
@@ -2293,7 +2334,6 @@ contract("GameManager", accounts => {
   });
 
   it("an investor can burn his Ethie Token NFT and receive ethers locked and interest accumulated", async () => {
-
     let balance_before_3 = await web3.eth.getBalance(accounts[3]);
     balance_before_3 = weiToEther(balance_before_3);
 
@@ -2345,30 +2385,33 @@ contract("GameManager", accounts => {
     //await earningsTracker.calculateTotal( _eth_amount, _startingEpoch)
 
     await ethieToken.approve(earningsTracker.address, ethie_token_ID_3, {
-      from: accounts[3],
+      from: accounts[3]
     });
-    await earningsTracker.burnNFT(ethie_token_ID_3, { from: accounts[3] })
-      .should.be.fulfilled;
+    await earningsTracker.burnNFT(ethie_token_ID_3, {from: accounts[3]}).should
+      .be.fulfilled;
     let balance_after_3 = await web3.eth.getBalance(accounts[3]);
     balance_after_3 = weiToEther(balance_after_3);
 
     console.log("balance of accounts[3] before burning:", balance_before_3);
     console.log("balance of accounts[3] after burning:", balance_after_3);
 
-    const res3 = await earningsTracker.ethieTokens(ethie_token_ID_3)
+    const res3 = await earningsTracker.ethieTokens(ethie_token_ID_3);
     const interestPaid = res3.interestPaid;
-    console.log("interest paid to accounts[3] who burnt this token:", weiToEther(interestPaid))
+    console.log(
+      "interest paid to accounts[3] who burnt this token:",
+      weiToEther(interestPaid)
+    );
   });
 
   it("sets new epoch when finalized", async () => {
     let _wait = await timeFrame.timeUntilEpochEnd(1);
-    _wait = _wait.toNumber()
-    console.log(_wait)
-    await timeout(_wait)
+    _wait = _wait.toNumber();
+    console.log(_wait);
+    await timeout(_wait);
     // evm.increaseTime(web3, _wait)
     await proxy.executeScheduledJobs();
     console.log("Hi, new epoch!");
-    
+
     const epoch_2_start_unix = await timeFrame._epochStartTime(2);
     console.log(
       "epoch 2 start time in unix time:",
@@ -2467,5 +2510,4 @@ contract("GameManager", accounts => {
 
     console.log("********************************************************\n");
   });
-
 });
