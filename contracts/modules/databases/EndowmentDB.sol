@@ -4,7 +4,6 @@ import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
 import "../endowment/EndowmentFund.sol";
-import "../endowment/HoneypotAllocationAlgo.sol";
 
 contract EndowmentDB is Proxied {
   using SafeMath for uint256;
@@ -224,16 +223,10 @@ contract EndowmentDB is Proxied {
   /**
   * @dev check if enough funds present and maintains balance of tokens in DB
   */
-  function generateHoneyPot(uint256 gameId)
-    external
+  function generateHoneyPot(uint256 gameId, uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
+    public
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     returns (uint, uint) {
-
-    (
-      uint ktyAllocated,
-      uint ethAllocated,
-      string memory honeypotClass
-    ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
 
     // + adds amount to honeypot
     createHoneypot(
