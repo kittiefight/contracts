@@ -21,7 +21,7 @@ window.contractSettings = function() {
 			"deployArgs":["${KFPoxy.options.address}"],
 		},
 		//Other system contract
-        {"name":'TimeContract'},
+        {"name":'TimeContract', "contract":"DateTime"},
         {"name":'GenericDB'},
         {"name":'KittieFightToken'},
         {"name":'ProfileDB'},
