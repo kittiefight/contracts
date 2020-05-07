@@ -102,7 +102,7 @@ contract HoneypotAllocationAlgo is Proxied {
     function calculateAllocationToHoneypot()
         public
         view
-        onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
+        // onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
         returns (uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
     {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
