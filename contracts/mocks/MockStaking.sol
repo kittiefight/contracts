@@ -60,6 +60,9 @@ contract MockStaking {
         // checkpoint updated staking balance
         _modifyStakeBalance(msg.sender, _amount, false);
 
+        // checkpoint total supply
+        _modifyTotalStaked(_amount, false);
+
         // transfer tokens
         require(superDaoToken.transfer(msg.sender, _amount));
     }
