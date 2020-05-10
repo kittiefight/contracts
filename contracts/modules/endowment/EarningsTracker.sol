@@ -118,6 +118,7 @@ contract EarningsTracker is Proxied, Guard {
     external
     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
     {
+        require(_investment > 0, "Waiting Investment");
         amountsPerEpoch[epoch_id].investment = _investment;
     }
 
