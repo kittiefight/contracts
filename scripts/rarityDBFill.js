@@ -6,7 +6,7 @@ module.exports = async (callback) => {
 
     try {
       console.log('\nRarity Calculator Setup...');
-            let rarityCalculator = await RarityCalculator.at("0xcb8d8008f1417c325dD7961FaE881e08F6c1b375");
+            let rarityCalculator = await RarityCalculator.at("0x831Ddd7e3B691b20379F709c014B71627C8Ba0eb");
 
             await rarityCalculator.fillKaiValue()
 
