@@ -430,17 +430,35 @@ jQuery(document).ready(function($) {
         }
         // Web3 browser user detected. You can now use the provider.
         let web3 = new Web3(window.ethereum || Web3.givenProvider);
-        
 
+        let initAccount = function(accounts){
+            if(typeof accounts[0] == 'undefined'){
+                printError('Please, unlock MetaMask');
+                return null;
+            }
+            web3.eth.defaultAccount =  accounts[0];
+        }
+
+        window.ethereum.on('accountsChanged', function(accounts){
+            web3.eth.defaultAccount =  accounts[0];
+            console.log('Using new account', web3.eth.defaultAccount);
+        });
+        window.ethereum.on('networkChanged', function(networkId){
+            console.log('Neetwork changed to ', networkId);
+            init();
+        });
+        
         let accounts = await web3.eth.getAccounts();
         if(typeof accounts[0] == 'undefined'){
             printError('Please, unlock MetaMask');
             return null;
         }
+        web3.eth.defaultAccount =  accounts[0];
+
+
         // web3.eth.getBlock('latest', function(error, result){
         //     console.log('Current latest block: #'+result.number+' '+timestmapToString(result.timestamp), result);
         // });
-        web3.eth.defaultAccount =  accounts[0];
         window.web3 = web3;
         return web3;
     }

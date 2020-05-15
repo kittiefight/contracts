@@ -140,6 +140,19 @@ contract('KFProxy', ([owner, addr1, unauthorizedAddr, randomAddr]) => {
       }
 
     });
+
+    it('returns addresses of requested contracts', async () => {
+        let contractHashes = [
+          web3.utils.keccak256('FreezeInfo'), 
+          web3.utils.keccak256('CronJob'),
+        ];
+        let result = await this.proxy.getContracts(contractHashes);
+        let expected = [
+          this.freezeInfo.address,
+          this.cronJob.address,        
+        ];
+        expect(result).to.be.deep.equal(expected);
+    });
    
   });
 
