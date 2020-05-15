@@ -33,7 +33,6 @@ import "../algorithm/HitsResolveAlgo.sol";
 import "../algorithm/RarityCalculator.sol";
 import "../databases/ProfileDB.sol";
 import "../../libs/SafeMath.sol";
-import '../kittieHELL/KittieHell.sol';
 import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
@@ -48,7 +47,6 @@ contract GameManager is Proxied, Guard {
     EndowmentFund public endowmentFund;
     Forfeiter public forfeiter;
     Betting public betting;
-    KittieHell public kittieHELL;
     GameStore public gameStore;
     GameCreation public gameCreation;
 
@@ -78,7 +76,6 @@ contract GameManager is Proxied, Guard {
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         forfeiter = Forfeiter(proxy.getContract(CONTRACT_NAME_FORFEITER));
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
-        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
     }
@@ -184,7 +181,10 @@ contract GameManager is Proxied, Guard {
         uint timeExtension = gameStore.getTimeExtension(gameId);
 
         if(gameStore.checkPerformanceHelper(gameId, gameEndTime)){
-            gmSetterDB.updateEndTime(gameId, gameEndTime.add(timeExtension));
+            if(now <= gameEndTime)
+                gmSetterDB.updateEndTime(gameId, gameEndTime.add(timeExtension));
+            else
+                gmSetterDB.updateEndTime(gameId, now.add(timeExtension));
             gameCreation.rescheduleCronJob(gameId);
             emit GameExtended(gameId, gameEndTime.add(timeExtension));
         }
@@ -290,11 +290,7 @@ contract GameManager is Proxied, Guard {
         //Lock Honeypot Final Details
         gmSetterDB.storeHoneypotDetails(gameId);
 
-        //Release winner's Kittie
-        kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
-
-        //Kill losers's Kittie
-        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
+        gameCreation.updateKitties(winner, loser, gameId);
 
         (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
         endowmentFund.addETHtoPool(gameId, loser);

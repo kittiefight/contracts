@@ -26,9 +26,9 @@ pragma solidity ^0.5.5;
      using SafeMath for uint;
      using BokkyPooBahsDateTimeLibrary for uint;
 
-     uint constant public SIX_WORKING_DAYS = 6 * 24 * 60 * 60;
-     uint constant public REST_DAY = 24 * 60 * 60;
-     uint constant public SIX_HOURS = 6 * 60 * 60;
+     uint public SIX_WORKING_DAYS = 6 * 24 * 60 * 60;
+     uint public REST_DAY = 24 * 60 * 60;
+     uint public SIX_HOURS = 6 * 60 * 60;
 
      /// @dev total number of epochs
      uint public numberOfEpochs;
@@ -66,6 +66,15 @@ pragma solidity ^0.5.5;
      }
 
      //===================== setters ===================
+
+     function setTimes(uint256 sixWorking, uint256 restDay, uint256 sixHours)
+     public
+     onlySuperAdmin()
+     {
+        SIX_WORKING_DAYS = sixWorking;
+        REST_DAY = restDay;
+        SIX_HOURS = sixHours;
+     }
      /**
       * @dev sets epoch 0
       */

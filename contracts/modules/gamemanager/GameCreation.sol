@@ -201,7 +201,18 @@ contract GameCreation is Proxied, Guard {
     {
         ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
         //Set gameId to 0 to both kitties (not playing any game)
-        gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, 0);   
+        gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, 0);
+    }
+
+    function updateKitties(address winner, address loser, uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        //Release winner's Kittie
+        kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
+
+        //Kill losers's Kittie
+        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
     }
 
 

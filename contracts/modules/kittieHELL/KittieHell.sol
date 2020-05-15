@@ -142,7 +142,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     function killKitty(uint256 _kittyID, uint gameId)
     public
     onlyOwnedKitty(_kittyID)
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (bool) {
         kitties[_kittyID].dead = true;
         kitties[_kittyID].deadAt = now;
@@ -250,7 +250,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
     function releaseKittyGameManager(uint256 _kittyID)
         public
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (bool) {
         releaseKitty(_kittyID);
     }

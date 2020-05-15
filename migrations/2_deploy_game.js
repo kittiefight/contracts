@@ -43,7 +43,7 @@ const MockStaking = artifacts.require('MockStaking')
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
 //Rinkeby address of KittieFightToken
-//const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
+const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
 
 const ERC20_TOKEN_SUPPLY = new BigNumber(
     web3.utils.toWei("100000000", "ether") //100 Million
@@ -96,6 +96,8 @@ const KTY_FOR_BURN_ETHIE = new BigNumber(web3.utils.toWei("100", "ether"));
 const INTEREST_ETHIE = 100000 // 10%
 // =================================================== //
 
+const SUPERADMIN = "0x87bb3231920fB8b6F9901006b3a78b0dbAB57246";
+
 function setMessage(contract, funcName, argArray) {
     return web3.eth.abi.encodeFunctionCall(
         contract.abi.find((f) => { return f.name == funcName; }),
@@ -104,6 +106,7 @@ function setMessage(contract, funcName, argArray) {
 }
 
 module.exports = (deployer, network, accounts) => {
+    console.log(SUPERADMIN);
 
     let medianizer;
 
@@ -124,7 +127,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(FreezeInfo))
         .then(() => deployer.deploy(CronJobTarget))
         .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-        .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+        //.then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
         .then(() => deployer.deploy(CryptoKitties))
         .then(() => deployer.deploy(GameManager))
         .then(() => deployer.deploy(GameStore))
@@ -154,8 +157,8 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('GenericDB', GenericDB.address)
             await proxy.addContract('CryptoKitties', CryptoKitties.address);
             await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-            await proxy.addContract('KittieFightToken', KittieFightToken.address);
-            //await proxy.addContract('KittieFightToken', KTY_ADDRESS);
+            //await proxy.addContract('KittieFightToken', KittieFightToken.address);
+            await proxy.addContract('KittieFightToken', KTY_ADDRESS);
             await proxy.addContract('ProfileDB', ProfileDB.address);
             await proxy.addContract('RoleDB', RoleDB.address);
             await proxy.addContract('Register', Register.address)
@@ -186,57 +189,92 @@ module.exports = (deployer, network, accounts) => {
             console.log('\nGetting contract instances...');
             // PROXY
             proxy = await KFProxy.deployed()
+            console.log(proxy.address)
 
             //Time Frame
             timeFrame = await TimeFrame.deployed()
+            console.log(timeFrame.address)
 
             // DATABASES
             genericDB = await GenericDB.deployed()
+            console.log(genericDB.address)
             profileDB = await ProfileDB.deployed();
+            console.log(profileDB.address)
             roleDB = await RoleDB.deployed();
+            console.log(roleDB.address)
             endowmentDB = await EndowmentDB.deployed()
+            console.log(endowmentDB.address)
             getterDB = await GMGetterDB.deployed()
+            console.log(getterDB.address)
             setterDB = await GMSetterDB.deployed()
+            console.log(setterDB.address)
             kittieHellDB = await KittieHellDB.deployed()
+            console.log(kittieHellDB.address)
 
             // CRONJOB
             cronJob = await CronJob.deployed()
+            console.log(cronJob.address)
             freezeInfo = await FreezeInfo.deployed();
+            console.log(freezeInfo.address)
             cronJobTarget= await CronJobTarget.deployed();
+            console.log(cronJobTarget.address)
 
 
             // TOKENS
             superDaoToken = await SuperDaoToken.deployed();
-            kittieFightToken = await KittieFightToken.deployed();
-            //kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+            console.log(superDaoToken.address)
+            //kittieFightToken = await KittieFightToken.deployed();
+            //console.log(kittieFightToken.address)
+            kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+            console.log(kittieFightToken.address)
             cryptoKitties = await CryptoKitties.deployed();
+            console.log(cryptoKitties.address)
             ethieToken = await EthieToken.deployed()
+            console.log(ethieToken.address)
 
             // MODULES
             gameManager = await GameManager.deployed()
+            console.log(gameManager.address)
             gameStore = await GameStore.deployed()
+            console.log(gameStore.address)
             gameCreation = await GameCreation.deployed()
+            console.log(gameCreation.address)
             register = await Register.deployed()
+            console.log(register.address)
             dateTime = await DateTime.deployed()
-            gameVarAndFee = await GameVarAndFee.deployed()
+            console.log(dateTime.address)
+            gameVarAndFee = await GameVarAndFee.deployed()            
+            console.log(gameVarAndFee.address)
             forfeiter = await Forfeiter.deployed()
+            console.log(forfeiter.address)
             scheduler = await Scheduler.deployed()
+            console.log(scheduler.address)
             betting = await Betting.deployed()
+            console.log(betting.address)
             hitsResolve = await HitsResolve.deployed()
+            console.log(hitsResolve.address)
             rarityCalculator = await RarityCalculator.deployed()
+            console.log(rarityCalculator.address)
             endowmentFund = await EndowmentFund.deployed()
+            console.log(endowmentFund.address)
             kittieHELL = await KittieHELL.deployed()
+            console.log(kittieHELL.address)
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
+            console.log(honeypotAllocationAlgo.address)
             earningsTracker = await EarningsTracker.deployed()
+            console.log(earningsTracker.address)
 
             // WithdrawPool - Pool for SuperDao token stakers
             withdrawPool = await WithdrawPool.deployed()
+            console.log(withdrawPool.address)
             
             // staking - a mock contract of Aragon's staking contract
             staking = await MockStaking.deployed()
+            console.log(staking.address)
 
             //ESCROW
             escrow = await Escrow.deployed()
+            console.log(escrow.address)
 
 
             console.log('\nSetting Proxy...');
@@ -267,6 +305,9 @@ module.exports = (deployer, network, accounts) => {
             await earningsTracker.setProxy(proxy.address)
             await withdrawPool.setProxy(proxy.address)
 
+            console.log("Proxy: ", proxy.address);
+
+
             console.log('\nInitializing contracts...');
             await gameStore.initialize()
             await gameCreation.initialize()
@@ -285,14 +326,14 @@ module.exports = (deployer, network, accounts) => {
             await staking.initialize(SuperDaoToken.address)
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
-            await register.addSuperAdmin(accounts[0])
-            await register.addAdmin(accounts[0])
+            await register.addSuperAdmin(SUPERADMIN)
+            await register.addAdmin(SUPERADMIN)
 
             console.log('\nUpgrading Escrow...');
-            await endowmentFund.initUpgradeEscrow(escrow.address, {from: accounts[0]})
+            await endowmentFund.initUpgradeEscrow(escrow.address)
             //Transfer KTY
             await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
-            await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT, {from: accounts[0]});
+            await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
             //Transfer ETH
             // await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
 
@@ -321,9 +362,7 @@ module.exports = (deployer, network, accounts) => {
                 TIME_EXTENSION, PERFORMANCE_TIME_CHECK
             ];
 
-            await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]), {
-                from: accounts[0]
-            })
+            await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
 
             console.log('\nRarity Calculator Setup...');
             await rarityCalculator.fillKaiValue()

@@ -316,6 +316,8 @@ contract WithdrawPool is Proxied, Guard {
         weeklyPools[_newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
         weeklyPools[_newPoolId].dateDissolved = weeklyPools[_newPoolId].dateAvailable.add(timeFrame.REST_DAY());
 
+        earningsTracker.setInvestment(_newPoolId, endowmentDB.checkInvestment(_newPoolId));
+
         noOfPools = noOfPools.add(1);
 
         emit NewPoolCreated(_newPoolId, now);

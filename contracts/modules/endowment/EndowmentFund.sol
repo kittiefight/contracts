@@ -20,6 +20,7 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
+import "../endowment/HoneypotAllocationAlgo.sol";
 
 /**
  * @title EndowmentFund
@@ -53,7 +54,12 @@ contract EndowmentFund is Distribution, Guard {
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (uint, uint) {
-        return (endowmentDB.generateHoneyPot(gameId));
+        (
+          uint ktyAllocated,
+          uint ethAllocated,
+          string memory honeypotClass
+        ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
+        return (endowmentDB.generateHoneyPot(gameId, ktyAllocated, ethAllocated, honeypotClass));
     }
 
     /**
@@ -65,25 +71,25 @@ contract EndowmentFund is Distribution, Guard {
         // Honeypot status
         (uint status, /*uint256 claimTime*/) = endowmentDB.getHoneypotState(_gameId);
 
-        require(uint(HoneypotState.claiming) == status, "1");
+        require(uint(HoneypotState.claiming) == status);
 
         // require(now < claimTime, "2");
 
-        require(!getWithdrawalState(_gameId, msgSender), "3");
+        require(!getWithdrawalState(_gameId, msgSender));
 
         (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
 
         // make sure enough funds in HoneyPot and update HoneyPot balance
-        require(endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true));
+        endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
 
         if (winningsKTY > 0){
             // transfer the KTY
-            require(escrow.transferKTY(msgSender, winningsKTY));
+            escrow.transferKTY(msgSender, winningsKTY);
         }
 
         if (winningsETH > 0){
             // transfer the ETH
-            require(escrow.transferETH(msgSender, winningsETH));
+            escrow.transferETH(msgSender, winningsETH);
             // transferETHfromEscrow(msgSender, winningsETH);
         }
 
@@ -102,7 +108,7 @@ contract EndowmentFund is Distribution, Guard {
         returns(bool)
     {
         uint reward = gameVarAndFee.getFinalizeRewards();
-        require(transferKTYfromEscrow(address(uint160(user)), reward), "S");
+        transferKTYfromEscrow(address(uint160(user)), reward);
         return true;
     }
 
@@ -139,9 +145,9 @@ contract EndowmentFund is Distribution, Guard {
     {
         require(_kty_amount > 0);
 
-        require(kittieFightToken.transfer(address(escrow), _kty_amount));
+        kittieFightToken.transfer(address(escrow), _kty_amount);
 
-        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, false));
+        endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
 
         emit SentKTYtoEscrow(address(this), _kty_amount, address(escrow));
     }
@@ -156,7 +162,7 @@ contract EndowmentFund is Distribution, Guard {
 
         address(escrow).transfer(msg.value);
 
-        require(endowmentDB.updateEndowmentFund(0, msg.value, false));
+        endowmentDB.updateEndowmentFund(0, msg.value, false);
 
         emit SentETHtoEscrow(msgSender, msg.value, address(escrow));
     }
@@ -182,7 +188,7 @@ contract EndowmentFund is Distribution, Guard {
      * @dev GM calls
      */
     function contributeETH(uint _gameId) external payable returns(bool) {
-        require(address(escrow) != address(0));
+        // require(address(escrow) != address(0));
         address msgSender = getOriginalSender();
 
         require(msg.value > 0);
@@ -205,7 +211,7 @@ contract EndowmentFund is Distribution, Guard {
     payable
     returns(bool)
     {
-        require(address(escrow) != address(0));
+        // require(address(escrow) != address(0));
         address msgSender = getOriginalSender();
 
         require(msg.value > 0);
@@ -222,7 +228,6 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
-
     /**
     * @notice MUST BE DONE BEFORE UPGRADING ENDOWMENT AS IT IS THE OWNER
     * @dev change Escrow contract owner before UPGRADING ENDOWMENT AS IT IS THE OWNER
@@ -237,13 +242,13 @@ contract EndowmentFund is Distribution, Guard {
     function transferETHfromEscrow(address payable _someAddress, uint256 _eth_amount)
     private
     returns(bool){
-        require(address(_someAddress) != address(0));
+        // require(address(_someAddress) != address(0));
 
         // transfer the ETH
-        require(escrow.transferETH(_someAddress, _eth_amount));
+        escrow.transferETH(_someAddress, _eth_amount);
 
         // Update DB. true = deductFunds
-        require(endowmentDB.updateEndowmentFund(0, _eth_amount, true));
+        endowmentDB.updateEndowmentFund(0, _eth_amount, true);
 
         return true;
     }
@@ -265,7 +270,7 @@ contract EndowmentFund is Distribution, Guard {
     {
         if(!invested) {
             endowmentDB.subInvestment(_eth_amount);
-            require(escrow.transferETH(_someAddress, _eth_amount));
+            escrow.transferETH(_someAddress, _eth_amount);
         }
         else
             transferETHfromEscrow(_someAddress, _eth_amount);
@@ -278,13 +283,13 @@ contract EndowmentFund is Distribution, Guard {
     function transferKTYfromEscrow(address payable _someAddress, uint256 _kty_amount)
     private
     returns(bool){
-        require(address(_someAddress) != address(0));
+        // require(address(_someAddress) != address(0));
 
         // transfer the KTY
-        require(escrow.transferKTY(_someAddress, _kty_amount));
+        escrow.transferKTY(_someAddress, _kty_amount);
 
         // Update DB. true = deductFunds
-        require(endowmentDB.updateEndowmentFund(_kty_amount, 0, true));
+        endowmentDB.updateEndowmentFund(_kty_amount, 0, true);
 
         return true;
     }
@@ -304,23 +309,23 @@ contract EndowmentFund is Distribution, Guard {
     */
     function initUpgradeEscrow(Escrow _newEscrow) external onlySuperAdmin returns(bool){
 
-        require(address(_newEscrow) != address(0));
+        // require(address(_newEscrow) != address(0));
         _newEscrow.initialize(kittieFightToken);
 
         // check ownership
-        require(_newEscrow.owner() == address(this));
+        // require(_newEscrow.owner() == address(this));
 
         // KTY is set
-        require(_newEscrow.getKTYaddress() != address(0));
+        // require(_newEscrow.getKTYaddress() != address(0));
 
         if (address(escrow) != address(0)){ // Transfer if any funds
 
             // transfer all the ETH
-            require(escrow.transferETH(address(_newEscrow), address(escrow).balance));
+            escrow.transferETH(address(_newEscrow), address(escrow).balance);
 
             // transfer all the KTY
             uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
-            require(escrow.transferKTY(address(_newEscrow), ktyBalance));
+            escrow.transferKTY(address(_newEscrow), ktyBalance);
 
         }
 
