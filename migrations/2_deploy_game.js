@@ -65,8 +65,8 @@ const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
 const GAME_PRESTART = 180 // 2 min
 const GAME_DURATION = 250 // 5 min
-const PERFORMANCE_TIME_CHECK = 1
-const TIME_EXTENSION = 1
+const PERFORMANCE_TIME_CHECK = 60
+const TIME_EXTENSION = 60
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
 const GAME_TIMES = 60 //Scheduled games 10 min apart
@@ -184,97 +184,98 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
             await proxy.addContract('EarningsTracker', EarningsTracker.address)
             await proxy.addContract('WithdrawPool', WithdrawPool.address)
+            await proxy.addContract('EthieToken', EthieToken.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
             // PROXY
             proxy = await KFProxy.deployed()
-            console.log(proxy.address)
+            console.log("Proxy", proxy.address)
 
             //Time Frame
             timeFrame = await TimeFrame.deployed()
-            console.log(timeFrame.address)
+            console.log("TimeFrame", timeFrame.address)
 
             // DATABASES
             genericDB = await GenericDB.deployed()
-            console.log(genericDB.address)
+            console.log("GenericDB", genericDB.address)
             profileDB = await ProfileDB.deployed();
-            console.log(profileDB.address)
+            console.log("ProfileDB", profileDB.address)
             roleDB = await RoleDB.deployed();
-            console.log(roleDB.address)
+            console.log("RoleDB", roleDB.address)
             endowmentDB = await EndowmentDB.deployed()
-            console.log(endowmentDB.address)
+            console.log("EndowmentDB", endowmentDB.address)
             getterDB = await GMGetterDB.deployed()
-            console.log(getterDB.address)
+            console.log("GetterDB", getterDB.address)
             setterDB = await GMSetterDB.deployed()
-            console.log(setterDB.address)
+            console.log("SetterDB", setterDB.address)
             kittieHellDB = await KittieHellDB.deployed()
-            console.log(kittieHellDB.address)
+            console.log("KittieHellDB", kittieHellDB.address)
 
             // CRONJOB
             cronJob = await CronJob.deployed()
-            console.log(cronJob.address)
+            console.log("CronJob", cronJob.address)
             freezeInfo = await FreezeInfo.deployed();
-            console.log(freezeInfo.address)
+            console.log("FreezeInfo", freezeInfo.address)
             cronJobTarget= await CronJobTarget.deployed();
-            console.log(cronJobTarget.address)
+            console.log("CronJobTarget", cronJobTarget.address)
 
 
             // TOKENS
             superDaoToken = await SuperDaoToken.deployed();
-            console.log(superDaoToken.address)
+            console.log("SuperDAOToken", superDaoToken.address)
             //kittieFightToken = await KittieFightToken.deployed();
             //console.log(kittieFightToken.address)
             kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
-            console.log(kittieFightToken.address)
+            console.log("KittieFightToken", kittieFightToken.address)
             cryptoKitties = await CryptoKitties.deployed();
-            console.log(cryptoKitties.address)
+            console.log("CryptoKitties", cryptoKitties.address)
             ethieToken = await EthieToken.deployed()
-            console.log(ethieToken.address)
+            console.log("EthieToken", ethieToken.address)
 
             // MODULES
             gameManager = await GameManager.deployed()
-            console.log(gameManager.address)
+            console.log("GameManager", gameManager.address)
             gameStore = await GameStore.deployed()
-            console.log(gameStore.address)
+            console.log("GameStore", gameStore.address)
             gameCreation = await GameCreation.deployed()
-            console.log(gameCreation.address)
+            console.log("GameCreation", gameCreation.address)
             register = await Register.deployed()
-            console.log(register.address)
+            console.log("Register", register.address)
             dateTime = await DateTime.deployed()
-            console.log(dateTime.address)
+            console.log("DateTime", dateTime.address)
             gameVarAndFee = await GameVarAndFee.deployed()            
-            console.log(gameVarAndFee.address)
+            console.log("GameVarAndFee", gameVarAndFee.address)
             forfeiter = await Forfeiter.deployed()
-            console.log(forfeiter.address)
+            console.log("Forfeiter", forfeiter.address)
             scheduler = await Scheduler.deployed()
-            console.log(scheduler.address)
+            console.log("Scheduler", scheduler.address)
             betting = await Betting.deployed()
-            console.log(betting.address)
+            console.log("Betting", betting.address)
             hitsResolve = await HitsResolve.deployed()
-            console.log(hitsResolve.address)
+            console.log("HitsResolve", hitsResolve.address)
             rarityCalculator = await RarityCalculator.deployed()
-            console.log(rarityCalculator.address)
+            console.log("RarityCalculator", rarityCalculator.address)
             endowmentFund = await EndowmentFund.deployed()
-            console.log(endowmentFund.address)
+            console.log("EndowmentFund", endowmentFund.address)
             kittieHELL = await KittieHELL.deployed()
-            console.log(kittieHELL.address)
+            console.log("KittieHELL", kittieHELL.address)
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
-            console.log(honeypotAllocationAlgo.address)
+            console.log("HoneypotAllocationAlgo", honeypotAllocationAlgo.address)
             earningsTracker = await EarningsTracker.deployed()
-            console.log(earningsTracker.address)
+            console.log("EarningsTracker", earningsTracker.address)
 
             // WithdrawPool - Pool for SuperDao token stakers
             withdrawPool = await WithdrawPool.deployed()
-            console.log(withdrawPool.address)
+            console.log("WithdrawPool", withdrawPool.address)
             
             // staking - a mock contract of Aragon's staking contract
             staking = await MockStaking.deployed()
-            console.log(staking.address)
+            console.log("Staking", staking.address)
 
             //ESCROW
             escrow = await Escrow.deployed()
-            console.log(escrow.address)
+            console.log("Escrow", escrow.address)
 
 
             console.log('\nSetting Proxy...');
@@ -364,113 +365,113 @@ module.exports = (deployer, network, accounts) => {
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
 
-            console.log('\nRarity Calculator Setup...');
-            await rarityCalculator.fillKaiValue()
+        //     console.log('\nRarity Calculator Setup...');
+        //     await rarityCalculator.fillKaiValue()
 
-            let list = [];
+        //     let list = [];
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
-            }
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
+        //     }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
+        //     }
 
-            await rarityCalculator.updateCattributes(list, 3);
+        //     await rarityCalculator.updateCattributes(list, 3);
 
-            list = [];
+        //     list = [];
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
+        //     }
 
-            await rarityCalculator.updateCattributes(list,3);
+        //     await rarityCalculator.updateCattributes(list,3);
 
-            list = [];
+        //     list = [];
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
+        //     }
 
-            await rarityCalculator.updateCattributes(list,4);
+        //     await rarityCalculator.updateCattributes(list,4);
 
-            let listDescription = [];
-            let listTotal = [];
+        //     let listDescription = [];
+        //     let listTotal = [];
 
-            for (let j=0; j<153; j++) {
-                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-                listTotal.push(Number(cattributesData[j].total))
-            }
+        //     for (let j=0; j<153; j++) {
+        //         listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+        //         listTotal.push(Number(cattributesData[j].total))
+        //     }
 
-            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+        //     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-            listDescription = [];
-            listTotal = [];
+        //     listDescription = [];
+        //     listTotal = [];
 
-            for (let j=153; j<305; j++) {
-                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-                listTotal.push(Number(cattributesData[j].total))
-            }
+        //     for (let j=153; j<305; j++) {
+        //         listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+        //         listTotal.push(Number(cattributesData[j].total))
+        //     }
 
-            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+        //     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-            console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
+        //     console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
 
-            let listFancyNames = [];
-            let listFancyNamesTotal = [];
-            let listFancyIds = [];
+        //     let listFancyNames = [];
+        //     let listFancyNamesTotal = [];
+        //     let listFancyIds = [];
 
-            for (let m=0; m<3; m++) {
-                listFancyNamesTotal.push(FancyKitties[m].length-1)
-                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-                for (let n=1; n<FancyKitties[m].length; n++) {
-                    listFancyIds.push(FancyKitties[m][n])
-                }
-            }
+        //     for (let m=0; m<3; m++) {
+        //         listFancyNamesTotal.push(FancyKitties[m].length-1)
+        //         listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+        //         for (let n=1; n<FancyKitties[m].length; n++) {
+        //             listFancyIds.push(FancyKitties[m][n])
+        //         }
+        //     }
 
-            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+        //     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
 
-            listFancyIds=[];
-            listFancyNames=[];
-            listFancyNamesTotal=[];
+        //     listFancyIds=[];
+        //     listFancyNames=[];
+        //     listFancyNamesTotal=[];
 
-            for (let m=3; m<5; m++) {
-                listFancyNamesTotal.push(FancyKitties[m].length-1)
-                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-                for (let n=1; n<FancyKitties[m].length; n++) {
-                    listFancyIds.push(FancyKitties[m][n])
-                }
-            }
+        //     for (let m=3; m<5; m++) {
+        //         listFancyNamesTotal.push(FancyKitties[m].length-1)
+        //         listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+        //         for (let n=1; n<FancyKitties[m].length; n++) {
+        //             listFancyIds.push(FancyKitties[m][n])
+        //         }
+        //     }
 
-            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+        //     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
 
 
-            await rarityCalculator.updateTotalKitties(1600000)
-            await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
+        //     await rarityCalculator.updateTotalKitties(1600000)
+        //     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
         })
 };
