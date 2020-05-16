@@ -137,7 +137,7 @@ contract EarningsTracker is Proxied, Guard {
     function lockETH()
         external
         payable
-        //onlyProxy
+        onlyProxy
         returns (uint256)
     {
         require(depositsDisabled == false, "Deposits are not allowed at this time");
