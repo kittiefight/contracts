@@ -65,7 +65,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev winner claims
     */
-    function claim(uint256 _gameId) external payable {
+    function claim(uint256 _gameId) external onlyProxy payable {
         address payable msgSender = address(uint160(getOriginalSender()));
 
         // Honeypot status
