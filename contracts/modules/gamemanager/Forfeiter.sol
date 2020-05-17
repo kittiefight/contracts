@@ -137,7 +137,8 @@ contract Forfeiter is Proxied {
     uint gameId, uint kittieIdBlack, uint kittieIdRed,
     address playerBlack, address playerRed
   )
-    public returns(bool)
+    internal
+    returns(bool)
   {
     bool checkBlack;
     bool checkRed;
