@@ -167,7 +167,8 @@ contract Forfeiter is Proxied {
    * @param gamePreStartTime uint256 time when game starts 2 min countdown
    */
   function checkAmountSupporters(uint gameId, uint supportersBlack, uint supportersRed, uint gamePreStartTime)
-    public  returns(bool)
+    internal
+    returns(bool)
   {
     if (gamePreStartTime <= now) {
       uint minSupporters = gameStore.getMinimumContributors(gameId); //TODO: should call getterDB as vars and fees are locked
