@@ -274,7 +274,7 @@ contract GameManager is Proxied, Guard {
     /**
      * @dev Determine winner of game based on  **HitResolver **
      */
-    function finalize(uint gameId, uint randomNum) external {
+    function finalize(uint gameId, uint randomNum) external onlyProxy {
         require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER), "1");
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
