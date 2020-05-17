@@ -176,20 +176,22 @@ contract WithdrawPool is Proxied, Guard {
      * @param pool_id The pool from which they would like to claim.
      */
     function claimYield(uint256 pool_id)
-    external returns(bool)
+    external onlyProxy returns(bool)
     {
         require(weeklyPools[pool_id].dateAvailable <= now, "This pool is not available for claiming yet");
         require(weeklyPools[pool_id].unlocked == true, "This pool is locked");
         require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
 
+        address payable msgSender = address(uint160(getOriginalSender()));
+
         // the claimer must have tokens staked in the staking contract at this moment
-        require(staking.totalStakedFor(msg.sender) > 0, "You don't have any superDao tokens staked currently");
+        require(staking.totalStakedFor(msgSender) > 0, "You don't have any superDao tokens staked currently");
 
         // get the last time that the claimer's staked token amount has been changed
         // the tokens need to be staked before the the current epoch started
-        uint256 lastModifiedBlockNumber = staking.lastStakedFor(msg.sender);
+        uint256 lastModifiedBlockNumber = staking.lastStakedFor(msgSender);
         require(lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber, "You are not eligible to claim for this pool");
-        require(stakers[msg.sender].claimed[pool_id] == false, "You have already claimed from this pool");
+        require(stakers[msgSender].claimed[pool_id] == false, "You have already claimed from this pool");
 
         // record initial ether in pool in withdrawPool struct
         // only need to be called once for each pool
@@ -199,15 +201,15 @@ contract WithdrawPool is Proxied, Guard {
             }
 
         // update staker
-        _updateStaker(msg.sender, pool_id, lastModifiedBlockNumber);
+        _updateStaker(msgSender, pool_id, lastModifiedBlockNumber);
         // calculate the amount of ether entitled to the caller
-        uint256 yield = checkYield(msg.sender, pool_id);
+        uint256 yield = checkYield(msgSender, pool_id);
         // update pool data
-        _updatePool(msg.sender, pool_id, yield);
+        _updatePool(msgSender, pool_id, yield);
         // pay dividend to the caller
-        require(endowmentFund.transferETHfromEscrowWithdrawalPool(msg.sender, yield, pool_id));
+        require(endowmentFund.transferETHfromEscrowWithdrawalPool(msgSender, yield, pool_id));
 
-        emit ClaimYield(pool_id, msg.sender, yield);
+        emit ClaimYield(pool_id, msgSender, yield);
         return true;
     }
 
