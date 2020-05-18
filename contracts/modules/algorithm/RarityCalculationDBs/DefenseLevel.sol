@@ -41,8 +41,7 @@ contract DefenseLevel is Proxied, Guard {
                sum 	1832353	9175
      */
     function setDefenseLevelLimit (uint256 max, uint256 min, uint256 totalKitties)
-        public // temporarily set as public just for truffle test purpose
-        // internal
+        public
         onlySuperAdmin
       {
       defenseLevelLimit.level5Limit = (max.sub(min)).mul(10000000).div(totalKitties);
