@@ -118,6 +118,7 @@ contract GameStore is Proxied, Guard {
 
     function updateTicketFee(uint256 gameId)
         public
+        onlyContract(CONTRACT_NAME_GAMECREATION)
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForTicketFee();
         (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
@@ -126,6 +127,7 @@ contract GameStore is Proxied, Guard {
 
     function updateBettingFee(uint256 gameId)
         public
+        onlyContract(CONTRACT_NAME_GAMECREATION)
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForBettingFee();
         (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
