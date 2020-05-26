@@ -21,6 +21,7 @@ import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
 import "../endowment/HoneypotAllocationAlgo.sol";
+import "./KtyUniswap.sol";
 
 /**
  * @title EndowmentFund
@@ -171,7 +172,11 @@ contract EndowmentFund is Distribution, Guard {
      * @dev accepts KTY. KTY is transfered to in escrow
      */
      
-    function contributeKTY(address _sender, uint256 _kty_amount) external returns(bool) {
+    function contributeKTY(address _sender, uint256 _kty_amount) external payable returns(bool) {
+        // exchange KTY on uniswap
+        uint256 ethersNeeded = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(_kty_amount);
+        require(msg.value >= ethersNeeded, "Insufficient ethers");
+        KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).swapEthForKtyEndowment();
         // do transfer of KTY
         if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
             return false;

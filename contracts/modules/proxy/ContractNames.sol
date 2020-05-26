@@ -39,4 +39,9 @@ contract ContractNames {
     string constant CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO = "HoneypotAllocationAlgo";
     string constant CONTRACT_NAME_EARNINGS_TRACKER  = "EarningsTracker";
     string constant CONTRACT_NAME_WITHDRAW_POOL   = "WithdrawPool";
+    string constant CONTRACT_NAME_ETHIETOKEN   = "EthieToken";
+    string constant CONTRACT_NAME_UNISWAPV2_PAIR   = "IUniswapV2Pair";
+    string constant CONTRACT_NAME_KTY_WETH_ORACLE   = "KtyWethOracle";
+    string constant CONTRACT_NAME_KTY_UNISWAP   = "KtyUniswap";
+
 }

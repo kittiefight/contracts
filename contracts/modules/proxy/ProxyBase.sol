@@ -35,4 +35,8 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfHoneypotAllocationAlgo() public view returns(address) {return getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO);}
      function addressOfEarningsTracker() public view returns(address)   {return getContract(CONTRACT_NAME_EARNINGS_TRACKER);}
      function addressOfWithdrawPool() public view returns(address)     {return getContract(CONTRACT_NAME_WITHDRAW_POOL);}
+     function addressOfEthieToken() public view returns(address)     {return getContract(CONTRACT_NAME_ETHIETOKEN);}
+     function addressOfUniswapV2Pair() public view returns(address)     {return getContract(CONTRACT_NAME_UNISWAPV2_PAIR);}
+     function addressOfKtyWethOracle() public view returns(address)     {return getContract(CONTRACT_NAME_KTY_WETH_ORACLE);}
+     function addressOfKtyUniswap() public view returns(address)     {return getContract(CONTRACT_NAME_KTY_UNISWAP);}
 }
