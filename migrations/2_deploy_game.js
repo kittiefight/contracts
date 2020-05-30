@@ -38,6 +38,9 @@ const EthieToken = artifacts.require('EthieToken')
 const EarningsTracker = artifacts.require('EarningsTracker')
 const WithdrawPool = artifacts.require('WithdrawPool')
 const MockStaking = artifacts.require('MockStaking')
+const BFactory = artifacts.require("BFactory")
+const BPool = artifacts.require("BPool")
+const WETH = artifacts.require("WETH9")
 
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
@@ -63,10 +66,10 @@ const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
 const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
-const GAME_PRESTART = 180 // 2 min
-const GAME_DURATION = 250 // 5 min
-const PERFORMANCE_TIME_CHECK = 60
-const TIME_EXTENSION = 60
+const GAME_PRESTART = 50 //180 // 2 min
+const GAME_DURATION = 80 // 250 // 5 min
+const PERFORMANCE_TIME_CHECK = 1 //60
+const TIME_EXTENSION = 1 //60
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
 const GAME_TIMES = 60 //Scheduled games 10 min apart
@@ -96,7 +99,7 @@ const KTY_FOR_BURN_ETHIE = new BigNumber(web3.utils.toWei("100", "ether"));
 const INTEREST_ETHIE = 100000 // 10%
 // =================================================== //
 
-const SUPERADMIN = "0x87bb3231920fB8b6F9901006b3a78b0dbAB57246";
+//const SUPERADMIN = "0x87bb3231920fB8b6F9901006b3a78b0dbAB57246";
 
 function setMessage(contract, funcName, argArray) {
     return web3.eth.abi.encodeFunctionCall(
@@ -106,7 +109,7 @@ function setMessage(contract, funcName, argArray) {
 }
 
 module.exports = (deployer, network, accounts) => {
-    console.log(SUPERADMIN);
+    //console.log(SUPERADMIN);
 
     let medianizer;
 
@@ -127,7 +130,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(FreezeInfo))
         .then(() => deployer.deploy(CronJobTarget))
         .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-        //.then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+        .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
         .then(() => deployer.deploy(CryptoKitties))
         .then(() => deployer.deploy(GameManager))
         .then(() => deployer.deploy(GameStore))
@@ -146,6 +149,8 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(EarningsTracker))
         .then(() => deployer.deploy(MockStaking))
         .then(() => deployer.deploy(WithdrawPool))
+        .then(() => deployer.deploy(BFactory))
+        .then(() => deployer.deploy(WETH))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address)
@@ -157,8 +162,8 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('GenericDB', GenericDB.address)
             await proxy.addContract('CryptoKitties', CryptoKitties.address);
             await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-            //await proxy.addContract('KittieFightToken', KittieFightToken.address);
-            await proxy.addContract('KittieFightToken', KTY_ADDRESS);
+            await proxy.addContract('KittieFightToken', KittieFightToken.address);
+            //await proxy.addContract('KittieFightToken', KTY_ADDRESS);
             await proxy.addContract('ProfileDB', ProfileDB.address);
             await proxy.addContract('RoleDB', RoleDB.address);
             await proxy.addContract('Register', Register.address)
@@ -224,14 +229,15 @@ module.exports = (deployer, network, accounts) => {
             // TOKENS
             superDaoToken = await SuperDaoToken.deployed();
             console.log("SuperDAOToken", superDaoToken.address)
-            //kittieFightToken = await KittieFightToken.deployed();
-            //console.log(kittieFightToken.address)
-            kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+            kittieFightToken = await KittieFightToken.deployed();
+            //kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
             console.log("KittieFightToken", kittieFightToken.address)
             cryptoKitties = await CryptoKitties.deployed();
             console.log("CryptoKitties", cryptoKitties.address)
             ethieToken = await EthieToken.deployed()
             console.log("EthieToken", ethieToken.address)
+            weth = await WETH.deployed()
+            console.log("WETH", weth.address)
 
             // MODULES
             gameManager = await GameManager.deployed()
@@ -277,7 +283,10 @@ module.exports = (deployer, network, accounts) => {
             escrow = await Escrow.deployed()
             console.log("Escrow", escrow.address)
 
-
+            //BFactory
+            bFactory = await BFactory.deployed()
+            console.log("BFactory", bFactory.address)
+          
             console.log('\nSetting Proxy...');
             await genericDB.setProxy(proxy.address)
             await profileDB.setProxy(proxy.address);
@@ -327,8 +336,10 @@ module.exports = (deployer, network, accounts) => {
             await staking.initialize(SuperDaoToken.address)
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
-            await register.addSuperAdmin(SUPERADMIN)
-            await register.addAdmin(SUPERADMIN)
+            //await register.addSuperAdmin(SUPERADMIN)
+            //await register.addAdmin(SUPERADMIN)
+            await register.addSuperAdmin(accounts[0])
+            await register.addAdmin(accounts[0])
 
             console.log('\nUpgrading Escrow...');
             await endowmentFund.initUpgradeEscrow(escrow.address)
@@ -365,113 +376,113 @@ module.exports = (deployer, network, accounts) => {
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
 
-        //     console.log('\nRarity Calculator Setup...');
-        //     await rarityCalculator.fillKaiValue()
+            console.log('\nRarity Calculator Setup...');
+            await rarityCalculator.fillKaiValue()
 
-        //     let list = [];
+            let list = [];
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
-        //     }
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
+            }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
+            }
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
+            }
 
-        //     await rarityCalculator.updateCattributes(list, 3);
+            await rarityCalculator.updateCattributes(list, 3);
 
-        //     list = [];
+            list = [];
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
+            }
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
+            }
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
+            }
 
-        //     await rarityCalculator.updateCattributes(list,3);
+            await rarityCalculator.updateCattributes(list,3);
 
-        //     list = [];
+            list = [];
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
+            }
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
+            }
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
+            }
 
-        //     for (let i=0; i<32; i++) {
-        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
-        //     }
+            for (let i=0; i<32; i++) {
+                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
+            }
 
-        //     await rarityCalculator.updateCattributes(list,4);
+            await rarityCalculator.updateCattributes(list,4);
 
-        //     let listDescription = [];
-        //     let listTotal = [];
+            let listDescription = [];
+            let listTotal = [];
 
-        //     for (let j=0; j<153; j++) {
-        //         listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-        //         listTotal.push(Number(cattributesData[j].total))
-        //     }
+            for (let j=0; j<153; j++) {
+                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+                listTotal.push(Number(cattributesData[j].total))
+            }
 
-        //     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-        //     listDescription = [];
-        //     listTotal = [];
+            listDescription = [];
+            listTotal = [];
 
-        //     for (let j=153; j<305; j++) {
-        //         listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-        //         listTotal.push(Number(cattributesData[j].total))
-        //     }
+            for (let j=153; j<305; j++) {
+                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+                listTotal.push(Number(cattributesData[j].total))
+            }
 
-        //     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-        //     console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
+            console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
 
-        //     let listFancyNames = [];
-        //     let listFancyNamesTotal = [];
-        //     let listFancyIds = [];
+            let listFancyNames = [];
+            let listFancyNamesTotal = [];
+            let listFancyIds = [];
 
-        //     for (let m=0; m<3; m++) {
-        //         listFancyNamesTotal.push(FancyKitties[m].length-1)
-        //         listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-        //         for (let n=1; n<FancyKitties[m].length; n++) {
-        //             listFancyIds.push(FancyKitties[m][n])
-        //         }
-        //     }
+            for (let m=0; m<3; m++) {
+                listFancyNamesTotal.push(FancyKitties[m].length-1)
+                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+                for (let n=1; n<FancyKitties[m].length; n++) {
+                    listFancyIds.push(FancyKitties[m][n])
+                }
+            }
 
-        //     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
 
-        //     listFancyIds=[];
-        //     listFancyNames=[];
-        //     listFancyNamesTotal=[];
+            listFancyIds=[];
+            listFancyNames=[];
+            listFancyNamesTotal=[];
 
-        //     for (let m=3; m<5; m++) {
-        //         listFancyNamesTotal.push(FancyKitties[m].length-1)
-        //         listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-        //         for (let n=1; n<FancyKitties[m].length; n++) {
-        //             listFancyIds.push(FancyKitties[m][n])
-        //         }
-        //     }
+            for (let m=3; m<5; m++) {
+                listFancyNamesTotal.push(FancyKitties[m].length-1)
+                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+                for (let n=1; n<FancyKitties[m].length; n++) {
+                    listFancyIds.push(FancyKitties[m][n])
+                }
+            }
 
-        //     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
 
 
-        //     await rarityCalculator.updateTotalKitties(1600000)
-        //     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
+            await rarityCalculator.updateTotalKitties(1600000)
+            await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
         })
 };
