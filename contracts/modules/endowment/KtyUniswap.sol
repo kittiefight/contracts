@@ -11,9 +11,8 @@ import '../../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import '../../uniswapKTY/uniswap-V2-periphery/KtyWethOracle.sol';
 import '../../uniswapKTY/uniswap-V2-periphery/UniswapV2Router01.sol';
 
-// This contract assumes KTY is token1 in the ktyWethPair contract.
-// Corresponding modificaitons will be made if KTY is token0 in the future deployment
-// of the ktyWethPair contract on mainnet.
+// KTY should be token0 in the ktyWethPair contract on mainnet. So in this contract
+// KTY is token0
 
 contract KtyUniswap is Proxied, Guard {
     using SafeMath for uint256;
@@ -68,7 +67,7 @@ contract KtyUniswap is Proxied, Guard {
         returns (uint256)
     {
         uint112 _reserveKTY;
-        (,_reserveKTY,) = ktyWethPair.getReserves();
+        (_reserveKTY,,) = ktyWethPair.getReserves();
         return uint256(_reserveKTY);
     }
 
@@ -80,7 +79,7 @@ contract KtyUniswap is Proxied, Guard {
         returns (uint256)
     {
         uint112 _reserveETH;
-        (_reserveETH,,) = ktyWethPair.getReserves();
+        (,_reserveETH,) = ktyWethPair.getReserves();
         return uint256(_reserveETH);
     }
 
@@ -96,7 +95,7 @@ contract KtyUniswap is Proxied, Guard {
     }
 
     /**
-     * @dev returns the KTY to ether ratio on uniswap
+     * @dev returns the KTY to ether ratio on uniswap, that is, how many ether for 1 KTY
      */
     function KTY_ETH_ratio() public view returns (uint256) {
         uint256 _amountKTY = 1e18;  // 1 KTY
@@ -106,7 +105,7 @@ contract KtyUniswap is Proxied, Guard {
     }
 
     /**
-     * @dev returns the ether to KTY ratio on uniswap
+     * @dev returns the ether to KTY ratio on uniswap, that is, how many KTY for 1 ether
      */
     function ETH_KTY_ratio() public view returns (uint256) {
         uint256 _amountETH = 1e18; // 1 ether
