@@ -96,6 +96,10 @@ module.exports = async callback => {
 
       await timeout(3);
 
+      // const wethMainnet = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+      // const ktyMainnet = "" // to do
+      // let tokenOrder = await ktyWethOracle.sortTokens(wethMainnet, ktyMainnet)
+
       let res = await ktyWethPair.getReserves();
       console.log("reserveETH:", weiToEther(res.reserve0));
       console.log("reserveKTY:", weiToEther(res.reserve1));

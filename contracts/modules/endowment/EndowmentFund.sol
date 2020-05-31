@@ -178,9 +178,9 @@ contract EndowmentFund is Distribution, Guard {
         require(msg.value >= ethersNeeded, "Insufficient ethers");
         KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).swapEthForKtyEndowment();
         // do transfer of KTY
-        if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
-            return false;
-        }
+        // if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
+        //     return false;
+        // }
 
         endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
 
