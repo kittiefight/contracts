@@ -12,8 +12,8 @@ import "../gamemanager/GameStore.sol";
 import "../databases/GMGetterDB.sol";
 import "../databases/KittieHellDB.sol";
 import "../endowment/EndowmentFund.sol";
+import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
 import "../endowment/KtyUniswap.sol";
-
 
 /**
  * @title This contract is responsible to acquire ownership of participating kitties,
@@ -32,6 +32,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     GameStore public gameStore;
     GMGetterDB public gmGetterDB;
     EndowmentFund public endowmentFund;
+    address[] public path;
 
     uint256 public scheduledJob;
     mapping (uint => uint) public scheduledJobs;
@@ -55,6 +56,11 @@ contract KittieHell is BasicControls, Proxied, Guard {
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
+
+        address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
+        path.push(_WETH);
+        address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
+        path.push(_KTY);
     }
 
     /**
@@ -207,7 +213,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
         require(tokenAmount > 0, "KTY amount must be greater than 0");
         uint256 ethersNeeded = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(tokenAmount);
-        require(msg.value >= ethersNeeded, "Insufficient ethers to pay for resurrection");
+        require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers to pay for resurrection");
         for (uint i = 0; i < sacrificeKitties.length; i++) {
             KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
         }
@@ -215,7 +221,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
         uint256 numberOfSacrificeKitties = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).getNumberOfSacrificeKitties(_kittyID);
         require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Please meet the required number of sacrificing kitties.");
         //kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
-        KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).swapEthForKtyKittieHELL();
+        // exchange KTY on uniswap
+        IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
+            0,
+            path,
+            address(this),
+            2**255
+        );
+
         KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
         kitties[_kittyID].dead = false;

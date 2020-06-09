@@ -37,6 +37,7 @@ import '../../authority/Guard.sol';
 import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 import "./GameCreation.sol";
+import "../endowment/KtyUniswap.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -90,9 +91,12 @@ contract GameManager is Proxied, Guard {
         address playerToSupport
     )
         public
+        payable
         onlyProxy onlyBettor
         onlyGamePlayer(gameId, playerToSupport)
     {
+        require(msg.value > 0);
+
         uint gameState = gmGetterDB.getGameState(gameId);
 
         address supporter = getOriginalSender();
@@ -103,8 +107,9 @@ contract GameManager is Proxied, Guard {
         require(gameState <= 2);
 
         //pay ticket fee
-        require(endowmentFund.contributeKTY(supporter, gameStore.getTicketFee(gameId)));
-        
+        uint ticketFeeKTY = gameStore.getTicketFee(gameId);
+        require(endowmentFund.contributeKTY.value(msg.value)(supporter, ticketFeeKTY), "Need to pay ticket fee");
+
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
@@ -222,9 +227,14 @@ contract GameManager is Proxied, Guard {
             supportedPlayer = sender;
         }
 
+        uint bettingFeeKTY = gameStore.getBettingFee(gameId);
+        uint etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(bettingFeeKTY);
+
         //Transfer Funds to endowment
-        require(endowmentFund.contributeETH.value(msg.value)(gameId));
-        require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
+        require(endowmentFund.contributeETH.value(msg.value.sub(etherForSwap))(gameId));
+        //pay ticket fee
+        require(endowmentFund.contributeKTY.value(etherForSwap)(sender, bettingFeeKTY), "Need to pay betting fee");
+        //require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
 
         // Update Random
         HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE)).calculateCurrentRandom(gameId, randomNum);

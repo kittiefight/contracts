@@ -5,12 +5,19 @@ const KittieHellDB = artifacts.require("KittieHellDB");
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken')
 const CryptoKitties = artifacts.require('MockERC721Token');
+const KtyUniswap = artifacts.require("KtyUniswap");
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
     contract.abi.find((f) => { return f.name == funcName; }),
     argArray
   );
+}
+
+function weiToEther(w) {
+  //let eth = web3.utils.fromWei(w.toString(), "ether");
+  //return Math.round(parseFloat(eth));
+  return web3.utils.fromWei(w.toString(), "ether");
 }
 
 //truffle exec scripts/FE/redeem.js gameId(uint)
@@ -25,6 +32,7 @@ module.exports = async (callback) => {
     let endowmentFund = await EndowmentFund.deployed();
     let kittieFightToken = await KittieFightToken.deployed();
     let cryptoKitties = await CryptoKitties.deployed();
+    let ktyUniswap = await KtyUniswap.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -56,12 +64,6 @@ module.exports = async (callback) => {
       loserKitty,
       gameId
     );
-    const redemptionFee = web3.utils.fromWei(
-      resurrectionCost.toString(),
-      "ether"
-    );
-    const kittieRedemptionFee = parseFloat(redemptionFee);
-    console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee);
 
     const sacrificeKitties = [1017555, 413830, 888];
 
@@ -75,9 +77,13 @@ module.exports = async (callback) => {
       });
     }
 
-    await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
-      from: loser
-    });
+    // await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
+    //   from: loser
+    // });
+
+    ether_resurrection_cost = await ktyUniswap.etherFor(resurrectionCost)
+    console.log("KTY resurrection cost:", weiToEther(resurrectionCost))
+    console.log("ether needed for swap KTY resurrection:", weiToEther(ether_resurrection_cost))
 
     await proxy.execute(
       "KittieHell",
@@ -87,7 +93,7 @@ module.exports = async (callback) => {
         loser,
         sacrificeKitties
       ]),
-      {from: loser}
+      {from: loser, value: ether_resurrection_cost}
     );
 
     let owner = await cryptoKitties.ownerOf(loserKitty);

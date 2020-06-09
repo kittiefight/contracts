@@ -6,6 +6,7 @@ const DateTime = artifacts.require('DateTime')
 const RoleDB = artifacts.require('RoleDB')
 const Escrow = artifacts.require('Escrow')
 const EndowmentFund = artifacts.require('EndowmentFund')
+const KtyUniswap = artifacts.require("KtyUniswap");
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -25,6 +26,12 @@ function formatDate(timestamp) {
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
+function weiToEther(w) {
+  //let eth = web3.utils.fromWei(w.toString(), "ether");
+  //return Math.round(parseFloat(eth));
+  return web3.utils.fromWei(w.toString(), "ether");
+}
+
 //truffle exec scripts/FE/participate.js gameId(uint) noOfParticipatorsForBlack(uint) noOfParticipatorsForRed(uint) 
 //                                       timeBetweenParticipates[uint(seconds)] 
 
@@ -38,9 +45,9 @@ module.exports = async (callback) => {
     let roleDB = await RoleDB.deployed();
     let escrow = await Escrow.deployed();
     let endowmentFund = await EndowmentFund.deployed();
+    let ktyUniswap = await KtyUniswap.deployed();
 
     accounts = await web3.eth.getAccounts();
-
 
     let gameId = process.argv[4];
     let blackParticipators = process.argv[5];
@@ -50,25 +57,46 @@ module.exports = async (callback) => {
     let supportersForBlack = [];
     let ticketFee = await gameStore.getTicketFee(gameId);
 
-
     let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
     let participator;
 
-
     //accounts 10-29 can be supporters for black
-
     let blacks = Number(blackParticipators) + 10;
     let reds = Number(redParticipators) + 30;
 
+    let ktyReserve = await ktyUniswap.getReserveKTY();
+    let ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    let ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
+    let kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
+    console.log(
+      "Ether to KTY ratio:",
+      "1 ether to",
+      weiToEther(ether_kty_ratio),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether ratio:",
+      "1 KTY to",
+      weiToEther(kty_ether_ratio),
+      "ether"
+    );
+    let kty_participate = await gameStore.getTicketFee(1);
+    let ether_participate
+
     for(let i = 10; i < blacks; i++){
+      ether_participate = await ktyUniswap.etherFor(kty_participate)
+      console.log("KTY participation fee:", weiToEther(kty_participate))
+      console.log("ether needed for swap KTY participation fee:", weiToEther(ether_participate))
       participator = accounts[i];
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerBlack]), { from: participator })
+      [gameId, playerBlack]), { from: participator, value: ether_participate })
       console.log('\nNew Participator for playerBlack: ', participator);
       supportersForBlack.push(participator);
       await timeout(timeInterval);
     }
-
 
     //accounts 30-49 can be supporters for red
     for(let j = 30; j < reds; j++){
@@ -84,8 +112,11 @@ module.exports = async (callback) => {
           await timeout(3);
         }
       }
+      ether_participate = await ktyUniswap.etherFor(kty_participate)
+      console.log("KTY participation fee:", weiToEther(kty_participate))
+      console.log("ether needed for swap KTY participation fee:", weiToEther(ether_participate))
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
-      [gameId, playerRed]), { from: participator });
+      [gameId, playerRed]), { from: participator, value: ether_participate });
       console.log('\nNew Participator for playerRed: ', participator);
       supportersForRed.push(participator);
       await timeout(timeInterval);
@@ -101,6 +132,40 @@ module.exports = async (callback) => {
     console.log('\nTotal KTY for Black (only participators): ', KTYforBlack);
     console.log('\nTotal KTY for Red (only participators): ', KTYforRed);
     
+    let newSwapEvents = await endowmentFund.getPastEvents("EthSwappedforKTY", {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    newSwapEvents.map(async (e) => {
+
+      console.log('\n==== NEW Swap CREATED ===');
+      console.log('    sender ', e.returnValues.sender)
+      console.log('    ether for swap ', e.returnValues.ethAmount)
+      console.log('    KTY swapped ', e.returnValues.ktyAmount)
+      console.log('    ether receiver ', e.returnValues.receiver)
+      console.log('========================\n')
+    })
+
+    ktyReserve = await ktyUniswap.getReserveKTY();
+    ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
+    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
+    console.log(
+      "Ether to KTY ratio:",
+      "1 ether to",
+      weiToEther(ether_kty_ratio),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether ratio:",
+      "1 KTY to",
+      weiToEther(kty_ether_ratio),
+      "ether"
+    );
 
     callback()
   }

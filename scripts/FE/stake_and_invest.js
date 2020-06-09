@@ -1,3 +1,4 @@
+const KFProxy = artifacts.require('KFProxy')
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require('KittieFightToken');
 const MockStaking = artifacts.require("MockStaking");
@@ -27,6 +28,7 @@ function setMessage(contract, funcName, argArray) {
 module.exports = async (callback) => {    
 
   try{
+    let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
     let staking = await MockStaking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
@@ -71,10 +73,19 @@ module.exports = async (callback) => {
     await earningsTracker.setCurrentFundingLimit();
 
     for (let i = 0; i < 6; i++) {
-      let ethAmount = new BigNumber(web3.utils.toWei('5'));
+      let ethAmount = new BigNumber(web3.utils.toWei('10'));
       console.log(ethAmount.toString());
       console.log(accounts[i]);
-      await earningsTracker.lockETH({gas: 900000, from: accounts[i], value: ethAmount.toString()});
+      //await earningsTracker.lockETH({gas: 900000, from: accounts[i], value: ethAmount.toString()});
+      await proxy.execute(
+        "EarningsTracker",
+        setMessage(earningsTracker, "lockETH", []),
+        {
+          gas: 900000,
+          from: accounts[i],
+          value: ethAmount.toString()
+        }
+      )
       let number_ethieToken = await ethieToken.balanceOf(accounts[i]);
       let ethieTokenID = await ethieToken.tokenOfOwnerByIndex(accounts[i], 0);
       ethieTokenID = ethieTokenID.toNumber();

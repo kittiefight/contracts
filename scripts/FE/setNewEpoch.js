@@ -26,6 +26,8 @@ module.exports = async (callback) => {
 
     accounts = await web3.eth.getAccounts();
 
+    await timeFrame.setTimes(720, 180, 300)
+
     await withdrawPool.setPool_0();
 
     const epoch_0_start_unix = await timeFrame._epochStartTime(0);

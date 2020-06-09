@@ -212,7 +212,7 @@ contract EarningsTracker is Proxied, Guard {
     (
         uint256 _ethieTokenID
     )
-        external returns(bool)
+        external payable returns(bool)
     {
         // Ethie Tokens can only be burnt on a Rest Day in the current epoch
         require(timeFrame.checkBurn(), "Can only burn on Rest Day");
@@ -223,15 +223,16 @@ contract EarningsTracker is Proxied, Guard {
 
         // get the current owner of the token
         //EthieToken ethieToken = EthieToken(proxy.getContract(CONTRACT_NAME_ETHIE_TOKEN));
+        address payable msgSender = address(uint160(getOriginalSender()));
         address currentOwner = ethieToken.ownerOf(_ethieTokenID);
-        require(currentOwner == msg.sender, "Only the owner of this token can burn it");
+        require(currentOwner == msgSender, "Only the owner of this token can burn it");
 
         // require this token had not been burnt already
         require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
         uint256 _kty_fee = KTYforBurnEthie();
-        require(endowmentFund.contributeKTY(msg.sender, _kty_fee),
+        require(endowmentFund.contributeKTY.value(msg.value)(msgSender, _kty_fee),
                 "Failed to pay KTY fee for burning Ethie Token");
 
         // burn Ethie Token NFT
@@ -247,16 +248,16 @@ contract EarningsTracker is Proxied, Guard {
         // update generations
         _updateGeneration_burn(generation, ethValue);
         // update funder
-        _updateFunder_burn(msg.sender, _ethieTokenID, interest);
+        _updateFunder_burn(msgSender, _ethieTokenID, interest);
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         uint256 activeEpochID = timeFrame.getActiveEpochID();
         if(ethieTokens[_ethieTokenID].startingEpochID > activeEpochID)
-            _returnEther(msg.sender, totalEth, false);
+            _returnEther(msgSender, totalEth, false);
         else
-            _returnEther(msg.sender, totalEth, true);
+            _returnEther(msgSender, totalEth, true);
 
-        emit EthieTokenBurnt(msg.sender, _ethieTokenID, generation, ethValue, interest);
+        emit EthieTokenBurnt(msgSender, _ethieTokenID, generation, ethValue, interest);
         return true;
     }
 

@@ -12,18 +12,26 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
     address public factory;
     address public WETH;
 
+    // temporary just for truffle local testing purpose
+    address public ktyWethPair;
+
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'UniswapV2Router: EXPIRED');
         _;
     }
 
-    constructor(address _factory, address _WETH) public {
+    function initialize(address _factory, address _WETH) public {
         factory = _factory;
         WETH = _WETH;
     }
 
     function() external payable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
+    }
+
+    // temporary function for truffle local testing purpose only
+    function setKtyWethPairAddr(address _ktyWethPair) public {
+        ktyWethPair = _ktyWethPair;
     }
 
     // **** ADD LIQUIDITY ****
@@ -39,7 +47,7 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         if (IUniswapV2Factory(factory).getPair(tokenA, tokenB) == address(0)) {
             IUniswapV2Factory(factory).createPair(tokenA, tokenB);
         }
-        (uint reserveA, uint reserveB) = UniswapV2Library.getReserves(factory, tokenA, tokenB);
+        (uint reserveA, uint reserveB) = UniswapV2Library.getReserves(ktyWethPair, tokenA, tokenB);
         if (reserveA == 0 && reserveB == 0) {
             (amountA, amountB) = (amountADesired, amountBDesired);
         } else {
@@ -66,10 +74,10 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         uint deadline
     ) external ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
-        address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
-        TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
-        TransferHelper.safeTransferFrom(tokenB, msg.sender, pair, amountB);
-        liquidity = IUniswapV2Pair(pair).mint(to);
+        //address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
+        TransferHelper.safeTransferFrom(tokenA, msg.sender, ktyWethPair, amountA);
+        TransferHelper.safeTransferFrom(tokenB, msg.sender, ktyWethPair, amountB);
+        liquidity = IUniswapV2Pair(ktyWethPair).mint(to);
     }
     function addLiquidityETH(
         address token,
@@ -105,7 +113,8 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         address to,
         uint deadline
     ) public ensure(deadline) returns (uint amountA, uint amountB) {
-        address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
+        //address pair = UniswapV2Library.pairFor(factory, tokenA, tokenB);
+        address pair = ktyWethPair;
         IUniswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
         (uint amount0, uint amount1) = IUniswapV2Pair(pair).burn(to);
         (address token0,) = UniswapV2Library.sortTokens(tokenA, tokenB);
@@ -172,8 +181,10 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
             (address token0,) = UniswapV2Library.sortTokens(input, output);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
-            address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
-            IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+            //address to = i < path.length - 2 ? UniswapV2Library.pairFor(factory, output, path[i + 2]) : _to;
+            address to = i < path.length - 2 ? ktyWethPair : _to;
+           // IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output)).swap(amount0Out, amount1Out, to, new bytes(0));
+            IUniswapV2Pair(ktyWethPair).swap(amount0Out, amount1Out, to, new bytes(0));
         }
     }
     function swapExactTokensForTokens(
@@ -207,10 +218,11 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         returns (uint[] memory amounts)
     {
         require(path[0] == WETH, 'UniswapV2Router: INVALID_PATH');
-        amounts = UniswapV2Library.getAmountsOut(factory, msg.value, path);
+        amounts = UniswapV2Library.getAmountsOut(ktyWethPair, msg.value, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWETH(WETH).deposit.value(amounts[0])();
-        assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
+        //assert(IWETH(WETH).transfer(UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
+        assert(IWETH(WETH).transfer(ktyWethPair, amounts[0]));
         _swap(amounts, path, to);
     }
     function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
@@ -221,7 +233,8 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         require(path[path.length - 1] == WETH, 'UniswapV2Router: INVALID_PATH');
         amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= amountInMax, 'UniswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        TransferHelper.safeTransferFrom(path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        //TransferHelper.safeTransferFrom(path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
+        TransferHelper.safeTransferFrom(path[0], msg.sender, ktyWethPair, amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferETH(to, amounts[amounts.length - 1]);
@@ -266,8 +279,8 @@ contract UniswapV2Router01 is IUniswapV2Router01 {
         return UniswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
     }
 
-    function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts) {
-        return UniswapV2Library.getAmountsOut(factory, amountIn, path);
+    function getAmountsOut(address _pair, uint amountIn, address[] memory path) public view returns (uint[] memory amounts) {
+        return UniswapV2Library.getAmountsOut(_pair, amountIn, path);
     }
 
     function getAmountsIn(uint amountOut, address[] memory path) public view returns (uint[] memory amounts) {

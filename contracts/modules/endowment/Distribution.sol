@@ -23,6 +23,8 @@ import "../databases/EndowmentDB.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
 import "../gamemanager/GameStore.sol";
+import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
+import "./KtyUniswap.sol";
 
 /**
  * @title Distribution Contract
@@ -41,6 +43,8 @@ contract Distribution is Proxied {
     ERC20Standard public kittieFightToken;
     GameStore public gameStore;
 
+    address[] public path;
+
     /**
     * @dev Sets related contracts
     * @dev Can be called only by the owner of this contract
@@ -51,6 +55,11 @@ contract Distribution is Proxied {
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+
+        address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
+        path.push(_WETH);
+        address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
+        path.push(_KTY);
     }
 
     /**

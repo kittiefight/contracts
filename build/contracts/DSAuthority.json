@@ -33,15 +33,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"src\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"dst\",\"type\":\"address\"},{\"internalType\":\"bytes4\",\"name\":\"sig\",\"type\":\"bytes4\"}],\"name\":\"canCall\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/rinkeby3-v0/contracts/contracts/authority/DSAuth.sol\":\"DSAuthority\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/rinkeby3-v0/contracts/contracts/authority/DSAuth.sol\":{\"keccak256\":\"0xea1d7e0d958384fe7fef111a9705a51c86acd6408c3e854bdbe4140a23adf8bd\",\"urls\":[\"bzz-raw://d1da7522b3253404035389a4f2a7c86da5fa93f4dfde4d6c7dd221391ad818f8\",\"dweb:/ipfs/QmVQTLfZ1uxBHsvSb6QcbespEW6Nsb2c9x9UEabNvfGdYi\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"src\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"dst\",\"type\":\"address\"},{\"internalType\":\"bytes4\",\"name\":\"sig\",\"type\":\"bytes4\"}],\"name\":\"canCall\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/kittieFight-uniswap/contracts/contracts/authority/DSAuth.sol\":\"DSAuthority\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/kittieFight-uniswap/contracts/contracts/authority/DSAuth.sol\":{\"keccak256\":\"0xea1d7e0d958384fe7fef111a9705a51c86acd6408c3e854bdbe4140a23adf8bd\",\"urls\":[\"bzz-raw://d1da7522b3253404035389a4f2a7c86da5fa93f4dfde4d6c7dd221391ad818f8\",\"dweb:/ipfs/QmVQTLfZ1uxBHsvSb6QcbespEW6Nsb2c9x9UEabNvfGdYi\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// This program is free software: you can redistribute it and/or modify\n// it under the terms of the GNU General Public License as published by\n// the Free Software Foundation, either version 3 of the License, or\n// (at your option) any later version.\n\n// This program is distributed in the hope that it will be useful,\n// but WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n// GNU General Public License for more details.\n\n// You should have received a copy of the GNU General Public License\n// along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\npragma solidity >=0.4.23;\n\ncontract DSAuthority {\n    function canCall(\n        address src, address dst, bytes4 sig\n    ) public view returns (bool);\n}\n\ncontract DSAuthEvents {\n    event LogSetAuthority (address indexed authority);\n    event LogSetOwner     (address indexed owner);\n}\n\ncontract DSAuth is DSAuthEvents {\n    DSAuthority  public  authority;\n    address      public  owner;\n\n    constructor() public {\n        owner = msg.sender;\n        emit LogSetOwner(msg.sender);\n    }\n\n    function setOwner(address owner_)\n        public\n        auth\n    {\n        owner = owner_;\n        emit LogSetOwner(owner);\n    }\n\n    function setAuthority(DSAuthority authority_)\n        public\n        auth\n    {\n        authority = authority_;\n        emit LogSetAuthority(address(authority));\n    }\n\n    modifier auth {\n        require(isAuthorized(msg.sender, msg.sig), \"ds-auth-unauthorized\");\n        _;\n    }\n\n    function isAuthorized(address src, bytes4 sig) internal view returns (bool) {\n        if (src == address(this)) {\n            return true;\n        } else if (src == owner) {\n            return true;\n        } else if (authority == DSAuthority(0)) {\n            return false;\n        } else {\n            return authority.canCall(src, address(this), sig);\n        }\n    }\n}\n",
-  "sourcePath": "/Users/ziweizhang/Desktop/rinkeby3-v0/contracts/contracts/authority/DSAuth.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/kittieFight-uniswap/contracts/contracts/authority/DSAuth.sol",
   "ast": {
-    "absolutePath": "/Users/ziweizhang/Desktop/rinkeby3-v0/contracts/contracts/authority/DSAuth.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/kittieFight-uniswap/contracts/contracts/authority/DSAuth.sol",
     "exportedSymbols": {
       "DSAuth": [
         1567
@@ -449,7 +449,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 43671,
+                        "referencedDeclaration": 42188,
                         "src": "1076:3:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -492,7 +492,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 43671,
+                          "referencedDeclaration": 42188,
                           "src": "1113:3:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -999,7 +999,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 43671,
+                              "referencedDeclaration": 42188,
                               "src": "1491:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -1028,7 +1028,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 43671,
+                              "referencedDeclaration": 42188,
                               "src": "1503:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -1120,10 +1120,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        43674,
-                        43675
+                        42191,
+                        42192
                       ],
-                      "referencedDeclaration": 43675,
+                      "referencedDeclaration": 42192,
                       "src": "1470:7:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1210,7 +1210,7 @@
                           "name": "this",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 43741,
+                          "referencedDeclaration": 42258,
                           "src": "1665:4:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_contract$_DSAuth_$1567",
@@ -1422,7 +1422,7 @@
                                       "name": "this",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 43741,
+                                      "referencedDeclaration": 42258,
                                       "src": "1902:4:7",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_contract$_DSAuth_$1567",
@@ -1762,7 +1762,7 @@
     "src": "643:1290:7"
   },
   "legacyAST": {
-    "absolutePath": "/Users/ziweizhang/Desktop/rinkeby3-v0/contracts/contracts/authority/DSAuth.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/kittieFight-uniswap/contracts/contracts/authority/DSAuth.sol",
     "exportedSymbols": {
       "DSAuth": [
         1567
@@ -2170,7 +2170,7 @@
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 43671,
+                        "referencedDeclaration": 42188,
                         "src": "1076:3:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
@@ -2213,7 +2213,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 43671,
+                          "referencedDeclaration": 42188,
                           "src": "1113:3:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -2720,7 +2720,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 43671,
+                              "referencedDeclaration": 42188,
                               "src": "1491:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -2749,7 +2749,7 @@
                               "name": "msg",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 43671,
+                              "referencedDeclaration": 42188,
                               "src": "1503:3:7",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_magic_message",
@@ -2841,10 +2841,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        43674,
-                        43675
+                        42191,
+                        42192
                       ],
-                      "referencedDeclaration": 43675,
+                      "referencedDeclaration": 42192,
                       "src": "1470:7:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2931,7 +2931,7 @@
                           "name": "this",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 43741,
+                          "referencedDeclaration": 42258,
                           "src": "1665:4:7",
                           "typeDescriptions": {
                             "typeIdentifier": "t_contract$_DSAuth_$1567",
@@ -3143,7 +3143,7 @@
                                       "name": "this",
                                       "nodeType": "Identifier",
                                       "overloadedDeclarations": [],
-                                      "referencedDeclaration": 43741,
+                                      "referencedDeclaration": 42258,
                                       "src": "1902:4:7",
                                       "typeDescriptions": {
                                         "typeIdentifier": "t_contract$_DSAuth_$1567",
@@ -3488,7 +3488,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-05-31T18:37:13.700Z",
+  "updatedAt": "2020-06-07T10:45:58.607Z",
   "devdoc": {
     "methods": {}
   },

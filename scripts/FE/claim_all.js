@@ -2,6 +2,8 @@ const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const EndowmentFund = artifacts.require('EndowmentFund')
 
+const BigNumber = web3.utils.BN;
+
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
     contract.abi.find((f) => { return f.name == funcName; }),
@@ -26,7 +28,7 @@ module.exports = async (callback) => {
     accounts = await web3.eth.getAccounts();
 
     let gameId = process.argv[4];
-
+    
     let winners = await getterDB.getWinners(gameId);
     let winner = winners.winner;
     let numberOfSupporters;

@@ -101,13 +101,16 @@ contract GameCreation is Proxied, Guard {
         uint kittieId
     )
         external
+        payable
         onlyProxy onlyPlayer
         onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
     {
         address player = getOriginalSender();
 
         //Pay Listing Fee
-        endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
+        uint listingFeeKTY = gameVarAndFee.getListingFee();
+        require(endowmentFund.contributeKTY.value(msg.value)(player, listingFeeKTY), "Need to pay listing fee");
+        //endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
 
         require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
 

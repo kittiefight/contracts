@@ -1,3 +1,4 @@
+const KFProxy = artifacts.require("KFProxy");
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require('KittieFightToken');
 const MockStaking = artifacts.require("MockStaking");
@@ -33,6 +34,7 @@ function setMessage(contract, funcName, argArray) {
 module.exports = async (callback) => {    
 
   try{
+    let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
     let staking = await MockStaking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
@@ -58,7 +60,14 @@ module.exports = async (callback) => {
     console.log("Available for claiming...");
 
     for (let i = 1; i < 4; i++) {
-      await withdrawPool.claimYield(poolId, {from: accounts[i]});
+      //await withdrawPool.claimYield(poolId, {from: accounts[i]});
+      await proxy.execute(
+        "WithdrawPool",
+        setMessage(withdrawPool, "claimYield", [0]),
+        {
+          from: accounts[i]
+        }
+      )
     }
 
     const pool_0_details = await withdrawPool.weeklyPools(0);

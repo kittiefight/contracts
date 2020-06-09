@@ -6,6 +6,8 @@ const WithdrawPool = artifacts.require("WithdrawPool");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken');
+const KtyUniswap = artifacts.require("KtyUniswap");
+
 const BigNumber = web3.utils.BN;
 require("chai")
   .use(require("chai-shallow-deep-equal"))
@@ -14,8 +16,9 @@ require("chai")
   .should();
 
 function weiToEther(w) {
-  let eth = web3.utils.fromWei(w.toString(), "ether");
-  return Math.round(parseFloat(eth));
+  return web3.utils.fromWei(w.toString(), "ether")
+  //let eth = web3.utils.fromWei(w.toString(), "ether");
+  //return Math.round(parseFloat(eth));
 }
 
 function setMessage(contract, funcName, argArray) {
@@ -38,6 +41,7 @@ module.exports = async (callback) => {
     let gameVarAndFee = await GameVarAndFee.deployed();
     let kittieFightToken = await KittieFightToken.deployed();
     let endowmentFund = await EndowmentFund.deployed();
+    let ktyUniswap = await KtyUniswap.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -62,14 +66,19 @@ module.exports = async (callback) => {
     let valueReturned = await earningsTracker.calculateTotal(web3.utils.toWei("5"), 0);
     console.log(web3.utils.fromWei(valueReturned.toString()));
     let ktyFee = await gameVarAndFee.getKTYforBurnEthie();
-    await kittieFightToken.transfer(owner, ktyFee.toString(), {
-      from: accounts[0]})
+    // await kittieFightToken.transfer(owner, ktyFee.toString(), {
+    //   from: accounts[0]})
 
-    await kittieFightToken.approve(endowmentFund.address, ktyFee.toString(), { from: owner });
-    console.log(ktyFee.toString());
-    console.log(earningsTracker.address);
+    // await kittieFightToken.approve(endowmentFund.address, ktyFee.toString(), { from: owner });
+    // console.log(ktyFee.toString());
+    // console.log(earningsTracker.address);
     await ethieToken.approve(earningsTracker.address, tokenID, { from: owner });
-    await earningsTracker.burnNFT(tokenID, { from: owner });
+
+    ether_burn_ethie = await ktyUniswap.etherFor(ktyFee)
+    console.log("KTY burn ethie fee:", weiToEther(ktyFee))
+    console.log("ether needed for swap KTY burn ethie fee:", weiToEther(ether_burn_ethie))
+    
+    await earningsTracker.burnNFT(tokenID, { from: owner, value: ether_burn_ethie});
     let newBurn = await earningsTracker.getPastEvents("EthieTokenBurnt", {
       fromBlock: 0,
       toBlock: "latest"

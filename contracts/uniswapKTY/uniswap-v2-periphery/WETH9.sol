@@ -28,9 +28,9 @@ contract WETH9 {
     mapping (address => uint)                       public  balanceOf;
     mapping (address => mapping (address => uint))  public  allowance;
 
-    // function() public payable {
-    //     deposit();
-    // }
+    function() external payable {
+        deposit();
+    }
     function deposit() public payable {
         balanceOf[msg.sender] += msg.value;
         emit Deposit(msg.sender, msg.value);

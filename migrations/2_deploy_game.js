@@ -56,7 +56,7 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
 );
 
 const INITIAL_KTY_ENDOWMENT = new BigNumber(
-    web3.utils.toWei("100000", "ether") //10.000 KTY
+    web3.utils.toWei("100000", "ether") //100.000 KTY
 );
 
 const INITIAL_ETH_ENDOWMENT = new BigNumber(
@@ -156,7 +156,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(MockStaking))
         .then(() => deployer.deploy(WithdrawPool))
         .then(() => deployer.deploy(KtyUniswap))
-        .then(() => deployer.deploy(Router, Factory.address, WETH.address))
+        .then(() => deployer.deploy(Router))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address)
@@ -198,6 +198,8 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('EthieToken', EthieToken.address)
             await proxy.addContract('KtyWethOracle', KtyWethOracle.address)
             await proxy.addContract('KtyUniswap', KtyUniswap.address)
+            await proxy.addContract('IUniswapV2Router01', Router.address)
+            await proxy.addContract('WETH9', WETH.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -359,7 +361,8 @@ module.exports = (deployer, network, accounts) => {
             await withdrawPool.initialize(MockStaking.address, SuperDaoToken.address)
             await staking.initialize(SuperDaoToken.address)
             await ktyWethOracle.initialize()
-            await ktyUniswap.initialize(Router.address, WETH.address, escrow.address)
+            await router.initialize(Factory.address, WETH.address)
+            await ktyUniswap.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             //await register.addSuperAdmin(SUPERADMIN)

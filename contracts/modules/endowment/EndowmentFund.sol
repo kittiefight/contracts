@@ -21,7 +21,6 @@ import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
 import "../endowment/HoneypotAllocationAlgo.sol";
-import "./KtyUniswap.sol";
 
 /**
  * @title EndowmentFund
@@ -37,6 +36,7 @@ contract EndowmentFund is Distribution, Guard {
     event WinnerClaimed(uint indexed gameId, address indexed winner, uint256 ethAmount, uint256 ktyAmount, address from);
     event SentKTYtoEscrow(address sender, uint256 ktyAmount, address receiver);
     event SentETHtoEscrow(address sender, uint256 ethAmount, address receiver);
+    event EthSwappedforKTY(address sender, uint256 ethAmount, uint256 ktyAmount, address ktyReceiver);
 
     enum HoneypotState {
         created,
@@ -169,22 +169,24 @@ contract EndowmentFund is Distribution, Guard {
     }
 
     /**
-     * @dev accepts KTY. KTY is transfered to in escrow
+     * @dev accepts KTY. KTY is swapped in uniswap.
+     * @dev KTY is sent to escrow. Ether is sent to KTY-WETH pair contract by the user.
+     * @dev Escrow sends 2x of KTY received in swap to KTY-WETH pair contract to maintain the
+     *      original ether to KTY ratio.
      */
-     
     function contributeKTY(address _sender, uint256 _kty_amount) external payable returns(bool) {
+        uint etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(_kty_amount);
+        // allow an error within 0.0001 ether range, which is around $0.002 USD, that is, 0.2 cents.
+        require(msg.value >= etherForSwap.sub(10000000000000), "Insufficient ether for swap KTY");
         // exchange KTY on uniswap
-        uint256 ethersNeeded = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(_kty_amount);
-        require(msg.value >= ethersNeeded, "Insufficient ethers");
-        KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).swapEthForKtyEndowment();
-        // do transfer of KTY
-        // if (!kittieFightToken.transferFrom(_sender, address(escrow), _kty_amount)){
-        //     return false;
-        // }
+        IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
+            0,
+            path,
+            address(escrow),
+            2**255
+        );
 
-        endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
-
-        emit SentKTYtoEscrow(_sender, _kty_amount, address(escrow));
+        emit EthSwappedforKTY(_sender, msg.value, _kty_amount, address(escrow));
 
         return true;
     }
@@ -285,7 +287,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev transfer Escrow KFT funds
     */
-    function transferKTYfromEscrow(address payable _someAddress, uint256 _kty_amount)
+    function transferKTYfromEscrow(address _someAddress, uint256 _kty_amount)
     private
     returns(bool){
         // require(address(_someAddress) != address(0));
@@ -349,4 +351,5 @@ contract EndowmentFund is Distribution, Guard {
     function isEndowmentUpgradabe() public view returns(bool){
         return (address(escrow.owner) != address(this));
     }
+
 }
