@@ -186,6 +186,8 @@ contract EndowmentFund is Distribution, Guard {
             2**255
         );
 
+        endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
+
         emit EthSwappedforKTY(_sender, msg.value, _kty_amount, address(escrow));
 
         return true;

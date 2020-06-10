@@ -3,6 +3,8 @@ const GMGetterDB = artifacts.require('GMGetterDB')
 const GameManager = artifacts.require('GameManager')
 const Betting = artifacts.require('Betting')
 const DateTime = artifacts.require('DateTime')
+const GameStore = artifacts.require('GameStore')
+const KtyUniswap = artifacts.require("KtyUniswap");
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -26,6 +28,12 @@ function timeout(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
+function weiToEther(w) {
+  //let eth = web3.utils.fromWei(w.toString(), "ether");
+  //return Math.round(parseFloat(eth));
+  return web3.utils.fromWei(w.toString(), "ether");
+}
+
 //truffle exec scripts/FE/placeBets.js gameId(uint) noOfBets(uint) timeBetweenBets[uint(seconds)] maxAmountToBet
 
 module.exports = async (callback) => {
@@ -35,6 +43,8 @@ module.exports = async (callback) => {
     let getterDB = await GMGetterDB.deployed();
     let betting = await Betting.deployed();
     let dateTime = await DateTime.deployed();
+    let gameStore = await GameStore.deployed();
+    let ktyUniswap = await KtyUniswap.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -57,9 +67,16 @@ module.exports = async (callback) => {
 
     let state = await getterDB.getGameState(gameId);
     console.log(state);
+    
+    let kty_betting = await gameStore.getBettingFee(1);
+    let ether_betting
 
     for(let i=0; i<noOfBets; i++){
       let randomPlayer = randomValue(2);
+
+      ether_betting = await ktyUniswap.etherFor(kty_betting)
+      ether_betting = Number(weiToEther(ether_betting))
+      console.log("ether_betting:", ether_betting)
 
 
       if(i == (Number(noOfBets) - 1)){
@@ -82,7 +99,7 @@ module.exports = async (callback) => {
         supportedPlayer = accounts[((Number(randomSupporter)) + 10)];
 
         await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-        [gameId, randomValue(98)]), { from: supportedPlayer, value: web3.utils.toWei(String(betAmount)) });
+        [gameId, randomValue(98)]), { from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting)) });
 
         betsBlack.push(betAmount);
       }
@@ -94,7 +111,7 @@ module.exports = async (callback) => {
         supportedPlayer = accounts[((Number(randomSupporter)) + 30)];
 
         await proxy.execute('GameManager', setMessage(gameManager, 'bet',
-        [gameId, randomValue(98)]), { from: supportedPlayer, value: web3.utils.toWei(String(betAmount)) });
+        [gameId, randomValue(98)]), { from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting)) });
         
         betsRed.push(betAmount);
       }
