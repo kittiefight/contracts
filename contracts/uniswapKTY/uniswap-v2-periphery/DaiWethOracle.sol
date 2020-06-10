@@ -66,38 +66,4 @@ contract DaiWethOracle is Proxied {
     {
         return UniswapV2Library.quote(_amountA, _reserveA, _reserveB);
     }
-
-    function getAmountOut(uint _amountIn, uint _reserveIn, uint _reserveOut)
-        public pure returns (uint)
-    {
-        return UniswapV2Library.getAmountOut(_amountIn, _reserveIn, _reserveOut);
-    }
-
-    function getAmountsOut(address _pair, uint _amountIn, address[] memory _path)
-        public view returns (uint[] memory amounts)
-    {
-        return UniswapV2Library.getAmountsOut(_pair, _amountIn, _path);
-    }
-
-    function getAmountIn(uint _amountOut, uint _reserveIn, uint _reserveOut)
-        public pure returns (uint)
-    {
-        return UniswapV2Library.getAmountOut(_amountOut, _reserveIn, _reserveOut);
-    }
-
-    function pairFor(address _factory, address _tokenA, address _tokenB)
-        public pure returns (address pair)
-    {
-        return UniswapV2Library.pairFor(_factory, _tokenA, _tokenB);
-    }
-
-    // note this will always return 0 before update has been called successfully for the first time.
-    function consult(address token, uint amountIn) external view returns (uint amountOut) {
-        if (token == token0) {
-            amountOut = price0Average.mul(amountIn).decode144();
-        } else {
-            require(token == token1, 'ExampleOracleSimple: INVALID_TOKEN');
-            amountOut = price1Average.mul(amountIn).decode144();
-        }
-    }
 }

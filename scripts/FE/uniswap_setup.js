@@ -155,7 +155,7 @@ module.exports = async callback => {
     // daiWethPair info
     let daiReserve = await ktyUniswap.getReserveDAI();
     let ethReserveFromDai = await ktyUniswap.getReserveETHfromDAI();
-    console.log("reserveKTY:", weiToEther(daiReserve));
+    console.log("reserveDAI:", weiToEther(daiReserve));
     console.log("reserveETH:", weiToEther(ethReserveFromDai));
 
     let ether_dai_ratio = await ktyUniswap.ETH_DAI_ratio();

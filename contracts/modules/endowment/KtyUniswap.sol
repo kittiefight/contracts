@@ -21,9 +21,6 @@ contract KtyUniswap is Proxied, Guard {
     IDaiWethPair public daiWethPair;
     DaiWethOracle public daiWethOracle;
 
-    //===================== Events ===================
-    event Swapped(address indexed msgSender, uint256 ethAmout, uint256 time);
-
     //===================== Initializer ===================
     function initialize() public onlyOwner {
         ktyWethPair = IUniswapV2Pair(proxy.getContract(CONTRACT_NAME_UNISWAPV2_PAIR));
@@ -61,7 +58,7 @@ contract KtyUniswap is Proxied, Guard {
         address dai = proxy.getContract(CONTRACT_NAME_DAI);
         address weth = proxy.getContract(CONTRACT_NAME_WETH);
 
-        (token0, token1) = ktyWethOracle.sortTokens(dai, weth);
+        (token0, token1) = daiWethOracle.sortTokens(dai, weth);
 
         if (token0 == dai) {
             return true;
