@@ -44,7 +44,9 @@ const KtyWethPair = artifacts.require('IUniswapV2Pair')
 const KtyWethOracle = artifacts.require('KtyWethOracle')
 const KtyUniswap = artifacts.require('KtyUniswap')
 const Router = artifacts.require('UniswapV2Router01')
-
+const Dai = artifacts.require('Dai')
+const DaiWethPair = artifacts.require('IDaiWethPair')
+const DaiWethOracle = artifacts.require('DaiWethOracle')
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -157,6 +159,8 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(WithdrawPool))
         .then(() => deployer.deploy(KtyUniswap))
         .then(() => deployer.deploy(Router))
+        .then(() => deployer.deploy(Dai, 1))
+        .then(() => deployer.deploy(DaiWethOracle))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address)
@@ -198,8 +202,10 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('EthieToken', EthieToken.address)
             await proxy.addContract('KtyWethOracle', KtyWethOracle.address)
             await proxy.addContract('KtyUniswap', KtyUniswap.address)
-            await proxy.addContract('IUniswapV2Router01', Router.address)
+            await proxy.addContract('UniswapV2Router01', Router.address)
             await proxy.addContract('WETH9', WETH.address)
+            await proxy.addContract('Dai', Dai.address)
+            await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -255,13 +261,23 @@ module.exports = (deployer, network, accounts) => {
             console.log("factory:", factory.address)
 
             await factory.createPair(weth.address, kittieFightToken.address)
-            const pairAddress = await factory.getPair(weth.address, kittieFightToken.address)
-            console.log("pair address", pairAddress)
-            const ktyWethPair = await KtyWethPair.at(pairAddress);
+            const ktyPairAddress = await factory.getPair(weth.address, kittieFightToken.address)
+            console.log("ktyWethPair address", ktyPairAddress)
+            const ktyWethPair = await KtyWethPair.at(ktyPairAddress);
             console.log("ktyWethPair:", ktyWethPair.address)
-            await proxy.addContract('IUniswapV2Pair', ktyWethPair.address)
+            await proxy.addContract('UniswapV2Pair', ktyWethPair.address)
             ktyWethOracle = await KtyWethOracle.deployed()
             console.log("ktyWethOracle:", ktyWethOracle.address)
+
+            dai = await Dai.deployed()
+            await factory.createPair(weth.address, dai.address)
+            const daiPairAddress = await factory.getPair(weth.address, dai.address)
+            console.log("daiWethPair address", daiPairAddress)
+            const daiWethPair = await DaiWethPair.at(daiPairAddress);
+            console.log("daiWethPair:", daiWethPair.address)
+            await proxy.addContract('IDaiWethPair', daiWethPair.address)
+            daiWethOracle = await DaiWethOracle.deployed()
+            console.log("daiWethOracle:", daiWethOracle.address)
 
             router = await Router.deployed()
 
@@ -340,6 +356,7 @@ module.exports = (deployer, network, accounts) => {
             await withdrawPool.setProxy(proxy.address)
             await ktyWethOracle.setProxy(proxy.address)
             await ktyUniswap.setProxy(proxy.address)
+            await daiWethOracle.setProxy(proxy.address)
 
             console.log("Proxy: ", proxy.address);
 
@@ -363,6 +380,7 @@ module.exports = (deployer, network, accounts) => {
             await ktyWethOracle.initialize()
             await router.initialize(Factory.address, WETH.address)
             await ktyUniswap.initialize()
+            await daiWethOracle.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             //await register.addSuperAdmin(SUPERADMIN)

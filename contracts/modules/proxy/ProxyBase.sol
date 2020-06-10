@@ -41,4 +41,7 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfKtyWethOracle() public view returns(address)     {return getContract(CONTRACT_NAME_KTY_WETH_ORACLE);}
      function addressOfKtyUniswap() public view returns(address)     {return getContract(CONTRACT_NAME_KTY_UNISWAP);}
      function addressOfWETH() public view returns(address)     {return getContract(CONTRACT_NAME_WETH);}
+     function addressOfDAI() public view returns(address)     {return getContract(CONTRACT_NAME_DAI);}
+     function addressOfDaiWethPair() public view returns(address)     {return getContract(CONTRACT_NAME_DAI_WETH_PAIR);}
+     function addressOfDaiWethOracle() public view returns(address)     {return getContract(CONTRACT_NAME_DAI_WETH_ORACLE);}
 }

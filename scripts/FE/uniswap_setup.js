@@ -4,19 +4,26 @@ const Escrow = artifacts.require("Escrow");
 const KittieFightToken = artifacts.require("KittieFightToken");
 const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
-const KtyWethPair = artifacts.require("IUniswapV2Pair");
+const KtyWethPair = artifacts.require("UniswapV2Pair");
 const KtyWethOracle = artifacts.require("KtyWethOracle");
 const KtyUniswap = artifacts.require("KtyUniswap");
 const Router = artifacts.require("UniswapV2Router01");
+const Dai = artifacts.require("Dai");
+const DaiWethPair = artifacts.require("IDaiWethPair");
+const DaiWethOracle = artifacts.require("DaiWethOracle");
 
 const BigNumber = web3.utils.BN;
 
 const ethAmount = new BigNumber(
-  web3.utils.toWei("100", "ether") //5 ethers
+  web3.utils.toWei("100", "ether") //100 ethers
 );
 
 const ktyAmount = new BigNumber(
   web3.utils.toWei("50000", "ether") //100 ethers * 500 = 50,000 kty
+);
+
+const daiAmount = new BigNumber(
+  web3.utils.toWei("24191.54", "ether") //100 ethers * 241.9154 dai/ether = 24191.54 kty
 );
 
 const swapAmount = new BigNumber(
@@ -71,9 +78,11 @@ module.exports = async callback => {
     console.log("KTY address:", kittieFightToken.address);
     let weth = await WETH.deployed();
     console.log("Wrapped ether address:", weth.address);
+    let dai = await Dai.deployed();
     let factory = await Factory.deployed();
     console.log("factory address:", factory.address);
     let ktyWethOracle = await KtyWethOracle.deployed();
+    let daiWethOracle = await DaiWethOracle.deployed()
     let ktyUniswap = await KtyUniswap.deployed();
     let router = await Router.deployed();
 
@@ -81,12 +90,6 @@ module.exports = async callback => {
     console.log("router_factory:", router_factory);
     let router_WETH = await router.WETH();
     console.log("router WETH:", router_WETH);
-
-    // token0 will be KTY in the pair contract on mainnet, verifed as below
-    const wethMainnet = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-    const ktyMainnet = "0x7e9f9f3b323582584526d9f83276338c89f8fbe7";
-    let tokenOrder = await ktyWethOracle.sortTokens(wethMainnet, ktyMainnet);
-    console.log("token order in pair contract on mainnet:", tokenOrder);
 
     const pairAddress = await factory.getPair(
       weth.address,
@@ -96,6 +99,21 @@ module.exports = async callback => {
     const ktyWethPair = await KtyWethPair.at(pairAddress);
     console.log("ktyWethPair:", ktyWethPair.address);
     await router.setKtyWethPairAddr(ktyWethPair.address);
+
+    const daiPairAddress = await factory.getPair(
+      weth.address,
+      dai.address
+    );
+    console.log("dai-weth pair address", daiPairAddress);
+    const daiWethPair = await DaiWethPair.at(daiPairAddress);
+    console.log("daiWethPair:", daiWethPair.address);
+
+    await dai.mint(accounts[0], daiAmount)
+
+    await dai.transfer(daiWethPair.address, daiAmount);
+    await weth.deposit({value: ethAmount});
+    await weth.transfer(daiWethPair.address, ethAmount);
+    await daiWethPair.mint(accounts[10]);
 
     await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
     await weth.deposit({value: ethAmount});
@@ -133,6 +151,44 @@ module.exports = async callback => {
       "KTY:",
       weiToEther(etherNeeded)
     );
+
+    // daiWethPair info
+    let daiReserve = await ktyUniswap.getReserveDAI();
+    let ethReserveFromDai = await ktyUniswap.getReserveETHfromDAI();
+    console.log("reserveKTY:", weiToEther(daiReserve));
+    console.log("reserveETH:", weiToEther(ethReserveFromDai));
+
+    let ether_dai_ratio = await ktyUniswap.ETH_DAI_ratio();
+    let dai_ether_ratio = await ktyUniswap.DAI_ETH_ratio();
+    console.log(
+      "Ether to DAI ratio:",
+      "1 ether to",
+      weiToEther(ether_dai_ratio),
+      "DAI"
+    );
+    console.log(
+      "DAI to Ether ratio:",
+      "1 DAI to",
+      weiToEther(dai_ether_ratio),
+      "ether"
+    );
+
+    let kty_dai_ratio = await ktyUniswap.KTY_DAI_ratio();
+    let dai_kty_ratio = await ktyUniswap.DAI_KTY_ratio();
+    console.log(
+      "KTY to DAI ratio:",
+      "1 KTY to",
+      weiToEther(kty_dai_ratio),
+      "DAI"
+    );
+    console.log(
+      "DAI to KTY ratio:",
+      "1 DAI to",
+      weiToEther(dai_kty_ratio),
+      "KTY"
+    );
+
+    
 
     callback();
   } catch (e) {

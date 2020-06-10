@@ -40,9 +40,12 @@ contract ContractNames {
     string constant CONTRACT_NAME_EARNINGS_TRACKER  = "EarningsTracker";
     string constant CONTRACT_NAME_WITHDRAW_POOL   = "WithdrawPool";
     string constant CONTRACT_NAME_ETHIETOKEN   = "EthieToken";
-    string constant CONTRACT_NAME_UNISWAPV2_PAIR   = "IUniswapV2Pair";
-    string constant CONTRACT_NAME_UNISWAPV2_ROUTER   = "IUniswapV2Router01";
+    string constant CONTRACT_NAME_UNISWAPV2_PAIR   = "UniswapV2Pair";
+    string constant CONTRACT_NAME_UNISWAPV2_ROUTER   = "UniswapV2Router01";
     string constant CONTRACT_NAME_KTY_WETH_ORACLE   = "KtyWethOracle";
     string constant CONTRACT_NAME_KTY_UNISWAP   = "KtyUniswap";
     string constant CONTRACT_NAME_WETH = "WETH9";
+    string constant CONTRACT_NAME_DAI = "Dai";
+    string constant CONTRACT_NAME_DAI_WETH_PAIR = "IDaiWethPair";
+    string constant CONTRACT_NAME_DAI_WETH_ORACLE   = "DaiWethOracle";
 }
