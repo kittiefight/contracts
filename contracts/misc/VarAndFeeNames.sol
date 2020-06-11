@@ -45,4 +45,5 @@ contract VarAndFeeNames {
     bytes32 constant KTY_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, "ktyForBurnEthie"));
     bytes32 constant INTEREST_ETHIE         = keccak256(abi.encodePacked(TABLE_NAME, "interestEthie"));
     bytes32 constant PERCENTAGE_FOR_POOL    = keccak256(abi.encodePacked(TABLE_NAME, "percentageForPool"));
+    bytes32 constant PERCENTAGE_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, "percentageForBurnEthie"));
 }

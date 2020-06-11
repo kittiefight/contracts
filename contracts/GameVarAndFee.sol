@@ -326,12 +326,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_KITTIE_SACRIFICE_NUM);
     }
 
-    function getKTYforBurnEthie()
+    function getPercentageforBurnEthie()
         public view returns(uint)
     {
-        uint burnEthieKTY = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KTY_FOR_BURN_ETHIE);
-        uint burnEthieETH = convertKtyToEth(burnEthieKTY);
-        return convertEthToDai(burnEthieETH);
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_BURN_ETHIE);
+       
     }
 
     /// @notice Gets the weekly interest rate for EthieToken NFT

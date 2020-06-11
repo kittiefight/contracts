@@ -65,7 +65,7 @@ module.exports = async (callback) => {
 
     let valueReturned = await earningsTracker.calculateTotal(web3.utils.toWei("5"), 0);
     console.log(web3.utils.fromWei(valueReturned.toString()));
-    let ktyFee = await gameVarAndFee.getKTYforBurnEthie();
+    let ktyFee = await earningsTracker.KTYforBurnEthie(tokenID);
     // await kittieFightToken.transfer(owner, ktyFee.toString(), {
     //   from: accounts[0]})
 

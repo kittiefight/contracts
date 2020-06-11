@@ -100,7 +100,7 @@ const PERCENTAGE_FOR_LISTING_FEE = 10000 // 1%
 const PERCENTAGE_FOR_TICKET_FEE = 300  // 0.03%
 const PERCENTAGE_FOR_BETTING_FEE = 20  // 0.002%
 const PERCENTAGE_HONEYPOT_ALLOCATION_KTY = 100000  //10%
-const KTY_FOR_BURN_ETHIE = new BigNumber(web3.utils.toWei("100", "ether"));
+const PERCENTAGE_FOR_BURN_ETHIE = 2000  // 0.2%
 const INTEREST_ETHIE = 100000 // 10%
 // =================================================== //
 
@@ -403,8 +403,8 @@ module.exports = (deployer, network, accounts) => {
                 'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
                 'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
                 'percentageForBettingFee', 'usdKTYPrice', 'requiredKittieSacrificeNum',
-                'percentageHoneypotAllocationKTY', 'ktyForBurnEthie', 'interestEthie', 'percentageForPool',
-                'timeExtension', 'performanceTime'
+                'percentageHoneypotAllocationKTY', 'interestEthie', 'percentageForPool',
+                'timeExtension', 'performanceTime', "percentageForBurnEthie"
             ];
 
             let bytesNames = [];
@@ -417,8 +417,8 @@ module.exports = (deployer, network, accounts) => {
                 HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
                 OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
                 PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM,
-                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, KTY_FOR_BURN_ETHIE.toString(), INTEREST_ETHIE, PERCENTAGE_FOR_POOL,
-                TIME_EXTENSION, PERFORMANCE_TIME_CHECK
+                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, INTEREST_ETHIE, PERCENTAGE_FOR_POOL,
+                TIME_EXTENSION, PERFORMANCE_TIME_CHECK, PERCENTAGE_FOR_BURN_ETHIE
             ];
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))

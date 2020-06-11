@@ -231,7 +231,7 @@ contract EarningsTracker is Proxied, Guard {
         require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
-        uint256 _kty_fee = KTYforBurnEthie();
+        uint256 _kty_fee = KTYforBurnEthie(_ethieTokenID);
         require(endowmentFund.contributeKTY.value(msg.value)(msgSender, _kty_fee),
                 "Failed to pay KTY fee for burning Ethie Token");
 
@@ -590,8 +590,13 @@ contract EarningsTracker is Proxied, Guard {
     /**
      * @dev gets the required KTY fee for burning an Ethie Token NFT
      */
-    function KTYforBurnEthie() public view returns (uint256) {
-        return gameVarAndFee.getKTYforBurnEthie();
+    function KTYforBurnEthie(uint256 ethieTokenID) public view returns (uint256) {
+        uint256 percentageBurnEthie = gameVarAndFee.getPercentageforBurnEthie();
+        uint256 eth_amount = ethieTokens[ethieTokenID].ethValue;
+        uint256 startingEpoch = ethieTokens[ethieTokenID].startingEpochID;
+        uint256 withdrawAmountETH = calculateTotal(eth_amount, startingEpoch);
+        uint256 withdrawAmountKTY = gameVarAndFee.convertEthToKty(withdrawAmountETH);
+        return withdrawAmountKTY.mul(percentageBurnEthie).div(1000000);
     }
 
     //============================ Internal Functions ============================
