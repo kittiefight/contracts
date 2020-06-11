@@ -73,7 +73,7 @@ const DAI_rinkeby_ADDRESS = '0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa'
 
 
 // DAI-WETH pair address on uniswap rinkeby
-const DaiWethPair_rinkeby_ADDRESS 
+const DaiWethPair_rinkeby_ADDRESS = '0x03e6c12ef405ac3f642b9184eded8e1322de1a9e'
 
 // ethieToken address on uniswap rinkeby
 const EthieToken_rinkeby_ADDRESS = '0x9aD6dB03136d3DD65D639A94F07dD5f0e77C00A7'
