@@ -85,6 +85,7 @@ contract GameStore is Proxied, Guard {
         return gameSettings[gameId].distributionRates;
     }
 
+    // return amount in dai
     function calculateDynamicFee
     (
         uint256 percentageHoneyPot,
@@ -95,15 +96,26 @@ contract GameStore is Proxied, Guard {
     {
         require(percentageHoneyPot > 0 && _eth_amount > 0 && _kty_amount > 0, "Destroyed");
 
-        uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
-        uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
+        // uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
+        // uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
+
+        // convert ether to dai
+        uint256 portion1DAI = gameVarAndFee.convertEthToDai(_eth_amount);
+
+        // convert kty to ether, then to dai
+        uint256 portion2ETH = gameVarAndFee.convertKtyToEth(_kty_amount);
+        uint256 portion2DAI = gameVarAndFee.convertEthToDai(portion2ETH);
+
+        // get the whole amount
+        uint256 portionDAI = portion1DAI.add(portion2DAI);
 
         // 1,000,000 is the base used for percentage setting in kittieFight
         // for example, if percentageHoneyPot is 0.03% in real world, inside this function
         // percentageHoneyPot = 0.03% * 1,000,1000 which is 300, thus for the need of div(1000000)
-        return ((_eth_amount.mul(ethUsdPrice).mul(percentageHoneyPot).div(usdKTYPrice)).add((_kty_amount.mul(percentageHoneyPot)))).div(1000000);
+        return portionDAI.mul(percentageHoneyPot).div(1000000);
     }
 
+    // update kittieRedemptionFee and store in Dai
     function updateKittieRedemptionFee(uint256 gameId)
         public
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
@@ -116,6 +128,7 @@ contract GameStore is Proxied, Guard {
         startGameAndCalculateEpoch(gameVarAndFee.getGameTimes().add(now));
     }
 
+    // update Ticket Fee and store in Dai
     function updateTicketFee(uint256 gameId)
         public
         onlyContract(CONTRACT_NAME_GAMECREATION)
@@ -125,6 +138,7 @@ contract GameStore is Proxied, Guard {
         gameSettings[gameId].ticketFee = calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
     }
 
+    // update Betting Fee and store in Dai
     function updateBettingFee(uint256 gameId)
         public
         onlyContract(CONTRACT_NAME_GAMECREATION)
@@ -138,8 +152,14 @@ contract GameStore is Proxied, Guard {
         return  gameSettings[gameId].kittieHellExpirationTime;
     }
 
-    function getKittieRedemptionFee(uint gameId) public view returns(uint){
-        return  gameSettings[gameId].redemptionFee;
+    function getKittieRedemptionFee(uint256 gameId) public view returns(uint){
+        // get fee in dai
+        uint256 redemptionFeeDAI = gameSettings[gameId].redemptionFee;
+        // cocnvert dai to ether
+        uint256 redemptionFeeETH = gameVarAndFee.convertDaiToEth(redemptionFeeDAI);
+        // convert ether to KTY
+        uint256 redemptionFeeKTY = gameVarAndFee.convertEthToKty(redemptionFeeETH);
+        return  redemptionFeeKTY;
     }
     
     function getHoneypotExpiration(uint gameId) public view returns(uint){
@@ -175,12 +195,25 @@ contract GameStore is Proxied, Guard {
         return gameByPlayer[gameId][player].secondTopBettor;
     }
 
-    function getTicketFee(uint gameId) public view returns(uint){
-        return gameSettings[gameId].ticketFee;
+    function getTicketFee(uint256 gameId) public view returns(uint){
+        // get ticket fee in dai
+        uint256 ticketFeeDAI = gameSettings[gameId].ticketFee;
+        // convert dai to ether
+        uint256 ticketFeeETH = gameVarAndFee.convertDaiToEth(ticketFeeDAI);
+        // covert ether to KTY
+        uint256 ticketFeeKTY = gameVarAndFee.convertEthToKty(ticketFeeETH);
+
+        return ticketFeeKTY;
     }
 
     function getBettingFee(uint gameId) public view returns(uint){
-        return gameSettings[gameId].bettingFee;
+        // get betting fee in dai
+        uint256 bettingFeeDAI = gameSettings[gameId].bettingFee;
+        // convert dai to ether
+        uint256 bettingFeeETH = gameVarAndFee.convertDaiToEth(bettingFeeDAI);
+        // covert ether to KTY
+        uint256 bettingFeeKTY = gameVarAndFee.convertEthToKty(bettingFeeETH);
+        return bettingFeeKTY;
     }
 
     function getMinimumContributors(uint gameId) public view returns(uint){
@@ -188,7 +221,14 @@ contract GameStore is Proxied, Guard {
     }
 
     function getFinalizeRewards(uint gameId) public view returns(uint){
-        return gameSettings[gameId].finalizeRewards;
+        // get finalize rewards in dai
+        uint256 rewardsDAI = gameSettings[gameId].finalizeRewards;
+        // convert dai to ether
+        uint256 rewardsETH = gameVarAndFee.convertDaiToEth(rewardsDAI);
+        // covert ether to KTY
+        uint256 rewardsKTY = gameVarAndFee.convertEthToKty(rewardsETH);
+
+        return rewardsKTY;
     }
 
     function getPerformanceTimeCheck(uint gameId) public view returns(uint){

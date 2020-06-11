@@ -136,6 +136,16 @@ contract KtyUniswap is Proxied, Guard {
         return _ktyAmount.mul(KTY_ETH_price()).div(1000000000000000000);
     }
 
+    /**
+     * @dev returns the ether KTY price on uniswap, that is, how many KTYs for 1 ether
+     */
+    function ETH_KTY_price() public view returns (uint256) {
+        uint256 _amountETH = 1e18;  // 1 KTY
+        uint256 _reserveKTY = getReserveKTY();
+        uint256 _reserveETH = getReserveETH();
+        return ktyWethOracle.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
+    }
+
 
     /**
      * @dev returns the KTY to ether ratio on uniswap, that is, how many ether for 1 KTY
@@ -202,7 +212,7 @@ contract KtyUniswap is Proxied, Guard {
     }
 
     /**
-     * @dev returns the ether to DAI price on uniswap, that is, how many DAI for 1 etjer
+     * @dev returns the ether to DAI price on uniswap, that is, how many DAI for 1 ether
      */
     function ETH_DAI_price() public view returns (uint256) {
         uint256 _amountETH = 1e18;  // 1 KTY

@@ -108,7 +108,13 @@ contract EndowmentFund is Distribution, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns(bool)
     {
-        uint reward = gameVarAndFee.getFinalizeRewards();
+        // get reward amount in KTY
+        uint rewardDAI = gameVarAndFee.getFinalizeRewards();
+        // convert from Dai to ether
+        uint rewardETH = gameVarAndFee.convertDaiToEth(rewardDAI);
+        // convert from ether to KTY
+        uint reward = gameVarAndFee.convertEthToKty(rewardETH);
+
         transferKTYfromEscrow(address(uint160(user)), reward);
         return true;
     }

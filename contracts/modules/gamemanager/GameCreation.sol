@@ -108,7 +108,13 @@ contract GameCreation is Proxied, Guard {
         address player = getOriginalSender();
 
         //Pay Listing Fee
-        uint listingFeeKTY = gameVarAndFee.getListingFee();
+        // get listing fee in Dai
+        uint listingFeeDAI = gameVarAndFee.getListingFee();
+        // convert dai to ether
+        uint listingFeeETH = gameVarAndFee.convertDaiToEth(listingFeeDAI);
+        // convert ether to KTY
+        uint listingFeeKTY = gameVarAndFee.convertEthToKty(listingFeeETH);
+
         require(endowmentFund.contributeKTY.value(msg.value)(player, listingFeeKTY), "Need to pay listing fee");
         //endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
 

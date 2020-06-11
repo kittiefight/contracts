@@ -309,7 +309,7 @@ contract GameManager is Proxied, Guard {
         endowmentFund.updateHoneyPotState(gameId, 5);
 
         // update kittie redemption fee dynamically to a percentage of the final honey pot
-        gameStore.updateKittieRedemptionFee(gameId); /*TO BE FIXED*/
+        gameStore.updateKittieRedemptionFee(gameId); 
 
         //Send Finalize reward
         endowmentFund.sendFinalizeRewards(getOriginalSender());
