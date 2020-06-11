@@ -51,7 +51,33 @@ const DaiWethOracle = artifacts.require('DaiWethOracle')
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
 //Rinkeby address of KittieFightToken
-//const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
+const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
+
+// last GenericDB address
+const GenericDB_rinkeby_ADDRESS = '0x5e3361359DE7f5F0DD55Fbdc596b52D3f3aF572E'
+
+// uniswap router address on rinkeby
+const Router_rinkeby_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+
+// uniswap factory address on rinkeby
+const Factory_rinkeby_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+
+// KTY-WETH pair address on uniswap rinkeby
+const KtyWethPair_rinkeby_ADDRESS = '0x0307f75D6E12c182E56B056799f72DA7Dff67f98'
+
+// WETH address on rinkeby
+const WETH_rinkeby_ADDRESS = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
+
+// DAI address on rinkeby
+const DAI_rinkeby_ADDRESS = '0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa'
+
+
+// DAI-WETH pair address on uniswap rinkeby
+const DaiWethPair_rinkeby_ADDRESS 
+
+// ethieToken address on uniswap rinkeby
+const EthieToken_rinkeby_ADDRESS = '0x9aD6dB03136d3DD65D639A94F07dD5f0e77C00A7'
+
 
 const ERC20_TOKEN_SUPPLY = new BigNumber(
     web3.utils.toWei("100000000", "ether") //100 Million
@@ -73,11 +99,11 @@ const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
 const GAME_PRESTART = 50 // 2 min
 const GAME_DURATION = 80 // 5 min
-const PERFORMANCE_TIME_CHECK = 1
-const TIME_EXTENSION = 1
+const PERFORMANCE_TIME_CHECK = 60
+const TIME_EXTENSION = 60
 const ETH_PER_GAME = new BigNumber(web3.utils.toWei("20", "ether")); //$50,000 / (@ $236.55 USD/ETH)
 const TOKENS_PER_GAME = new BigNumber(web3.utils.toWei("2000", "ether")); // 1,000 KTY
-const GAME_TIMES = 60 //Scheduled games 10 min apart
+const GAME_TIMES = 600 //Scheduled games 10 min apart
 const KITTIE_HELL_EXPIRATION = 60*60*24 //1 day
 const HONEY_POT_EXPIRATION = 60*60*23// 23 hours
 const KITTIE_REDEMPTION_FEE = new BigNumber(web3.utils.toWei("100", "ether")); //37,500 KTY
@@ -104,7 +130,7 @@ const PERCENTAGE_FOR_BURN_ETHIE = 2000  // 0.2%
 const INTEREST_ETHIE = 100000 // 10%
 // =================================================== //
 
-//const SUPERADMIN = "0x87bb3231920fB8b6F9901006b3a78b0dbAB57246";
+const SUPERADMIN = "0x87bb3231920fB8b6F9901006b3a78b0dbAB57246";
 
 function setMessage(contract, funcName, argArray) {
     return web3.eth.abi.encodeFunctionCall(
@@ -114,7 +140,7 @@ function setMessage(contract, funcName, argArray) {
 }
 
 module.exports = (deployer, network, accounts) => {
-    //console.log(SUPERADMIN);
+    console.log(SUPERADMIN);
 
     let medianizer;
 
@@ -135,9 +161,9 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(FreezeInfo))
         .then(() => deployer.deploy(CronJobTarget))
         .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-        .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
-        .then(() => deployer.deploy(WETH))
-        .then(() => deployer.deploy(Factory, accounts[0]))
+        //.then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+        //.then(() => deployer.deploy(WETH))
+        //.then(() => deployer.deploy(Factory, accounts[0]))
         .then(() => deployer.deploy(KtyWethOracle))
         .then(() => deployer.deploy(CryptoKitties))
         .then(() => deployer.deploy(GameManager))
@@ -153,13 +179,13 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(RarityCalculator))
         .then(() => deployer.deploy(EndowmentFund))
         .then(() => deployer.deploy(KittieHELL))
-        .then(() => deployer.deploy(EthieToken))
+        //.then(() => deployer.deploy(EthieToken))
         .then(() => deployer.deploy(EarningsTracker))
         .then(() => deployer.deploy(MockStaking))
         .then(() => deployer.deploy(WithdrawPool))
         .then(() => deployer.deploy(KtyUniswap))
-        .then(() => deployer.deploy(Router))
-        .then(() => deployer.deploy(Dai, 1))
+        //.then(() => deployer.deploy(Router))
+        //.then(() => deployer.deploy(Dai, 1))
         .then(() => deployer.deploy(DaiWethOracle))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
@@ -169,11 +195,12 @@ module.exports = (deployer, network, accounts) => {
         .then(async(proxy) => {
             console.log('\nAdding contract names to proxy...');
             await proxy.addContract('TimeContract', DateTime.address)
-            await proxy.addContract('GenericDB', GenericDB.address)
+            //await proxy.addContract('GenericDB', GenericDB.address)
+            await proxy.addContract('GenericDB', GenericDB_rinkeby_ADDRESS)
             await proxy.addContract('CryptoKitties', CryptoKitties.address);
             await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-            await proxy.addContract('KittieFightToken', KittieFightToken.address);
-            //await proxy.addContract('KittieFightToken', KTY_ADDRESS);
+            //await proxy.addContract('KittieFightToken', KittieFightToken.address);
+            await proxy.addContract('KittieFightToken', KTY_ADDRESS);
             await proxy.addContract('ProfileDB', ProfileDB.address);
             await proxy.addContract('RoleDB', RoleDB.address);
             await proxy.addContract('Register', Register.address)
@@ -199,132 +226,146 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
             await proxy.addContract('EarningsTracker', EarningsTracker.address)
             await proxy.addContract('WithdrawPool', WithdrawPool.address)
-            await proxy.addContract('EthieToken', EthieToken.address)
+            //await proxy.addContract('EthieToken', EthieToken.address)
+            await proxy.addContract('EthieToken', EthieToken_rinkeby_ADDRESS)
             await proxy.addContract('KtyWethOracle', KtyWethOracle.address)
             await proxy.addContract('KtyUniswap', KtyUniswap.address)
-            await proxy.addContract('UniswapV2Router01', Router.address)
-            await proxy.addContract('WETH9', WETH.address)
-            await proxy.addContract('Dai', Dai.address)
+            //await proxy.addContract('UniswapV2Router01', Router.address)
+            await proxy.addContract('UniswapV2Router01', Router_rinkeby_ADDRESS.address)
+            //await proxy.addContract('WETH9', WETH.address)
+            await proxy.addContract('WETH9', WETH_rinkeby_ADDRESS.address)
+            //await proxy.addContract('Dai', Dai.address)
+            await proxy.addContract('Dai', DAI_rinkeby_ADDRESS.address)
             await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
             // PROXY
             proxy = await KFProxy.deployed()
-            console.log(proxy.address)
+            console.log("proxy:", proxy.address)
 
             //Time Frame
             timeFrame = await TimeFrame.deployed()
-            console.log(timeFrame.address)
+            console.log("timeFrame:", timeFrame.address)
 
             // DATABASES
-            genericDB = await GenericDB.deployed()
-            console.log(genericDB.address)
+            //genericDB = await GenericDB.deployed()
+            genericDB = await GenericDB.at(GenericDB_rinkeby_ADDRESS)
+            console.log("genericDB:", genericDB.address)
             profileDB = await ProfileDB.deployed();
-            console.log(profileDB.address)
+            console.log("profileDB:", profileDB.address)
             roleDB = await RoleDB.deployed();
-            console.log(roleDB.address)
+            console.log("roleDB:", roleDB.address)
             endowmentDB = await EndowmentDB.deployed()
-            console.log(endowmentDB.address)
+            console.log("endowmentDB:", endowmentDB.address)
             getterDB = await GMGetterDB.deployed()
-            console.log(getterDB.address)
+            console.log("getterDB:", getterDB.address)
             setterDB = await GMSetterDB.deployed()
-            console.log(setterDB.address)
+            console.log("setterDB:", setterDB.address)
             kittieHellDB = await KittieHellDB.deployed()
-            console.log(kittieHellDB.address)
+            console.log("kittieHellDB:", kittieHellDB.address)
 
             // CRONJOB
             cronJob = await CronJob.deployed()
-            console.log(cronJob.address)
+            console.log("cronJob:", cronJob.address)
             freezeInfo = await FreezeInfo.deployed();
-            console.log(freezeInfo.address)
+            console.log("freezeInfo:", freezeInfo.address)
             cronJobTarget= await CronJobTarget.deployed();
-            console.log(cronJobTarget.address)
+            console.log("cronJobTarget:", cronJobTarget.address)
 
 
             // TOKENS
             superDaoToken = await SuperDaoToken.deployed();
-            console.log(superDaoToken.address)
-            kittieFightToken = await KittieFightToken.deployed();
-            console.log(kittieFightToken.address)
-            //kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+            console.log("superDaoToken:", superDaoToken.address)
+            //kittieFightToken = await KittieFightToken.deployed();
             //console.log(kittieFightToken.address)
+            kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+            console.log("kittieFightToken:", kittieFightToken.address)
             cryptoKitties = await CryptoKitties.deployed();
-            console.log(cryptoKitties.address)
-            ethieToken = await EthieToken.deployed()
-            console.log(ethieToken.address)
+            console.log("crypttoKitties:", cryptoKitties.address)
+            //ethieToken = await EthieToken.deployed()
+            ethieToken = await EthieToken.at(EthieToken_rinkeby_ADDRESS)
+            console.log("ethieToken:", ethieToken.address)
 
             // uniswap kty
-            weth = await WETH.deployed()
+            //weth = await WETH.deployed()
+            weth = await WETH.at(KTY_ADDRESS)
             console.log("weth:", weth.address)
-            factory = await Factory.deployed()
+            //factory = await Factory.deployed()
+            factory = Factory.at(Factory_rinkeby_ADDRESS)
             console.log("factory:", factory.address)
 
-            await factory.createPair(weth.address, kittieFightToken.address)
-            const ktyPairAddress = await factory.getPair(weth.address, kittieFightToken.address)
-            console.log("ktyWethPair address", ktyPairAddress)
-            const ktyWethPair = await KtyWethPair.at(ktyPairAddress);
+            //await factory.createPair(weth.address, kittieFightToken.address)
+            //const ktyPairAddress = await factory.getPair(weth.address, kittieFightToken.address)
+            //console.log("ktyWethPair address", ktyPairAddress)
+            const ktyWethPair = await KtyWethPair.at(KtyWethPair_rinkeby_ADDRESS);
             console.log("ktyWethPair:", ktyWethPair.address)
             await proxy.addContract('UniswapV2Pair', ktyWethPair.address)
             ktyWethOracle = await KtyWethOracle.deployed()
             console.log("ktyWethOracle:", ktyWethOracle.address)
 
-            dai = await Dai.deployed()
-            await factory.createPair(weth.address, dai.address)
-            const daiPairAddress = await factory.getPair(weth.address, dai.address)
-            console.log("daiWethPair address", daiPairAddress)
-            const daiWethPair = await DaiWethPair.at(daiPairAddress);
+            //dai = await Dai.deployed()
+            dai = await Dai.at(DAI_rinkeby_ADDRESS)
+            console.log("Dai:", dai.address)
+            //await factory.createPair(weth.address, dai.address)
+            //const daiPairAddress = await factory.getPair(weth.address, dai.address)
+            //console.log("daiWethPair address", daiPairAddress)
+            //const daiWethPair = await DaiWethPair.at(daiPairAddress);
+            const daiWethPair = await DaiWethPair.at(DaiWethPair_rinkeby_ADDRESS)
             console.log("daiWethPair:", daiWethPair.address)
             await proxy.addContract('IDaiWethPair', daiWethPair.address)
             daiWethOracle = await DaiWethOracle.deployed()
             console.log("daiWethOracle:", daiWethOracle.address)
 
-            router = await Router.deployed()
+            //router = await Router.deployed()
+            router = await Router.at(Router_rinkeby_ADDRESS)
+            console.log("router:", router.address)
 
             // MODULES
             gameManager = await GameManager.deployed()
-            console.log(gameManager.address)
+            console.log("gameManager:", gameManager.address)
             gameStore = await GameStore.deployed()
-            console.log(gameStore.address)
+            console.log("gameStore:", gameStore.address)
             gameCreation = await GameCreation.deployed()
-            console.log(gameCreation.address)
+            console.log("gameCreation:", gameCreation.address)
             register = await Register.deployed()
-            console.log(register.address)
+            console.log("register:", register.address)
             dateTime = await DateTime.deployed()
-            console.log(dateTime.address)
+            console.log("dateTime:", dateTime.address)
             gameVarAndFee = await GameVarAndFee.deployed()            
-            console.log(gameVarAndFee.address)
+            console.log("gameVarAndFee:", gameVarAndFee.address)
             forfeiter = await Forfeiter.deployed()
-            console.log(forfeiter.address)
+            console.log("forfeiter:", forfeiter.address)
             scheduler = await Scheduler.deployed()
-            console.log(scheduler.address)
+            console.log("scheduler:", scheduler.address)
             betting = await Betting.deployed()
-            console.log(betting.address)
+            console.log("betting:", betting.address)
             hitsResolve = await HitsResolve.deployed()
-            console.log(hitsResolve.address)
+            console.log("hitsResolve:", hitsResolve.address)
             rarityCalculator = await RarityCalculator.deployed()
-            console.log(rarityCalculator.address)
+            console.log("rarityCalculator:", rarityCalculator.address)
             endowmentFund = await EndowmentFund.deployed()
-            console.log(endowmentFund.address)
+            console.log("endowmentFund:", endowmentFund.address)
             kittieHELL = await KittieHELL.deployed()
-            console.log(kittieHELL.address)
+            console.log("kittieHell:", kittieHELL.address)
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
-            console.log(honeypotAllocationAlgo.address)
+            console.log("honeypotAllocationAlgo:", honeypotAllocationAlgo.address)
             earningsTracker = await EarningsTracker.deployed()
-            console.log(earningsTracker.address)
+            console.log("earningsTracker:", earningsTracker.address)
             ktyUniswap = await KtyUniswap.deployed()
+            console.log("ktyUniswap:", ktyUniswap.address)
 
             // WithdrawPool - Pool for SuperDao token stakers
             withdrawPool = await WithdrawPool.deployed()
-            console.log(withdrawPool.address)
+            console.log("withdrawPool:", withdrawPool.address)
             
             // staking - a mock contract of Aragon's staking contract
             staking = await MockStaking.deployed()
-            console.log(staking.address)
+            console.log("staking:", staking.address)
 
             //ESCROW
             escrow = await Escrow.deployed()
-            console.log(escrow.address)
+            console.log("escrow:", escrow.address)
 
 
             console.log('\nSetting Proxy...');
@@ -374,7 +415,7 @@ module.exports = (deployer, network, accounts) => {
             await kittieHellDB.setKittieHELL()
             await kittieHELL.initialize()
             await hitsResolve.initialize()
-            await earningsTracker.initialize(EthieToken.address)
+            await earningsTracker.initialize(EthieToken_rinkeby_ADDRESS)
             await withdrawPool.initialize(MockStaking.address, SuperDaoToken.address)
             await staking.initialize(SuperDaoToken.address)
             await ktyWethOracle.initialize()
@@ -383,10 +424,10 @@ module.exports = (deployer, network, accounts) => {
             await daiWethOracle.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
-            //await register.addSuperAdmin(SUPERADMIN)
-            //await register.addAdmin(SUPERADMIN)
-            await register.addSuperAdmin(accounts[0])
-            await register.addAdmin(accounts[0])
+            await register.addSuperAdmin(SUPERADMIN)
+            await register.addAdmin(SUPERADMIN)
+            // await register.addSuperAdmin(accounts[0])
+            // await register.addAdmin(accounts[0])
 
             console.log('\nUpgrading Escrow...');
             await endowmentFund.initUpgradeEscrow(escrow.address)
