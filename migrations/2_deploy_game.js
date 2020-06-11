@@ -419,7 +419,7 @@ module.exports = (deployer, network, accounts) => {
             await withdrawPool.initialize(MockStaking.address, SuperDaoToken.address)
             await staking.initialize(SuperDaoToken.address)
             await ktyWethOracle.initialize()
-            await router.initialize(Factory.address, WETH.address)
+            //await router.initialize(Factory.address, WETH.address)
             await ktyUniswap.initialize()
             await daiWethOracle.initialize()
 
