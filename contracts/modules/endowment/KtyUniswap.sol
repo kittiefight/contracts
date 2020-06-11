@@ -101,16 +101,12 @@ contract KtyUniswap is Proxied, Guard {
         return uint256(_reserveETH);
     }
 
-    /**
-     * @dev returns the amount of ethers needed to swap for some amount of KTY
-     * @param _ktyAmount the amount of KTY to be swapped for
-     */
-    function etherFor(uint256 _ktyAmount) public view returns (uint256) {
-        uint256 _reserveKTY = getReserveKTY();
-        uint256 _reserveETH = getReserveETH();
-        uint256 ether_needed = ktyWethOracle.quote(_ktyAmount, _reserveKTY, _reserveETH);
-        return ether_needed;
-    }
+    // function etherFor(uint256 _ktyAmount) public view returns (uint256) {
+    //     uint256 _reserveKTY = getReserveKTY();
+    //     uint256 _reserveETH = getReserveETH();
+    //     uint256 ether_needed = ktyWethOracle.quote(_ktyAmount, _reserveKTY, _reserveETH);
+    //     return ether_needed;
+    // }
 
     /**
      * @dev returns the amount of ktys swapped for the ethers of _ethAmount
@@ -121,6 +117,25 @@ contract KtyUniswap is Proxied, Guard {
         uint256 kty_for = ktyWethOracle.quote(_ethAmount, _reserveETH, _reserveKTY);
         return kty_for;
     }
+
+    /**
+     * @dev returns the KTY to ether price on uniswap, that is, how many ether for 1 KTY
+     */
+    function KTY_ETH_price() public view returns (uint256) {
+        uint256 _amountKTY = 1e18;  // 1 KTY
+        uint256 _reserveKTY = getReserveKTY();
+        uint256 _reserveETH = getReserveETH();
+        return ktyWethOracle.getAmountIn(_amountKTY, _reserveETH, _reserveKTY);
+    }
+
+    /**
+     * @dev returns the amount of ethers needed to swap for some amount of KTY
+     * @param _ktyAmount the amount of KTY to be swapped for
+     */
+    function etherFor(uint256 _ktyAmount) public view returns (uint256) {
+        return _ktyAmount.mul(KTY_ETH_price()).div(1000000000000000000);
+    }
+
 
     /**
      * @dev returns the KTY to ether ratio on uniswap, that is, how many ether for 1 KTY
@@ -174,6 +189,26 @@ contract KtyUniswap is Proxied, Guard {
         }
 
         return uint256(_reserveETHfromDAI);
+    }
+
+    /**
+     * @dev returns the DAI to ether price on uniswap, that is, how many ether for 1 DAI
+     */
+    function DAI_ETH_price() public view returns (uint256) {
+        uint256 _amountDAI = 1e18;  // 1 KTY
+        uint256 _reserveDAI = getReserveDAI();
+        uint256 _reserveETHfromDAI = getReserveETHfromDAI();
+        return ktyWethOracle.getAmountIn(_amountDAI, _reserveETHfromDAI, _reserveDAI);
+    }
+
+    /**
+     * @dev returns the ether to DAI price on uniswap, that is, how many DAI for 1 etjer
+     */
+    function ETH_DAI_price() public view returns (uint256) {
+        uint256 _amountETH = 1e18;  // 1 KTY
+        uint256 _reserveDAI = getReserveDAI();
+        uint256 _reserveETHfromDAI = getReserveETHfromDAI();
+        return ktyWethOracle.getAmountIn(_amountETH, _reserveDAI, _reserveETHfromDAI);
     }
 
     /**

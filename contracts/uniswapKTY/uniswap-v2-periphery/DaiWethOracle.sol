@@ -66,4 +66,10 @@ contract DaiWethOracle is Proxied {
     {
         return UniswapV2Library.quote(_amountA, _reserveA, _reserveB);
     }
+
+    function getAmountIn(uint _amountOut, uint _reserveIn, uint _reserveOut)
+        public pure returns (uint)
+    {
+        return UniswapV2Library.getAmountIn(_amountOut, _reserveIn, _reserveOut);
+    }
 }
