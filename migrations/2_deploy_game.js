@@ -474,113 +474,113 @@ module.exports = (deployer, network, accounts) => {
 
             await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
 
-            console.log('\nRarity Calculator Setup...');
-            await rarityCalculator.fillKaiValue()
+        //     console.log('\nRarity Calculator Setup...');
+        //     await rarityCalculator.fillKaiValue()
 
-            let list = [];
+        //     let list = [];
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
-            }
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
+        //     }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
+        //     }
 
-            await rarityCalculator.updateCattributes(list, 3);
+        //     await rarityCalculator.updateCattributes(list, 3);
 
-            list = [];
+        //     list = [];
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
+        //     }
 
-            await rarityCalculator.updateCattributes(list,3);
+        //     await rarityCalculator.updateCattributes(list,3);
 
-            list = [];
+        //     list = [];
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
+        //     }
 
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
-            }
+        //     for (let i=0; i<32; i++) {
+        //         list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
+        //     }
 
-            await rarityCalculator.updateCattributes(list,4);
+        //     await rarityCalculator.updateCattributes(list,4);
 
-            let listDescription = [];
-            let listTotal = [];
+        //     let listDescription = [];
+        //     let listTotal = [];
 
-            for (let j=0; j<153; j++) {
-                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-                listTotal.push(Number(cattributesData[j].total))
-            }
+        //     for (let j=0; j<153; j++) {
+        //         listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+        //         listTotal.push(Number(cattributesData[j].total))
+        //     }
 
-            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+        //     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-            listDescription = [];
-            listTotal = [];
+        //     listDescription = [];
+        //     listTotal = [];
 
-            for (let j=153; j<305; j++) {
-                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-                listTotal.push(Number(cattributesData[j].total))
-            }
+        //     for (let j=153; j<305; j++) {
+        //         listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+        //         listTotal.push(Number(cattributesData[j].total))
+        //     }
 
-            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+        //     await rarityCalculator.updateCattributesScores(listDescription, listTotal);
 
-            console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
+        //     console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
 
-            let listFancyNames = [];
-            let listFancyNamesTotal = [];
-            let listFancyIds = [];
+        //     let listFancyNames = [];
+        //     let listFancyNamesTotal = [];
+        //     let listFancyIds = [];
 
-            for (let m=0; m<3; m++) {
-                listFancyNamesTotal.push(FancyKitties[m].length-1)
-                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-                for (let n=1; n<FancyKitties[m].length; n++) {
-                    listFancyIds.push(FancyKitties[m][n])
-                }
-            }
+        //     for (let m=0; m<3; m++) {
+        //         listFancyNamesTotal.push(FancyKitties[m].length-1)
+        //         listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+        //         for (let n=1; n<FancyKitties[m].length; n++) {
+        //             listFancyIds.push(FancyKitties[m][n])
+        //         }
+        //     }
 
-            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+        //     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
 
-            listFancyIds=[];
-            listFancyNames=[];
-            listFancyNamesTotal=[];
+        //     listFancyIds=[];
+        //     listFancyNames=[];
+        //     listFancyNamesTotal=[];
 
-            for (let m=3; m<5; m++) {
-                listFancyNamesTotal.push(FancyKitties[m].length-1)
-                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-                for (let n=1; n<FancyKitties[m].length; n++) {
-                    listFancyIds.push(FancyKitties[m][n])
-                }
-            }
+        //     for (let m=3; m<5; m++) {
+        //         listFancyNamesTotal.push(FancyKitties[m].length-1)
+        //         listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+        //         for (let n=1; n<FancyKitties[m].length; n++) {
+        //             listFancyIds.push(FancyKitties[m][n])
+        //         }
+        //     }
 
-            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+        //     await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
 
 
-            await rarityCalculator.updateTotalKitties(1600000)
-            await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
+        //     await rarityCalculator.updateTotalKitties(1600000)
+        //     await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
 
         })
 };

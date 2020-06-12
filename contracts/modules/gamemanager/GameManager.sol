@@ -108,7 +108,7 @@ contract GameManager is Proxied, Guard {
 
         //pay ticket fee
         uint ticketFeeKTY = gameStore.getTicketFee(gameId);
-        require(endowmentFund.contributeKTY.value(msg.value)(supporter, ticketFeeKTY), "Need to pay ticket fee");
+        require(endowmentFund.contributeKTY.value(msg.value)(supporter, ticketFeeKTY));
 
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
@@ -233,7 +233,7 @@ contract GameManager is Proxied, Guard {
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value.sub(etherForSwap))(gameId));
         //pay ticket fee
-        require(endowmentFund.contributeKTY.value(etherForSwap)(sender, bettingFeeKTY), "Need to pay betting fee");
+        require(endowmentFund.contributeKTY.value(etherForSwap)(sender, bettingFeeKTY));
         //require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
 
         // Update Random
@@ -285,7 +285,7 @@ contract GameManager is Proxied, Guard {
      * @dev Determine winner of game based on  **HitResolver **
      */
     function finalize(uint gameId, uint randomNum) external onlyProxy {
-        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER), "1");
+        require(gmGetterDB.getGameState(gameId) == uint(eGameState.GAME_OVER));
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 

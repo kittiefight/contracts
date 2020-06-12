@@ -20,7 +20,6 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
-import "../endowment/HoneypotAllocationAlgo.sol";
 
 /**
  * @title EndowmentFund
@@ -66,7 +65,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
     * @dev winner claims
     */
-    function claim(uint256 _gameId) external onlyProxy payable {
+    function claim(uint256 _gameId) external onlyProxy {
         address payable msgSender = address(uint160(getOriginalSender()));
 
         // Honeypot status
@@ -86,12 +85,8 @@ contract EndowmentFund is Distribution, Guard {
         if (winningsKTY > 0){
             // transfer the KTY
             escrow.transferKTY(msgSender, winningsKTY);
-        }
-
-        if (winningsETH > 0){
             // transfer the ETH
             escrow.transferETH(msgSender, winningsETH);
-            // transferETHfromEscrow(msgSender, winningsETH);
         }
 
         // log tokens sent to an address
@@ -108,13 +103,7 @@ contract EndowmentFund is Distribution, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns(bool)
     {
-        // get reward amount in KTY
-        uint rewardDAI = gameVarAndFee.getFinalizeRewards();
-        // convert from Dai to ether
-        uint rewardETH = gameVarAndFee.convertDaiToEth(rewardDAI);
-        // convert from ether to KTY
-        uint reward = gameVarAndFee.convertEthToKty(rewardETH);
-
+        uint256 reward = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).getFinalizeRewards();
         transferKTYfromEscrow(address(uint160(user)), reward);
         return true;
     }
@@ -181,16 +170,7 @@ contract EndowmentFund is Distribution, Guard {
      *      original ether to KTY ratio.
      */
     function contributeKTY(address _sender, uint256 _kty_amount) external payable returns(bool) {
-        uint etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(_kty_amount);
-        // allow an error within 0.0001 ether range, which is around $0.002 USD, that is, 0.2 cents.
-        require(msg.value >= etherForSwap.sub(10000000000000), "Insufficient ether for swap KTY");
-        // exchange KTY on uniswap
-        IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
-            0,
-            path,
-            address(escrow),
-            2**255
-        );
+        HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).swapEtherForKTY.value(msg.value)(_kty_amount, address(escrow));
 
         endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
 
@@ -209,9 +189,7 @@ contract EndowmentFund is Distribution, Guard {
         require(msg.value > 0);
 
         // transfer ETH to Escrow
-        if (!address(escrow).send(msg.value)){
-            return false;
-        }
+        address(escrow).transfer(msg.value);
 
         endowmentDB.updateHoneyPotFund(_gameId, 0, msg.value, false);
 
@@ -232,9 +210,7 @@ contract EndowmentFund is Distribution, Guard {
         require(msg.value > 0);
 
         // transfer ETH to Escrow
-        if (!address(escrow).send(msg.value)){
-            return false;
-        }
+        address(escrow).transfer(msg.value);
 
         endowmentDB.updateInvestment(msg.value);
 
@@ -322,7 +298,7 @@ contract EndowmentFund is Distribution, Guard {
     * @dev Initialize or Upgrade Escrow
     * @notice BEFORE CALLING: Deploy escrow contract and set the owner as EndowmentFund contract
     */
-    function initUpgradeEscrow(Escrow _newEscrow) external onlySuperAdmin returns(bool){
+    function initUpgradeEscrow(Escrow _newEscrow) external onlySuperAdmin{
 
         // require(address(_newEscrow) != address(0));
         _newEscrow.initialize(kittieFightToken);
@@ -341,23 +317,8 @@ contract EndowmentFund is Distribution, Guard {
             // transfer all the KTY
             uint256 ktyBalance = kittieFightToken.balanceOf(address(escrow));
             escrow.transferKTY(address(_newEscrow), ktyBalance);
-
         }
 
         escrow = _newEscrow;
-        return true;
     }
-
-
-    /**
-     * @dev Do not upgrade Endowment if owner of escrow is still this contract's address
-     * Steps:
-     * deploy new Endowment
-     * set owner of escrow to new Endowment adrress using endowment.transferEscrowOwnership(new Endowment adrress)
-     * than set the new Endowment adrress in proxy
-     */
-    function isEndowmentUpgradabe() public view returns(bool){
-        return (address(escrow.owner) != address(this));
-    }
-
 }
