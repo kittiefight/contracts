@@ -225,7 +225,7 @@ contract EndowmentDB is Proxied {
   */
   function generateHoneyPot(uint256 gameId, uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
     public
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    onlyContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)
     returns (uint, uint) {
 
     // + adds amount to honeypot

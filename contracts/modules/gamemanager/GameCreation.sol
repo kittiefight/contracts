@@ -39,6 +39,7 @@ import "./GameManager.sol";
 import "../../CronJob.sol";
 import "./Forfeiter.sol";
 import '../kittieHELL/KittieHell.sol';
+import "../endowment/HoneypotAllocationAlgo.sol";
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -170,7 +171,7 @@ contract GameCreation is Proxied, Guard {
         
         gameStore.lockVars(gameId);
 
-        (uint initialKTY, uint initialEth) = endowmentFund.generateHoneyPot(gameId);
+        (uint initialKTY, uint initialEth) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).generateHoneyPot(gameId);
         gmSetterDB.setHoneypotInfo(gameId, initialKTY, initialEth);
 
         uint poolId = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME)).getActiveEpochID();

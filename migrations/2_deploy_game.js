@@ -241,11 +241,11 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('KtyWethOracle', KtyWethOracle.address)
             await proxy.addContract('KtyUniswap', KtyUniswap.address)
             //await proxy.addContract('UniswapV2Router01', Router.address)
-            await proxy.addContract('UniswapV2Router01', Router_rinkeby_ADDRESS.address)
+            await proxy.addContract('UniswapV2Router01', Router_rinkeby_ADDRESS)
             //await proxy.addContract('WETH9', WETH.address)
-            await proxy.addContract('WETH9', WETH_rinkeby_ADDRESS.address)
+            await proxy.addContract('WETH9', WETH_rinkeby_ADDRESS)
             //await proxy.addContract('Dai', Dai.address)
-            await proxy.addContract('Dai', DAI_rinkeby_ADDRESS.address)
+            await proxy.addContract('Dai', DAI_rinkeby_ADDRESS)
             await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
         })
         .then(async() => {
@@ -299,7 +299,7 @@ module.exports = (deployer, network, accounts) => {
 
             // uniswap kty
             //weth = await WETH.deployed()
-            weth = await WETH.at(KTY_ADDRESS)
+            weth = await WETH.at(WETH_rinkeby_ADDRESS)
             console.log("weth:", weth.address)
             //factory = await Factory.deployed()
             factory = Factory.at(Factory_rinkeby_ADDRESS)
@@ -434,8 +434,8 @@ module.exports = (deployer, network, accounts) => {
             await daiWethOracle.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
-            await register.addSuperAdmin(SUPERADMIN)
-            await register.addAdmin(SUPERADMIN)
+            // await register.addSuperAdmin(SUPERADMIN)
+            // await register.addAdmin(SUPERADMIN)
             // await register.addSuperAdmin(accounts[0])
             // await register.addAdmin(accounts[0])
 

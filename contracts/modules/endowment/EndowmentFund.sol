@@ -48,21 +48,6 @@ contract EndowmentFund is Distribution, Guard {
     }
 
     /**
-    * @dev check if enough funds present and maintains balance of tokens in DB
-    */
-    function generateHoneyPot(uint256 gameId)
-    external
-    onlyContract(CONTRACT_NAME_GAMECREATION)
-    returns (uint, uint) {
-        (
-          uint ktyAllocated,
-          uint ethAllocated,
-          string memory honeypotClass
-        ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
-        return (endowmentDB.generateHoneyPot(gameId, ktyAllocated, ethAllocated, honeypotClass));
-    }
-
-    /**
     * @dev winner claims
     */
     function claim(uint256 _gameId) external onlyProxy {

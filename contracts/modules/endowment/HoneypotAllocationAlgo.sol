@@ -13,11 +13,13 @@ import '../../GameVarAndFee.sol';
 import '../databases/GenericDB.sol';
 import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
 import "./KtyUniswap.sol";
+import "../databases/EndowmentDB.sol";
 
 contract HoneypotAllocationAlgo is Proxied {
     using SafeMath for uint256;
 
     address[] public path;
+    EndowmentDB public endowmentDB;
 
     /// @dev game honeypot classfication (based on actual funds in USD)
     string constant VERY_TINY_GAME = "veryTinyGame"; // <= $500
@@ -104,6 +106,24 @@ contract HoneypotAllocationAlgo is Proxied {
         path.push(_WETH);
         address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
         path.push(_KTY);
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+    }
+
+
+
+    /**
+    * @dev check if enough funds present and maintains balance of tokens in DB
+    */
+    function generateHoneyPot(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+    returns (uint, uint) {
+        (
+          uint ktyAllocated,
+          uint ethAllocated,
+          string memory honeypotClass
+        ) = calculateAllocationToHoneypot();
+        return (endowmentDB.generateHoneyPot(gameId, ktyAllocated, ethAllocated, honeypotClass));
     }
 
     /**
