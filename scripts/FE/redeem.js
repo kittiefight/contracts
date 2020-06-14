@@ -140,6 +140,28 @@ module.exports = async (callback) => {
     console.log(
       "Is sacrificing kitty 3 in Hell? " + isSacrificeKittyThreeInHell
     );
+
+    // -- swap info--
+    
+    ktyReserve = await ktyUniswap.getReserveKTY();
+    ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
+    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
+    console.log(
+      "Ether to KTY ratio:",
+      "1 ether to",
+      weiToEther(ether_kty_ratio),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether ratio:",
+      "1 KTY to",
+      weiToEther(kty_ether_ratio),
+      "ether"
+    );
     
     callback()
   }

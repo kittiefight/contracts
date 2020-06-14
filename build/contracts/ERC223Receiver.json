@@ -27,15 +27,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"tokenFallback\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Base class contracts willing to accept ERC223 token transfers must conform to.  * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data  * From, and value shouldn't be trusted unless the token contract is trusted.\"}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/ERC223Receiver.sol\":\"ERC223Receiver\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/ERC223Receiver.sol\":{\"keccak256\":\"0x2fcce1da1c83db689abbab9794fa0a477ede27ab5a030218be22555b1c3e8c47\",\"urls\":[\"bzz-raw://b0e6bd91c6d71caf6c0abbafb2a262850ec35b315faf7c15f254101b7792ea62\",\"dweb:/ipfs/QmTi4TwP5rFmitWCx6cT7B2sSKip73THGjt31XUQDqyMbr\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"tokenFallback\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Base class contracts willing to accept ERC223 token transfers must conform to. * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data * From, and value shouldn't be trusted unless the token contract is trusted.\"}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/kittiefight-rinkeby4/contracts/contracts/interfaces/ERC223Receiver.sol\":\"ERC223Receiver\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/kittiefight-rinkeby4/contracts/contracts/interfaces/ERC223Receiver.sol\":{\"keccak256\":\"0x1a2a3133843bfdf92a0a226bbacd7fc021773b12dfe11298151863f0b7d2e99c\",\"urls\":[\"bzz-raw://1ff8125ea3bacc4691cb057cdb2d718549bb30421a519d62407d5ca803db0a7c\",\"dweb:/ipfs/QmQicY2nc4adyx2VUJNXcTq2TnqS9uBBJSLNW1nCjmMyUs\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.5.5;\r\n\r\n/**\r\n * Base class contracts willing to accept ERC223 token transfers must conform to.\r\n *\r\n * _from: the origin address from whose balance the tokens are sent\r\n *          - For transfer(), origin = msg.sender\r\n *          - For transferFrom() origin = _from to token contract\r\n * Value is the amount of tokens sent\r\n * Data is arbitrary data sent with the token transfer. Simulates ether tx.data\r\n *\r\n * From, and value shouldn't be trusted unless the token contract is trusted.\r\n */\r\n\r\ninterface ERC223Receiver {\r\n    function tokenFallback(address _from, uint _value, bytes calldata _data) external;\r\n}\r\n",
-  "sourcePath": "C:/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/ERC223Receiver.sol",
+  "source": "pragma solidity ^0.5.5;\n\n/**\n * Base class contracts willing to accept ERC223 token transfers must conform to.\n *\n * _from: the origin address from whose balance the tokens are sent\n *          - For transfer(), origin = msg.sender\n *          - For transferFrom() origin = _from to token contract\n * Value is the amount of tokens sent\n * Data is arbitrary data sent with the token transfer. Simulates ether tx.data\n *\n * From, and value shouldn't be trusted unless the token contract is trusted.\n */\n\ninterface ERC223Receiver {\n    function tokenFallback(address _from, uint _value, bytes calldata _data) external;\n}\n",
+  "sourcePath": "/Users/ziweizhang/Desktop/kittiefight-rinkeby4/contracts/contracts/interfaces/ERC223Receiver.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/ERC223Receiver.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/kittiefight-rinkeby4/contracts/contracts/interfaces/ERC223Receiver.sol",
     "exportedSymbols": {
       "ERC223Receiver": [
         2759
@@ -59,7 +59,7 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "interface",
-        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\n\n * _from: the origin address from whose balance the tokens are sent\n         - For transfer(), origin = msg.sender\n         - For transferFrom() origin = _from to token contract\nValue is the amount of tokens sent\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\n\n * From, and value shouldn't be trusted unless the token contract is trusted.",
+        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\n * _from: the origin address from whose balance the tokens are sent\n         - For transfer(), origin = msg.sender\n         - For transferFrom() origin = _from to token contract\nValue is the amount of tokens sent\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\n * From, and value shouldn't be trusted unless the token contract is trusted.",
         "fullyImplemented": false,
         "id": 2759,
         "linearizedBaseContracts": [
@@ -87,7 +87,7 @@
                   "name": "_from",
                   "nodeType": "VariableDeclaration",
                   "scope": 2758,
-                  "src": "571:13:18",
+                  "src": "556:13:18",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -98,7 +98,7 @@
                     "id": 2750,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "571:7:18",
+                    "src": "556:7:18",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -114,7 +114,7 @@
                   "name": "_value",
                   "nodeType": "VariableDeclaration",
                   "scope": 2758,
-                  "src": "586:11:18",
+                  "src": "571:11:18",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -125,7 +125,7 @@
                     "id": 2752,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "586:4:18",
+                    "src": "571:4:18",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -140,7 +140,7 @@
                   "name": "_data",
                   "nodeType": "VariableDeclaration",
                   "scope": 2758,
-                  "src": "599:20:18",
+                  "src": "584:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -151,7 +151,7 @@
                     "id": 2754,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "599:5:18",
+                    "src": "584:5:18",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -161,29 +161,29 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "570:50:18"
+              "src": "555:50:18"
             },
             "returnParameters": {
               "id": 2757,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "629:0:18"
+              "src": "614:0:18"
             },
             "scope": 2759,
-            "src": "548:82:18",
+            "src": "533:82:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
         "scope": 2760,
-        "src": "516:117:18"
+        "src": "502:115:18"
       }
     ],
-    "src": "0:635:18"
+    "src": "0:618:18"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/ERC223Receiver.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/kittiefight-rinkeby4/contracts/contracts/interfaces/ERC223Receiver.sol",
     "exportedSymbols": {
       "ERC223Receiver": [
         2759
@@ -207,7 +207,7 @@
         "baseContracts": [],
         "contractDependencies": [],
         "contractKind": "interface",
-        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\n\n * _from: the origin address from whose balance the tokens are sent\n         - For transfer(), origin = msg.sender\n         - For transferFrom() origin = _from to token contract\nValue is the amount of tokens sent\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\n\n * From, and value shouldn't be trusted unless the token contract is trusted.",
+        "documentation": "Base class contracts willing to accept ERC223 token transfers must conform to.\n * _from: the origin address from whose balance the tokens are sent\n         - For transfer(), origin = msg.sender\n         - For transferFrom() origin = _from to token contract\nValue is the amount of tokens sent\nData is arbitrary data sent with the token transfer. Simulates ether tx.data\n * From, and value shouldn't be trusted unless the token contract is trusted.",
         "fullyImplemented": false,
         "id": 2759,
         "linearizedBaseContracts": [
@@ -235,7 +235,7 @@
                   "name": "_from",
                   "nodeType": "VariableDeclaration",
                   "scope": 2758,
-                  "src": "571:13:18",
+                  "src": "556:13:18",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -246,7 +246,7 @@
                     "id": 2750,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "571:7:18",
+                    "src": "556:7:18",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -262,7 +262,7 @@
                   "name": "_value",
                   "nodeType": "VariableDeclaration",
                   "scope": 2758,
-                  "src": "586:11:18",
+                  "src": "571:11:18",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -273,7 +273,7 @@
                     "id": 2752,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "586:4:18",
+                    "src": "571:4:18",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -288,7 +288,7 @@
                   "name": "_data",
                   "nodeType": "VariableDeclaration",
                   "scope": 2758,
-                  "src": "599:20:18",
+                  "src": "584:20:18",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -299,7 +299,7 @@
                     "id": 2754,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "599:5:18",
+                    "src": "584:5:18",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -309,39 +309,39 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "570:50:18"
+              "src": "555:50:18"
             },
             "returnParameters": {
               "id": 2757,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "629:0:18"
+              "src": "614:0:18"
             },
             "scope": 2759,
-            "src": "548:82:18",
+            "src": "533:82:18",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
         "scope": 2760,
-        "src": "516:117:18"
+        "src": "502:115:18"
       }
     ],
-    "src": "0:635:18"
+    "src": "0:618:18"
   },
   "compiler": {
     "name": "solc",
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2020-06-12T00:54:51.049Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-06-13T11:27:30.869Z",
   "devdoc": {
     "methods": {}
   },
   "userdoc": {
     "methods": {},
-    "notice": "Base class contracts willing to accept ERC223 token transfers must conform to.  * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data  * From, and value shouldn't be trusted unless the token contract is trusted."
+    "notice": "Base class contracts willing to accept ERC223 token transfers must conform to. * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data * From, and value shouldn't be trusted unless the token contract is trusted."
   }
 }

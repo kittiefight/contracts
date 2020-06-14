@@ -120,9 +120,12 @@ module.exports = async callback => {
     await weth.transfer(ktyWethPair.address, ethAmount);
     await ktyWethPair.mint(escrow.address);
 
-    await kittieFightToken.approve(router.address, approveAmount);
-    await weth.approve(router.address, approveAmount);
-    await ktyWethPair.approve(router.address, approveAmount);
+    await kittieFightToken.transfer(accounts[3], web3.utils.toWei(String(10000)), {
+      from: accounts[0]})
+
+    await kittieFightToken.approve(router.address, approveAmount, { from: accounts[3] });
+    //await weth.approve(router.address, approveAmount);
+    //await ktyWethPair.approve(router.address, approveAmount);
 
     let ktyReserve = await ktyUniswap.getReserveKTY();
     let ethReserve = await ktyUniswap.getReserveETH();
