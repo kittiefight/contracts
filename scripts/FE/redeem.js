@@ -162,6 +162,21 @@ module.exports = async (callback) => {
       weiToEther(kty_ether_ratio),
       "ether"
     );
+
+    let ether_kty_price = await ktyUniswap.ETH_KTY_price();
+    let kty_ether_price = await ktyUniswap.KTY_ETH_price();
+    console.log(
+      "Ether to KTY price:",
+      "1 ether to",
+      weiToEther(ether_kty_price),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether price:",
+      "1 KTY to",
+      weiToEther(kty_ether_price),
+      "ether"
+    );
     
     callback()
   }

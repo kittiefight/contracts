@@ -120,13 +120,6 @@ module.exports = async callback => {
     await weth.transfer(ktyWethPair.address, ethAmount);
     await ktyWethPair.mint(escrow.address);
 
-    await kittieFightToken.transfer(accounts[3], web3.utils.toWei(String(10000)), {
-      from: accounts[0]})
-
-    await kittieFightToken.approve(router.address, approveAmount, { from: accounts[3] });
-    //await weth.approve(router.address, approveAmount);
-    //await ktyWethPair.approve(router.address, approveAmount);
-
     let ktyReserve = await ktyUniswap.getReserveKTY();
     let ethReserve = await ktyUniswap.getReserveETH();
     console.log("reserveKTY:", weiToEther(ktyReserve));
@@ -144,6 +137,21 @@ module.exports = async callback => {
       "KTY to Ether ratio:",
       "1 KTY to",
       weiToEther(kty_ether_ratio),
+      "ether"
+    );
+
+    let ether_kty_price = await ktyUniswap.ETH_KTY_price();
+    let kty_ether_price = await ktyUniswap.KTY_ETH_price();
+    console.log(
+      "Ether to KTY price:",
+      "1 ether to",
+      weiToEther(ether_kty_price),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether price:",
+      "1 KTY to",
+      weiToEther(kty_ether_price),
       "ether"
     );
 
