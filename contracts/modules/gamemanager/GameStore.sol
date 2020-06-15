@@ -36,7 +36,7 @@ contract GameStore is Proxied, Guard {
         uint kittieHellExpirationTime;
         uint honeypotExpirationTime;
         uint minimumContributors;
-        uint finalizeRewards;
+        //uint finalizeRewards;
         uint timeExtension;
         uint performanceTime;
         uint[5] distributionRates;
@@ -66,7 +66,7 @@ contract GameStore is Proxied, Guard {
         globalSettings.honeypotExpirationTime = gameVarAndFee.getHoneypotExpiration();
         globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
         globalSettings.distributionRates = gameVarAndFee.getDistributionRates();
-        globalSettings.finalizeRewards = gameVarAndFee.getFinalizeRewards();
+        //globalSettings.finalizeRewards = gameVarAndFee.getFinalizeRewards();
         globalSettings.timeExtension = gameVarAndFee.getTimeExtension();
         globalSettings.performanceTime = gameVarAndFee.getPerformanceTimeCheck();
 
@@ -152,11 +152,10 @@ contract GameStore is Proxied, Guard {
         return  gameSettings[gameId].kittieHellExpirationTime;
     }
 
-    function getKittieRedemptionFee(uint256 gameId) public view returns(uint){
-        // get fee in dai
+    function getKittieRedemptionFee(uint256 gameId) public view returns(uint256, uint256) {
         uint256 redemptionFeeDAI = gameSettings[gameId].redemptionFee;
-        
-        return getKTY(redemptionFeeDAI);
+        uint256 redemptionFeeKTY = getKTY(redemptionFeeDAI);
+        return (redemptionFeeDAI, redemptionFeeKTY);
     }
     
     function getHoneypotExpiration(uint gameId) public view returns(uint){
@@ -192,30 +191,29 @@ contract GameStore is Proxied, Guard {
         return gameByPlayer[gameId][player].secondTopBettor;
     }
 
-    function getTicketFee(uint256 gameId) public view returns(uint){
-        // get ticket fee in dai
+    function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
         uint256 ticketFeeDAI = gameSettings[gameId].ticketFee;
-        
-        return getKTY(ticketFeeDAI);
+        uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
+        return (ticketFeeDAI, ticketFeeKTY);
     }
 
-    function getBettingFee(uint gameId) public view returns(uint){
-        // get betting fee in dai
+    function getBettingFee(uint256 gameId) public view returns(uint256, uint256){
         uint256 bettingFeeDAI = gameSettings[gameId].bettingFee;
-        
-        return getKTY(bettingFeeDAI);
+        uint256 bettingFeeKTY = getKTY(bettingFeeDAI);
+        return (bettingFeeDAI, bettingFeeKTY);
     }
 
     function getMinimumContributors(uint gameId) public view returns(uint){
         return gameSettings[gameId].minimumContributors;
     }
+    
+    // stale function
+    // function getFinalizeRewards(uint gameId) public view returns(uint){
+    //     // get finalize rewards in dai
+    //     uint256 rewardsDAI = gameSettings[gameId].finalizeRewards;
 
-    function getFinalizeRewards(uint gameId) public view returns(uint){
-        // get finalize rewards in dai
-        uint256 rewardsDAI = gameSettings[gameId].finalizeRewards;
-
-        return getKTY(rewardsDAI);
-    }
+    //     return getKTY(rewardsDAI);
+    // }
 
     function getKTY(uint256 _DAI) internal view returns(uint256) {
         uint256 _ETH = gameVarAndFee.convertDaiToEth(_DAI);

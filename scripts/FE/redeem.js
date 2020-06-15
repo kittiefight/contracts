@@ -6,6 +6,7 @@ const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken')
 const CryptoKitties = artifacts.require('MockERC721Token');
 const KtyUniswap = artifacts.require("KtyUniswap");
+const Escrow = artifacts.require("Escrow");
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -33,6 +34,7 @@ module.exports = async (callback) => {
     let kittieFightToken = await KittieFightToken.deployed();
     let cryptoKitties = await CryptoKitties.deployed();
     let ktyUniswap = await KtyUniswap.deployed();
+    let escrow = await Escrow.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -142,7 +144,7 @@ module.exports = async (callback) => {
     );
 
     // -- swap info--
-    
+    console.log('\n==== UNISWAP RESERVE RATIO ===');
     ktyReserve = await ktyUniswap.getReserveKTY();
     ethReserve = await ktyUniswap.getReserveETH();
     console.log("reserveKTY:", weiToEther(ktyReserve));
@@ -177,6 +179,9 @@ module.exports = async (callback) => {
       weiToEther(kty_ether_price),
       "ether"
     );
+
+    let KTY_escrow = await kittieFightToken.balanceOf(escrow.address)
+    console.log("escrow KTY balance:", weiToEther(KTY_escrow))
     
     callback()
   }

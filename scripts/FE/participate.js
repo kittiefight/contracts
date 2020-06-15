@@ -7,6 +7,7 @@ const RoleDB = artifacts.require('RoleDB')
 const Escrow = artifacts.require('Escrow')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KtyUniswap = artifacts.require("KtyUniswap");
+const KittieFightToken = artifacts.require('KittieFightToken')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -46,6 +47,7 @@ module.exports = async (callback) => {
     let escrow = await Escrow.deployed();
     let endowmentFund = await EndowmentFund.deployed();
     let ktyUniswap = await KtyUniswap.deployed();
+    let kittieFightToken = await KittieFightToken.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -56,6 +58,8 @@ module.exports = async (callback) => {
     let supportersForRed = [];
     let supportersForBlack = [];
     let ticketFee = await gameStore.getTicketFee(gameId);
+
+    let KTY_escrow_before_swap = await kittieFightToken.balanceOf(escrow.address)
 
     let {playerBlack, playerRed, kittyBlack, kittyRed} = await getterDB.getGamePlayers(gameId);
     let participator;
@@ -83,7 +87,9 @@ module.exports = async (callback) => {
       weiToEther(kty_ether_ratio),
       "ether"
     );
-    let kty_participate = await gameStore.getTicketFee(1);
+    let participate_fee = await gameStore.getTicketFee(1);
+    console.log("participate_fee in dai:", weiToEther(participate_fee[0]))
+    let kty_participate = participate_fee[1]
     let ether_participate
 
     for(let i = 10; i < blacks; i++){
@@ -123,8 +129,8 @@ module.exports = async (callback) => {
 
     }
 
-    let KTYforBlack = blackParticipators * ticketFee;
-    let KTYforRed = redParticipators * ticketFee;
+    let KTYforBlack = blackParticipators * kty_participate ;
+    let KTYforRed = redParticipators * kty_participate;
 
     console.log('\nSupporters for Black: ', supportersForBlack);
     console.log('\nSupporters for Red: ', supportersForRed);
@@ -146,6 +152,13 @@ module.exports = async (callback) => {
       console.log('    ether receiver ', e.returnValues.receiver)
       console.log('========================\n')
     })
+
+    // escrow KTY balance
+    let KTY_escrow_after_swap = await kittieFightToken.balanceOf(escrow.address)
+    console.log("escrow KTY balance before swap:", weiToEther(KTY_escrow_before_swap))
+    console.log("escrow KTY balance after swap:", weiToEther(KTY_escrow_after_swap))
+
+    // uniswap reserve ratio
 
     ktyReserve = await ktyUniswap.getReserveKTY();
     ethReserve = await ktyUniswap.getReserveETH();

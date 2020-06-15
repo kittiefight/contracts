@@ -92,6 +92,15 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         }
     }
 
+    function setPlatformFeeInDai(string calldata feeName) external onlyProxy onlySuperAdmin {
+        bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, feeName));
+        uint valKTY = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key);
+        // convert from kty to dai
+        uint valETH = convertKtyToEth(valKTY);
+        uint valDAI = convertEthToDai(valETH);
+        genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, valDAI);
+    }
+
     function bytes32ToString(bytes32 x) internal pure returns (string memory) {
         bytes memory bytesString = new bytes(32);
         uint charCount = 0;
@@ -264,32 +273,12 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
 
     /// @notice Gets fee in Dai for players to list kitties for matching in fights
-    function getListingFee() public view returns(uint) {
-        uint listingFeeKTY = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
-        uint listingFeeETH = convertKtyToEth(listingFeeKTY);
-        return convertEthToDai(listingFeeETH);
+    function getListingFee() public view returns(uint, uint) {
+        uint listingFeeDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
+        uint listingFeeETH = convertDaiToEth(listingFeeDAI);
+        uint listingFeeKTY = convertEthToKty(listingFeeETH);
+        return (listingFeeDAI, listingFeeKTY);
     }
-
-    // Stale function
-    /// @notice Gets ticket fee in KTY for betting participators
-    //function getTicketFee() 
-    //public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE);
-    //}
-
-    // Stale function
-    /// @notice Gets betting fee in KTY for betting participators
-    //function getBettingFee() 
-    //public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE);
-    //}
-
-    //stale function
-    /// @notice Gets kittieHELL redemption fee in KTY for redeeming kitties
-    //function getKittieRedemptionFee()
-    //public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
-    //}
 
     /// @notice Gets minimum contributors needed for the game to continue
     function getMinimumContributors() 
@@ -299,12 +288,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     /// @notice Gets the amount of KTY rewarded to the user that hits finalize button. Return amount in Dai.
     function getFinalizeRewards()
-    public view returns(uint) {
-        uint finalizeRewards = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
-        // convert KTY to ether
-        uint finalizeRewardsETH = convertKtyToEth(finalizeRewards);
-        // convert ether to Dai
-        return convertEthToDai(finalizeRewardsETH);
+    public view returns(uint, uint) {
+        uint rewardsDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
+        uint rewardsETH = convertDaiToEth(rewardsDAI);
+        uint rewardsKTY = convertEthToKty(rewardsETH);
+        return (rewardsDAI, rewardsKTY);
     }
 
     /// @notice Gets the time before a game ends that the check performance should act

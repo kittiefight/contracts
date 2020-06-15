@@ -171,11 +171,8 @@ contract HoneypotAllocationAlgo is Proxied {
     {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         // get reward amount in KTY
-        uint rewardDAI = gameVarAndFee.getFinalizeRewards();
-        // convert from Dai to ether
-        uint rewardETH = gameVarAndFee.convertDaiToEth(rewardDAI);
-        // convert from ether to KTY
-        return gameVarAndFee.convertEthToKty(rewardETH);
+        (, uint rewardsKTY) = gameVarAndFee.getFinalizeRewards();
+        return rewardsKTY;
     }
 
     /**

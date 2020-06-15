@@ -28,9 +28,9 @@ contract VarAndFeeNames {
     bytes32 constant OTHER_BETTORS          = keccak256(abi.encodePacked(TABLE_NAME, "otherBettors"));
     bytes32 constant ENDOWNMENT             = keccak256(abi.encodePacked(TABLE_NAME, "endownment"));
     bytes32 constant LISTING_FEE            = keccak256(abi.encodePacked(TABLE_NAME, "listingFee"));
-    bytes32 constant TICKET_FEE             = keccak256(abi.encodePacked(TABLE_NAME, "ticketFee"));
-    bytes32 constant BETTING_FEE            = keccak256(abi.encodePacked(TABLE_NAME, "bettingFee"));
-    bytes32 constant KITTIE_REDEMPTION_FEE  = keccak256(abi.encodePacked(TABLE_NAME, "kittieRedemptionFee"));
+   // bytes32 constant TICKET_FEE             = keccak256(abi.encodePacked(TABLE_NAME, "ticketFee"));
+   // bytes32 constant BETTING_FEE            = keccak256(abi.encodePacked(TABLE_NAME, "bettingFee"));
+   // bytes32 constant KITTIE_REDEMPTION_FEE  = keccak256(abi.encodePacked(TABLE_NAME, "kittieRedemptionFee"));
     bytes32 constant MINIMUM_CONTRIBUTORS   = keccak256(abi.encodePacked(TABLE_NAME, "minimumContributors"));
     bytes32 constant FINALIZE_REWARDS       = keccak256(abi.encodePacked(TABLE_NAME, "finalizeRewards"));
     bytes32 constant PERFORMANCE_TIME_CHECK = keccak256(abi.encodePacked(TABLE_NAME, "performanceTime"));
@@ -42,7 +42,7 @@ contract VarAndFeeNames {
     bytes32 constant USD_KTY_PRICE          = keccak256(abi.encodePacked(TABLE_NAME, "usdKTYPrice"));
     bytes32 constant REQUIRED_KITTIE_SACRIFICE_NUM = keccak256(abi.encodePacked(TABLE_NAME, "requiredKittieSacrificeNum"));
     bytes32 constant PERCENTAGE_HONEYPOT_ALLOCATION_KTY = keccak256(abi.encodePacked(TABLE_NAME, "percentageHoneypotAllocationKTY"));
-    bytes32 constant KTY_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, "ktyForBurnEthie"));
+    //bytes32 constant KTY_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, "ktyForBurnEthie"));
     bytes32 constant INTEREST_ETHIE         = keccak256(abi.encodePacked(TABLE_NAME, "interestEthie"));
     bytes32 constant PERCENTAGE_FOR_POOL    = keccak256(abi.encodePacked(TABLE_NAME, "percentageForPool"));
     bytes32 constant PERCENTAGE_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, "percentageForBurnEthie"));

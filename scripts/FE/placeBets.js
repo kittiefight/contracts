@@ -68,7 +68,8 @@ module.exports = async (callback) => {
     let state = await getterDB.getGameState(gameId);
     console.log(state);
     
-    let kty_betting = await gameStore.getBettingFee(1);
+    let betting_fee = await gameStore.getBettingFee(1);
+    let kty_betting = betting_fee[1]
     let ether_betting
 
     for(let i=0; i<noOfBets; i++){
@@ -166,7 +167,29 @@ module.exports = async (callback) => {
     console.log(`     InitialEtH: ${web3.utils.fromWei(honeyPotInfo.initialEth.toString())}   `);
     console.log(`     TotalETH: ${web3.utils.fromWei(honeyPotInfo.ethTotal.toString())}   `);
     console.log(`     TotalKTY: ${web3.utils.fromWei(honeyPotInfo.ktyTotal.toString())}   `);
-    console.log('=======================\n')    
+    console.log('=======================\n')  
+
+    // uniswap reserve ratio
+    console.log('\n==== UNISWAP RESERVE RATIO ===');
+    ktyReserve = await ktyUniswap.getReserveKTY();
+    ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
+    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
+    console.log(
+      "Ether to KTY ratio:",
+      "1 ether to",
+      weiToEther(ether_kty_ratio),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether ratio:",
+      "1 KTY to",
+      weiToEther(kty_ether_ratio),
+      "ether"
+    );
     
 
     callback()

@@ -65,7 +65,8 @@ module.exports = async (callback) => {
 
     let valueReturned = await earningsTracker.calculateTotal(web3.utils.toWei("5"), 0);
     console.log(web3.utils.fromWei(valueReturned.toString()));
-    let ktyFee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let burn_fee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let ktyFee = burn_fee[1]
     // await kittieFightToken.transfer(owner, ktyFee.toString(), {
     //   from: accounts[0]})
 
@@ -93,6 +94,29 @@ module.exports = async (callback) => {
       console.log('    Interest ', e.returnValues.interestPaid)
       console.log('========================\n')
     })
+
+    // uniswap reserve ratio
+    console.log('\n==== UNISWAP RESERVE RATIO ===');
+    ktyReserve = await ktyUniswap.getReserveKTY();
+    ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
+    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
+    console.log(
+      "Ether to KTY ratio:",
+      "1 ether to",
+      weiToEther(ether_kty_ratio),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether ratio:",
+      "1 KTY to",
+      weiToEther(kty_ether_ratio),
+      "ether"
+    );
+    
 
     callback()
   }

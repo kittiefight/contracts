@@ -11,6 +11,7 @@ const Router = artifacts.require("UniswapV2Router01");
 const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const DaiWethOracle = artifacts.require("DaiWethOracle");
+const GameVarAndFee = artifacts.require("GameVarAndFee");
 
 const BigNumber = web3.utils.BN;
 
@@ -82,9 +83,10 @@ module.exports = async callback => {
     let factory = await Factory.deployed();
     console.log("factory address:", factory.address);
     let ktyWethOracle = await KtyWethOracle.deployed();
-    let daiWethOracle = await DaiWethOracle.deployed()
+    let daiWethOracle = await DaiWethOracle.deployed();
     let ktyUniswap = await KtyUniswap.deployed();
     let router = await Router.deployed();
+    let gameVarAndFee = await GameVarAndFee.deployed();
 
     let router_factory = await router.factory();
     console.log("router_factory:", router_factory);
@@ -100,25 +102,22 @@ module.exports = async callback => {
     console.log("ktyWethPair:", ktyWethPair.address);
     await router.setKtyWethPairAddr(ktyWethPair.address);
 
-    const daiPairAddress = await factory.getPair(
-      weth.address,
-      dai.address
-    );
+    const daiPairAddress = await factory.getPair(weth.address, dai.address);
     console.log("dai-weth pair address", daiPairAddress);
     const daiWethPair = await DaiWethPair.at(daiPairAddress);
     console.log("daiWethPair:", daiWethPair.address);
 
-    await dai.mint(accounts[0], daiAmount)
+    // await dai.mint(accounts[0], daiAmount);
 
-    await dai.transfer(daiWethPair.address, daiAmount);
-    await weth.deposit({value: ethAmount});
-    await weth.transfer(daiWethPair.address, ethAmount);
-    await daiWethPair.mint(accounts[10]);
+    // await dai.transfer(daiWethPair.address, daiAmount);
+    // await weth.deposit({value: ethAmount});
+    // await weth.transfer(daiWethPair.address, ethAmount);
+    // await daiWethPair.mint(accounts[10]);
 
-    await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
-    await weth.deposit({value: ethAmount});
-    await weth.transfer(ktyWethPair.address, ethAmount);
-    await ktyWethPair.mint(escrow.address);
+    // await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
+    // await weth.deposit({value: ethAmount});
+    // await weth.transfer(ktyWethPair.address, ethAmount);
+    // await ktyWethPair.mint(escrow.address);
 
     let ktyReserve = await ktyUniswap.getReserveKTY();
     let ethReserve = await ktyUniswap.getReserveETH();
@@ -199,7 +198,14 @@ module.exports = async callback => {
       "KTY"
     );
 
-    
+    // verify game var and fee platform fees are in dai and kty set during deployment
+    let listingFee = await gameVarAndFee.getListingFee();
+    console.log("Listing fee in dai:", weiToEther(listingFee[0]))
+    console.log("Listing fee in kty:", weiToEther(listingFee[1]))
+
+    let finalRewards = await gameVarAndFee.getFinalizeRewards();
+    console.log("Final rewards in dai:", weiToEther(finalRewards[0]));
+    console.log("Final rewards in kty:", weiToEther(finalRewards[1]));
 
     callback();
   } catch (e) {

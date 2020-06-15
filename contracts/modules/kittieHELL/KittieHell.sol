@@ -181,9 +181,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
     onlyOwnedKitty(_kittyID)
     onlyNotGhostKitty(_kittyID)
     returns(uint) {
-        // We need to clear out game of kittie when game ends, so its set to 0;
-        // uint256 gameId = gmGetterDB.getGameOfKittie(_kittyID);
-        return gameStore.getKittieRedemptionFee(gameId);
+        (, uint kittieRedemptionFeeKTY) = gameStore.getKittieRedemptionFee(gameId);
+        return kittieRedemptionFeeKTY;
 	}
 
      /**
