@@ -195,7 +195,7 @@ contract GameStore is Proxied, Guard {
     function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
         uint256 ticketFeeDAI = gameSettings[gameId].ticketFee;
         uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
-        uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
+        uint256 ethForSwap = 0;//KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
         return (ethForSwap, ticketFeeKTY);
     }
 

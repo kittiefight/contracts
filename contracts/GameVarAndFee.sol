@@ -72,14 +72,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     // ----- SETTERS ------
 
-    /// @dev set one variable at a time
-    function setVarAndFee(string calldata varName, uint value)
-        external onlyProxy onlySuperAdmin
-    {
-        bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, varName));
-        genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
-    }
-
     /// @dev set multiple variables
     function setMultipleValues(bytes32[] calldata names, uint[] calldata values)
         external onlyProxy onlySuperAdmin
@@ -138,40 +130,20 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return uint256(0x00000000000000000000000000000000000000000000000b49bcb0036fa6c000);
     }
 
-    /// @notice get KTY/eth current price
-    function getKtyEthPrice() public view returns(uint){
-        return KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price();
-    }
-
-    /// @notice get eth/KTY current price
-    function getEthKtyPrice() public view returns(uint){
-        return KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_KTY_price();
-    }
-
-    /// @notice get dai/eth current price
-    function getDaiEthPrice() public view returns(uint){
-        return KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).DAI_ETH_price();
-    }
-
-    /// @notice get eth/dai current price
-    function getEthDaiPrice() public view returns(uint){
-        return KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_DAI_price();
-    }
-
     function convertEthToDai(uint _ethAmount) public view returns(uint) {
-        return _ethAmount.mul(getEthDaiPrice()).div(1000000000000000000);
+        return _ethAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_DAI_price()).div(1000000000000000000);
     }
 
     function convertDaiToEth(uint _daiAmount) public view returns(uint) {
-        return _daiAmount.mul(getDaiEthPrice()).div(1000000000000000000);
+        return _daiAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).DAI_ETH_price()).div(1000000000000000000);
     }
 
     function convertKtyToEth(uint _ktyAmount) public view returns(uint) {
-        return _ktyAmount.mul(getKtyEthPrice()).div(1000000000000000000);
+        return _ktyAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
     }
 
     function convertEthToKty(uint _ethAmount) public view returns(uint) {
-        return _ethAmount.mul(getEthKtyPrice()).div(1000000000000000000);
+        return _ethAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_KTY_price()).div(1000000000000000000);
     }
         
     /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
