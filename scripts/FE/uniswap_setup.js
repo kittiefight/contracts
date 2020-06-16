@@ -200,12 +200,11 @@ module.exports = async callback => {
 
     // verify game var and fee platform fees are in dai and kty set during deployment
     let listingFee = await gameVarAndFee.getListingFee();
-    console.log("Listing fee in dai:", weiToEther(listingFee[0]))
+    console.log("Ether needed for swapping listing fee kty", weiToEther(listingFee[0]))
     console.log("Listing fee in kty:", weiToEther(listingFee[1]))
 
     let finalRewards = await gameVarAndFee.getFinalizeRewards();
-    console.log("Final rewards in dai:", weiToEther(finalRewards[0]));
-    console.log("Final rewards in kty:", weiToEther(finalRewards[1]));
+    console.log("Final rewards in kty:", weiToEther(finalRewards));
 
     callback();
   } catch (e) {

@@ -7,6 +7,7 @@ const KittieFightToken = artifacts.require('KittieFightToken')
 const CryptoKitties = artifacts.require('MockERC721Token');
 const KtyUniswap = artifacts.require("KtyUniswap");
 const Escrow = artifacts.require("Escrow");
+const GameStore = artifacts.require('GameStore')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -35,6 +36,7 @@ module.exports = async (callback) => {
     let cryptoKitties = await CryptoKitties.deployed();
     let ktyUniswap = await KtyUniswap.deployed();
     let escrow = await Escrow.deployed()
+    let gameStore = await GameStore.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -62,11 +64,9 @@ module.exports = async (callback) => {
 
     console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionCost = await kittieHell.getResurrectionCost(
-      loserKitty,
-      gameId
-    );
-
+    let resurrectionFee = await gameStore.getKittieRedemptionFee(gameId);
+    let resurrectionCost = resurrectionFee[1]
+  
     const sacrificeKitties = [1017555, 413830, 888];
 
     for (let i = 0; i < sacrificeKitties.length; i++) {
@@ -83,7 +83,7 @@ module.exports = async (callback) => {
     //   from: loser
     // });
 
-    ether_resurrection_cost = await ktyUniswap.etherFor(resurrectionCost)
+    let ether_resurrection_cost = resurrectionFee[0]
     console.log("KTY resurrection cost:", weiToEther(resurrectionCost))
     console.log("ether needed for swap KTY resurrection:", weiToEther(ether_resurrection_cost))
 
@@ -179,9 +179,6 @@ module.exports = async (callback) => {
       weiToEther(kty_ether_price),
       "ether"
     );
-
-    let KTY_escrow = await kittieFightToken.balanceOf(escrow.address)
-    console.log("escrow KTY balance:", weiToEther(KTY_escrow))
     
     callback()
   }

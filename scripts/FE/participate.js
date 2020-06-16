@@ -87,20 +87,19 @@ module.exports = async (callback) => {
       weiToEther(kty_ether_ratio),
       "ether"
     );
-    let participate_fee = await gameStore.getTicketFee(1);
-    console.log("participate_fee in dai:", weiToEther(participate_fee[0]))
-    let kty_participate = participate_fee[1]
-    let ether_participate
 
     for(let i = 10; i < blacks; i++){
-      ether_participate = await ktyUniswap.etherFor(kty_participate)
-      console.log("KTY participation fee:", weiToEther(kty_participate))
-      console.log("ether needed for swap KTY participation fee:", weiToEther(ether_participate))
+      let participate_fee = await gameStore.getTicketFee(1);
+      let ether_participate = participate_fee[0]
+      let kty_participate = participate_fee[1]
+      console.log("ether needed for swapping participate_fee in kty:", weiToEther(ether_participate))
+      console.log("participate_fee in kty:", weiToEther(kty_participate))
       participator = accounts[i];
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerBlack]), { from: participator, value: ether_participate })
       console.log('\nNew Participator for playerBlack: ', participator);
       supportersForBlack.push(participator);
+
       await timeout(timeInterval);
     }
 
@@ -118,25 +117,23 @@ module.exports = async (callback) => {
           await timeout(3);
         }
       }
-      ether_participate = await ktyUniswap.etherFor(kty_participate)
-      console.log("KTY participation fee:", weiToEther(kty_participate))
-      console.log("ether needed for swap KTY participation fee:", weiToEther(ether_participate))
+      let participate_fee = await gameStore.getTicketFee(1);
+      let ether_participate = participate_fee[0]
+      let kty_participate = participate_fee[1]
+      console.log("ether needed for swapping participate_fee in kty:", weiToEther(ether_participate))
+      console.log("participate_fee in kty:", weiToEther(kty_participate))
+
       await proxy.execute('GameManager', setMessage(gameManager, 'participate',
       [gameId, playerRed]), { from: participator, value: ether_participate });
       console.log('\nNew Participator for playerRed: ', participator);
       supportersForRed.push(participator);
+
       await timeout(timeInterval);
 
     }
 
-    let KTYforBlack = blackParticipators * kty_participate ;
-    let KTYforRed = redParticipators * kty_participate;
-
     console.log('\nSupporters for Black: ', supportersForBlack);
     console.log('\nSupporters for Red: ', supportersForRed);
-
-    console.log('\nTotal KTY for Black (only participators): ', KTYforBlack);
-    console.log('\nTotal KTY for Red (only participators): ', KTYforRed);
     
     let newSwapEvents = await endowmentFund.getPastEvents("EthSwappedforKTY", {
       fromBlock: 0,

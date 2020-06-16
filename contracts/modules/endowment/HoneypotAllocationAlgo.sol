@@ -163,30 +163,29 @@ contract HoneypotAllocationAlgo is Proxied {
     /**
     * @dev send reward to the user that pressed finalize button
     */
-    function getFinalizeRewards()
-        external
-        view
-        onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-        returns(uint256)
-    {
-        GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        // get reward amount in KTY
-        (, uint rewardsKTY) = gameVarAndFee.getFinalizeRewards();
-        return rewardsKTY;
-    }
+    // function getFinalizeRewards()
+    //     external
+    //     view
+    //     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    //     returns(uint256)
+    // {
+    //     GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+    //     // get reward amount in KTY
+    //     (, uint rewardsKTY) = gameVarAndFee.getFinalizeRewards();
+    //     return rewardsKTY;
+    // }
 
     /**
     * @dev exchange ether for KTY
     */
-    function swapEtherForKTY(uint256 _kty_amount, address _escrow)
+    function swapEtherForKTY(uint256 _etherForSwap, address _escrow)
         external
         payable
         onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
         returns(uint256)
-    { 
-        uint etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(_kty_amount);
+    {
         // allow an error within 0.0001 ether range, which is around $0.002 USD, that is, 0.2 cents.
-        require(msg.value >= etherForSwap.sub(10000000000000), "Insufficient ether for swap KTY");
+        require(msg.value >= _etherForSwap.sub(10000000000000), "Insufficient ether for swap KTY");
         // exchange KTY on uniswap
         IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
             0,

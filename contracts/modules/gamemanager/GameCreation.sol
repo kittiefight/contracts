@@ -40,6 +40,7 @@ import "../../CronJob.sol";
 import "./Forfeiter.sol";
 import '../kittieHELL/KittieHell.sol';
 import "../endowment/HoneypotAllocationAlgo.sol";
+import '../endowment/KtyUniswap.sol';
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -110,9 +111,9 @@ contract GameCreation is Proxied, Guard {
 
         //Pay Listing Fee
         // get listing fee in Dai
-        (, uint listingFeeKTY) = gameVarAndFee.getListingFee();
+        (uint etherForListingFeeSwap, uint listingFeeKTY) = gameVarAndFee.getListingFee();
 
-        require(endowmentFund.contributeKTY.value(msg.value)(player, listingFeeKTY), "Need to pay listing fee");
+        require(endowmentFund.contributeKTY.value(msg.value)(player, etherForListingFeeSwap, listingFeeKTY), "Need to pay listing fee");
         //endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
 
         require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");

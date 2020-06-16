@@ -66,6 +66,7 @@ module.exports = async (callback) => {
     let valueReturned = await earningsTracker.calculateTotal(web3.utils.toWei("5"), 0);
     console.log(web3.utils.fromWei(valueReturned.toString()));
     let burn_fee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let ether_burn_ethie = burn_fee[0]
     let ktyFee = burn_fee[1]
     // await kittieFightToken.transfer(owner, ktyFee.toString(), {
     //   from: accounts[0]})
@@ -75,7 +76,6 @@ module.exports = async (callback) => {
     // console.log(earningsTracker.address);
     await ethieToken.approve(earningsTracker.address, tokenID, { from: owner });
 
-    ether_burn_ethie = await ktyUniswap.etherFor(ktyFee)
     console.log("KTY burn ethie fee:", weiToEther(ktyFee))
     console.log("ether needed for swap KTY burn ethie fee:", weiToEther(ether_burn_ethie))
     

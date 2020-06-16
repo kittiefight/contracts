@@ -272,12 +272,13 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
     }
 
-    /// @notice Gets fee in Dai for players to list kitties for matching in fights
+    /// @notice Gets fee in Ether for players to list kitties for matching in fights
     function getListingFee() public view returns(uint, uint) {
         uint listingFeeDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
         uint listingFeeETH = convertDaiToEth(listingFeeDAI);
         uint listingFeeKTY = convertEthToKty(listingFeeETH);
-        return (listingFeeDAI, listingFeeKTY);
+        uint etherForListingFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(listingFeeKTY);
+        return (etherForListingFeeSwap, listingFeeKTY);
     }
 
     /// @notice Gets minimum contributors needed for the game to continue
@@ -288,11 +289,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     /// @notice Gets the amount of KTY rewarded to the user that hits finalize button. Return amount in Dai.
     function getFinalizeRewards()
-    public view returns(uint, uint) {
+    public view returns(uint) {
         uint rewardsDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
         uint rewardsETH = convertDaiToEth(rewardsDAI);
         uint rewardsKTY = convertEthToKty(rewardsETH);
-        return (rewardsDAI, rewardsKTY);
+        return rewardsKTY;
     }
 
     /// @notice Gets the time before a game ends that the check performance should act

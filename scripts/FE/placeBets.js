@@ -67,18 +67,16 @@ module.exports = async (callback) => {
 
     let state = await getterDB.getGameState(gameId);
     console.log(state);
-    
-    let betting_fee = await gameStore.getBettingFee(1);
-    let kty_betting = betting_fee[1]
-    let ether_betting
 
     for(let i=0; i<noOfBets; i++){
       let randomPlayer = randomValue(2);
 
-      ether_betting = await ktyUniswap.etherFor(kty_betting)
+      let betting_fee = await gameStore.getBettingFee(1);
+      let kty_betting = betting_fee[1]
+      console.log("kty_betting_fee:", weiToEther(kty_betting))
+      let ether_betting = betting_fee[0]
       ether_betting = Number(weiToEther(ether_betting))
-      console.log("ether_betting:", ether_betting)
-
+      console.log("ether for swapping kty_betting_fee:", ether_betting)
 
       if(i == (Number(noOfBets) - 1)){
         let block = await dateTime.getBlockTimeStamp();

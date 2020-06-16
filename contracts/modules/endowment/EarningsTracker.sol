@@ -231,8 +231,8 @@ contract EarningsTracker is Proxied, Guard {
         require(ethieTokens[_ethieTokenID].tokenBurnt == false,
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
-        (, uint256 _kty_fee) = KTYforBurnEthie(_ethieTokenID);
-        require(endowmentFund.contributeKTY.value(msg.value)(msgSender, _kty_fee),
+        (uint256 _eth_for_swap, uint256 _kty_fee) = KTYforBurnEthie(_ethieTokenID);
+        require(endowmentFund.contributeKTY.value(msg.value)(msgSender, _eth_for_swap, _kty_fee),
                 "Failed to pay KTY fee for burning Ethie Token");
 
         // burn Ethie Token NFT
@@ -597,9 +597,8 @@ contract EarningsTracker is Proxied, Guard {
         uint256 withdrawAmountETH = calculateTotal(eth_amount, startingEpoch);
         uint256 withdrawAmountKTY = gameVarAndFee.convertEthToKty(withdrawAmountETH);
         uint256 burnEthieFeeKTY = withdrawAmountKTY.mul(percentageBurnEthie).div(1000000);
-        uint256 burnEthieFeeETH = gameVarAndFee.convertKtyToEth(burnEthieFeeKTY);
-        uint256 burnEthieFeeDAI = gameVarAndFee.convertEthToDai(burnEthieFeeETH);
-        return (burnEthieFeeDAI, burnEthieFeeKTY);
+        uint256 etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(burnEthieFeeKTY);
+        return (etherForSwap, burnEthieFeeKTY);
     }
 
     //============================ Internal Functions ============================

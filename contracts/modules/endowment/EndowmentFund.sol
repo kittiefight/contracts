@@ -88,7 +88,7 @@ contract EndowmentFund is Distribution, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
         returns(bool)
     {
-        uint256 reward = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).getFinalizeRewards();
+        uint256 reward = gameVarAndFee.getFinalizeRewards();
         transferKTYfromEscrow(address(uint160(user)), reward);
         return true;
     }
@@ -154,8 +154,8 @@ contract EndowmentFund is Distribution, Guard {
      * @dev Escrow sends 2x of KTY received in swap to KTY-WETH pair contract to maintain the
      *      original ether to KTY ratio.
      */
-    function contributeKTY(address _sender, uint256 _kty_amount) external payable returns(bool) {
-        HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).swapEtherForKTY.value(msg.value)(_kty_amount, address(escrow));
+    function contributeKTY(address _sender, uint256 _ether_amount_swap, uint256 _kty_amount) external payable returns(bool) {
+        HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).swapEtherForKTY.value(msg.value)(_ether_amount_swap, address(escrow));
 
         endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
 

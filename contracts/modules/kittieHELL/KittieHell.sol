@@ -168,23 +168,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return kitties[_kittyID].deadAt;
     }
 
-    /**
-     * @author @ziweidream
-     * @notice Getting kitty `_kittyID` resurrection cost
-     * @dev The resurrection cost per sec is a constant determined by GameVarAndFee contract
-     * @param _kittyID The kitty for whom the resurrection cost is requested
-     * @return the kitty's resurrection cost
-     */
-    function getResurrectionCost(uint256 _kittyID, uint gameId)
-    public
-    view
-    onlyOwnedKitty(_kittyID)
-    onlyNotGhostKitty(_kittyID)
-    returns(uint) {
-        (, uint kittieRedemptionFeeKTY) = gameStore.getKittieRedemptionFee(gameId);
-        return kittieRedemptionFeeKTY;
-	}
-
      /**
      * @author @ziweidream
      * @notice Resurrecting kitty `_kittyID`
@@ -209,9 +192,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyNotGhostKitty(_kittyID)
         onlyProxy
     returns (bool) {
-        uint256 tokenAmount = getResurrectionCost(_kittyID, gameId);
+        (uint ethersNeeded, uint256 tokenAmount) = gameStore.getKittieRedemptionFee(gameId);
         require(tokenAmount > 0, "KTY amount must be greater than 0");
-        uint256 ethersNeeded = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(tokenAmount);
         require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers to pay for resurrection");
         for (uint i = 0; i < sacrificeKitties.length; i++) {
             KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
