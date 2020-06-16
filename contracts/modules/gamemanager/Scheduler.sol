@@ -202,6 +202,36 @@ contract Scheduler is Proxied {
         return isKittyListed[_kittyId];
     }
 
+    // return amount in dai
+    function calculateDynamicFee
+    (
+        uint256 percentageHoneyPot,
+        uint256 _eth_amount,
+        uint256 _kty_amount
+    )
+        public view returns(uint256)
+    {
+        require(percentageHoneyPot > 0 && _eth_amount > 0 && _kty_amount > 0);
+
+        // uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
+        // uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
+
+        // convert ether to dai
+        uint256 portion1DAI = gameVarAndFee.convertEthToDai(_eth_amount);
+
+        // convert kty to ether, then to dai
+        uint256 portion2ETH = gameVarAndFee.convertKtyToEth(_kty_amount);
+        uint256 portion2DAI = gameVarAndFee.convertEthToDai(portion2ETH);
+
+        // get the whole amount
+        uint256 portionDAI = portion1DAI.add(portion2DAI);
+
+        // 1,000,000 is the base used for percentage setting in kittieFight
+        // for example, if percentageHoneyPot is 0.03% in real world, inside this function
+        // percentageHoneyPot = 0.03% * 1,000,1000 which is 300, thus for the need of div(1000000)
+        return portionDAI.mul(percentageHoneyPot).div(1000000);
+    }
+
     /*                                                 GETTER FUNCTIONS                                               */
     /*                                                       END                                                      */
     /* ============================================================================================================== */

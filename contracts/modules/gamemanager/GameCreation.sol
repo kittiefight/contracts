@@ -301,4 +301,17 @@ contract GameCreation is Proxied, Guard {
         uint256 jobId = cronJobsForGames[gameId];
         cronJob.deleteCronJob(CONTRACT_NAME_GAMECREATION, jobId);
     }
+
+    function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
+        //each time 1 minute before game ends
+        uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
+        
+        if(gameEndTime.sub(performanceTimeCheck) <= now) {
+            //get initial jackpot, need endowment to send this when creating honeypot
+            (,,uint initialEth, uint currentJackpotEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
+
+            if(currentJackpotEth < initialEth.mul(10)) return true;
+            return false;
+        }
+    }
 }

@@ -85,36 +85,6 @@ contract GameStore is Proxied, Guard {
         return gameSettings[gameId].distributionRates;
     }
 
-    // return amount in dai
-    function calculateDynamicFee
-    (
-        uint256 percentageHoneyPot,
-        uint256 _eth_amount,
-        uint256 _kty_amount
-    )
-        public view returns(uint256)
-    {
-        require(percentageHoneyPot > 0 && _eth_amount > 0 && _kty_amount > 0);
-
-        // uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
-        // uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
-
-        // convert ether to dai
-        uint256 portion1DAI = gameVarAndFee.convertEthToDai(_eth_amount);
-
-        // convert kty to ether, then to dai
-        uint256 portion2ETH = gameVarAndFee.convertKtyToEth(_kty_amount);
-        uint256 portion2DAI = gameVarAndFee.convertEthToDai(portion2ETH);
-
-        // get the whole amount
-        uint256 portionDAI = portion1DAI.add(portion2DAI);
-
-        // 1,000,000 is the base used for percentage setting in kittieFight
-        // for example, if percentageHoneyPot is 0.03% in real world, inside this function
-        // percentageHoneyPot = 0.03% * 1,000,1000 which is 300, thus for the need of div(1000000)
-        return portionDAI.mul(percentageHoneyPot).div(1000000);
-    }
-
     // update kittieRedemptionFee and store in Dai
     function updateKittieRedemptionFee(uint256 gameId)
         public
@@ -123,7 +93,7 @@ contract GameStore is Proxied, Guard {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
         (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
-        gameSettings[gameId].redemptionFee = calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);        
+        gameSettings[gameId].redemptionFee = scheduler.calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);        
 
         startGameAndCalculateEpoch(gameVarAndFee.getGameTimes().add(now));
     }
@@ -135,7 +105,7 @@ contract GameStore is Proxied, Guard {
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForTicketFee();
         (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
-        gameSettings[gameId].ticketFee = calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+        gameSettings[gameId].ticketFee = scheduler.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
     }
 
     // update Betting Fee and store in Dai
@@ -145,7 +115,7 @@ contract GameStore is Proxied, Guard {
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForBettingFee();
         (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
-        gameSettings[gameId].bettingFee = calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+        gameSettings[gameId].bettingFee = scheduler.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
     }
 
     function getKittieExpirationTime(uint gameId) public view returns(uint){
@@ -393,18 +363,5 @@ contract GameStore is Proxied, Guard {
         timeFrame.setNewEpoch();
         gameScheduled = scheduler.startGame();
         WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).dissolveOldCreateNew();
-    }
-
-    function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
-        //each time 1 minute before game ends
-        uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
-        
-        if(gameEndTime.sub(performanceTimeCheck) <= now) {
-            //get initial jackpot, need endowment to send this when creating honeypot
-            (,,uint initialEth, uint currentJackpotEth,,,) = gmGetterDB.getHoneypotInfo(gameId);
-
-            if(currentJackpotEth < initialEth.mul(10)) return true;
-            return false;
-        }
     }
 }
