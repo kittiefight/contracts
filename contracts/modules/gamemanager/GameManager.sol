@@ -241,10 +241,10 @@ contract GameManager is Proxied, Guard {
         address opponentPlayer = gameStore.getOpponent(gameId, supportedPlayer);
         
         //Send bet to betting algo, to decide attacks
-        betting.bet(gameId, sender, msg.value, supportedPlayer, opponentPlayer, randomNum);
+        betting.bet(gameId, sender, msg.value.sub(etherForSwap), supportedPlayer, opponentPlayer, randomNum);
 
         //Update bettor's total bet
-        gmSetterDB.updateBettor(gameId, sender, msg.value, supportedPlayer);
+        gmSetterDB.updateBettor(gameId, sender, msg.value.sub(etherForSwap), supportedPlayer);
 
         if (sender != supportedPlayer) gameStore.updateTopbettors(gameId, sender, supportedPlayer);
 

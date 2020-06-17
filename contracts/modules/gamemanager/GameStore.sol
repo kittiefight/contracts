@@ -95,7 +95,7 @@ contract GameStore is Proxied, Guard {
 
         gameSettings[gameId].redemptionFee = scheduler.calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);        
 
-        startGameAndCalculateEpoch(gameVarAndFee.getGameTimes().add(now));
+        startGameAndCalculateEpoch(/*gameVarAndFee.getGameTimes().add(now)*/);
     }
 
     // update Ticket Fee and store in Dai
@@ -165,7 +165,7 @@ contract GameStore is Proxied, Guard {
     function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
         uint256 ticketFeeDAI = gameSettings[gameId].ticketFee;
         uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
-        uint256 ethForSwap = 0;//KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
+        uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
         return (ethForSwap, ticketFeeKTY);
     }
 
@@ -287,7 +287,7 @@ contract GameStore is Proxied, Guard {
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
-        startGameAndCalculateEpoch(gameVarAndFee.getGameTimes().add(now));
+        startGameAndCalculateEpoch(/*gameVarAndFee.getGameTimes().add(now)*/);
     }
 
     /**
@@ -325,7 +325,7 @@ contract GameStore is Proxied, Guard {
         return true;
     }
 
-    function startGameAndCalculateEpoch(uint256 gameStartTime)
+    function startGameAndCalculateEpoch(/*uint256 gameStartTime*/)
     internal
     {
         uint256 activeEpochId = timeFrame.getActiveEpochID();

@@ -31,7 +31,7 @@ module.exports = async (callback) => {
 
     let kittyRed = process.argv[4];
     let kittyBlack = process.argv[5];
-    let gameStartTime = Math.floor(Date.now() / 1000) + 100 + 250 //process.argv[6];
+    let gameStartTime = Math.floor(Date.now() / 1000) + 70 //process.argv[6];
 
     accounts = await web3.eth.getAccounts();
 
