@@ -343,25 +343,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"exchangeTokensForEth\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getAddressAssets\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasKitties\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isRegistered\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"kittieId\",\"type\":\"uint256\"}],\"name\":\"lockKittie\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"lockTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"payFees\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"register\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"kittieId\",\"type\":\"uint256\"}],\"name\":\"releaseKittie\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"releaseTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"sendTokensTo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"stakeSuperDAO\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"kittieId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadAt\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"kittieStatus\",\"type\":\"string\"}],\"name\":\"updateKittie\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"@psychoplasma\",\"details\":\"Interface to access to Register contract from corresponding proxy contract.\",\"methods\":{\"exchangeTokensForEth(address,uint256)\":{\"details\":\"???Can be called only through Proxy contract\",\"params\":{\"account\":\"address\",\"amount\":\"uint256\"}},\"hasKitties(address)\":{\"details\":\"Checks whether there is a kittie registered to the system under the given account.\",\"params\":{\"account\":\"address Address to be checked\"},\"return\":\"bool true if there is a kittie registered to the system under the given account\"},\"initialize()\":{\"details\":\"Sets related database contracts and tokens ProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOTokenCan be called only by the owner of this contract\"},\"isRegistered(address)\":{\"details\":\"Checks whether there is a profile on ProfileDB with the given address.\",\"params\":{\"account\":\"address Address to be checked\"},\"return\":\"bool true if there is a registered profile with the given address, false otherwise.\"},\"lockKittie(address,uint256)\":{\"details\":\"Locks the given CryptoKitty to this contract. Prior to this operation, the owner of the given CryptoKitty should approve this contract for trasfer operation.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the owner of CryptoKitty to be locked\",\"kittieId\":\"uint256 Id of CryptoKitty to be locked\"}},\"lockTokens(address,uint256)\":{\"details\":\"Locks KittieFight tokens to this contract and saves the locked amount on ProfileDB under account's profile.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user whose tokens will be locked\",\"amount\":\"uint256 Amount of KittieFight tokens to be locked\"}},\"payFees(address,uint256)\":{\"details\":\"???Can be called only through Proxy contract\",\"params\":{\"account\":\"address\",\"amount\":\"uint256\"}},\"register(address)\":{\"details\":\"Creates a new profile with the given address in ProfileDB and sets its role to `bettor` by default.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user to be registered\"}},\"releaseKittie(address,uint256)\":{\"details\":\"Transfers the given CryptoKitty from this contract to its user. The kitten's status should not be dead/ghots nor playing. Otherwise the tx will be reverted.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the owner of CryptoKitty to be released\",\"kittieId\":\"uint256 Id of CryptoKitty to be released\"}},\"releaseTokens(address,uint256)\":{\"details\":\"Releases KittieFight tokens from this contract to `account`. Does not allow to release an amount more than the locked amount. Updates the locked amount on ProfileDB accordingly after release.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user whose tokens will be released\",\"amount\":\"uint256 Amount of KittieFight tokens to be released\"}},\"sendTokensTo(address,address,uint256)\":{\"details\":\"???Can be called only through Proxy contract\",\"params\":{\"account\":\"address\",\"amount\":\"uint256\",\"to\":\"address\"}},\"stakeSuperDAO(address,uint256)\":{\"details\":\"Stakes SuperDAO tokens to this contract and saves the stake amount and staking status on ProfileDB.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user who is staking\",\"amount\":\"uint256 Amount of SuperDAO tokens to be staked\"}},\"updateKittie(string,address,uint256,uint256,string)\":{\"details\":\"Updates the status of the given kitten.Can be called through other system contracts\",\"params\":{\"account\":\"address Address of the owner of CryptoKitty to be updated\",\"contractName\":\"string Address of the owner of CryptoKitty to be updated\",\"deadAt\":\"uint256 Time of death of the kitten if its status dead\",\"kittieId\":\"uint256 Id of CryptoKitty to be updated\",\"kittieStatus\":\"string Status of the kitten in KittieFight system\"}}},\"title\":\"IRegister\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/IRegister.sol\":\"IRegister\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/IRegister.sol\":{\"keccak256\":\"0xaf759f92e059875e41667a4b639a146411d535ab971f1a8c56cad534b24396e8\",\"urls\":[\"bzz-raw://fbc192c90f1d206d653e89405ec66c5899893a448a39468305c9a4a2abf3c291\",\"dweb:/ipfs/QmRsujhWLV7m8CnzU2uo8EKYxsfUhHnemjEQRmNpV1HbkM\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"exchangeTokensForEth\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getAddressAssets\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasKitties\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isRegistered\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"kittieId\",\"type\":\"uint256\"}],\"name\":\"lockKittie\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"lockTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"payFees\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"register\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"kittieId\",\"type\":\"uint256\"}],\"name\":\"releaseKittie\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"releaseTokens\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"sendTokensTo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"stakeSuperDAO\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"contractName\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"kittieId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadAt\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"kittieStatus\",\"type\":\"string\"}],\"name\":\"updateKittie\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"@psychoplasma\",\"details\":\"Interface to access to Register contract from corresponding proxy contract.\",\"methods\":{\"exchangeTokensForEth(address,uint256)\":{\"details\":\"???Can be called only through Proxy contract\",\"params\":{\"account\":\"address\",\"amount\":\"uint256\"}},\"hasKitties(address)\":{\"details\":\"Checks whether there is a kittie registered to the system under the given account.\",\"params\":{\"account\":\"address Address to be checked\"},\"return\":\"bool true if there is a kittie registered to the system under the given account\"},\"initialize()\":{\"details\":\"Sets related database contracts and tokens ProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOTokenCan be called only by the owner of this contract\"},\"isRegistered(address)\":{\"details\":\"Checks whether there is a profile on ProfileDB with the given address.\",\"params\":{\"account\":\"address Address to be checked\"},\"return\":\"bool true if there is a registered profile with the given address, false otherwise.\"},\"lockKittie(address,uint256)\":{\"details\":\"Locks the given CryptoKitty to this contract. Prior to this operation, the owner of the given CryptoKitty should approve this contract for trasfer operation.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the owner of CryptoKitty to be locked\",\"kittieId\":\"uint256 Id of CryptoKitty to be locked\"}},\"lockTokens(address,uint256)\":{\"details\":\"Locks KittieFight tokens to this contract and saves the locked amount on ProfileDB under account's profile.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user whose tokens will be locked\",\"amount\":\"uint256 Amount of KittieFight tokens to be locked\"}},\"payFees(address,uint256)\":{\"details\":\"???Can be called only through Proxy contract\",\"params\":{\"account\":\"address\",\"amount\":\"uint256\"}},\"register(address)\":{\"details\":\"Creates a new profile with the given address in ProfileDB and sets its role to `bettor` by default.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user to be registered\"}},\"releaseKittie(address,uint256)\":{\"details\":\"Transfers the given CryptoKitty from this contract to its user. The kitten's status should not be dead/ghots nor playing. Otherwise the tx will be reverted.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the owner of CryptoKitty to be released\",\"kittieId\":\"uint256 Id of CryptoKitty to be released\"}},\"releaseTokens(address,uint256)\":{\"details\":\"Releases KittieFight tokens from this contract to `account`. Does not allow to release an amount more than the locked amount. Updates the locked amount on ProfileDB accordingly after release.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user whose tokens will be released\",\"amount\":\"uint256 Amount of KittieFight tokens to be released\"}},\"sendTokensTo(address,address,uint256)\":{\"details\":\"???Can be called only through Proxy contract\",\"params\":{\"account\":\"address\",\"amount\":\"uint256\",\"to\":\"address\"}},\"stakeSuperDAO(address,uint256)\":{\"details\":\"Stakes SuperDAO tokens to this contract and saves the stake amount and staking status on ProfileDB.Can be called only through Proxy contract\",\"params\":{\"account\":\"address Address of the user who is staking\",\"amount\":\"uint256 Amount of SuperDAO tokens to be staked\"}},\"updateKittie(string,address,uint256,uint256,string)\":{\"details\":\"Updates the status of the given kitten.Can be called through other system contracts\",\"params\":{\"account\":\"address Address of the owner of CryptoKitty to be updated\",\"contractName\":\"string Address of the owner of CryptoKitty to be updated\",\"deadAt\":\"uint256 Time of death of the kitten if its status dead\",\"kittieId\":\"uint256 Id of CryptoKitty to be updated\",\"kittieStatus\":\"string Status of the kitten in KittieFight system\"}}},\"title\":\"IRegister\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/D/projects/kittiefight/alpha/contracts/interfaces/IRegister.sol\":\"IRegister\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/projects/kittiefight/alpha/contracts/interfaces/IRegister.sol\":{\"keccak256\":\"0x18514ad39f0b8f2abe796d58438b5bbab2e9e766c10825ea35d46bece494ba17\",\"urls\":[\"bzz-raw://0d88f18f2c964ae7c9896c033ce0b412490fd9482e8a1084d110214a7da611f4\",\"dweb:/ipfs/Qmap23YCD8YAYxnUhgqQb7HgqLJQoTRETWaJshNseUoUvc\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// This program is free software: you can redistribute it and/or modify\r\n// it under the terms of the GNU General Public License as published by\r\n// the Free Software Foundation, either version 3 of the License, or\r\n// (at your option) any later version.\r\n\r\n// This program is distributed in the hope that it will be useful,\r\n// but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n// GNU General Public License for more details.\r\n\r\n// You should have received a copy of the GNU General Public License\r\n// along with this program.  If not, see <http://www.gnu.org/licenses/>.\r\npragma solidity ^0.5.5;\r\n\r\n\r\n/**\r\n * @title IRegister\r\n * @dev Interface to access to Register contract from corresponding proxy contract.\r\n * @author @psychoplasma\r\n */\r\ncontract IRegister {\r\n\r\n  /**\r\n   * @dev Sets related database contracts and tokens\r\n   * ProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOToken\r\n   * @dev Can be called only by the owner of this contract\r\n   */\r\n  function initialize() external;\r\n\r\n  /**\r\n   * @dev Creates a new profile with the given address in ProfileDB\r\n   * and sets its role to `bettor` by default.\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address Address of the user to be registered\r\n   */\r\n  function register(address account) external returns (bool);\r\n\r\n  /**\r\n   * @dev Locks the given CryptoKitty to this contract. Prior to this operation,\r\n   * the owner of the given CryptoKitty should approve this contract for trasfer operation.\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address Address of the owner of CryptoKitty to be locked\r\n   * @param kittieId uint256 Id of CryptoKitty to be locked\r\n   */\r\n  function lockKittie(address account, uint256 kittieId) external returns (bool);\r\n\r\n  /**\r\n   * @dev Transfers the given CryptoKitty from this contract to its user. The kitten's\r\n   * status should not be dead/ghots nor playing. Otherwise the tx will be reverted.\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address Address of the owner of CryptoKitty to be released\r\n   * @param kittieId uint256 Id of CryptoKitty to be released\r\n   */\r\n  function releaseKittie(address account, uint256 kittieId) external returns (bool);\r\n\r\n  /**\r\n   * @dev Updates the status of the given kitten.\r\n   * @dev Can be called through other system contracts\r\n   * @param contractName string Address of the owner of CryptoKitty to be updated\r\n   * @param account address Address of the owner of CryptoKitty to be updated\r\n   * @param kittieId uint256 Id of CryptoKitty to be updated\r\n   * @param deadAt uint256 Time of death of the kitten if its status dead\r\n   * @param kittieStatus string Status of the kitten in KittieFight system\r\n   */\r\n  function updateKittie(\r\n    string calldata contractName,\r\n    address account,\r\n    uint256 kittieId,\r\n    uint256 deadAt,\r\n    string calldata kittieStatus\r\n  ) external returns (bool);\r\n\r\n  /**\r\n   * @dev ???\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address\r\n   * @param to address\r\n   * @param amount uint256\r\n   */\r\n  function sendTokensTo(address account, address to, uint256 amount) external returns (bool);\r\n\r\n  /**\r\n   * @dev ???\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address\r\n   * @param amount uint256\r\n   */\r\n  function exchangeTokensForEth(address payable account, uint256 amount) external returns (bool);\r\n\r\n  /**\r\n   * @dev Stakes SuperDAO tokens to this contract and saves the stake\r\n   * amount and staking status on ProfileDB.\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address Address of the user who is staking\r\n   * @param amount uint256 Amount of SuperDAO tokens to be staked\r\n   */\r\n  function stakeSuperDAO(address account, uint256 amount) external returns (bool);\r\n\r\n  /**\r\n   * @dev ???\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address\r\n   * @param amount uint256\r\n   */\r\n  function payFees(address account, uint256 amount) external returns (bool);\r\n\r\n  /**\r\n   * @dev Locks KittieFight tokens to this contract and saves the locked\r\n   * amount on ProfileDB under account's profile.\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address Address of the user whose tokens will be locked\r\n   * @param amount uint256 Amount of KittieFight tokens to be locked\r\n   */\r\n  function lockTokens(address account, uint256 amount) external returns (bool);\r\n\r\n  /**\r\n   * @dev Releases KittieFight tokens from this contract to `account`.\r\n   * Does not allow to release an amount more than the locked amount.\r\n   * Updates the locked amount on ProfileDB accordingly after release.\r\n   * @dev Can be called only through Proxy contract\r\n   * @param account address Address of the user whose tokens will be released\r\n   * @param amount uint256 Amount of KittieFight tokens to be released\r\n   */\r\n  function releaseTokens(address account, uint256 amount) external returns (bool);\r\n\r\n  function getAddressAssets() public view returns (address);\r\n\r\n  /**\r\n   * @dev Checks whether there is a profile on ProfileDB with the given address.\r\n   * @param account address Address to be checked\r\n   * @return bool true if there is a registered profile with the given address, false otherwise.\r\n   */\r\n  function isRegistered(address account) public view returns (bool);\r\n\r\n  /**\r\n   * @dev Checks whether there is a kittie registered to the system under the given account.\r\n   * @param account address Address to be checked\r\n   * @return bool true if there is a kittie registered to the system under the given account\r\n   */\r\n  function hasKitties(address account) public view returns (bool);\r\n}\r\n",
-  "sourcePath": "C:/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/IRegister.sol",
+  "source": "// This program is free software: you can redistribute it and/or modify\n// it under the terms of the GNU General Public License as published by\n// the Free Software Foundation, either version 3 of the License, or\n// (at your option) any later version.\n\n// This program is distributed in the hope that it will be useful,\n// but WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n// GNU General Public License for more details.\n\n// You should have received a copy of the GNU General Public License\n// along with this program.  If not, see <http://www.gnu.org/licenses/>.\npragma solidity ^0.5.5;\n\n\n/**\n * @title IRegister\n * @dev Interface to access to Register contract from corresponding proxy contract.\n * @author @psychoplasma\n */\ncontract IRegister {\n\n  /**\n   * @dev Sets related database contracts and tokens\n   * ProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOToken\n   * @dev Can be called only by the owner of this contract\n   */\n  function initialize() external;\n\n  /**\n   * @dev Creates a new profile with the given address in ProfileDB\n   * and sets its role to `bettor` by default.\n   * @dev Can be called only through Proxy contract\n   * @param account address Address of the user to be registered\n   */\n  function register(address account) external returns (bool);\n\n  /**\n   * @dev Locks the given CryptoKitty to this contract. Prior to this operation,\n   * the owner of the given CryptoKitty should approve this contract for trasfer operation.\n   * @dev Can be called only through Proxy contract\n   * @param account address Address of the owner of CryptoKitty to be locked\n   * @param kittieId uint256 Id of CryptoKitty to be locked\n   */\n  function lockKittie(address account, uint256 kittieId) external returns (bool);\n\n  /**\n   * @dev Transfers the given CryptoKitty from this contract to its user. The kitten's\n   * status should not be dead/ghots nor playing. Otherwise the tx will be reverted.\n   * @dev Can be called only through Proxy contract\n   * @param account address Address of the owner of CryptoKitty to be released\n   * @param kittieId uint256 Id of CryptoKitty to be released\n   */\n  function releaseKittie(address account, uint256 kittieId) external returns (bool);\n\n  /**\n   * @dev Updates the status of the given kitten.\n   * @dev Can be called through other system contracts\n   * @param contractName string Address of the owner of CryptoKitty to be updated\n   * @param account address Address of the owner of CryptoKitty to be updated\n   * @param kittieId uint256 Id of CryptoKitty to be updated\n   * @param deadAt uint256 Time of death of the kitten if its status dead\n   * @param kittieStatus string Status of the kitten in KittieFight system\n   */\n  function updateKittie(\n    string calldata contractName,\n    address account,\n    uint256 kittieId,\n    uint256 deadAt,\n    string calldata kittieStatus\n  ) external returns (bool);\n\n  /**\n   * @dev ???\n   * @dev Can be called only through Proxy contract\n   * @param account address\n   * @param to address\n   * @param amount uint256\n   */\n  function sendTokensTo(address account, address to, uint256 amount) external returns (bool);\n\n  /**\n   * @dev ???\n   * @dev Can be called only through Proxy contract\n   * @param account address\n   * @param amount uint256\n   */\n  function exchangeTokensForEth(address payable account, uint256 amount) external returns (bool);\n\n  /**\n   * @dev Stakes SuperDAO tokens to this contract and saves the stake\n   * amount and staking status on ProfileDB.\n   * @dev Can be called only through Proxy contract\n   * @param account address Address of the user who is staking\n   * @param amount uint256 Amount of SuperDAO tokens to be staked\n   */\n  function stakeSuperDAO(address account, uint256 amount) external returns (bool);\n\n  /**\n   * @dev ???\n   * @dev Can be called only through Proxy contract\n   * @param account address\n   * @param amount uint256\n   */\n  function payFees(address account, uint256 amount) external returns (bool);\n\n  /**\n   * @dev Locks KittieFight tokens to this contract and saves the locked\n   * amount on ProfileDB under account's profile.\n   * @dev Can be called only through Proxy contract\n   * @param account address Address of the user whose tokens will be locked\n   * @param amount uint256 Amount of KittieFight tokens to be locked\n   */\n  function lockTokens(address account, uint256 amount) external returns (bool);\n\n  /**\n   * @dev Releases KittieFight tokens from this contract to `account`.\n   * Does not allow to release an amount more than the locked amount.\n   * Updates the locked amount on ProfileDB accordingly after release.\n   * @dev Can be called only through Proxy contract\n   * @param account address Address of the user whose tokens will be released\n   * @param amount uint256 Amount of KittieFight tokens to be released\n   */\n  function releaseTokens(address account, uint256 amount) external returns (bool);\n\n  function getAddressAssets() public view returns (address);\n\n  /**\n   * @dev Checks whether there is a profile on ProfileDB with the given address.\n   * @param account address Address to be checked\n   * @return bool true if there is a registered profile with the given address, false otherwise.\n   */\n  function isRegistered(address account) public view returns (bool);\n\n  /**\n   * @dev Checks whether there is a kittie registered to the system under the given account.\n   * @param account address Address to be checked\n   * @return bool true if there is a kittie registered to the system under the given account\n   */\n  function hasKitties(address account) public view returns (bool);\n}\n",
+  "sourcePath": "D:\\projects\\kittiefight\\alpha\\contracts\\interfaces\\IRegister.sol",
   "ast": {
-    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/IRegister.sol",
+    "absolutePath": "/D/projects/kittiefight/alpha/contracts/interfaces/IRegister.sol",
     "exportedSymbols": {
       "IRegister": [
-        3364
+        3298
       ]
     },
-    "id": 3365,
+    "id": 3299,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3245,
+        "id": 3179,
         "literals": [
           "solidity",
           "^",
@@ -369,7 +369,7 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "654:23:25"
+        "src": "642:23:25"
       },
       {
         "baseContracts": [],
@@ -377,9 +377,9 @@
         "contractKind": "contract",
         "documentation": "@title IRegister\n@dev Interface to access to Register contract from corresponding proxy contract.\n@author @psychoplasma",
         "fullyImplemented": false,
-        "id": 3364,
+        "id": 3298,
         "linearizedBaseContracts": [
-          3364
+          3298
         ],
         "name": "IRegister",
         "nodeType": "ContractDefinition",
@@ -387,26 +387,26 @@
           {
             "body": null,
             "documentation": "@dev Sets related database contracts and tokens\nProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOToken\n@dev Can be called only by the owner of this contract",
-            "id": 3248,
+            "id": 3182,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "initialize",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3246,
+              "id": 3180,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1070:2:25"
+              "src": "1043:2:25"
             },
             "returnParameters": {
-              "id": 3247,
+              "id": 3181,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1081:0:25"
+              "src": "1054:0:25"
             },
-            "scope": 3364,
-            "src": "1051:31:25",
+            "scope": 3298,
+            "src": "1024:31:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -414,23 +414,23 @@
           {
             "body": null,
             "documentation": "@dev Creates a new profile with the given address in ProfileDB\nand sets its role to `bettor` by default.\n@dev Can be called only through Proxy contract\n@param account address Address of the user to be registered",
-            "id": 3255,
+            "id": 3189,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "register",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3251,
+              "id": 3185,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3250,
+                  "id": 3184,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3255,
-                  "src": "1356:15:25",
+                  "scope": 3189,
+                  "src": "1321:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -438,10 +438,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3249,
+                    "id": 3183,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1356:7:25",
+                    "src": "1321:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -452,19 +452,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1355:17:25"
+              "src": "1320:17:25"
             },
             "returnParameters": {
-              "id": 3254,
+              "id": 3188,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3253,
+                  "id": 3187,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3255,
-                  "src": "1391:4:25",
+                  "scope": 3189,
+                  "src": "1356:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -472,10 +472,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3252,
+                    "id": 3186,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1391:4:25",
+                    "src": "1356:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -485,10 +485,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1390:6:25"
+              "src": "1355:6:25"
             },
-            "scope": 3364,
-            "src": "1338:59:25",
+            "scope": 3298,
+            "src": "1303:59:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -496,23 +496,23 @@
           {
             "body": null,
             "documentation": "@dev Locks the given CryptoKitty to this contract. Prior to this operation,\nthe owner of the given CryptoKitty should approve this contract for trasfer operation.\n@dev Can be called only through Proxy contract\n@param account address Address of the owner of CryptoKitty to be locked\n@param kittieId uint256 Id of CryptoKitty to be locked",
-            "id": 3264,
+            "id": 3198,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "lockKittie",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3260,
+              "id": 3194,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3257,
+                  "id": 3191,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3264,
-                  "src": "1804:15:25",
+                  "scope": 3198,
+                  "src": "1760:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -520,10 +520,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3256,
+                    "id": 3190,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1804:7:25",
+                    "src": "1760:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -535,11 +535,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3259,
+                  "id": 3193,
                   "name": "kittieId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3264,
-                  "src": "1821:16:25",
+                  "scope": 3198,
+                  "src": "1777:16:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -547,10 +547,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3258,
+                    "id": 3192,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1821:7:25",
+                    "src": "1777:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -560,19 +560,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1803:35:25"
+              "src": "1759:35:25"
             },
             "returnParameters": {
-              "id": 3263,
+              "id": 3197,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3262,
+                  "id": 3196,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3264,
-                  "src": "1857:4:25",
+                  "scope": 3198,
+                  "src": "1813:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -580,10 +580,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3261,
+                    "id": 3195,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1857:4:25",
+                    "src": "1813:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -593,10 +593,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1856:6:25"
+              "src": "1812:6:25"
             },
-            "scope": 3364,
-            "src": "1784:79:25",
+            "scope": 3298,
+            "src": "1740:79:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -604,23 +604,23 @@
           {
             "body": null,
             "documentation": "@dev Transfers the given CryptoKitty from this contract to its user. The kitten's\nstatus should not be dead/ghots nor playing. Otherwise the tx will be reverted.\n@dev Can be called only through Proxy contract\n@param account address Address of the owner of CryptoKitty to be released\n@param kittieId uint256 Id of CryptoKitty to be released",
-            "id": 3273,
+            "id": 3207,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "releaseKittie",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3269,
+              "id": 3203,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3266,
+                  "id": 3200,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3273,
-                  "src": "2276:15:25",
+                  "scope": 3207,
+                  "src": "2223:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -628,10 +628,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3265,
+                    "id": 3199,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2276:7:25",
+                    "src": "2223:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -643,11 +643,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3268,
+                  "id": 3202,
                   "name": "kittieId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3273,
-                  "src": "2293:16:25",
+                  "scope": 3207,
+                  "src": "2240:16:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -655,10 +655,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3267,
+                    "id": 3201,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2293:7:25",
+                    "src": "2240:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -668,19 +668,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2275:35:25"
+              "src": "2222:35:25"
             },
             "returnParameters": {
-              "id": 3272,
+              "id": 3206,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3271,
+                  "id": 3205,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3273,
-                  "src": "2329:4:25",
+                  "scope": 3207,
+                  "src": "2276:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -688,10 +688,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3270,
+                    "id": 3204,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2329:4:25",
+                    "src": "2276:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -701,10 +701,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2328:6:25"
+              "src": "2275:6:25"
             },
-            "scope": 3364,
-            "src": "2253:82:25",
+            "scope": 3298,
+            "src": "2200:82:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -712,23 +712,23 @@
           {
             "body": null,
             "documentation": "@dev Updates the status of the given kitten.\n@dev Can be called through other system contracts\n@param contractName string Address of the owner of CryptoKitty to be updated\n@param account address Address of the owner of CryptoKitty to be updated\n@param kittieId uint256 Id of CryptoKitty to be updated\n@param deadAt uint256 Time of death of the kitten if its status dead\n@param kittieStatus string Status of the kitten in KittieFight system",
-            "id": 3288,
+            "id": 3222,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "updateKittie",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3284,
+              "id": 3218,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3275,
+                  "id": 3209,
                   "name": "contractName",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2865:28:25",
+                  "scope": 3222,
+                  "src": "2800:28:25",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -736,10 +736,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 3274,
+                    "id": 3208,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2865:6:25",
+                    "src": "2800:6:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -750,11 +750,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3277,
+                  "id": 3211,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2900:15:25",
+                  "scope": 3222,
+                  "src": "2834:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -762,10 +762,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3276,
+                    "id": 3210,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2900:7:25",
+                    "src": "2834:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -777,11 +777,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3279,
+                  "id": 3213,
                   "name": "kittieId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2922:16:25",
+                  "scope": 3222,
+                  "src": "2855:16:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -789,10 +789,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3278,
+                    "id": 3212,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2922:7:25",
+                    "src": "2855:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -803,11 +803,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3281,
+                  "id": 3215,
                   "name": "deadAt",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2945:14:25",
+                  "scope": 3222,
+                  "src": "2877:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -815,10 +815,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3280,
+                    "id": 3214,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2945:7:25",
+                    "src": "2877:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -829,11 +829,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3283,
+                  "id": 3217,
                   "name": "kittieStatus",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2966:28:25",
+                  "scope": 3222,
+                  "src": "2897:28:25",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -841,10 +841,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 3282,
+                    "id": 3216,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2966:6:25",
+                    "src": "2897:6:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -854,19 +854,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2858:141:25"
+              "src": "2794:135:25"
             },
             "returnParameters": {
-              "id": 3287,
+              "id": 3221,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3286,
+                  "id": 3220,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "3018:4:25",
+                  "scope": 3222,
+                  "src": "2948:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -874,10 +874,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3285,
+                    "id": 3219,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3018:4:25",
+                    "src": "2948:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -887,10 +887,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3017:6:25"
+              "src": "2947:6:25"
             },
-            "scope": 3364,
-            "src": "2837:187:25",
+            "scope": 3298,
+            "src": "2773:181:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -898,23 +898,23 @@
           {
             "body": null,
             "documentation": "@dev ???\n@dev Can be called only through Proxy contract\n@param account address\n@param to address\n@param amount uint256",
-            "id": 3299,
+            "id": 3233,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "sendTokensTo",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3295,
+              "id": 3229,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3290,
+                  "id": 3224,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3215:15:25",
+                  "scope": 3233,
+                  "src": "3136:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -922,10 +922,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3289,
+                    "id": 3223,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3215:7:25",
+                    "src": "3136:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -937,11 +937,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3292,
+                  "id": 3226,
                   "name": "to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3232:10:25",
+                  "scope": 3233,
+                  "src": "3153:10:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -949,10 +949,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3291,
+                    "id": 3225,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3232:7:25",
+                    "src": "3153:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -964,11 +964,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3294,
+                  "id": 3228,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3244:14:25",
+                  "scope": 3233,
+                  "src": "3165:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -976,10 +976,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3293,
+                    "id": 3227,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3244:7:25",
+                    "src": "3165:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -989,19 +989,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3214:45:25"
+              "src": "3135:45:25"
             },
             "returnParameters": {
-              "id": 3298,
+              "id": 3232,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3297,
+                  "id": 3231,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3278:4:25",
+                  "scope": 3233,
+                  "src": "3199:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1009,10 +1009,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3296,
+                    "id": 3230,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3278:4:25",
+                    "src": "3199:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1022,10 +1022,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3277:6:25"
+              "src": "3198:6:25"
             },
-            "scope": 3364,
-            "src": "3193:91:25",
+            "scope": 3298,
+            "src": "3114:91:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1033,23 +1033,23 @@
           {
             "body": null,
             "documentation": "@dev ???\n@dev Can be called only through Proxy contract\n@param account address\n@param amount uint256",
-            "id": 3308,
+            "id": 3242,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "exchangeTokensForEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3304,
+              "id": 3238,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3301,
+                  "id": 3235,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3308,
-                  "src": "3459:23:25",
+                  "scope": 3242,
+                  "src": "3372:23:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1057,10 +1057,10 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 3300,
+                    "id": 3234,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3459:15:25",
+                    "src": "3372:15:25",
                     "stateMutability": "payable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address_payable",
@@ -1072,11 +1072,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3303,
+                  "id": 3237,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3308,
-                  "src": "3484:14:25",
+                  "scope": 3242,
+                  "src": "3397:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1084,10 +1084,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3302,
+                    "id": 3236,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3484:7:25",
+                    "src": "3397:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1097,19 +1097,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3458:41:25"
+              "src": "3371:41:25"
             },
             "returnParameters": {
-              "id": 3307,
+              "id": 3241,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3306,
+                  "id": 3240,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3308,
-                  "src": "3518:4:25",
+                  "scope": 3242,
+                  "src": "3431:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1117,10 +1117,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3305,
+                    "id": 3239,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3518:4:25",
+                    "src": "3431:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1130,10 +1130,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3517:6:25"
+              "src": "3430:6:25"
             },
-            "scope": 3364,
-            "src": "3429:95:25",
+            "scope": 3298,
+            "src": "3342:95:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1141,23 +1141,23 @@
           {
             "body": null,
             "documentation": "@dev Stakes SuperDAO tokens to this contract and saves the stake\namount and staking status on ProfileDB.\n@dev Can be called only through Proxy contract\n@param account address Address of the user who is staking\n@param amount uint256 Amount of SuperDAO tokens to be staked",
-            "id": 3317,
+            "id": 3251,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "stakeSuperDAO",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3313,
+              "id": 3247,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3310,
+                  "id": 3244,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3317,
-                  "src": "3868:15:25",
+                  "scope": 3251,
+                  "src": "3772:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1165,10 +1165,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3309,
+                    "id": 3243,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3868:7:25",
+                    "src": "3772:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1180,11 +1180,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3312,
+                  "id": 3246,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3317,
-                  "src": "3885:14:25",
+                  "scope": 3251,
+                  "src": "3789:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1192,10 +1192,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3311,
+                    "id": 3245,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3885:7:25",
+                    "src": "3789:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1205,19 +1205,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3867:33:25"
+              "src": "3771:33:25"
             },
             "returnParameters": {
-              "id": 3316,
+              "id": 3250,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3315,
+                  "id": 3249,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3317,
-                  "src": "3919:4:25",
+                  "scope": 3251,
+                  "src": "3823:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1225,10 +1225,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3314,
+                    "id": 3248,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3919:4:25",
+                    "src": "3823:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1238,10 +1238,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3918:6:25"
+              "src": "3822:6:25"
             },
-            "scope": 3364,
-            "src": "3845:80:25",
+            "scope": 3298,
+            "src": "3749:80:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1249,23 +1249,23 @@
           {
             "body": null,
             "documentation": "@dev ???\n@dev Can be called only through Proxy contract\n@param account address\n@param amount uint256",
-            "id": 3326,
+            "id": 3260,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "payFees",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3322,
+              "id": 3256,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3319,
+                  "id": 3253,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3326,
-                  "src": "4087:15:25",
+                  "scope": 3260,
+                  "src": "3983:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1273,10 +1273,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3318,
+                    "id": 3252,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4087:7:25",
+                    "src": "3983:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1288,11 +1288,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3321,
+                  "id": 3255,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3326,
-                  "src": "4104:14:25",
+                  "scope": 3260,
+                  "src": "4000:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1300,10 +1300,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3320,
+                    "id": 3254,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4104:7:25",
+                    "src": "4000:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1313,19 +1313,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4086:33:25"
+              "src": "3982:33:25"
             },
             "returnParameters": {
-              "id": 3325,
+              "id": 3259,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3324,
+                  "id": 3258,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3326,
-                  "src": "4138:4:25",
+                  "scope": 3260,
+                  "src": "4034:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1333,10 +1333,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3323,
+                    "id": 3257,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4138:4:25",
+                    "src": "4034:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1346,10 +1346,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4137:6:25"
+              "src": "4033:6:25"
             },
-            "scope": 3364,
-            "src": "4070:74:25",
+            "scope": 3298,
+            "src": "3966:74:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1357,23 +1357,23 @@
           {
             "body": null,
             "documentation": "@dev Locks KittieFight tokens to this contract and saves the locked\namount on ProfileDB under account's profile.\n@dev Can be called only through Proxy contract\n@param account address Address of the user whose tokens will be locked\n@param amount uint256 Amount of KittieFight tokens to be locked",
-            "id": 3335,
+            "id": 3269,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "lockTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3331,
+              "id": 3265,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3328,
+                  "id": 3262,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3335,
-                  "src": "4509:15:25",
+                  "scope": 3269,
+                  "src": "4396:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1381,10 +1381,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3327,
+                    "id": 3261,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4509:7:25",
+                    "src": "4396:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1396,11 +1396,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3330,
+                  "id": 3264,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3335,
-                  "src": "4526:14:25",
+                  "scope": 3269,
+                  "src": "4413:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1408,10 +1408,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3329,
+                    "id": 3263,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4526:7:25",
+                    "src": "4413:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1421,19 +1421,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4508:33:25"
+              "src": "4395:33:25"
             },
             "returnParameters": {
-              "id": 3334,
+              "id": 3268,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3333,
+                  "id": 3267,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3335,
-                  "src": "4560:4:25",
+                  "scope": 3269,
+                  "src": "4447:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1441,10 +1441,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3332,
+                    "id": 3266,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4560:4:25",
+                    "src": "4447:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1454,10 +1454,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4559:6:25"
+              "src": "4446:6:25"
             },
-            "scope": 3364,
-            "src": "4489:77:25",
+            "scope": 3298,
+            "src": "4376:77:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1465,23 +1465,23 @@
           {
             "body": null,
             "documentation": "@dev Releases KittieFight tokens from this contract to `account`.\nDoes not allow to release an amount more than the locked amount.\nUpdates the locked amount on ProfileDB accordingly after release.\n@dev Can be called only through Proxy contract\n@param account address Address of the user whose tokens will be released\n@param amount uint256 Amount of KittieFight tokens to be released",
-            "id": 3344,
+            "id": 3278,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "releaseTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3340,
+              "id": 3274,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3337,
+                  "id": 3271,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3344,
-                  "src": "5028:15:25",
+                  "scope": 3278,
+                  "src": "4905:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1489,10 +1489,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3336,
+                    "id": 3270,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5028:7:25",
+                    "src": "4905:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1504,11 +1504,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3339,
+                  "id": 3273,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3344,
-                  "src": "5045:14:25",
+                  "scope": 3278,
+                  "src": "4922:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1516,10 +1516,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3338,
+                    "id": 3272,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5045:7:25",
+                    "src": "4922:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1529,19 +1529,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5027:33:25"
+              "src": "4904:33:25"
             },
             "returnParameters": {
-              "id": 3343,
+              "id": 3277,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3342,
+                  "id": 3276,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3344,
-                  "src": "5079:4:25",
+                  "scope": 3278,
+                  "src": "4956:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1549,10 +1549,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3341,
+                    "id": 3275,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5079:4:25",
+                    "src": "4956:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1562,10 +1562,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5078:6:25"
+              "src": "4955:6:25"
             },
-            "scope": 3364,
-            "src": "5005:80:25",
+            "scope": 3298,
+            "src": "4882:80:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1573,29 +1573,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 3349,
+            "id": 3283,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getAddressAssets",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3345,
+              "id": 3279,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "5116:2:25"
+              "src": "4991:2:25"
             },
             "returnParameters": {
-              "id": 3348,
+              "id": 3282,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3347,
+                  "id": 3281,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3349,
-                  "src": "5140:7:25",
+                  "scope": 3283,
+                  "src": "5015:7:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1603,10 +1603,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3346,
+                    "id": 3280,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5140:7:25",
+                    "src": "5015:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1617,10 +1617,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5139:9:25"
+              "src": "5014:9:25"
             },
-            "scope": 3364,
-            "src": "5091:58:25",
+            "scope": 3298,
+            "src": "4966:58:25",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1628,23 +1628,23 @@
           {
             "body": null,
             "documentation": "@dev Checks whether there is a profile on ProfileDB with the given address.\n@param account address Address to be checked\n@return bool true if there is a registered profile with the given address, false otherwise.",
-            "id": 3356,
+            "id": 3290,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isRegistered",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3352,
+              "id": 3286,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3351,
+                  "id": 3285,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3356,
-                  "src": "5422:15:25",
+                  "scope": 3290,
+                  "src": "5290:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1652,10 +1652,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3350,
+                    "id": 3284,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5422:7:25",
+                    "src": "5290:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1666,19 +1666,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5421:17:25"
+              "src": "5289:17:25"
             },
             "returnParameters": {
-              "id": 3355,
+              "id": 3289,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3354,
+                  "id": 3288,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3356,
-                  "src": "5460:4:25",
+                  "scope": 3290,
+                  "src": "5328:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1686,10 +1686,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3353,
+                    "id": 3287,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5460:4:25",
+                    "src": "5328:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1699,10 +1699,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5459:6:25"
+              "src": "5327:6:25"
             },
-            "scope": 3364,
-            "src": "5400:66:25",
+            "scope": 3298,
+            "src": "5268:66:25",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -1710,23 +1710,23 @@
           {
             "body": null,
             "documentation": "@dev Checks whether there is a kittie registered to the system under the given account.\n@param account address Address to be checked\n@return bool true if there is a kittie registered to the system under the given account",
-            "id": 3363,
+            "id": 3297,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "hasKitties",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3359,
+              "id": 3293,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3358,
+                  "id": 3292,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3363,
-                  "src": "5745:15:25",
+                  "scope": 3297,
+                  "src": "5606:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1734,10 +1734,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3357,
+                    "id": 3291,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5745:7:25",
+                    "src": "5606:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1748,19 +1748,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5744:17:25"
+              "src": "5605:17:25"
             },
             "returnParameters": {
-              "id": 3362,
+              "id": 3296,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3361,
+                  "id": 3295,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3363,
-                  "src": "5783:4:25",
+                  "scope": 3297,
+                  "src": "5644:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1768,10 +1768,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3360,
+                    "id": 3294,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5783:4:25",
+                    "src": "5644:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1781,33 +1781,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5782:6:25"
+              "src": "5643:6:25"
             },
-            "scope": 3364,
-            "src": "5725:64:25",
+            "scope": 3298,
+            "src": "5586:64:25",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 3365,
-        "src": "825:4967:25"
+        "scope": 3299,
+        "src": "805:4847:25"
       }
     ],
-    "src": "654:5140:25"
+    "src": "642:5011:25"
   },
   "legacyAST": {
-    "absolutePath": "/C/Users/Alex/Desktop/MyProjects/contracts/contracts/interfaces/IRegister.sol",
+    "absolutePath": "/D/projects/kittiefight/alpha/contracts/interfaces/IRegister.sol",
     "exportedSymbols": {
       "IRegister": [
-        3364
+        3298
       ]
     },
-    "id": 3365,
+    "id": 3299,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3245,
+        "id": 3179,
         "literals": [
           "solidity",
           "^",
@@ -1815,7 +1815,7 @@
           ".5"
         ],
         "nodeType": "PragmaDirective",
-        "src": "654:23:25"
+        "src": "642:23:25"
       },
       {
         "baseContracts": [],
@@ -1823,9 +1823,9 @@
         "contractKind": "contract",
         "documentation": "@title IRegister\n@dev Interface to access to Register contract from corresponding proxy contract.\n@author @psychoplasma",
         "fullyImplemented": false,
-        "id": 3364,
+        "id": 3298,
         "linearizedBaseContracts": [
-          3364
+          3298
         ],
         "name": "IRegister",
         "nodeType": "ContractDefinition",
@@ -1833,26 +1833,26 @@
           {
             "body": null,
             "documentation": "@dev Sets related database contracts and tokens\nProfileDB, RoleDB, CryptoKitties, KittieFightToken, SuperDAOToken\n@dev Can be called only by the owner of this contract",
-            "id": 3248,
+            "id": 3182,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "initialize",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3246,
+              "id": 3180,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1070:2:25"
+              "src": "1043:2:25"
             },
             "returnParameters": {
-              "id": 3247,
+              "id": 3181,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1081:0:25"
+              "src": "1054:0:25"
             },
-            "scope": 3364,
-            "src": "1051:31:25",
+            "scope": 3298,
+            "src": "1024:31:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1860,23 +1860,23 @@
           {
             "body": null,
             "documentation": "@dev Creates a new profile with the given address in ProfileDB\nand sets its role to `bettor` by default.\n@dev Can be called only through Proxy contract\n@param account address Address of the user to be registered",
-            "id": 3255,
+            "id": 3189,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "register",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3251,
+              "id": 3185,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3250,
+                  "id": 3184,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3255,
-                  "src": "1356:15:25",
+                  "scope": 3189,
+                  "src": "1321:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1884,10 +1884,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3249,
+                    "id": 3183,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1356:7:25",
+                    "src": "1321:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1898,19 +1898,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1355:17:25"
+              "src": "1320:17:25"
             },
             "returnParameters": {
-              "id": 3254,
+              "id": 3188,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3253,
+                  "id": 3187,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3255,
-                  "src": "1391:4:25",
+                  "scope": 3189,
+                  "src": "1356:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1918,10 +1918,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3252,
+                    "id": 3186,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1391:4:25",
+                    "src": "1356:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1931,10 +1931,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1390:6:25"
+              "src": "1355:6:25"
             },
-            "scope": 3364,
-            "src": "1338:59:25",
+            "scope": 3298,
+            "src": "1303:59:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1942,23 +1942,23 @@
           {
             "body": null,
             "documentation": "@dev Locks the given CryptoKitty to this contract. Prior to this operation,\nthe owner of the given CryptoKitty should approve this contract for trasfer operation.\n@dev Can be called only through Proxy contract\n@param account address Address of the owner of CryptoKitty to be locked\n@param kittieId uint256 Id of CryptoKitty to be locked",
-            "id": 3264,
+            "id": 3198,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "lockKittie",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3260,
+              "id": 3194,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3257,
+                  "id": 3191,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3264,
-                  "src": "1804:15:25",
+                  "scope": 3198,
+                  "src": "1760:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1966,10 +1966,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3256,
+                    "id": 3190,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1804:7:25",
+                    "src": "1760:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1981,11 +1981,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3259,
+                  "id": 3193,
                   "name": "kittieId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3264,
-                  "src": "1821:16:25",
+                  "scope": 3198,
+                  "src": "1777:16:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1993,10 +1993,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3258,
+                    "id": 3192,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1821:7:25",
+                    "src": "1777:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2006,19 +2006,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1803:35:25"
+              "src": "1759:35:25"
             },
             "returnParameters": {
-              "id": 3263,
+              "id": 3197,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3262,
+                  "id": 3196,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3264,
-                  "src": "1857:4:25",
+                  "scope": 3198,
+                  "src": "1813:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2026,10 +2026,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3261,
+                    "id": 3195,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1857:4:25",
+                    "src": "1813:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2039,10 +2039,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1856:6:25"
+              "src": "1812:6:25"
             },
-            "scope": 3364,
-            "src": "1784:79:25",
+            "scope": 3298,
+            "src": "1740:79:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2050,23 +2050,23 @@
           {
             "body": null,
             "documentation": "@dev Transfers the given CryptoKitty from this contract to its user. The kitten's\nstatus should not be dead/ghots nor playing. Otherwise the tx will be reverted.\n@dev Can be called only through Proxy contract\n@param account address Address of the owner of CryptoKitty to be released\n@param kittieId uint256 Id of CryptoKitty to be released",
-            "id": 3273,
+            "id": 3207,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "releaseKittie",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3269,
+              "id": 3203,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3266,
+                  "id": 3200,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3273,
-                  "src": "2276:15:25",
+                  "scope": 3207,
+                  "src": "2223:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2074,10 +2074,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3265,
+                    "id": 3199,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2276:7:25",
+                    "src": "2223:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2089,11 +2089,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3268,
+                  "id": 3202,
                   "name": "kittieId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3273,
-                  "src": "2293:16:25",
+                  "scope": 3207,
+                  "src": "2240:16:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2101,10 +2101,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3267,
+                    "id": 3201,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2293:7:25",
+                    "src": "2240:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2114,19 +2114,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2275:35:25"
+              "src": "2222:35:25"
             },
             "returnParameters": {
-              "id": 3272,
+              "id": 3206,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3271,
+                  "id": 3205,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3273,
-                  "src": "2329:4:25",
+                  "scope": 3207,
+                  "src": "2276:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2134,10 +2134,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3270,
+                    "id": 3204,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2329:4:25",
+                    "src": "2276:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2147,10 +2147,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2328:6:25"
+              "src": "2275:6:25"
             },
-            "scope": 3364,
-            "src": "2253:82:25",
+            "scope": 3298,
+            "src": "2200:82:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2158,23 +2158,23 @@
           {
             "body": null,
             "documentation": "@dev Updates the status of the given kitten.\n@dev Can be called through other system contracts\n@param contractName string Address of the owner of CryptoKitty to be updated\n@param account address Address of the owner of CryptoKitty to be updated\n@param kittieId uint256 Id of CryptoKitty to be updated\n@param deadAt uint256 Time of death of the kitten if its status dead\n@param kittieStatus string Status of the kitten in KittieFight system",
-            "id": 3288,
+            "id": 3222,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "updateKittie",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3284,
+              "id": 3218,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3275,
+                  "id": 3209,
                   "name": "contractName",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2865:28:25",
+                  "scope": 3222,
+                  "src": "2800:28:25",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -2182,10 +2182,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 3274,
+                    "id": 3208,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2865:6:25",
+                    "src": "2800:6:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -2196,11 +2196,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3277,
+                  "id": 3211,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2900:15:25",
+                  "scope": 3222,
+                  "src": "2834:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2208,10 +2208,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3276,
+                    "id": 3210,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2900:7:25",
+                    "src": "2834:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2223,11 +2223,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3279,
+                  "id": 3213,
                   "name": "kittieId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2922:16:25",
+                  "scope": 3222,
+                  "src": "2855:16:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2235,10 +2235,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3278,
+                    "id": 3212,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2922:7:25",
+                    "src": "2855:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2249,11 +2249,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3281,
+                  "id": 3215,
                   "name": "deadAt",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2945:14:25",
+                  "scope": 3222,
+                  "src": "2877:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2261,10 +2261,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3280,
+                    "id": 3214,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2945:7:25",
+                    "src": "2877:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2275,11 +2275,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3283,
+                  "id": 3217,
                   "name": "kittieStatus",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "2966:28:25",
+                  "scope": 3222,
+                  "src": "2897:28:25",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -2287,10 +2287,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 3282,
+                    "id": 3216,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2966:6:25",
+                    "src": "2897:6:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -2300,19 +2300,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2858:141:25"
+              "src": "2794:135:25"
             },
             "returnParameters": {
-              "id": 3287,
+              "id": 3221,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3286,
+                  "id": 3220,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3288,
-                  "src": "3018:4:25",
+                  "scope": 3222,
+                  "src": "2948:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2320,10 +2320,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3285,
+                    "id": 3219,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3018:4:25",
+                    "src": "2948:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2333,10 +2333,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3017:6:25"
+              "src": "2947:6:25"
             },
-            "scope": 3364,
-            "src": "2837:187:25",
+            "scope": 3298,
+            "src": "2773:181:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2344,23 +2344,23 @@
           {
             "body": null,
             "documentation": "@dev ???\n@dev Can be called only through Proxy contract\n@param account address\n@param to address\n@param amount uint256",
-            "id": 3299,
+            "id": 3233,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "sendTokensTo",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3295,
+              "id": 3229,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3290,
+                  "id": 3224,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3215:15:25",
+                  "scope": 3233,
+                  "src": "3136:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2368,10 +2368,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3289,
+                    "id": 3223,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3215:7:25",
+                    "src": "3136:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2383,11 +2383,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3292,
+                  "id": 3226,
                   "name": "to",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3232:10:25",
+                  "scope": 3233,
+                  "src": "3153:10:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2395,10 +2395,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3291,
+                    "id": 3225,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3232:7:25",
+                    "src": "3153:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2410,11 +2410,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3294,
+                  "id": 3228,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3244:14:25",
+                  "scope": 3233,
+                  "src": "3165:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2422,10 +2422,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3293,
+                    "id": 3227,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3244:7:25",
+                    "src": "3165:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2435,19 +2435,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3214:45:25"
+              "src": "3135:45:25"
             },
             "returnParameters": {
-              "id": 3298,
+              "id": 3232,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3297,
+                  "id": 3231,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3299,
-                  "src": "3278:4:25",
+                  "scope": 3233,
+                  "src": "3199:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2455,10 +2455,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3296,
+                    "id": 3230,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3278:4:25",
+                    "src": "3199:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2468,10 +2468,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3277:6:25"
+              "src": "3198:6:25"
             },
-            "scope": 3364,
-            "src": "3193:91:25",
+            "scope": 3298,
+            "src": "3114:91:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2479,23 +2479,23 @@
           {
             "body": null,
             "documentation": "@dev ???\n@dev Can be called only through Proxy contract\n@param account address\n@param amount uint256",
-            "id": 3308,
+            "id": 3242,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "exchangeTokensForEth",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3304,
+              "id": 3238,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3301,
+                  "id": 3235,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3308,
-                  "src": "3459:23:25",
+                  "scope": 3242,
+                  "src": "3372:23:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2503,10 +2503,10 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 3300,
+                    "id": 3234,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3459:15:25",
+                    "src": "3372:15:25",
                     "stateMutability": "payable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address_payable",
@@ -2518,11 +2518,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3303,
+                  "id": 3237,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3308,
-                  "src": "3484:14:25",
+                  "scope": 3242,
+                  "src": "3397:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2530,10 +2530,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3302,
+                    "id": 3236,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3484:7:25",
+                    "src": "3397:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2543,19 +2543,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3458:41:25"
+              "src": "3371:41:25"
             },
             "returnParameters": {
-              "id": 3307,
+              "id": 3241,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3306,
+                  "id": 3240,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3308,
-                  "src": "3518:4:25",
+                  "scope": 3242,
+                  "src": "3431:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2563,10 +2563,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3305,
+                    "id": 3239,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3518:4:25",
+                    "src": "3431:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2576,10 +2576,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3517:6:25"
+              "src": "3430:6:25"
             },
-            "scope": 3364,
-            "src": "3429:95:25",
+            "scope": 3298,
+            "src": "3342:95:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2587,23 +2587,23 @@
           {
             "body": null,
             "documentation": "@dev Stakes SuperDAO tokens to this contract and saves the stake\namount and staking status on ProfileDB.\n@dev Can be called only through Proxy contract\n@param account address Address of the user who is staking\n@param amount uint256 Amount of SuperDAO tokens to be staked",
-            "id": 3317,
+            "id": 3251,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "stakeSuperDAO",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3313,
+              "id": 3247,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3310,
+                  "id": 3244,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3317,
-                  "src": "3868:15:25",
+                  "scope": 3251,
+                  "src": "3772:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2611,10 +2611,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3309,
+                    "id": 3243,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3868:7:25",
+                    "src": "3772:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2626,11 +2626,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3312,
+                  "id": 3246,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3317,
-                  "src": "3885:14:25",
+                  "scope": 3251,
+                  "src": "3789:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2638,10 +2638,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3311,
+                    "id": 3245,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3885:7:25",
+                    "src": "3789:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2651,19 +2651,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3867:33:25"
+              "src": "3771:33:25"
             },
             "returnParameters": {
-              "id": 3316,
+              "id": 3250,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3315,
+                  "id": 3249,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3317,
-                  "src": "3919:4:25",
+                  "scope": 3251,
+                  "src": "3823:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2671,10 +2671,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3314,
+                    "id": 3248,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3919:4:25",
+                    "src": "3823:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2684,10 +2684,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3918:6:25"
+              "src": "3822:6:25"
             },
-            "scope": 3364,
-            "src": "3845:80:25",
+            "scope": 3298,
+            "src": "3749:80:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2695,23 +2695,23 @@
           {
             "body": null,
             "documentation": "@dev ???\n@dev Can be called only through Proxy contract\n@param account address\n@param amount uint256",
-            "id": 3326,
+            "id": 3260,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "payFees",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3322,
+              "id": 3256,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3319,
+                  "id": 3253,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3326,
-                  "src": "4087:15:25",
+                  "scope": 3260,
+                  "src": "3983:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2719,10 +2719,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3318,
+                    "id": 3252,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4087:7:25",
+                    "src": "3983:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2734,11 +2734,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3321,
+                  "id": 3255,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3326,
-                  "src": "4104:14:25",
+                  "scope": 3260,
+                  "src": "4000:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2746,10 +2746,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3320,
+                    "id": 3254,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4104:7:25",
+                    "src": "4000:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2759,19 +2759,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4086:33:25"
+              "src": "3982:33:25"
             },
             "returnParameters": {
-              "id": 3325,
+              "id": 3259,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3324,
+                  "id": 3258,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3326,
-                  "src": "4138:4:25",
+                  "scope": 3260,
+                  "src": "4034:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2779,10 +2779,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3323,
+                    "id": 3257,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4138:4:25",
+                    "src": "4034:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2792,10 +2792,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4137:6:25"
+              "src": "4033:6:25"
             },
-            "scope": 3364,
-            "src": "4070:74:25",
+            "scope": 3298,
+            "src": "3966:74:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2803,23 +2803,23 @@
           {
             "body": null,
             "documentation": "@dev Locks KittieFight tokens to this contract and saves the locked\namount on ProfileDB under account's profile.\n@dev Can be called only through Proxy contract\n@param account address Address of the user whose tokens will be locked\n@param amount uint256 Amount of KittieFight tokens to be locked",
-            "id": 3335,
+            "id": 3269,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "lockTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3331,
+              "id": 3265,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3328,
+                  "id": 3262,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3335,
-                  "src": "4509:15:25",
+                  "scope": 3269,
+                  "src": "4396:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2827,10 +2827,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3327,
+                    "id": 3261,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4509:7:25",
+                    "src": "4396:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2842,11 +2842,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3330,
+                  "id": 3264,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3335,
-                  "src": "4526:14:25",
+                  "scope": 3269,
+                  "src": "4413:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2854,10 +2854,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3329,
+                    "id": 3263,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4526:7:25",
+                    "src": "4413:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2867,19 +2867,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4508:33:25"
+              "src": "4395:33:25"
             },
             "returnParameters": {
-              "id": 3334,
+              "id": 3268,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3333,
+                  "id": 3267,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3335,
-                  "src": "4560:4:25",
+                  "scope": 3269,
+                  "src": "4447:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2887,10 +2887,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3332,
+                    "id": 3266,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "4560:4:25",
+                    "src": "4447:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -2900,10 +2900,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "4559:6:25"
+              "src": "4446:6:25"
             },
-            "scope": 3364,
-            "src": "4489:77:25",
+            "scope": 3298,
+            "src": "4376:77:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -2911,23 +2911,23 @@
           {
             "body": null,
             "documentation": "@dev Releases KittieFight tokens from this contract to `account`.\nDoes not allow to release an amount more than the locked amount.\nUpdates the locked amount on ProfileDB accordingly after release.\n@dev Can be called only through Proxy contract\n@param account address Address of the user whose tokens will be released\n@param amount uint256 Amount of KittieFight tokens to be released",
-            "id": 3344,
+            "id": 3278,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "releaseTokens",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3340,
+              "id": 3274,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3337,
+                  "id": 3271,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3344,
-                  "src": "5028:15:25",
+                  "scope": 3278,
+                  "src": "4905:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2935,10 +2935,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3336,
+                    "id": 3270,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5028:7:25",
+                    "src": "4905:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2950,11 +2950,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 3339,
+                  "id": 3273,
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3344,
-                  "src": "5045:14:25",
+                  "scope": 3278,
+                  "src": "4922:14:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2962,10 +2962,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3338,
+                    "id": 3272,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5045:7:25",
+                    "src": "4922:7:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -2975,19 +2975,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5027:33:25"
+              "src": "4904:33:25"
             },
             "returnParameters": {
-              "id": 3343,
+              "id": 3277,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3342,
+                  "id": 3276,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3344,
-                  "src": "5079:4:25",
+                  "scope": 3278,
+                  "src": "4956:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2995,10 +2995,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3341,
+                    "id": 3275,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5079:4:25",
+                    "src": "4956:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -3008,10 +3008,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5078:6:25"
+              "src": "4955:6:25"
             },
-            "scope": 3364,
-            "src": "5005:80:25",
+            "scope": 3298,
+            "src": "4882:80:25",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -3019,29 +3019,29 @@
           {
             "body": null,
             "documentation": null,
-            "id": 3349,
+            "id": 3283,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getAddressAssets",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3345,
+              "id": 3279,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "5116:2:25"
+              "src": "4991:2:25"
             },
             "returnParameters": {
-              "id": 3348,
+              "id": 3282,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3347,
+                  "id": 3281,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3349,
-                  "src": "5140:7:25",
+                  "scope": 3283,
+                  "src": "5015:7:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3049,10 +3049,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3346,
+                    "id": 3280,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5140:7:25",
+                    "src": "5015:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -3063,10 +3063,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5139:9:25"
+              "src": "5014:9:25"
             },
-            "scope": 3364,
-            "src": "5091:58:25",
+            "scope": 3298,
+            "src": "4966:58:25",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3074,23 +3074,23 @@
           {
             "body": null,
             "documentation": "@dev Checks whether there is a profile on ProfileDB with the given address.\n@param account address Address to be checked\n@return bool true if there is a registered profile with the given address, false otherwise.",
-            "id": 3356,
+            "id": 3290,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isRegistered",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3352,
+              "id": 3286,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3351,
+                  "id": 3285,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3356,
-                  "src": "5422:15:25",
+                  "scope": 3290,
+                  "src": "5290:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3098,10 +3098,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3350,
+                    "id": 3284,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5422:7:25",
+                    "src": "5290:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -3112,19 +3112,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5421:17:25"
+              "src": "5289:17:25"
             },
             "returnParameters": {
-              "id": 3355,
+              "id": 3289,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3354,
+                  "id": 3288,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3356,
-                  "src": "5460:4:25",
+                  "scope": 3290,
+                  "src": "5328:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3132,10 +3132,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3353,
+                    "id": 3287,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5460:4:25",
+                    "src": "5328:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -3145,10 +3145,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5459:6:25"
+              "src": "5327:6:25"
             },
-            "scope": 3364,
-            "src": "5400:66:25",
+            "scope": 3298,
+            "src": "5268:66:25",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
@@ -3156,23 +3156,23 @@
           {
             "body": null,
             "documentation": "@dev Checks whether there is a kittie registered to the system under the given account.\n@param account address Address to be checked\n@return bool true if there is a kittie registered to the system under the given account",
-            "id": 3363,
+            "id": 3297,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "hasKitties",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3359,
+              "id": 3293,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3358,
+                  "id": 3292,
                   "name": "account",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3363,
-                  "src": "5745:15:25",
+                  "scope": 3297,
+                  "src": "5606:15:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3180,10 +3180,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3357,
+                    "id": 3291,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5745:7:25",
+                    "src": "5606:7:25",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -3194,19 +3194,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5744:17:25"
+              "src": "5605:17:25"
             },
             "returnParameters": {
-              "id": 3362,
+              "id": 3296,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3361,
+                  "id": 3295,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3363,
-                  "src": "5783:4:25",
+                  "scope": 3297,
+                  "src": "5644:4:25",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3214,10 +3214,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3360,
+                    "id": 3294,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "5783:4:25",
+                    "src": "5644:4:25",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -3227,28 +3227,28 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "5782:6:25"
+              "src": "5643:6:25"
             },
-            "scope": 3364,
-            "src": "5725:64:25",
+            "scope": 3298,
+            "src": "5586:64:25",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 3365,
-        "src": "825:4967:25"
+        "scope": 3299,
+        "src": "805:4847:25"
       }
     ],
-    "src": "654:5140:25"
+    "src": "642:5011:25"
   },
   "compiler": {
     "name": "solc",
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2020-06-16T13:18:36.582Z",
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2020-06-21T16:27:42.412Z",
   "devdoc": {
     "author": "@psychoplasma",
     "details": "Interface to access to Register contract from corresponding proxy contract.",
