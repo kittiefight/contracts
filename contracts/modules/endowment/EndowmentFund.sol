@@ -136,7 +136,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
      * @dev Send eth to Escrow
      */
-    function sendETHtoEscrow() external payable {
+    function sendETHtoEscrow() external onlyContract(CONTRACT_NAME_GAMEMANAGER) payable {
         address msgSender = getOriginalSender();
 
         require(msg.value > 0);
@@ -154,7 +154,9 @@ contract EndowmentFund is Distribution, Guard {
      * @dev Escrow sends 2x of KTY received in swap to KTY-WETH pair contract to maintain the
      *      original ether to KTY ratio.
      */
-    function contributeKTY(address _sender, uint256 _ether_amount_swap, uint256 _kty_amount) external payable returns(bool) {
+    function contributeKTY(address _sender, uint256 _ether_amount_swap, uint256 _kty_amount) external 
+            only3Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_EARNINGS_TRACKER) 
+            payable returns(bool) {
         HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).swapEtherForKTY.value(msg.value)(_ether_amount_swap, address(escrow));
 
         endowmentDB.updateEndowmentFund(_kty_amount, 0, false);
@@ -167,7 +169,7 @@ contract EndowmentFund is Distribution, Guard {
     /**
      * @dev GM calls
      */
-    function contributeETH(uint _gameId) external payable returns(bool) {
+    function contributeETH(uint _gameId) external onlyContract(CONTRACT_NAME_GAMEMANAGER) payable returns(bool) {
         // require(address(escrow) != address(0));
         address msgSender = getOriginalSender();
 

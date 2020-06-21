@@ -212,7 +212,7 @@ contract EarningsTracker is Proxied, Guard {
     (
         uint256 _ethieTokenID
     )
-        external payable returns(bool)
+        external onlyProxy payable returns(bool)
     {
         // Ethie Tokens can only be burnt on a Rest Day in the current epoch
         require(timeFrame.checkBurn(), "Can only burn on Rest Day");
