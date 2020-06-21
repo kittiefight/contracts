@@ -26,15 +26,32 @@ contract Proxied is Owned, ContractNames {
     }
 
     modifier onlyContract(string memory name) {
-        _isContractAuthorized(name);
+        require(_senderIsContract(name), "Access is only allowed from specific contract");
         _;
     }
 
-    function _isContractAuthorized(string memory name) internal view {
+    modifier only2Contracts(string memory name1, string memory name2) {
+        require(
+            _senderIsContract(name1) ||
+            _senderIsContract(name2),
+             "Access is only allowed from specific contract");
+        _;
+    }
+
+    modifier only3Contracts(string memory name1, string memory name2, string memory name3) {
+        require(
+            _senderIsContract(name1) ||
+            _senderIsContract(name2) ||
+            _senderIsContract(name3),
+             "Access is only allowed from specific contract");
+        _;
+    }
+
+    function _senderIsContract(string memory name) internal view returns(bool){
         require(address(proxy) != address(0), "No Proxy");
-        address allowedSender = proxy.getContract(name);
-        assert(allowedSender != address(0));    //If this fails, name is probably incorrect
-        require(msg.sender == allowedSender, "Access is only allowed from specific contract");
+        address contractAddress = proxy.getContract(name);
+        assert(contractAddress != address(0));    //If this fails, name is probably incorrect
+        return (msg.sender == contractAddress);
     }
 
     function _isProxy() internal view {
