@@ -9,17 +9,11 @@ const MockStaking = artifacts.require('MockStaking');
 module.exports = async (callback) => {
 	try {
 		console.log("Starting....");
-	    let proxy = await KFProxy.at("0x1b6Eb91a521Ad7C1971F793dccCf20fA55E044AF");
+	    let proxy = await KFProxy.at("0x555c8Db75075950A7b45893682e88e3594a2ecb2");
 	    console.log(proxy.address);
 	  	let timeFrame = await TimeFrame.new();
 	  	console.log("TimeFrame deployed...");
 	  	console.log("TimeFrame: ", timeFrame.address);
-	  	let earningsTracker = await EarningsTracker.new();
-	  	console.log("EarningsTracker deployed...");
-	  	console.log("EarningsTracker: ", earningsTracker.address);
-	  	let withdrawPool= await WithdrawPool.new();
-	  	console.log("WithdrawPool deployed...");
-	  	console.log("WithdrawPool: ", withdrawPool.address);
 
 	  	// let withdrawPool = await WithdrawPool.at("0xCaF5c643686ccc158801DfC052638d18bECFA45c");
 	  	// let gameStore = await GameStore.at("0x73462eC60e915E6EEfB927fb06FdD7d4e65B1513");
@@ -28,13 +22,9 @@ module.exports = async (callback) => {
 	  	// let mockStaking = await MockStaking.at("0x78f5F7B53b074aD8018F486934DF9530a3fcC319");
 
 	  	await proxy.updateContract('TimeFrame', timeFrame.address);
-	  	await proxy.updateContract('EarningsTracker', earningsTracker.address);
-	  	await proxy.updateContract('WithdrawPool', withdrawPool.address);
 
 	  	console.log("Initializing...");
 	  	await timeFrame.setProxy(proxy.address);
-	  	await earningsTracker.setProxy(proxy.address);
-	  	await withdrawPool.setProxy(proxy.address);
 	  	// await gameStore.initialize();
 	  	// await withdrawPool.initialize(mockStaking.address, "0xB0251539F2893a10e757EbF32B62ae83105CF0d9");
 	  	// await earningsTracker.initialize(ethieToken.address);
