@@ -140,8 +140,8 @@ contract GameCreation is Proxied, Guard {
         require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
         require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
 
-        require(kittieHELL.manualAcquireKitty(kittyRed, playerRed));
-        require(kittieHELL.manualAcquireKitty(kittyBlack, playerBlack));
+        require(kittieHELL.acquireKitty(kittyRed, playerRed));
+        require(kittieHELL.acquireKitty(kittyBlack, playerBlack));
 
         require(gameStore.startManually(gameStartTime));
 

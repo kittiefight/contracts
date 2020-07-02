@@ -74,24 +74,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     function acquireKitty(uint256 _kittyID, address owner)
         public
         onlyNotOwnedKitty(_kittyID)
-        onlyContract(CONTRACT_NAME_SCHEDULER)
-        returns (bool)
-    {
-        return _acquireKitty(_kittyID, owner);
-    }
-
-    /**
-     * @author @ugwu @ziweidream
-     * @notice transfer the ownership of a kittie to this contract
-     * @dev The last owner must be stored as a returned reference
-     * @dev This function can only be carried out via proxy
-     * @param _kittyID the kittie to acquire
-     * @return true if the acquisition was successful
-     */
-    function manualAcquireKitty(uint256 _kittyID, address owner)
-        public
-        onlyNotOwnedKitty(_kittyID)
-        onlyContract(CONTRACT_NAME_GAMECREATION)
+        only2Contracts(CONTRACT_NAME_SCHEDULER, CONTRACT_NAME_GAMECREATION)
         returns (bool)
     {
         return _acquireKitty(_kittyID, owner);
@@ -115,15 +98,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
         emit KittyAcquired(_kittyID);
         return true;
     }
-
-    //function updateKittyPlayingStatus(uint256 _kittyID, bool _isPlaying)
-      //  public
-        //onlyContract(CONTRACT_NAME_GAMECREATION)
-        //onlyOwnedKitty(_kittyID)
-        //onlyNotKilledKitty(_kittyID)
-    //{
-      //  kitties[_kittyID].playing = _isPlaying;
-   // }
 
     /**
      * @author @ziweidream
@@ -239,16 +213,9 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return true;
     }
 
-    function releaseKittyForfeiter(uint256 _kittyID)
-        public
-        onlyContract(CONTRACT_NAME_FORFEITER)
-    returns (bool) {
-        releaseKitty(_kittyID);
-    }
-
     function releaseKittyGameManager(uint256 _kittyID)
         public
-        onlyContract(CONTRACT_NAME_GAMECREATION)
+        only2Contracts(CONTRACT_NAME_FORFEITER, CONTRACT_NAME_GAMECREATION)
     returns (bool) {
         releaseKitty(_kittyID);
     }

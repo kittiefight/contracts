@@ -97,8 +97,8 @@ contract Forfeiter is Proxied {
   function forfeitGame(uint256 gameId, string memory reason) internal {
     (/*address playerBlack*/, /*address playerRed*/, uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    if(ckc.ownerOf(kittyBlack) == address(kittieHELL)) kittieHELL.releaseKittyForfeiter(kittyBlack);
-    if(ckc.ownerOf(kittyRed) == address(kittieHELL)) kittieHELL.releaseKittyForfeiter(kittyRed);
+    if(ckc.ownerOf(kittyBlack) == address(kittieHELL)) kittieHELL.releaseKittyGameManager(kittyBlack);
+    if(ckc.ownerOf(kittyRed) == address(kittieHELL)) kittieHELL.releaseKittyGameManager(kittyRed);
     gameManager.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }
