@@ -112,7 +112,6 @@ pragma solidity ^0.5.5;
       */
      function unlockAndAddDelay(uint epoch_id, uint gamingDelay)
          public
-         onlyActiveEpoch(epoch_id)
          onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
      {
          lifeTimeEpochs[epoch_id].unlocked = true;
