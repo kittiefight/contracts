@@ -1,15 +1,15 @@
 {
   "contractName": "VarAndFeeNames",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{},\"title\":\"Contract that stores the hash of all variable keys  to store in values with eternal storage\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/D/projects/kittiefight/alpha/contracts/misc/VarAndFeeNames.sol\":\"VarAndFeeNames\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/projects/kittiefight/alpha/contracts/misc/VarAndFeeNames.sol\":{\"keccak256\":\"0x5f763c9afa47e36c62edffdf6ac6a834ee7b6e5743d780b7bb97dba8982c5ccf\",\"urls\":[\"bzz-raw://36bf55a7c61d28a24241438d274aebd8c99dd7fd7c2673cf64f1386e1c9076b4\",\"dweb:/ipfs/QmaWK6Kz95XqHipxRnds3q8wUg9mzsuXJSVwLJ7XE5ScBw\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820a6d66e489c7d0ece6b9b94abc86ce7376c8d1789c57d33e6fb57be4d1d91f71364736f6c63430005110032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820a6d66e489c7d0ece6b9b94abc86ce7376c8d1789c57d33e6fb57be4d1d91f71364736f6c63430005110032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{},\"title\":\"Contract that stores the hash of all variable keys  to store in values with eternal storage\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/VarAndFeeNames.sol\":\"VarAndFeeNames\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/VarAndFeeNames.sol\":{\"keccak256\":\"0x5f763c9afa47e36c62edffdf6ac6a834ee7b6e5743d780b7bb97dba8982c5ccf\",\"urls\":[\"bzz-raw://36bf55a7c61d28a24241438d274aebd8c99dd7fd7c2673cf64f1386e1c9076b4\",\"dweb:/ipfs/QmaWK6Kz95XqHipxRnds3q8wUg9mzsuXJSVwLJ7XE5ScBw\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a723158208cdf1022bf439a12567986e7927fc482f0691ce81d5d85b34037eb35ad7b93db64736f6c63430005110032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a723158208cdf1022bf439a12567986e7927fc482f0691ce81d5d85b34037eb35ad7b93db64736f6c63430005110032",
   "sourceMap": "208:3576:61:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;208:3576:61;;;;;;;",
   "deployedSourceMap": "208:3576:61:-;;;;;",
   "source": "/**\n * @title GameVarAndFee\n *\n * @author @wafflemakr @hamaad\n *\n */\npragma solidity ^0.5.5;\n\n/**\n * @title Contract that stores the hash of all variable keys \n    to store in values with eternal storage\n */\ncontract VarAndFeeNames {\n\n    string constant TABLE_NAME = \"GameVarAndFeeTable\";\n\n    bytes32 constant REQUIRED_NUMBER_MATCHES= keccak256(abi.encodePacked(TABLE_NAME, \"requiredNumberMatches\"));\n    bytes32 constant GAME_PRESTART          = keccak256(abi.encodePacked(TABLE_NAME, \"gamePrestart\"));\n    bytes32 constant GAME_DURATION          = keccak256(abi.encodePacked(TABLE_NAME, \"gameDuration\"));\n    bytes32 constant KITTIE_HELL_EXPIRATION = keccak256(abi.encodePacked(TABLE_NAME, \"kittieHellExpiration\"));\n    bytes32 constant HONEY_POT_EXPIRATION   = keccak256(abi.encodePacked(TABLE_NAME, \"honeypotExpiration\"));\n    //bytes32 constant ACTUAL_FUNDS_KTY       = keccak256(abi.encodePacked(TABLE_NAME, \"actualFundsKTY\"));\n    bytes32 constant ETH_PER_GAME           = keccak256(abi.encodePacked(TABLE_NAME, \"ethPerGame\"));\n    bytes32 constant GAME_TIMES             = keccak256(abi.encodePacked(TABLE_NAME, \"gameTimes\"));\n    bytes32 constant WINNING_KITTIE         = keccak256(abi.encodePacked(TABLE_NAME, \"winningKittie\"));\n    bytes32 constant TOP_BETTOR             = keccak256(abi.encodePacked(TABLE_NAME, \"topBettor\"));\n    bytes32 constant SECOND_RUNNER_UP       = keccak256(abi.encodePacked(TABLE_NAME, \"secondRunnerUp\"));\n    bytes32 constant OTHER_BETTORS          = keccak256(abi.encodePacked(TABLE_NAME, \"otherBettors\"));\n    bytes32 constant ENDOWNMENT             = keccak256(abi.encodePacked(TABLE_NAME, \"endownment\"));\n    bytes32 constant LISTING_FEE            = keccak256(abi.encodePacked(TABLE_NAME, \"listingFee\"));\n   // bytes32 constant TICKET_FEE             = keccak256(abi.encodePacked(TABLE_NAME, \"ticketFee\"));\n   // bytes32 constant BETTING_FEE            = keccak256(abi.encodePacked(TABLE_NAME, \"bettingFee\"));\n   // bytes32 constant KITTIE_REDEMPTION_FEE  = keccak256(abi.encodePacked(TABLE_NAME, \"kittieRedemptionFee\"));\n    bytes32 constant MINIMUM_CONTRIBUTORS   = keccak256(abi.encodePacked(TABLE_NAME, \"minimumContributors\"));\n    bytes32 constant FINALIZE_REWARDS       = keccak256(abi.encodePacked(TABLE_NAME, \"finalizeRewards\"));\n    bytes32 constant PERFORMANCE_TIME_CHECK = keccak256(abi.encodePacked(TABLE_NAME, \"performanceTime\"));\n    bytes32 constant TIME_EXTENSION         = keccak256(abi.encodePacked(TABLE_NAME, \"timeExtension\"));\n    bytes32 constant PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE = keccak256(abi.encodePacked(TABLE_NAME, \"percentageForKittieRedemptionFee\"));\n    bytes32 constant PERCENTAGE_FOR_LISTING_FEE = keccak256(abi.encodePacked(TABLE_NAME, \"percentageForListingFee\"));\n    bytes32 constant PERCENTAGE_FOR_TICKET_FEE = keccak256(abi.encodePacked(TABLE_NAME, \"percentageForTicketFee\"));\n    bytes32 constant PERCENTAGE_FOR_BETTING_FEE = keccak256(abi.encodePacked(TABLE_NAME, \"percentageForBettingFee\"));\n    bytes32 constant USD_KTY_PRICE          = keccak256(abi.encodePacked(TABLE_NAME, \"usdKTYPrice\"));\n    bytes32 constant REQUIRED_KITTIE_SACRIFICE_NUM = keccak256(abi.encodePacked(TABLE_NAME, \"requiredKittieSacrificeNum\"));\n    bytes32 constant PERCENTAGE_HONEYPOT_ALLOCATION_KTY = keccak256(abi.encodePacked(TABLE_NAME, \"percentageHoneypotAllocationKTY\"));\n    //bytes32 constant KTY_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, \"ktyForBurnEthie\"));\n    bytes32 constant INTEREST_ETHIE         = keccak256(abi.encodePacked(TABLE_NAME, \"interestEthie\"));\n    bytes32 constant PERCENTAGE_FOR_POOL    = keccak256(abi.encodePacked(TABLE_NAME, \"percentageForPool\"));\n    bytes32 constant PERCENTAGE_FOR_BURN_ETHIE     = keccak256(abi.encodePacked(TABLE_NAME, \"percentageForBurnEthie\"));\n}\n",
-  "sourcePath": "D:\\projects\\kittiefight\\alpha\\contracts\\misc\\VarAndFeeNames.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/VarAndFeeNames.sol",
   "ast": {
-    "absolutePath": "/D/projects/kittiefight/alpha/contracts/misc/VarAndFeeNames.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/VarAndFeeNames.sol",
     "exportedSymbols": {
       "VarAndFeeNames": [
         9172
@@ -4089,7 +4089,7 @@
     "src": "69:3716:61"
   },
   "legacyAST": {
-    "absolutePath": "/D/projects/kittiefight/alpha/contracts/misc/VarAndFeeNames.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/VarAndFeeNames.sol",
     "exportedSymbols": {
       "VarAndFeeNames": [
         9172
@@ -8173,8 +8173,8 @@
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.1.0",
-  "updatedAt": "2020-06-21T16:27:42.503Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-07-02T03:46:24.777Z",
   "devdoc": {
     "methods": {},
     "title": "Contract that stores the hash of all variable keys  to store in values with eternal storage"

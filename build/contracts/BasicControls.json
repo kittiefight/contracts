@@ -1,15 +1,15 @@
 {
   "contractName": "BasicControls",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/D/projects/kittiefight/alpha/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/projects/kittiefight/alpha/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0x703d0a6bb0e105ef824314fb8c80c281461c22c71ac6730151a5f3c090392dfd\",\"urls\":[\"bzz-raw://f550feed155ec6987ea3b3c1bf5d0667a0507063c79c419340c22b16826bc151\",\"dweb:/ipfs/QmdgdMu1Xhq3hrpTd74hGh22xJeGUxMnpM35VJJbZzXmSg\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820d91c599b69e927cdd56dd865b3625c81ee283367345d8c243b0ced66d2adf43264736f6c63430005110032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820d91c599b69e927cdd56dd865b3625c81ee283367345d8c243b0ced66d2adf43264736f6c63430005110032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"this contract implement basic controls needed in a variety of contracts\",\"methods\":{},\"title\":\"BasicControls\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/BasicControls.sol\":\"BasicControls\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/BasicControls.sol\":{\"keccak256\":\"0x703d0a6bb0e105ef824314fb8c80c281461c22c71ac6730151a5f3c090392dfd\",\"urls\":[\"bzz-raw://f550feed155ec6987ea3b3c1bf5d0667a0507063c79c419340c22b16826bc151\",\"dweb:/ipfs/QmdgdMu1Xhq3hrpTd74hGh22xJeGUxMnpM35VJJbZzXmSg\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820bc33ce5a88e60eb7ed65c019229b825eb5ee00aa4d8baa236c6be7f1199ebe7664736f6c63430005110032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820bc33ce5a88e60eb7ed65c019229b825eb5ee00aa4d8baa236c6be7f1199ebe7664736f6c63430005110032",
   "sourceMap": "138:509:59:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;138:509:59;;;;;;;",
   "deployedSourceMap": "138:509:59:-;;;;;",
   "source": "pragma solidity ^0.5.5;\n\n\n/**\n * @title BasicControls\n * @dev this contract implement basic controls needed in a variety of contracts\n */\ncontract BasicControls {\n\n    /**\n     * @dev assemble the given address bytecode. If bytecode exists then the `_addr` is a contract.\n     * @param _addr the given address to check\n     * @return true or false if the address is a contract or not\n     */\n    function isContract(address _addr) internal view returns (bool) {\n        // retrieve the size of the code on target address, this needs assembly\n        uint length;\n        assembly { length := extcodesize(_addr) }\n        return length > 0;\n    }\n}\n",
-  "sourcePath": "D:\\projects\\kittiefight\\alpha\\contracts\\misc\\BasicControls.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/BasicControls.sol",
   "ast": {
-    "absolutePath": "/D/projects/kittiefight/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
         8855
@@ -257,7 +257,7 @@
     "src": "0:648:59"
   },
   "legacyAST": {
-    "absolutePath": "/D/projects/kittiefight/alpha/contracts/misc/BasicControls.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/misc/BasicControls.sol",
     "exportedSymbols": {
       "BasicControls": [
         8855
@@ -509,8 +509,8 @@
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.1.0",
-  "updatedAt": "2020-06-21T16:27:42.496Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-07-02T03:46:24.772Z",
   "devdoc": {
     "details": "this contract implement basic controls needed in a variety of contracts",
     "methods": {},

@@ -1,15 +1,15 @@
 {
   "contractName": "Initializable",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"Helper contract to support initializer functions. To use it, replace the constructor with a function that has the `initializer` modifier. WARNING: Unlike constructors, initializer functions must be manually invoked. This applies both to deploying an Initializable contract, as well as extending an Initializable contract via inheritance. WARNING: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or ensure that all initializers are idempotent, because this is not dealt with automatically as with constructors.\",\"methods\":{},\"title\":\"Initializable\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/D/projects/kittiefight/alpha/contracts/libs/zos-lib/Initializable.sol\":\"Initializable\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/projects/kittiefight/alpha/contracts/libs/zos-lib/Initializable.sol\":{\"keccak256\":\"0xf79d9851c085aa8412e87d7a26d3485488fe12538ecb4e317ce41fc1f2c3a16a\",\"urls\":[\"bzz-raw://6af1a35ad6aed2169ce9f44095438b3192cd6066903908f769d5c49a06a0caf8\",\"dweb:/ipfs/QmaH41CwJ7WrMQwSnbfCKuL2pd8bxF7sbGSLPZb6JaHBFF\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820389e5a7814c1970f46438a7a38627843e8550809f5e552140ae95e171bf7516364736f6c63430005110032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820389e5a7814c1970f46438a7a38627843e8550809f5e552140ae95e171bf7516364736f6c63430005110032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"details\":\"Helper contract to support initializer functions. To use it, replace the constructor with a function that has the `initializer` modifier. WARNING: Unlike constructors, initializer functions must be manually invoked. This applies both to deploying an Initializable contract, as well as extending an Initializable contract via inheritance. WARNING: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or ensure that all initializers are idempotent, because this is not dealt with automatically as with constructors.\",\"methods\":{},\"title\":\"Initializable\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/libs/zos-lib/Initializable.sol\":\"Initializable\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/libs/zos-lib/Initializable.sol\":{\"keccak256\":\"0xf79d9851c085aa8412e87d7a26d3485488fe12538ecb4e317ce41fc1f2c3a16a\",\"urls\":[\"bzz-raw://6af1a35ad6aed2169ce9f44095438b3192cd6066903908f769d5c49a06a0caf8\",\"dweb:/ipfs/QmaH41CwJ7WrMQwSnbfCKuL2pd8bxF7sbGSLPZb6JaHBFF\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a7231582084a98aba6d2b2dd6a2fc23e6a7d4d5b2eeed18035dcb1f2d835ee9b6dbb107b764736f6c63430005110032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a7231582084a98aba6d2b2dd6a2fc23e6a7d4d5b2eeed18035dcb1f2d835ee9b6dbb107b764736f6c63430005110032",
   "sourceMap": "657:1326:58:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;657:1326:58;;;;;;;",
   "deployedSourceMap": "657:1326:58:-;;;;;",
   "source": "pragma solidity >=0.4.24 <0.6.0;\n\n\n/**\n * @title Initializable\n *\n * @dev Helper contract to support initializer functions. To use it, replace\n * the constructor with a function that has the `initializer` modifier.\n * WARNING: Unlike constructors, initializer functions must be manually\n * invoked. This applies both to deploying an Initializable contract, as well\n * as extending an Initializable contract via inheritance.\n * WARNING: When used with inheritance, manual care must be taken to not invoke\n * a parent initializer twice, or ensure that all initializers are idempotent,\n * because this is not dealt with automatically as with constructors.\n */\ncontract Initializable {\n\n  /**\n   * @dev Indicates that the contract has been initialized.\n   */\n  bool private initialized;\n\n  /**\n   * @dev Indicates that the contract is in the process of being initialized.\n   */\n  bool private initializing;\n\n  /**\n   * @dev Modifier to use in the initializer function of a contract.\n   */\n  modifier initializer() {\n    require(initializing || isConstructor() || !initialized, \"Contract instance has already been initialized\");\n\n    bool isTopLevelCall = !initializing;\n    if (isTopLevelCall) {\n      initializing = true;\n      initialized = true;\n    }\n\n    _;\n\n    if (isTopLevelCall) {\n      initializing = false;\n    }\n  }\n\n  /// @dev Returns true if and only if the function is running in the constructor\n  function isConstructor() private view returns (bool) {\n    // extcodesize checks the size of the code stored in an address, and\n    // address returns the current address. Since the code is still not\n    // deployed when running a constructor, any checks on its code size will\n    // yield zero, making it an effective way to detect if a contract is\n    // under construction or not.\n    uint256 cs;\n    assembly { cs := extcodesize(address) }\n    return cs == 0;\n  }\n\n  // Reserved storage space to allow for layout changes in the future.\n  uint256[50] private ______gap;\n}\n",
-  "sourcePath": "D:\\projects\\kittiefight\\alpha\\contracts\\libs\\zos-lib\\Initializable.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/libs/zos-lib/Initializable.sol",
   "ast": {
-    "absolutePath": "/D/projects/kittiefight/alpha/contracts/libs/zos-lib/Initializable.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/libs/zos-lib/Initializable.sol",
     "exportedSymbols": {
       "Initializable": [
         8836
@@ -800,7 +800,7 @@
     "src": "0:1984:58"
   },
   "legacyAST": {
-    "absolutePath": "/D/projects/kittiefight/alpha/contracts/libs/zos-lib/Initializable.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/libs/zos-lib/Initializable.sol",
     "exportedSymbols": {
       "Initializable": [
         8836
@@ -1595,8 +1595,8 @@
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.1.0",
-  "updatedAt": "2020-06-21T16:27:42.495Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-07-02T03:46:24.769Z",
   "devdoc": {
     "details": "Helper contract to support initializer functions. To use it, replace the constructor with a function that has the `initializer` modifier. WARNING: Unlike constructors, initializer functions must be manually invoked. This applies both to deploying an Initializable contract, as well as extending an Initializable contract via inheritance. WARNING: When used with inheritance, manual care must be taken to not invoke a parent initializer twice, or ensure that all initializers are idempotent, because this is not dealt with automatically as with constructors.",
     "methods": {},

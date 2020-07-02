@@ -107,17 +107,17 @@ module.exports = async callback => {
     const daiWethPair = await DaiWethPair.at(daiPairAddress);
     console.log("daiWethPair:", daiWethPair.address);
 
-    // await dai.mint(accounts[0], daiAmount);
+    await dai.mint(accounts[0], daiAmount);
 
-    // await dai.transfer(daiWethPair.address, daiAmount);
-    // await weth.deposit({value: ethAmount});
-    // await weth.transfer(daiWethPair.address, ethAmount);
-    // await daiWethPair.mint(accounts[10]);
+    await dai.transfer(daiWethPair.address, daiAmount);
+    await weth.deposit({value: ethAmount});
+    await weth.transfer(daiWethPair.address, ethAmount);
+    await daiWethPair.mint(accounts[10]);
 
-    // await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
-    // await weth.deposit({value: ethAmount});
-    // await weth.transfer(ktyWethPair.address, ethAmount);
-    // await ktyWethPair.mint(escrow.address);
+    await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
+    await weth.deposit({value: ethAmount});
+    await weth.transfer(ktyWethPair.address, ethAmount);
+    await ktyWethPair.mint(escrow.address);
 
     let ktyReserve = await ktyUniswap.getReserveKTY();
     let ethReserve = await ktyUniswap.getReserveETH();

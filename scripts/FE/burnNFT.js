@@ -7,6 +7,7 @@ const GameVarAndFee = artifacts.require("GameVarAndFee");
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken');
 const KtyUniswap = artifacts.require("KtyUniswap");
+const KFProxy = artifacts.require("KFProxy");
 
 const BigNumber = web3.utils.BN;
 require("chai")
@@ -42,6 +43,7 @@ module.exports = async (callback) => {
     let kittieFightToken = await KittieFightToken.deployed();
     let endowmentFund = await EndowmentFund.deployed();
     let ktyUniswap = await KtyUniswap.deployed();
+    let proxy = await KFProxy.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -79,7 +81,14 @@ module.exports = async (callback) => {
     console.log("KTY burn ethie fee:", weiToEther(ktyFee))
     console.log("ether needed for swap KTY burn ethie fee:", weiToEther(ether_burn_ethie))
     
-    await earningsTracker.burnNFT(tokenID, { from: owner, value: ether_burn_ethie});
+    //await earningsTracker.burnNFT(tokenID, { from: owner, value: ether_burn_ethie});
+    await proxy.execute(
+      "EarningsTracker",
+      setMessage(earningsTracker, "burnNFT", [tokenID]),
+      {
+        from: owner, value: ether_burn_ethie
+      }
+    )
     let newBurn = await earningsTracker.getPastEvents("EthieTokenBurnt", {
       fromBlock: 0,
       toBlock: "latest"
