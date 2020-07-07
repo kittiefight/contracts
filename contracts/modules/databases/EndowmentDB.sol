@@ -34,8 +34,6 @@ contract EndowmentDB is Proxied {
   string internal constant ERROR_ALREADY_EXIST = "Already exists";
   string internal constant ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
 
-  uint256 investmentForNext;
-
   constructor(GenericDB _genericDB) public {
     setGenericDB(_genericDB);
   }
@@ -104,14 +102,16 @@ contract EndowmentDB is Proxied {
   external
   onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
   {
-    investmentForNext = investmentForNext.add(_investment);
+    uint currentInvestment = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext", currentInvestment.add(_investment));
   }
 
   function subInvestment(uint256 _investment)
   external
   onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
   {
-    investmentForNext = investmentForNext.sub(_investment);
+    uint currentInvestment = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext", currentInvestment.sub(_investment));
   }
 
   function updateEndowmentFund(
@@ -353,11 +353,19 @@ contract EndowmentDB is Proxied {
       );
     }
 
-    _updateEndowmentFund(0, investmentForNext, false);
+    _updateEndowmentFund(0, genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext"), false);
 
     uint256 actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
-    investmentForNext = 0;
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext", 0);
     return actualFunds.sub(remainingFundsPool);
+  }
+
+  function getInvestment(uint256 pool_id)
+  external
+  view
+  returns(uint256)
+  {
+    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
   }
 
   function checkTotalForEpoch(uint256 pool_id)
