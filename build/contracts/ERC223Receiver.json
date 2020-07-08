@@ -27,15 +27,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"tokenFallback\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Base class contracts willing to accept ERC223 token transfers must conform to. * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data * From, and value shouldn't be trusted unless the token contract is trusted.\"}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/interfaces/ERC223Receiver.sol\":\"ERC223Receiver\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/interfaces/ERC223Receiver.sol\":{\"keccak256\":\"0x1a2a3133843bfdf92a0a226bbacd7fc021773b12dfe11298151863f0b7d2e99c\",\"urls\":[\"bzz-raw://1ff8125ea3bacc4691cb057cdb2d718549bb30421a519d62407d5ca803db0a7c\",\"dweb:/ipfs/QmQicY2nc4adyx2VUJNXcTq2TnqS9uBBJSLNW1nCjmMyUs\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"tokenFallback\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Base class contracts willing to accept ERC223 token transfers must conform to. * _from: the origin address from whose balance the tokens are sent         - For transfer(), origin = msg.sender         - For transferFrom() origin = _from to token contract Value is the amount of tokens sent Data is arbitrary data sent with the token transfer. Simulates ether tx.data * From, and value shouldn't be trusted unless the token contract is trusted.\"}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/Test/contracts/contracts/interfaces/ERC223Receiver.sol\":\"ERC223Receiver\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/Test/contracts/contracts/interfaces/ERC223Receiver.sol\":{\"keccak256\":\"0x1a2a3133843bfdf92a0a226bbacd7fc021773b12dfe11298151863f0b7d2e99c\",\"urls\":[\"bzz-raw://1ff8125ea3bacc4691cb057cdb2d718549bb30421a519d62407d5ca803db0a7c\",\"dweb:/ipfs/QmQicY2nc4adyx2VUJNXcTq2TnqS9uBBJSLNW1nCjmMyUs\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "pragma solidity ^0.5.5;\n\n/**\n * Base class contracts willing to accept ERC223 token transfers must conform to.\n *\n * _from: the origin address from whose balance the tokens are sent\n *          - For transfer(), origin = msg.sender\n *          - For transferFrom() origin = _from to token contract\n * Value is the amount of tokens sent\n * Data is arbitrary data sent with the token transfer. Simulates ether tx.data\n *\n * From, and value shouldn't be trusted unless the token contract is trusted.\n */\n\ninterface ERC223Receiver {\n    function tokenFallback(address _from, uint _value, bytes calldata _data) external;\n}\n",
-  "sourcePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/interfaces/ERC223Receiver.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/Test/contracts/contracts/interfaces/ERC223Receiver.sol",
   "ast": {
-    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/interfaces/ERC223Receiver.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/Test/contracts/contracts/interfaces/ERC223Receiver.sol",
     "exportedSymbols": {
       "ERC223Receiver": [
         2765
@@ -183,7 +183,7 @@
     "src": "0:618:18"
   },
   "legacyAST": {
-    "absolutePath": "/Users/ziweizhang/Desktop/guards-and-freezes/contracts/contracts/interfaces/ERC223Receiver.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/Test/contracts/contracts/interfaces/ERC223Receiver.sol",
     "exportedSymbols": {
       "ERC223Receiver": [
         2765
@@ -336,7 +336,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-07-02T16:59:09.844Z",
+  "updatedAt": "2020-07-08T11:08:38.995Z",
   "devdoc": {
     "methods": {}
   },
