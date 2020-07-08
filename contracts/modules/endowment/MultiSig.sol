@@ -150,10 +150,9 @@ contract MultiSig is Proxied, Guard {
     }
 
     function isConfirmed() public view returns (bool) {
-        uint256 required = requiredTeam.add(requiredOtherOrg);
         uint256 signedTotal = countTeam.add(countOtherOrg);
         uint256 total = team.length.add(otherOrg.length);
-        if (signedTotal >= required && signedTotal <= total) {
+        if (countTeam >= requiredTeam && countOtherOrg >= requiredOtherOrg && signedTotal <= total) {
             return true;
         }
         return false;
