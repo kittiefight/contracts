@@ -62,13 +62,13 @@ contract MultiSig is Proxied, Guard {
     function action() public onlyContract(CONTRACT_NAME_ENDOWMENT_FUND) returns (string memory) {
         require(isConfirmed(), "Not confirmed yet");
         for (uint256 i = 0; i < team.length; i++) {
-            if (signed[team[i]] = true) {
+            if (signed[team[i]] == true) {
                 signed[team[i]] = false;
             }
         }
 
         for (uint256 j = 0; j < otherOrg.length; j++) {
-            if (signed[otherOrg[j]] = true) {
+            if (signed[otherOrg[j]] == true) {
                 signed[otherOrg[j]] = false;
             }
         }

@@ -60,6 +60,8 @@ module.exports = async callback => {
     let requiredOtherOrg = await multiSig.requiredOtherOrg.call()
     console.log("required number of approvals from other organizations:", requiredOtherOrg.toString())
 
+    console.log('\n================== Before multiSig.sign() ==================')
+
     let countTeam = await multiSig.countTeam.call()
     console.log("number of approvals from team:", countTeam.toString())
 
@@ -68,6 +70,9 @@ module.exports = async callback => {
 
     let isConfirmed = await multiSig.isConfirmed()
     console.log("Confirmed?", isConfirmed)
+
+    console.log('\nUpgrading Escrow fails');
+    await endowmentFund.initUpgradeEscrow(escrow.address).should.be.rejected;
 
     for (let i = 0; i < 3; i++) {
         await proxy.execute(
