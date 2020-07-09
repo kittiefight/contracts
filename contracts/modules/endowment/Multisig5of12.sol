@@ -173,16 +173,17 @@ contract Multisig5of12 is Proxied, Guard {
     }
 
     // return true if transfer is approved
-    function isTransferApproved(uint256 _transferNum)
+    function isTransferApproved(uint256 _transferNum, address _newEscrow)
         public
         view
         returns (bool)
     {
+        // for the initial deployement of escrow
         if (_transferNum == 0) {
             return true;
         }
 
-        if (transfers[_transferNum].transferApproved) {
+        if (transfers[_transferNum].transferApproved && transfers[_transferNum].newEscrow == _newEscrow) {
             return true;
         }
 
