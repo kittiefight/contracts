@@ -142,6 +142,13 @@ module.exports = async callback => {
       {from: accounts[7]}
     ).should.be.rejected;
 
+    console.log("\nAn approved signer cannot approve a transfer more than once");
+    await proxy.execute(
+      "Multisig5of12",
+      setMessage(multiSig, "approveTransfer", [1, escrow.address]),
+      {from: accounts[8]}
+    ).should.be.rejected;
+
     console.log(
       "\n================== Before numbers of approvals meeting the required signatures =================="
     );

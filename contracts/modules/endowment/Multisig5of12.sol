@@ -26,6 +26,7 @@ contract Multisig5of12 is Proxied, Guard {
         uint256 externalSignatures;
         bool transferApproved;
         address newEscrow;
+        address[] approvedBy;
     }
 
     // map the transferNumber to a transfer
@@ -146,6 +147,8 @@ contract Multisig5of12 is Proxied, Guard {
     {
         address msgSender = getOriginalSender();
         require(signers[msgSender].approved == true, "Not an approved signer");
+        require(!isAlreadyApprovedBy(msgSender, _transferNum), "Cannot approve the same transfer more than once");
+        transfers[_transferNum].approvedBy.push(msgSender);
         transfers[_transferNum].newEscrow = _newEscrowAddr;
         transfers[_transferNum].approvalCount = transfers[_transferNum]
             .approvalCount
@@ -187,6 +190,17 @@ contract Multisig5of12 is Proxied, Guard {
             return true;
         }
 
+        return false;
+    }
+
+    // return true if the signer has already approved this transfer
+    function isAlreadyApprovedBy(address _signer, uint256 _transferNum) public view returns (bool) {
+        address[] memory _approvedBy = transfers[_transferNum].approvedBy;
+        for (uint256 i = 0; i < _approvedBy.length; i++) {
+            if (_approvedBy[i] == _signer) {
+                return true;
+            }
+        }
         return false;
     }
 
