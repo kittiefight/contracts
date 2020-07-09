@@ -24,7 +24,7 @@ import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
 import "../gamemanager/GameStore.sol";
 import "../endowment/HoneypotAllocationAlgo.sol";
-import "./MultiSig.sol";
+import "./Multisig5of12.sol";
 
 /**
  * @title Distribution Contract
@@ -42,7 +42,7 @@ contract Distribution is Proxied {
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
     GameStore public gameStore;
-    MultiSig public multiSig;
+    Multisig5of12 public multiSig;
 
     /**
     * @dev Sets related contracts
@@ -54,7 +54,7 @@ contract Distribution is Proxied {
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
-        multiSig = MultiSig(proxy.getContract(CONTRACT_NAME_MULTISIG));
+        multiSig = Multisig5of12(proxy.getContract(CONTRACT_NAME_MULTISIG));
         HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).initialize();
     }
 

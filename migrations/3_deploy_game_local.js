@@ -47,7 +47,7 @@ const Router = artifacts.require('UniswapV2Router01')
 const Dai = artifacts.require('Dai')
 const DaiWethPair = artifacts.require('IDaiWethPair')
 const DaiWethOracle = artifacts.require('DaiWethOracle')
-const MultiSig = artifacts.require('MultiSig')
+const MultiSig = artifacts.require('Multisig5of12')
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -115,8 +115,6 @@ function setMessage(contract, funcName, argArray) {
 }
 
 module.exports = (deployer, network, accounts) => {
-    let kittieFightTeam = [accounts[0], accounts[1], accounts[2], accounts[3], accounts[4], accounts[5]];
-    let otherOrganization = [accounts[10], accounts[11], accounts[12], accounts[13], accounts[14], accounts[15]];
     let medianizer;
 
     if ( network === 'mainnet' ) medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
@@ -162,7 +160,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(Router))
         .then(() => deployer.deploy(Dai, 1))
         .then(() => deployer.deploy(DaiWethOracle))
-        .then(() => deployer.deploy(MultiSig, kittieFightTeam, otherOrganization))
+        .then(() => deployer.deploy(MultiSig))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address)
@@ -208,7 +206,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('WETH9', WETH.address)
             await proxy.addContract('Dai', Dai.address)
             await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
-            await proxy.addContract('MultiSig', MultiSig.address)
+            await proxy.addContract('Multisig5of12', MultiSig.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -396,29 +394,8 @@ module.exports = (deployer, network, accounts) => {
             await register.addSuperAdmin(accounts[0])
             await register.addAdmin(accounts[0])
 
-            // multi-sig approval
-            for (let i = 0; i < 3; i++) {
-                await proxy.execute(
-                    "MultiSig",
-                    setMessage(multiSig, "sign", []),
-                    {
-                      from: kittieFightTeam[i]
-                    }
-                  )
-            }
-        
-            for (let j = 0; j < 2; j++) {
-                await proxy.execute(
-                    "MultiSig",
-                    setMessage(multiSig, "sign", []),
-                    {
-                      from: otherOrganization[j]
-                    }
-                  )
-            }
-
             console.log('\nUpgrading Escrow...');
-            await endowmentFund.initUpgradeEscrow(escrow.address)
+            await endowmentFund.initUpgradeEscrow(escrow.address, 0)
             //Transfer KTY
             await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
             await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);

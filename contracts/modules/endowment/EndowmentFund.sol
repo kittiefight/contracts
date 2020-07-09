@@ -285,9 +285,8 @@ contract EndowmentFund is Distribution, Guard {
     * @dev Initialize or Upgrade Escrow
     * @notice BEFORE CALLING: Deploy escrow contract and set the owner as EndowmentFund contract
     */
-    function initUpgradeEscrow(Escrow _newEscrow) external onlySuperAdmin{
-        string memory actionMessage = multiSig.action();
-        require(keccak256(abi.encodePacked(actionMessage)) == keccak256(abi.encodePacked("Your action here")), "No action");
+    function initUpgradeEscrow(Escrow _newEscrow, uint256 _transferNum) external onlySuperAdmin{
+        require(multiSig.isTransferApproved(_transferNum), "Transfer is not approved");
 
         // require(address(_newEscrow) != address(0));
         _newEscrow.initialize(kittieFightToken);
