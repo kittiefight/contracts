@@ -44,6 +44,11 @@ contract Distribution is Proxied {
     GameStore public gameStore;
     Multisig5of12 public multiSig;
 
+    modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
+        require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
+        _;
+    }
+
     /**
     * @dev Sets related contracts
     * @dev Can be called only by the owner of this contract

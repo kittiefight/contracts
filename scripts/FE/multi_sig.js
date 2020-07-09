@@ -179,6 +179,11 @@ module.exports = async callback => {
     );
     await endowmentFund.initUpgradeEscrow(escrow.address, 3).should.be.rejected;
 
+    console.log(
+      "\nUpgrading Escrow fails if it is not called by superAdmin"
+    );
+    await endowmentFund.initUpgradeEscrow(escrow.address, 1, { from: accounts[10] }).should.be.rejected;
+
     console.log("\nUpgrading Escrow...only when all is correct");
     await endowmentFund.initUpgradeEscrow(escrow.address, 1);
 
