@@ -45,7 +45,9 @@ contract Distribution is Proxied {
     Multisig5of12 public multiSig;
 
     modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
+        (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
         require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
+        require(_transferNum >= _lastTransferNumber, "Transer number should be bigger than previous transfer number");
         _;
     }
 

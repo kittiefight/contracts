@@ -81,29 +81,23 @@ module.exports = async callback => {
       );
     }
 
-    console.log("\n================== Approve signers... ==================");
+    console.log("\n================== Only SuperAdmin can approve signers... ==================");
+
+    await multiSig.approveSigner(accounts[2], "kittieFight", { from: accounts[5] }).should.be.rejected
+
     for (let i = 1; i < 7; i++) {
       organization = "kittieFight";
-      await proxy.execute(
-        "Multisig5of12",
-        setMessage(multiSig, "approveSigner", [accounts[i], organization])
-      );
+      await multiSig.approveSigner(accounts[i], organization);
     }
 
     for (let i = 8; i < 11; i++) {
       organization = "decentralizedInc";
-      await proxy.execute(
-        "Multisig5of12",
-        setMessage(multiSig, "approveSigner", [accounts[i], organization])
-      );
+      await multiSig.approveSigner(accounts[i], organization);
     }
 
     for (let i = 12; i < 15; i++) {
       organization = "blockchainCity";
-      await proxy.execute(
-        "Multisig5of12",
-        setMessage(multiSig, "approveSigner", [accounts[i], organization])
-      );
+      await multiSig.approveSigner(accounts[i], organization);
     }
 
     let allSigners = await multiSig.getSigners();
@@ -118,34 +112,39 @@ module.exports = async callback => {
     await endowmentFund.initUpgradeEscrow(escrow.address, 1).should.be.rejected;
 
     console.log(
+      "\n================== SuperAdmin proposes new transfer... =================="
+    );
+    await multiSig.proposeNewTransfer(1, escrow.address);
+
+    console.log(
       "\n================== Signers approve transfers... =================="
     );
 
     for (let i = 1; i < 4; i++) {
       await proxy.execute(
         "Multisig5of12",
-        setMessage(multiSig, "approveTransfer", [1, escrow.address]),
+        setMessage(multiSig, "approveTransfer", [1]),
         {from: accounts[i]}
       );
     }
 
     await proxy.execute(
       "Multisig5of12",
-      setMessage(multiSig, "approveTransfer", [1, escrow.address]),
+      setMessage(multiSig, "approveTransfer", [1]),
       {from: accounts[8]}
     );
 
     console.log("\nAn un-approved signer cannot approve a transfer");
     await proxy.execute(
       "Multisig5of12",
-      setMessage(multiSig, "approveTransfer", [1, escrow.address]),
+      setMessage(multiSig, "approveTransfer", [1]),
       {from: accounts[7]}
     ).should.be.rejected;
 
     console.log("\nAn approved signer cannot approve a transfer more than once");
     await proxy.execute(
       "Multisig5of12",
-      setMessage(multiSig, "approveTransfer", [1, escrow.address]),
+      setMessage(multiSig, "approveTransfer", [1]),
       {from: accounts[8]}
     ).should.be.rejected;
 
@@ -160,7 +159,7 @@ module.exports = async callback => {
 
     await proxy.execute(
       "Multisig5of12",
-      setMessage(multiSig, "approveTransfer", [1, escrow.address]),
+      setMessage(multiSig, "approveTransfer", [1]),
       {from: accounts[12]}
     );
 
@@ -186,6 +185,64 @@ module.exports = async callback => {
 
     console.log("\nUpgrading Escrow...only when all is correct");
     await endowmentFund.initUpgradeEscrow(escrow.address, 1);
+
+    console.log(
+      "\n================== SuperAdmin proposes another new transfer... =================="
+    );
+    await multiSig.proposeNewTransfer(2, escrow.address);
+
+    console.log("\n Only Superadmin can refute an approved signer")
+    await multiSig.refuteSigner(accounts[1], { from: accounts[10] }).should.be.rejected;
+    await multiSig.refuteSigner(accounts[1]);
+
+    allSigners = await multiSig.getSigners();
+    allKittieFightSigners = await multiSig.getSignersKittieFight();
+    allExternalSigners = await multiSig.getSignersExternal();
+
+    console.log("All approved signers:", allSigners);
+    console.log("All approved kittieFight signers:", allKittieFightSigners);
+    console.log("All approved external signers:", allExternalSigners);
+
+    console.log("\n An refuted signer cannot approve a transfer")
+    await proxy.execute(
+      "Multisig5of12",
+      setMessage(multiSig, "approveTransfer", [2]),
+      {from: accounts[1]}
+    ).should.be.rejected;
+
+    for (let i = 2; i < 4; i++) {
+      await proxy.execute(
+        "Multisig5of12",
+        setMessage(multiSig, "approveTransfer", [2]),
+        {from: accounts[i]}
+      );
+    }
+
+    await proxy.execute(
+      "Multisig5of12",
+      setMessage(multiSig, "approveTransfer", [2]),
+      {from: accounts[5]}
+    );
+
+    await proxy.execute(
+      "Multisig5of12",
+      setMessage(multiSig, "approveTransfer", [2]),
+      {from: accounts[8]}
+    );
+
+    await proxy.execute(
+      "Multisig5of12",
+      setMessage(multiSig, "approveTransfer", [2]),
+      {from: accounts[12]}
+    );
+
+    console.log(
+      "\nUpgrading Escrow fails if transferNumber is an old approved one instead of the currently ongoing proposal"
+    );
+    await endowmentFund.initUpgradeEscrow(escrow.address, 1).should.be.rejected;
+
+    console.log("\nUpgrading Escrow...only when all is correct");
+    await endowmentFund.initUpgradeEscrow(escrow.address, 2);
 
     callback();
   } catch (e) {
