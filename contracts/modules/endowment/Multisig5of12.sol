@@ -5,6 +5,7 @@ pragma solidity ^0.5.5;
  * @dev  simulating 5 0f 12 multi-sig distributing trust externally.
  *       3 required signatures from KittieFIGHT
  *       2 required signatures from external organizations
+ * @author @ziweidream
  */
 
 import "../proxy/Proxied.sol";
@@ -18,7 +19,7 @@ contract Multisig5of12 is Proxied, Guard {
     uint256 public requiredSigExternal;
     uint256 public totalRequiredSigs;
 
-    // transfers information
+    /// @dev transfers information
     struct Transfer {
         //uint256 transferNumber;
         uint256 approvalCount;
@@ -29,37 +30,40 @@ contract Multisig5of12 is Proxied, Guard {
         address[] approvedBy;
     }
 
-    // map the transferNumber to a transfer
+    /// @dev a mapping of the transferNumber to a Transfer
     mapping(uint256 => Transfer) transfers;
 
-    // a list of all signedTransfers with referrence to transferNumber
+    /// @dev a list all signed Transfers
     uint256[] signedTransfers;
 
+    /// @dev signer information
     struct Signer {
-        //address addr;
         string name;
         string organization;
         bool approved;
     }
 
+    /// @dev a mapping of the address to a Signer
     mapping(address => Signer) signers;
 
-    // a list of all approved signers
+    /// @dev a list of all approved signers
     address[] allSigners;
-    // a list of all approved kittieFight signers
+    /// @dev a list of all approved kittieFight signers
     address[] allKittieFightSigners;
-    // a list of all approved external signers
+    /// @dev a list of all approved external signers
     address[] allExternalSigners;
 
-    // last transfer number
+    /// @dev the last transfer number
     uint256 public lastTransferNumber;
 
+    //===================== constructor ===================
     constructor() public {
         requiredSigKittieFight = 3;
         requiredSigExternal = 2;
         totalRequiredSigs = 5;
     }
 
+    //===================== events ===================
     event Signup(
         string indexed organization,
         string indexed name,
@@ -69,6 +73,12 @@ contract Multisig5of12 is Proxied, Guard {
     event ApproveSigner(address indexed signer, string indexed organization);
     event RemoveSigner(address indexed signer);
 
+    //===================== public functions ===================
+    /**
+     * @dev  a signer signs up
+     * @param _name string the name of the signer
+     * @param _organization string the organization of the signer
+     */
     function signup(string memory _name, string memory _organization)
         public
         onlyProxy
@@ -81,6 +91,10 @@ contract Multisig5of12 is Proxied, Guard {
         emit Signup(_organization, _name, msgSender);
     }
 
+    /**
+     * @dev an approved signer approves a transfer with a _transferNum
+     * @param _transferNum uint256 the transfer number of the transfer to be approved
+     */
     function approveTransfer(uint256 _transferNum)
         public
         onlyProxy
@@ -112,6 +126,11 @@ contract Multisig5of12 is Proxied, Guard {
         return true;
     }
 
+    //===================== setters ===================
+    /**
+     * @dev update the required numbere of approvals from approved signers for a transfer to be approved
+     * @dev onlySuperAdmin
+     */
     function updateThresholdSig(
         uint256 _requiredSigKittieFight,
         uint256 _requiredSigExternal,
@@ -122,6 +141,12 @@ contract Multisig5of12 is Proxied, Guard {
         totalRequiredSigs = _totalRequiredSig;
     }
 
+    /**
+     * @dev approve a signer
+     * @param _addr address the address of the signer to be approved
+     * @param _organization string the organization of the signer to be approved
+     * @dev onlySuperAdmin
+     */
     function approveSigner(address _addr, string memory _organization)
         public
         onlySuperAdmin
@@ -140,6 +165,11 @@ contract Multisig5of12 is Proxied, Guard {
         emit ApproveSigner(_addr, _organization);
     }
 
+    /**
+     * @dev refute a signer
+     * @param _addr address the address of the signer to be refuted
+     * @dev onlySuperAdmin
+     */
     function refuteSigner(address _addr) public onlySuperAdmin {
         signers[_addr].approved = false;
         string memory _organization = signers[_addr].organization;
@@ -168,6 +198,13 @@ contract Multisig5of12 is Proxied, Guard {
         emit RemoveSigner(_addr);
     }
 
+    /**
+     * @dev propose a new transfer
+     * @param _newTransferNum uint256 the transferNumber of the new Transfer
+     * @param _newEscrowAddr address the new escrow address associated with the new Transfer with _newTransferNum
+     * @dev _newTransferNum must be greater than last transfer number
+     * @dev onlySuperAdmin
+     */
     function proposeNewTransfer(uint256 _newTransferNum, address _newEscrowAddr)
         public
         onlySuperAdmin
@@ -180,13 +217,18 @@ contract Multisig5of12 is Proxied, Guard {
         return true;
     }
 
-    // return true if transfer is approved
+    //===================== getters ===================
+    /**
+     * @dev return true if transfer with _transferNum is approved
+     * @param _transferNum uint256 the transferNumber of the Transfer
+     * @param _newEscrow address the new escrow address associated with the Transfer with _transferNum
+     */
     function isTransferApproved(uint256 _transferNum, address _newEscrow)
         public
         view
         returns (bool)
     {
-        // for the initial deployement of escrow
+        // only for the initial deployement of escrow
         if (_transferNum == 0) {
             return true;
         }
@@ -198,7 +240,9 @@ contract Multisig5of12 is Proxied, Guard {
         return false;
     }
 
-    // return true if the signer has already approved this transfer
+    /**
+     * @dev return true if the signer has already approved this specific transfer with a _transferNum
+     */
     function isAlreadyApprovedBy(address _signer, uint256 _transferNum) public view returns (bool) {
         address[] memory _approvedBy = transfers[_transferNum].approvedBy;
         for (uint256 i = 0; i < _approvedBy.length; i++) {
@@ -209,7 +253,9 @@ contract Multisig5of12 is Proxied, Guard {
         return false;
     }
 
-    // return true if _organization is kittieFight
+    /**
+     * @dev return true if _organization is kittieFight
+     */
     function isKittieFight(string memory _organization)
         public
         pure
@@ -220,23 +266,32 @@ contract Multisig5of12 is Proxied, Guard {
             keccak256(abi.encodePacked("kittieFight"));
     }
 
-    // return the last transfer number and new escrow address associated with this transfer number
+    /**
+     * @dev return the last transfer number and new escrow address
+     *      associated with the last transfer number
+     */
     function getLastTransfer() public view returns (uint256, address) {
         address newEscrow = transfers[lastTransferNumber].newEscrow;
         return (lastTransferNumber, newEscrow);
     }
 
-    // get a list of all approved signger
+    /**
+     * @dev return a list of all approved signger
+     */
     function getSigners() public view returns (address[] memory) {
         return allSigners;
     }
 
-    // get a list of all approved kittieFight signers
+    /**
+     * @dev return a list of all approved kittieFight signers
+     */
     function getSignersKittieFight() public view returns (address[] memory) {
         return allKittieFightSigners;
     }
 
-    // return a list of all approved external signers
+    /**
+     * @dev return a list of all approved external signers
+     */
     function getSignersExternal() public view returns (address[] memory) {
         return allExternalSigners;
     }
