@@ -9,8 +9,8 @@ import '../../authority/Guard.sol';
 import '../../libs/SafeMath.sol';
 import '../../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import '../../uniswapKTY/uniswap-v2-core/interfaces/IDaiWethPair.sol';
-import '../../uniswapKTY/uniswap-V2-periphery/KtyWethOracle.sol';
-import '../../uniswapKTY/uniswap-V2-periphery/DaiWethOracle.sol';
+import '../../uniswapKTY/uniswap-v2-periphery/KtyWethOracle.sol';
+import '../../uniswapKTY/uniswap-v2-periphery/DaiWethOracle.sol';
 
 contract KtyUniswap is Proxied, Guard {
     using SafeMath for uint256;

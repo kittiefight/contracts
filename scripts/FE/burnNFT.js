@@ -31,7 +31,7 @@ function setMessage(contract, funcName, argArray) {
 
 //truffle exec scripts/FE/burnNFT.js tokenID
 
-module.exports = async (callback) => {    
+module.exports = async (callback) => {
 
   try{
     let superDaoToken = await SuperDaoToken.deployed();
