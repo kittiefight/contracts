@@ -20,6 +20,7 @@ import "../proxy/Proxied.sol";
 import "../../interfaces/ERC721.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "../../authority/Guard.sol";
+import "../../authority/MultisigRoleManager.sol";
 
 
 /**
@@ -32,7 +33,7 @@ import "../../authority/Guard.sol";
  * for both CryptoKitties and ERC20 tokens should be given to this contarct in advance.
  * @author @psychoplasma
  */
-contract Register is Proxied, SystemRoles, Guard {
+contract Register is Proxied, SystemRoles, Guard, MultisigRoleManager {
   using SafeMath for uint256;
 
   ProfileDB public profileDB;
@@ -40,6 +41,9 @@ contract Register is Proxied, SystemRoles, Guard {
   ERC721 public cryptoKitties;
   ERC20Standard public kittieFightToken;
   ERC20Standard public superDaoToken;
+
+  uint256 public superAdminMoveSignaturesRequired = 3;
+  uint256 constant SUPER_ADMIN_MOVE_REQUEST_TIMEOUT = 7*24*60*60; //move request wil be valid for 7 days
 
   string constant internal KITTIE_STATUS_IDLE = "idle";
   string constant internal KITTIE_STATUS_PLAYING = "playing";
@@ -58,6 +62,11 @@ contract Register is Proxied, SystemRoles, Guard {
     cryptoKitties = ERC721(proxy.getContract('CryptoKitties'));
     kittieFightToken = ERC20Standard(proxy.getContract('KittieFightToken'));
     superDaoToken = ERC20Standard(proxy.getContract('SuperDAOToken'));
+  }
+
+  function setSuperAdminMoveSignaturesRequired(uint256 _superAdminMoveSignaturesRequired) external onlyOwner {
+    require(_superAdminMoveSignaturesRequired > 1, "Should require more than 1 signature");
+    superAdminMoveSignaturesRequired = _superAdminMoveSignaturesRequired;
   }
 
   /**
@@ -86,6 +95,12 @@ contract Register is Proxied, SystemRoles, Guard {
    */
   function removeAdmin(address account) external onlyOwner {
     _removeRole(account, ADMIN_ROLE);
+  }
+
+  function moveSuperAdmin(address newAccount) external onlySuperAdmin {
+    address sender = getOriginalSender();
+    uint256 deadline = now + SUPER_ADMIN_MOVE_REQUEST_TIMEOUT;
+    createRoleMoveRequest(sender, newAccount, SUPER_ADMIN_ROLE, deadline, superAdminMoveSignaturesRequired, ADMIN_ROLE);
   }
 
   /**
