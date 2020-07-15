@@ -102,14 +102,13 @@ contract HoneypotAllocationAlgo is Proxied {
     public
     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
     {
+        delete path;
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
         path.push(_WETH);
         address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
         path.push(_KTY);
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
     }
-
-
 
     /**
     * @dev check if enough funds present and maintains balance of tokens in DB
