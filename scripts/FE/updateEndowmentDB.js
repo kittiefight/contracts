@@ -4,6 +4,8 @@ const GMGetterDB = artifacts.require('GMGetterDB');
 const EndowmentFund = artifacts.require('EndowmentFund');
 const WithdrawPool = artifacts.require('WithdrawPool');
 const KFProxy = artifacts.require('KFProxy');
+const SuperDaoToken = artifacts.require('MockERC20Token');
+const MockStaking = artifacts.require('MockStaking');
 
 module.exports = async (callback) => {
 	try {
@@ -13,6 +15,8 @@ module.exports = async (callback) => {
 	    let genericDB = await GenericDB.deployed();
 	  	let endowmentDB = await EndowmentDB.new(genericDB.address);
 	  	let withdrawPool = await WithdrawPool.deployed();
+	  	let staking = await MockStaking.deployed();
+	  	let superDaoToken = await MockERC20Token.deployed();
 	  	console.log("EndowmentDB deployed...");
 
 	  	console.log(endowmentDB.address);
@@ -28,7 +32,7 @@ module.exports = async (callback) => {
 
 	  	await gmGetterDB.initialize();
 	  	await endowmentFund.initialize();
-	  	// await withdrawPool.initialize();
+	  	await withdrawPool.initialize(staking.address, superDaoToken.address);
 	  	callback();
     }
     catch(e){callback(e)}
