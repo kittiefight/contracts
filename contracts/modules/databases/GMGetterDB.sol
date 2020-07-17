@@ -284,4 +284,10 @@ contract GMGetterDB is Proxied {
     isVerified = civicId > 0;
   }
 
+  function getTotalGames()
+    public view returns (uint256)
+  {
+    return genericDB.getLinkedListSize(CONTRACT_NAME_GM_GETTER_DB, TABLE_KEY_GAME);
+  }
+
 }
