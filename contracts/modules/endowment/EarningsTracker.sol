@@ -395,6 +395,15 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
+     * @dev calculates the total interest accumulated for all Ethie Token NFTs in one epoch with _epochID
+     * @param _epochID uint256 epoch ID of the interest of the pooled ether
+     * @return uint256 total interest accumulated for all Ethie Token NFTs in one epoch with _epochID
+     */
+    function viewInterest(uint256 _epochID) public view returns (uint256) {
+        return amountsPerEpoch[_epochID].interest;
+    }
+
+    /**
      * @dev gets principal ethers locked plus the interest accumulated for an Ethie Token NFT
      * @param _eth_amount uint256 the amount of ethers associated with this NFT
      * with this NFT has been locked
