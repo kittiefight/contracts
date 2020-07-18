@@ -22,6 +22,7 @@ import "./ProfileDB.sol";
 import "../registration/Register.sol";
 import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
+import "../endowment/KtyUniswap.sol";
 
 /**
  * @dev Getters for game instances
@@ -230,6 +231,13 @@ contract GMGetterDB is Proxied {
   {
     initialHoneypotEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
     initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
+  }
+
+  function getInitialHoneypotKTYInEther(uint256 gameId)
+      public view returns (uint256)
+  {
+    (,uint256 _initialKTY) = getInitialHoneypot(gameId);
+    return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price());
   }
 
   function getHoneypotInfo(uint256 gameId)
