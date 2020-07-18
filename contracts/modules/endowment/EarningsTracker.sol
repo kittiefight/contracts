@@ -418,30 +418,25 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
-     * @dev calculates the total payout for all lenders in the last weekly epoch
+     * @dev calculates the total payout (i.e., total interest) for all lenders in the last weekly epoch
      * @return uint256 total payout for all lenders in the last weekly epoch
      */
     function getLastWeeklyLenderPayOut()
         public view returns (uint256)
     {
         uint256 lastEpochID = getCurrentEpoch().sub(1);
-        uint256 lastWeeklyPayOut = amountsPerEpoch[lastEpochID].investment.add(amountsPerEpoch[lastEpochID].interest);
-        return lastWeeklyPayOut;
+        return amountsPerEpoch[lastEpochID].interest;
     }
 
     /**
-     * @dev calculates the total payout for all lenders in all epochs
+     * @dev calculates the pooled ether for all lenders (i.e, investment) in an epoch with _epochID
+     * @param _epochID uint256 epoch ID of the pooled ether
      * @return uint256 total payout for all lenders in all epochs
      */
-    function getTotalLenderPayOut()
+    function getPooledEther(uint256 _epochID)
         public view returns (uint256)
     {
-        uint256 activeEpochID = getCurrentEpoch();
-        uint256 totalPayOut = 0;
-        for (uint256 i = 0; i < activeEpochID; i++) {
-            totalPayOut = totalPayOut.add(amountsPerEpoch[i].investment).add(amountsPerEpoch[i].interest);
-        }
-        return totalPayOut;
+        return amountsPerEpoch[_epochID].investment;
     }
 
     /**
