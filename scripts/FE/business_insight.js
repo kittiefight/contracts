@@ -147,9 +147,29 @@ module.exports = async callback => {
     console.log(weiToEther(initial_kty_game[1]))
     console.log("==============================")
 
-    console.log("\n====== Initial KTY Committed to Game (in Ether value)======") 
+    console.log("\n====== Initial KTY Committed to Game (in current Ether value)======") 
     let initial_kty_game_eth = await gmGetterDB.getInitialHoneypotKTYInEther(1)
     console.log(weiToEther(initial_kty_game_eth))
+    console.log("==============================")
+
+    console.log("\n====== Total cumulative 'ether' spent by all users in a game ======") 
+    let total_spent_in_game = await gmGetterDB.getTotalSpentInGame(1)
+    console.log(weiToEther(total_spent_in_game))
+    console.log("==============================")
+
+    console.log("\n====== Total KTY swapped on uniswap during game lifetime ======") 
+    let total_swapped_kty_in_game = await gmGetterDB.getTotalSwappedKtyInGame(1)
+    console.log(weiToEther(total_swapped_kty_in_game))
+    console.log("==============================")
+
+    console.log("\n====== Pooled Ether ======") 
+    let pooled_ether = await earningsTracker.getPooledEther(0)
+    console.log(weiToEther(pooled_ether))
+    console.log("==============================")
+
+    console.log("\n====== Interest of pooled ether ======") 
+    let interest_pooled_ether = await earningsTracker.viewInterest(0)
+    console.log(weiToEther(interest_pooled_ether))
     console.log("==============================")
 
     callback();
