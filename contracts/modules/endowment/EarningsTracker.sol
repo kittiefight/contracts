@@ -387,7 +387,7 @@ contract EarningsTracker is Proxied, Guard {
     function viewTotalInterests() public view returns (uint256) {
         uint256 activeEpochID = getCurrentEpoch();
         uint256 totalInterest = 0;
-        for (uint256 i = 0; i < activeEpochID; i++) {
+        for (uint256 i = 0; i < activeEpochID.add(1); i++) {
             totalInterest = totalInterest.add(amountsPerEpoch[i].interest);
         }
         return totalInterest;
@@ -433,8 +433,9 @@ contract EarningsTracker is Proxied, Guard {
     function getLastWeeklyLenderPayOut()
         public view returns (uint256)
     {
-        uint256 lastEpochID = getCurrentEpoch().sub(1);
-        return amountsPerEpoch[lastEpochID].interest;
+        uint256 lastEpochID = getCurrentEpoch() == 0 ? 0 : getCurrentEpoch().sub(1);
+        uint256 lastWeeklyPayOut = amountsPerEpoch[lastEpochID].interest;
+        return lastWeeklyPayOut;
     }
 
     /**

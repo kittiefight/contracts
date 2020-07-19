@@ -237,7 +237,7 @@ contract GMGetterDB is Proxied {
       public view returns (uint256)
   {
     (,uint256 _initialKTY) = getInitialHoneypot(gameId);
-    return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price());
+    return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
   }
 
   function getHoneypotInfo(uint256 gameId)
@@ -292,10 +292,17 @@ contract GMGetterDB is Proxied {
     isVerified = civicId > 0;
   }
 
+  function getLastGameID()
+    public view returns (uint256)
+  {
+    (,uint256 _prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, true);
+    return _prevGameId;
+  }
+
   function getTotalGames()
     public view returns (uint256)
   {
-    return genericDB.getLinkedListSize(CONTRACT_NAME_GM_GETTER_DB, TABLE_KEY_GAME);
+    return getLastGameID();
   }
 
   ///@dev return total Spent in ether in a game with gameId

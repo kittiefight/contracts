@@ -493,8 +493,6 @@ contract WithdrawPool is Proxied, Guard {
         weeklyPools[pool_id].initialETHAvailable = totalETHtoPool;
         weeklyPools[pool_id].ETHAvailable = totalETHtoPool;
 
-        totalEthPaidOut = totalEthPaidOut.add(totalETHtoPool);
-
         emit AddETHtoPool(pool_id, totalETHtoPool);
         return true;
     }
