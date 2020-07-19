@@ -32,7 +32,7 @@ contract MultisigRoleManager is Guard {
     function createRoleMoveRequest(address from, address to, string memory role, uint256 deadline, uint256 requiredSignatures, string memory signingRole) internal returns(uint256){
         require(deadline > now, "Bad deadline");
         require(hasRole(from, role), "From address does not currently have the role");
-        require(!hasRole(to, role), "From address already has the role");
+        require(!hasRole(to, role), "To address already has the role");
         require(requiredSignatures > 1, "Should require more than 1 signature");
         requests.push(RoleMoveRequest({
             from: from,
