@@ -298,4 +298,20 @@ contract GMGetterDB is Proxied {
     return genericDB.getLinkedListSize(CONTRACT_NAME_GM_GETTER_DB, TABLE_KEY_GAME);
   }
 
+  function getTotalSpentInGame(uint256 gameId)
+      public view returns (uint256)
+  {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
+  }
+
+  function getKittieListingFee(uint256 kittieId)
+      public view returns (uint256)
+  {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(kittieId, "kittieLisingFee")));
+  }
+
 }

@@ -10,6 +10,7 @@ import "../../interfaces/ERC20Standard.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
 import "../databases/GMGetterDB.sol";
+import "../databases/GMSetterDB.sol";
 import "../databases/KittieHellDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
@@ -31,6 +32,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     GameVarAndFee public gameVarAndFee;
     GameStore public gameStore;
     GMGetterDB public gmGetterDB;
+    GMSetterDB public gmSetterDB;
     EndowmentFund public endowmentFund;
     address[] public path;
 
@@ -55,6 +57,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+        gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
 
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
@@ -183,6 +186,9 @@ contract KittieHell is BasicControls, Proxied, Guard {
             address(this),
             2**255
         );
+
+        // record kittie redemption fee in total spent in game
+        gmSetterDB.setTotalSpentInGame(gameId, msg.value);
 
         KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);

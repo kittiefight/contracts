@@ -309,6 +309,35 @@ contract GMSetterDB is Proxied {
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
   }
 
+  /**
+   * @dev record actual kittie listing fee in ether
+   */
+  function recordKittieListingFee(uint256 kittieId, uint256 listingFee)
+      external
+      onlyContract(CONTRACT_NAME_GAMECREATION)
+  {
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(kittieId, "kittieLisingFee")),
+      listingFee);
+  }
+
+  /**
+   * @dev set total spent "ether" for each game
+   */
+  function setTotalSpentInGame(uint256 gameId, uint256 etherAmount)
+      external
+      only3Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_KITTIEHELL)
+  {
+    uint256 prevEtherAmount = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
+    genericDB.setUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, "totalSpentInGame")),
+      prevEtherAmount.add(etherAmount));
+  }
+
   // function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
   //   external
   //   onlyContract(CONTRACT_NAME_GAMEMANAGER)

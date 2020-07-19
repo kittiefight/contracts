@@ -120,6 +120,8 @@ contract GameCreation is Proxied, Guard {
 
         scheduler.addKittyToList(kittieId, player);
 
+        gmSetterDB.recordKittieListingFee(kittieId, msg.value);
+
         emit NewListing(kittieId, player, now);
     }
 
@@ -183,6 +185,10 @@ contract GameCreation is Proxied, Guard {
         // update betting fee dynamically as a percentage of initial honeypot size
         gameStore.updateBettingFee(gameId);
 
+        // add kittie listing fee to total spent ether in game
+        gmSetterDB.setTotalSpentInGame(gameId, gmGetterDB.getKittieListingFee(kittyRed));
+        gmSetterDB.setTotalSpentInGame(gameId, gmGetterDB.getKittieListingFee(kittyBlack));
+        
         emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
     }
 
