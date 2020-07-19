@@ -3,7 +3,6 @@ pragma solidity ^0.5.5;
 import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
-import "../endowment/EndowmentFund.sol";
 
 contract EndowmentDB is Proxied {
   using SafeMath for uint256;

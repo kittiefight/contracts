@@ -161,7 +161,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(DaiWethOracle))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
-            await escrow.transferOwnership(EndowmentFund.address)
+            await escrow.transferOwnership(EndowmentFund.address);
         })
         .then(() => deployer.deploy(KFProxy))
         .then(async(proxy) => {

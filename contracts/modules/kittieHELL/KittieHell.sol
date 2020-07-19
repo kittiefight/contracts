@@ -56,6 +56,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
+        delete path;
 
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
         path.push(_WETH);

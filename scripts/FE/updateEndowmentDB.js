@@ -6,6 +6,7 @@ const WithdrawPool = artifacts.require('WithdrawPool');
 const KFProxy = artifacts.require('KFProxy');
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const MockStaking = artifacts.require('MockStaking');
+const editJsonFile = require("edit-json-file");
 
 module.exports = async (callback) => {
 	try {
@@ -16,10 +17,15 @@ module.exports = async (callback) => {
 	  	let endowmentDB = await EndowmentDB.new(genericDB.address);
 	  	let withdrawPool = await WithdrawPool.deployed();
 	  	let staking = await MockStaking.deployed();
-	  	let superDaoToken = await MockERC20Token.deployed();
+	  	let superDaoToken = await SuperDaoToken.deployed();
 	  	console.log("EndowmentDB deployed...");
 
 	  	console.log(endowmentDB.address);
+
+	    let file = editJsonFile('build/contracts/EndowmentDB.json');
+
+	    file.set("networks.999.address", endowmentDB.address);
+	    file.save();
 
 	  	await proxy.updateContract('EndowmentDB', endowmentDB.address);
 
