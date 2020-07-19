@@ -244,7 +244,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
     }
 
-    /// @notice Gets fee in Ether for players to list kitties for matching in fights
+    /// @notice Gets fee in Ether and in KTY for players to list kitties for matching in fights
     function getListingFee() public view returns(uint, uint) {
         uint listingFeeDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
         uint listingFeeETH = convertDaiToEth(listingFeeDAI);

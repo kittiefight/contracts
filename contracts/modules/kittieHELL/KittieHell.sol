@@ -188,7 +188,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         );
 
         // record kittie redemption fee in total spent in game
-        gmSetterDB.setTotalSpentInGame(gameId, msg.value);
+        gmSetterDB.setTotalSpentInGame(gameId, msg.value, tokenAmount);
 
         KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);

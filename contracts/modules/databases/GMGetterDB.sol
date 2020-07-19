@@ -298,6 +298,7 @@ contract GMGetterDB is Proxied {
     return genericDB.getLinkedListSize(CONTRACT_NAME_GM_GETTER_DB, TABLE_KEY_GAME);
   }
 
+  ///@dev return total Spent in ether in a game with gameId
   function getTotalSpentInGame(uint256 gameId)
       public view returns (uint256)
   {
@@ -306,12 +307,27 @@ contract GMGetterDB is Proxied {
       keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
   }
 
-  function getKittieListingFee(uint256 kittieId)
+  ///@dev return total uniswap auto-swapped KTY in a game with gameId
+  function getTotalSwappedKtyInGame(uint256 gameId)
       public view returns (uint256)
   {
     return genericDB.getUintStorage(
       CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(kittieId, "kittieLisingFee")));
+      keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
+  }
+
+
+  ///@dev return listing fee in ether and swapped listing fee KTY for each kittie with kittieId listed
+  function getKittieListingFee(uint256 kittieId)
+      public view returns (uint256, uint256)
+  {
+    uint256 _listingFeeEther = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(kittieId, "kittieListingFeeEther")));
+    uint256 _listingFeeKty = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(kittieId, "kittieListingFeeKty")));
+    return (_listingFeeEther, _listingFeeKty);
   }
 
 }
