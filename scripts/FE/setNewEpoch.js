@@ -44,7 +44,6 @@ module.exports = async (callback) => {
     );
     console.log("********************************************************\n");
 
-    let amounts = await earningsTracker.amountsPerEpoch(0);
     const numberOfPools = await withdrawPool.getTotalNumberOfPools();
     console.log("Number of pools:", numberOfPools.toNumber());
     console.log("\n******************* Pool 0 Created*******************");
@@ -80,10 +79,6 @@ module.exports = async (callback) => {
     console.log(
       "stakers who have claimed from this pool:",
       pool_0_details.stakersClaimed[0]
-    );
-    console.log(
-      "Investments in Pool:",
-      amounts.investment.toString()
     );
     console.log("********************************************************\n");
     callback()

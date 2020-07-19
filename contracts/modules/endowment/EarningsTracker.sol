@@ -13,6 +13,7 @@ import '../datetime/TimeFrame.sol';
 import '../../GameVarAndFee.sol';
 import './EndowmentFund.sol';
 import '../../interfaces/IEthieToken.sol';
+import "../databases/GenericDB.sol";
 
 
 contract EarningsTracker is Proxied, Guard {
@@ -23,9 +24,7 @@ contract EarningsTracker is Proxied, Guard {
     TimeFrame public timeFrame;
     GameVarAndFee public gameVarAndFee;
     EndowmentFund public endowmentFund;
-
-    /// @dev current funding limit
-    uint256 public currentFundingLimit;
+    GenericDB public genericDB;
 
     /// @dev true if deposits are disabled
     bool internal depositsDisabled;
@@ -39,42 +38,6 @@ contract EarningsTracker is Proxied, Guard {
     uint256 constant ONE_HUNDRED_AND_TWENTY_DAYS = 120 * 24 * 60 * 60;  // GEN 5
     uint256 constant ONE_HUNDRED_AND_THIRTY_FIVE_DAYS = 135 * 24 * 60 * 60;  // GEN 6
 
-    /// @dev an EthieToken NFT's associated properties
-    struct NFT {
-        address originalOwner; // the owner of this token at the time of minting
-        uint256 generation;    // the generation of this funds, between number 0 and 6
-        uint256 ethValue;      // the funder's current funding balance (ether deposited - ether withdrawal)
-        uint256 lockedAt;      // the unix time at which this funds is locked
-        uint256 lockTime;      // lock duration
-        bool tokenBurnt;       // true if this token has been burnt
-        uint256 tokenBurntAt;  // the time when this token was burnt
-        address tokenBurntBy;  // who burnt this token (if this token was burnt)
-        uint256 interestPaid; // interest released to the burner when this token was burnt
-        uint256 startingEpochID; //The epochId this token started to contribute.
-    }
-
-    struct AmountsEpoch {
-        uint256 investment;
-        uint256 interest;
-    }
-
-    mapping(uint256 => AmountsEpoch) public amountsPerEpoch;
-
-    /// @dev a generation's associated properties
-    struct Generation {
-        uint256 start;           // time when this generation starts
-        uint256 ethBalance;      // the lastest ether balance associated with this generation
-        uint256 ethBalanceAt;    // the last time when the ethBlance is modified
-        bool limitReached;       // true if the funding limit of this generation is reached
-        uint256 numberOfNFTs;    // number of NFTs associated with this generation
-    }
-
-    /// @dev mapping generation ID to its properties
-    mapping (uint256 => Generation) generations;
-
-    /// @dev mapping ethieToken NFT to its properties
-    mapping (uint256 => NFT) public ethieTokens;
-
     /// @dev funding limit for each generation, pre-set in initialization, can only be changed by admin
     mapping (uint256 => uint256) public fundingLimit;
 
@@ -87,6 +50,7 @@ contract EarningsTracker is Proxied, Guard {
         timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
+        genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
 
         fundingLimit[0] = 500 * 1e18;
         fundingLimit[1] = 1000 * 1e18;
@@ -119,14 +83,16 @@ contract EarningsTracker is Proxied, Guard {
     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
     {
         require(_investment > 0, "Waiting Investment");
-        amountsPerEpoch[epoch_id].investment = _investment;
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(epoch_id, "investment")), _investment);
     }
 
     function setInterest(uint256 epoch_id, uint256 _total)
     external
     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
-    {
-        amountsPerEpoch[epoch_id].interest = _total.sub(amountsPerEpoch[epoch_id].investment);
+    {        
+        uint256 investment = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(epoch_id, "investment")));
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(epoch_id, "interest")),
+            _total.sub(investment));
     }
 
     /**
@@ -143,11 +109,11 @@ contract EarningsTracker is Proxied, Guard {
         require(depositsDisabled == false, "Deposits are not allowed at this time");
         uint256 currentGeneration = getCurrentGeneration();
         // if funding limit of current generation is reached, reject any deposit
-        require(generations[currentGeneration].limitReached == false,
-                "Current funding limit has already been reached");
+        require(!genericDB.getBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(currentGeneration, "limitReached"))),
+                "Current funding limit has already been reached");        
 
-        uint256 _ethBalance = generations[currentGeneration].ethBalance;
-        uint256 _fundingLimit = currentFundingLimit;
+        uint256 _ethBalance = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(currentGeneration, "ethBalance")));
+        uint256 _fundingLimit = getcurrentFundingLimit();
         uint256 _totalETH = _ethBalance.add(msg.value);
         address _funder = getOriginalSender();
 
@@ -171,7 +137,7 @@ contract EarningsTracker is Proxied, Guard {
             // return extra ether back to the funder
             _returnEther(msg.sender, _extra, false);
 
-            generations[currentGeneration].limitReached == true;
+            genericDB.setBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(currentGeneration, "limitReached")), true);
 
         } else {
             // calculate locktime
@@ -184,15 +150,15 @@ contract EarningsTracker is Proxied, Guard {
             _updateGeneration_mint(msg.value);
 
             if (_fundingLimit == _totalETH) {
-                generations[currentGeneration].limitReached = true;
+                genericDB.setBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(currentGeneration, "limitReached")), true);
             }
         }
 
-        if(amountsPerEpoch[0].investment == 0)
-            ethieTokens[_ethieTokenID].startingEpochID = 0;
+        if(genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked("0", "investment"))) == 0)
+            genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID")), 0);
         else {
             uint256 nextEpoch = getCurrentEpoch().add(1);
-            ethieTokens[_ethieTokenID].startingEpochID = nextEpoch;
+            genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID")), nextEpoch);
         }
 
         emit EtherLocked(_funder, _ethieTokenID, currentGeneration);
@@ -228,7 +194,7 @@ contract EarningsTracker is Proxied, Guard {
         require(currentOwner == msgSender, "Only the owner of this token can burn it");
 
         // require this token had not been burnt already
-        require(ethieTokens[_ethieTokenID].tokenBurnt == false,
+        require(!genericDB.getBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt"))),
                 "This EthieToken NFT has already been burnt");
         // requires KTY payment
         (uint256 _eth_for_swap, uint256 _kty_fee) = KTYforBurnEthie(_ethieTokenID);
@@ -238,12 +204,13 @@ contract EarningsTracker is Proxied, Guard {
         // burn Ethie Token NFT
         ethieToken.burn(_ethieTokenID);
 
-        uint256 tokenLockedAt = ethieTokens[_ethieTokenID].lockedAt;
+        uint256 tokenLockedAt = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "lockedAt")));
         uint256 lockTime = now.sub(tokenLockedAt);
         // calculate interest
-        uint256 ethValue = ethieTokens[_ethieTokenID].ethValue;
-        uint256 generation = ethieTokens[_ethieTokenID].generation;
-        uint256 totalEth = calculateTotal(ethValue, ethieTokens[_ethieTokenID].startingEpochID);
+        uint256 ethValue = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "ethValue")));
+        uint256 generation = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "generation")));
+        uint256 startingEpochID = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID")));
+        uint256 totalEth = calculateTotal(ethValue, startingEpochID);
         uint256 interest = totalEth.sub(ethValue);
         // update generations
         _updateGeneration_burn(generation, ethValue);
@@ -252,7 +219,7 @@ contract EarningsTracker is Proxied, Guard {
         // update burntTokens
         // release ETH and accumulative interest to the current owner
         uint256 activeEpochID = timeFrame.getActiveEpochID();
-        if(ethieTokens[_ethieTokenID].startingEpochID > activeEpochID)
+        if(startingEpochID > activeEpochID)
             _returnEther(msgSender, totalEth, false);
         else
             _returnEther(msgSender, totalEth, true);
@@ -271,11 +238,12 @@ contract EarningsTracker is Proxied, Guard {
         public
         onlyAdmin
     {
-        if (currentFundingLimit == 0) {
-            currentFundingLimit = fundingLimit[0];
+        if (getcurrentFundingLimit() == 0) {
+            genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encode("currentFundingLimit")), fundingLimit[0]);
         } else {
             uint256 currentGeneration = getCurrentGeneration();
-            require(generations[currentGeneration].limitReached == true, "Previous funding limit hasn't been reached");
+            require(genericDB.getBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(currentGeneration, "limitReached"))),
+                "Previous funding limit hasn't been reached");
             uint256 nextGeneration = currentGeneration.add(1);
             // get previous generation funding limit
             uint256 _prevFundingLimit = fundingLimit[currentGeneration];
@@ -283,7 +251,7 @@ contract EarningsTracker is Proxied, Guard {
             uint256 _currentFundingLimit = fundingLimit[nextGeneration];
             require(_currentFundingLimit > _prevFundingLimit,
                     "Funding limit must be bigger than the previous generation");
-            currentFundingLimit = _currentFundingLimit;
+            genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encode("currentFundingLimit")), _currentFundingLimit);
         }
     }
 
@@ -345,7 +313,7 @@ contract EarningsTracker is Proxied, Guard {
         public view returns (uint256)
     {
        for (uint256 i = 0; i < 7; i++) {
-           if (fundingLimit[i] == currentFundingLimit) {
+           if (fundingLimit[i] == getcurrentFundingLimit()) {
                return i;
            }
        }
@@ -355,7 +323,7 @@ contract EarningsTracker is Proxied, Guard {
      * @dev gets the current funding limit of the current generation
      */
     function getcurrentFundingLimit() public view returns (uint256) {
-        return currentFundingLimit;
+        return genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encode("currentFundingLimit")));
     }
 
     /**
@@ -369,7 +337,7 @@ contract EarningsTracker is Proxied, Guard {
      * @dev true if the funding limit of the generation is reached
      */
     function hasReachedLimit(uint256 _generation) public view returns (bool) {
-        return generations[_generation].limitReached;
+        return genericDB.getBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "limitReached")));
     }
 
     /**
@@ -377,7 +345,8 @@ contract EarningsTracker is Proxied, Guard {
      */
     function ethNeededToReachFundingLimit() public view returns (uint256) {
         uint256 currentGeneration = getCurrentGeneration();
-        return currentFundingLimit.sub(generations[currentGeneration].ethBalance);
+        return getcurrentFundingLimit().sub(genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER,
+            keccak256(abi.encodePacked(currentGeneration, "ethBalance"))));
     }
 
     /**
@@ -389,7 +358,8 @@ contract EarningsTracker is Proxied, Guard {
         uint256 totalInterest = 0;
         uint256 startID = activeEpochID < 250 ? 0 : activeEpochID - 250;
         for (uint256 i = startID; i < activeEpochID; i++) {
-            totalInterest = totalInterest.add(amountsPerEpoch[i].interest);
+            uint256 interest = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(i, "interest")));
+            totalInterest = totalInterest.add(interest);
         }
         return totalInterest;
 
@@ -411,7 +381,9 @@ contract EarningsTracker is Proxied, Guard {
         else {
             uint256 proportion = _eth_amount;
             for(uint256 i = _startingEpoch; i < activeEpochID.add(1); i++) {
-                uint256 epochInterest = proportion.mul(amountsPerEpoch[i].interest).div(amountsPerEpoch[i].investment);
+                uint256  investment = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(i, "investment")));
+                uint256  interest = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(i, "interest")));
+                uint256 epochInterest = proportion.mul(interest).div(investment);
                 proportion = proportion.add(epochInterest);
             }
             return proportion;
@@ -508,8 +480,8 @@ contract EarningsTracker is Proxied, Guard {
         public view
         returns(uint256)
     {
-        uint256 lockTime = ethieTokens[ethieTokenID].lockTime;
-        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        uint256 lockTime = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(ethieTokenID, "lockTime")));
+        uint256 lockedAt = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(ethieTokenID, "lockedAt")));
         uint256 unLockAt = lockedAt.add(lockTime);
         return unLockAt;
     }
@@ -536,7 +508,7 @@ contract EarningsTracker is Proxied, Guard {
         public view
         returns(uint256)
     {
-        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        uint256 lockedAt = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(ethieTokenID, "lockedAt")));
         return lockedAt;
     }
 
@@ -548,7 +520,7 @@ contract EarningsTracker is Proxied, Guard {
         public view
         returns(uint256 year, uint256 month, uint256 day, uint256 hour, uint256 minute, uint256 second)
     {
-        uint256 lockedAt = ethieTokens[ethieTokenID].lockedAt;
+        uint256 lockedAt = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(ethieTokenID, "lockedAt")));
         (year, month, day, hour, minute, second) = timeFrame.timestampToDateTime(lockedAt);
     }
 
@@ -562,7 +534,7 @@ contract EarningsTracker is Proxied, Guard {
         public view returns (uint256)
     {
         uint256 _generation = getCurrentGeneration();
-        uint256 _fundingLimit = currentFundingLimit;
+        uint256 _fundingLimit = getcurrentFundingLimit();
         if (_generation == 0) {
             return THIRTY_DAYS.mul(_fundingLimit).div(_eth_amount);
         }
@@ -592,8 +564,8 @@ contract EarningsTracker is Proxied, Guard {
      */
     function KTYforBurnEthie(uint256 ethieTokenID) public view returns (uint256, uint256) {
         uint256 percentageBurnEthie = gameVarAndFee.getPercentageforBurnEthie();
-        uint256 eth_amount = ethieTokens[ethieTokenID].ethValue;
-        uint256 startingEpoch = ethieTokens[ethieTokenID].startingEpochID;
+        uint256 eth_amount = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(ethieTokenID, "ethValue")));
+        uint256 startingEpoch = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(ethieTokenID, "startingEpochID")));
         uint256 withdrawAmountETH = calculateTotal(eth_amount, startingEpoch);
         uint256 withdrawAmountKTY = gameVarAndFee.convertEthToKty(withdrawAmountETH);
         uint256 burnEthieFeeKTY = withdrawAmountKTY.mul(percentageBurnEthie).div(1000000);
@@ -625,11 +597,11 @@ contract EarningsTracker is Proxied, Guard {
     )
         internal
     {
-        ethieTokens[_ethieTokenID].generation = getCurrentGeneration();
-        ethieTokens[_ethieTokenID].ethValue = _eth_amount;
-        ethieTokens[_ethieTokenID].lockedAt = now;
-        ethieTokens[_ethieTokenID].lockTime = _lockTime;
-        ethieTokens[_ethieTokenID].originalOwner = _funder;
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "generation")), getCurrentGeneration());
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "ethValue")), _eth_amount);
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "lockedAt")), now);
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "lockTime")), _lockTime);
+        genericDB.setAddressStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "originalOwner")), _funder);
     }
 
     /**
@@ -640,9 +612,11 @@ contract EarningsTracker is Proxied, Guard {
         uint256 _eth_amount
     ) internal {
         uint256 _generation = getCurrentGeneration();
-        generations[_generation].ethBalance = generations[_generation].ethBalance.add(_eth_amount);
-        generations[_generation].ethBalanceAt = now;
-        generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.add(1);
+        uint256 ethBalance = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalance")));
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalance")), ethBalance.add(_eth_amount));
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalanceAt")), now);
+        uint256 noOfNFTs = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalance")));        
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "numberOfNFTs")), noOfNFTs.add(1));
     }
 
     /**
@@ -652,16 +626,17 @@ contract EarningsTracker is Proxied, Guard {
      */
     function _updateGeneration_burn(uint256 _generation, uint256 _eth_amount)
         internal
-    {
-        generations[_generation].ethBalance = generations[_generation].ethBalance.sub(_eth_amount);
-        generations[_generation].ethBalanceAt = now;
-        generations[_generation].numberOfNFTs = generations[_generation].numberOfNFTs.sub(1);
+    {        
+        uint256 ethBalance = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalance")));
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalance")), ethBalance.sub(_eth_amount));
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalanceAt")), now);
+        uint256 noOfNFTs = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "ethBalance")));        
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_generation, "numberOfNFTs")), noOfNFTs.sub(1));
 
         // if _generation is current generation, then set limitReached as false if it is set true
         uint256 currentGeneration = getCurrentGeneration();
-        if ((_generation == currentGeneration) && (generations[_generation].limitReached == true)) {
-            generations[_generation].limitReached == false;
-        }
+        if ((_generation == currentGeneration) && (hasReachedLimit(currentGeneration)))
+            genericDB.setBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(currentGeneration, "limitReached")), false);
     }
 
     /**
@@ -678,13 +653,13 @@ contract EarningsTracker is Proxied, Guard {
         internal
     {
         // set values to 0 can get gas refund
-        ethieTokens[_ethieTokenID].ethValue = 0;
-        ethieTokens[_ethieTokenID].lockedAt = 0;
-        ethieTokens[_ethieTokenID].lockTime = 0;
-        ethieTokens[_ethieTokenID].tokenBurnt = true;
-        ethieTokens[_ethieTokenID].tokenBurntAt = now;
-        ethieTokens[_ethieTokenID].tokenBurntBy = _burner;
-        ethieTokens[_ethieTokenID].interestPaid = _interestPaid;
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "ethValue")), 0);
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "lockedAt")), 0);
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "lockTime")), 0);
+        genericDB.setBoolStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt")), true); 
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "tokenBurntAt")), now);
+        genericDB.setAddressStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "tokenBurntBy")), _burner);
+        genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "interestPaid")), _interestPaid);
     }
 
     /**
