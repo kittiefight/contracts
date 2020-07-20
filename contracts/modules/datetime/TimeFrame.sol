@@ -33,26 +33,6 @@ pragma solidity ^0.5.5;
      uint public REST_DAY = 24 * 60 * 60;
      uint public SIX_HOURS = 6 * 60 * 60;
 
-     /// @dev total number of epochs
-    //  uint public numberOfEpochs;
-
-    //  struct Epoch {
-    //      /// @dev Unix time of the start of an epoch
-    //      uint sixDayStart;
-    //      /// @dev Unix time of the end of an epoch (should be greater than start)
-    //      uint sixDayEnd;
-    //      /// @dev Delay time duration in seconds
-    //      uint gamingDelay;
-    //      /// @dev Unix time of the start of a rest day (sixDayEnd or gamingDelay+now)
-    //      uint restDAYStart;
-    //      /// @dev Unix time of the end of a rest day (restDAYStart+24hours)
-    //      uint restDAYEnd;
-    //      bool unlocked;
-    //  }
-
-    //  /// @dev a list of all epochs throughout lifetime of system
-    //  mapping (uint => Epoch) public lifeTimeEpochs;
-
      //===================== events ===================
      event NewEpochSet(uint indexed newEpochId, uint newEpochStartTime);
      event GamingDelayAdded(
@@ -88,13 +68,6 @@ pragma solidity ^0.5.5;
      onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
      {
          _setNewEpoch(0, now);
-
-         genericDB.setUintStorage(
-             CONTRACT_NAME_TIMEFRAME,
-             keccak256(abi.encodePacked("totalNumberOfEpochs")),
-             1);
-
-         emit NewEpochSet(0, now);
      }
 
      /**
