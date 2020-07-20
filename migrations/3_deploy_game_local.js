@@ -360,6 +360,7 @@ module.exports = (deployer, network, accounts) => {
 
 
             console.log('\nInitializing contracts...');
+            await timeFrame.initialize()
             await gameStore.initialize()
             await gameCreation.initialize()
             await forfeiter.initialize()

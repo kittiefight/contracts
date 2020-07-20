@@ -1,15 +1,15 @@
 {
   "contractName": "StringUtils",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Based on OpenZeppelin and Oraclize libraries. - https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol (MIT licence)\"}},\"settings\":{\"compilationTarget\":{\"/home/xale/Desktop/contracts/contracts/libs/StringUtils.sol\":\"StringUtils\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/xale/Desktop/contracts/contracts/libs/StringUtils.sol\":{\"keccak256\":\"0xb81a6ddb51dfb8be65c3a20552a524d82cb6f07d4dd4d1bfd09b29f927d3df08\",\"urls\":[\"bzz-raw://802f952b4e3f71d8c80b474a1debf9bebb3e5035dd748ff2aa7aed7860805f16\",\"dweb:/ipfs/QmS9zcdNyJifmqqeWqFGss1KtF7B3865VNodiXsyuUcDiJ\"]}},\"version\":1}",
-  "bytecode": "0x60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72315820a23d330cc5f58ae31debcca161ac10c5933679eed98e18fa0f52e2cad9b9d77f64736f6c63430005110032",
-  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72315820a23d330cc5f58ae31debcca161ac10c5933679eed98e18fa0f52e2cad9b9d77f64736f6c63430005110032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{},\"notice\":\"Based on OpenZeppelin and Oraclize libraries. - https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol (MIT licence)\"}},\"settings\":{\"compilationTarget\":{\"/Users/ziweizhang/Desktop/kittieFight-temp/contracts/contracts/libs/StringUtils.sol\":\"StringUtils\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/ziweizhang/Desktop/kittieFight-temp/contracts/contracts/libs/StringUtils.sol\":{\"keccak256\":\"0xb81a6ddb51dfb8be65c3a20552a524d82cb6f07d4dd4d1bfd09b29f927d3df08\",\"urls\":[\"bzz-raw://802f952b4e3f71d8c80b474a1debf9bebb3e5035dd748ff2aa7aed7860805f16\",\"dweb:/ipfs/QmS9zcdNyJifmqqeWqFGss1KtF7B3865VNodiXsyuUcDiJ\"]}},\"version\":1}",
+  "bytecode": "0x60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a723158204c36f7d4d05425d605f9b4f7d57a1284990403d4ea034ff1b4bb96ac6aeef6ee64736f6c63430005110032",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a723158204c36f7d4d05425d605f9b4f7d57a1284990403d4ea034ff1b4bb96ac6aeef6ee64736f6c63430005110032",
   "sourceMap": "211:2244:32:-;;132:2:-1;166:7;155:9;146:7;137:37;255:7;249:14;246:1;241:23;235:4;232:33;222:2;;269:9;222:2;293:9;290:1;283:20;323:4;314:7;306:22;347:7;338;331:24",
   "deployedSourceMap": "211:2244:32:-;;;;;;;;",
   "source": "pragma solidity ^0.5.5;\n\n/**\n * Based on OpenZeppelin and Oraclize libraries.\n * - https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol (MIT licence)\n */\nlibrary StringUtils {\n    struct Slice {\n        uint _len;\n        uint _ptr;\n    }\n\n    function concat(string memory a, string memory b) internal pure returns(string memory) {\n        return string(abi.encodePacked(a, b));\n    }\n    function concat(string memory a, string memory b, string memory c) internal pure returns(string memory) {\n        return string(abi.encodePacked(a, b, c));\n    }\n    \n    function fromUint256(uint256 value) internal pure returns (string memory) {\n        if (value == 0) {\n            return \"0\";\n        }\n        uint256 temp = value;\n        uint256 digits;\n        while (temp != 0) {\n            digits++;\n            temp /= 10;\n        }\n        bytes memory buffer = new bytes(digits);\n        uint256 index = digits - 1;\n        temp = value;\n        while (temp != 0) {\n            buffer[index--] = byte(uint8(48 + temp % 10));\n            temp /= 10;\n        }\n        return string(buffer);\n    }\n\n    function fromUint256(uint256 value, uint256 decimals, uint256 precision) internal pure returns (string memory) {\n        require(precision <= decimals, \"StringUtils: incorrect precision\");\n        if (value == 0) return \"0\";\n        uint256 temp = value;\n        uint256 digits;\n        while (temp != 0) {\n            digits++;\n            temp /= 10;\n        }\n        if(digits <= decimals) {\n            digits = decimals+2; //add \"0.\"\n        }else{\n            digits = digits + 1; //add \".\"\n        }\n        uint256 truncateDecimals = decimals - precision;\n        uint256 bufferLen = digits-truncateDecimals;\n        uint256 dotIndex = bufferLen-precision-1;\n        bytes memory buffer = new bytes(bufferLen);\n        uint256 index = bufferLen;\n        temp = value / 10**truncateDecimals;\n        while (temp != 0) {\n            index--;\n            if(index == dotIndex) {\n                buffer[index] = '.';\n                index--;\n            }\n            buffer[index] = byte(uint8(48 + temp % 10));\n            temp /= 10;\n        }\n        while(index > 0) {\n            index--;\n            if(index == dotIndex) {\n                buffer[index] = '.';\n            }else{\n                buffer[index] = '0'; \n            }\n        }\n        return string(buffer);\n    }\n\n}\n",
-  "sourcePath": "/home/xale/Desktop/contracts/contracts/libs/StringUtils.sol",
+  "sourcePath": "/Users/ziweizhang/Desktop/kittieFight-temp/contracts/contracts/libs/StringUtils.sol",
   "ast": {
-    "absolutePath": "/home/xale/Desktop/contracts/contracts/libs/StringUtils.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/kittieFight-temp/contracts/contracts/libs/StringUtils.sol",
     "exportedSymbols": {
       "StringUtils": [
         6298
@@ -162,7 +162,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 42916,
+                            "referencedDeclaration": 43289,
                             "src": "412:3:32",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -418,7 +418,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 42916,
+                            "referencedDeclaration": 43289,
                             "src": "575:3:32",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -1759,10 +1759,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        42932,
-                        42933
+                        43305,
+                        43306
                       ],
-                      "referencedDeclaration": 42933,
+                      "referencedDeclaration": 43306,
                       "src": "1283:7:32",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -3924,7 +3924,7 @@
     "src": "0:2456:32"
   },
   "legacyAST": {
-    "absolutePath": "/home/xale/Desktop/contracts/contracts/libs/StringUtils.sol",
+    "absolutePath": "/Users/ziweizhang/Desktop/kittieFight-temp/contracts/contracts/libs/StringUtils.sol",
     "exportedSymbols": {
       "StringUtils": [
         6298
@@ -4077,7 +4077,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 42916,
+                            "referencedDeclaration": 43289,
                             "src": "412:3:32",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -4333,7 +4333,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 42916,
+                            "referencedDeclaration": 43289,
                             "src": "575:3:32",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -5674,10 +5674,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        42932,
-                        42933
+                        43305,
+                        43306
                       ],
-                      "referencedDeclaration": 42933,
+                      "referencedDeclaration": 43306,
                       "src": "1283:7:32",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -7843,8 +7843,8 @@
     "version": "0.5.17+commit.d19bba13.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.2.1",
-  "updatedAt": "2020-07-09T17:06:00.993Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-07-20T11:26:15.558Z",
   "devdoc": {
     "methods": {}
   },
