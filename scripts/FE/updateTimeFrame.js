@@ -37,7 +37,11 @@ module.exports = async (callback) => {
         await timeFrame.initialize();
 	  	await earningsTracker.initialize(ethieToken.address);
         await withdrawPool.initialize(staking.address, superDaoToken.address);
-        await gameStore.initialize();
+		await gameStore.initialize();
+		
+		// only need to do this step in local test
+		await timeFrame.setTimes(250, 120, 120);
+		
 	  	callback();
     }
     catch(e){callback(e)}
