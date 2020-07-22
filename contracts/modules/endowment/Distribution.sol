@@ -24,6 +24,7 @@ import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
 import "../gamemanager/GameStore.sol";
 import "../endowment/HoneypotAllocationAlgo.sol";
+import "./Multisig5of12.sol";
 
 /**
  * @title Distribution Contract
@@ -41,6 +42,14 @@ contract Distribution is Proxied {
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
     GameStore public gameStore;
+    Multisig5of12 public multiSig;
+
+    modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
+        (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
+        require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
+        require(_transferNum >= _lastTransferNumber, "Transer number should be bigger than previous transfer number");
+        _;
+    }
 
     /**
     * @dev Sets related contracts
@@ -52,6 +61,7 @@ contract Distribution is Proxied {
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+        multiSig = Multisig5of12(proxy.getContract(CONTRACT_NAME_MULTISIG));
         HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).initialize();
     }
 

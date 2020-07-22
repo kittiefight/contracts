@@ -112,6 +112,9 @@ contract GameManager is Proxied, Guard {
 
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
+        // add paid ticket fee to total spent in game
+        gmSetterDB.setTotalSpentInGame(gameId, msg.value, ticketFeeKTY);
+
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
         if (gameState == 0 || gameState == 1) forfeiter.checkGameStatus(gameId, gameState);
@@ -231,9 +234,11 @@ contract GameManager is Proxied, Guard {
 
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value.sub(etherForSwap))(gameId));
-        //pay ticket fee
+        //pay betting fee
         require(endowmentFund.contributeKTY.value(etherForSwap)(sender, etherForSwap, bettingFeeKTY));
-        //require(endowmentFund.contributeKTY(sender, gameStore.getBettingFee(gameId)));
+        
+        // add betting fee to total spent in game
+        gmSetterDB.setTotalSpentInGame(gameId, etherForSwap, bettingFeeKTY);
 
         // Update Random
         HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE)).calculateCurrentRandom(gameId, randomNum);

@@ -47,6 +47,7 @@ const Router = artifacts.require('UniswapV2Router01')
 const Dai = artifacts.require('Dai')
 const DaiWethPair = artifacts.require('IDaiWethPair')
 const DaiWethOracle = artifacts.require('DaiWethOracle')
+const MultiSig = artifacts.require('Multisig5of12')
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -159,6 +160,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(Router))
         .then(() => deployer.deploy(Dai, 1))
         .then(() => deployer.deploy(DaiWethOracle))
+        .then(() => deployer.deploy(MultiSig))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address);
@@ -204,6 +206,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('WETH9', WETH.address)
             await proxy.addContract('Dai', Dai.address)
             await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
+            await proxy.addContract('Multisig5of12', MultiSig.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -324,6 +327,10 @@ module.exports = (deployer, network, accounts) => {
             escrow = await Escrow.deployed()
             console.log(escrow.address)
 
+            // Multi-Sig
+            multiSig = await MultiSig.deployed()
+            console.log(multiSig.address)
+
 
             console.log('\nSetting Proxy...');
             await genericDB.setProxy(proxy.address)
@@ -355,6 +362,7 @@ module.exports = (deployer, network, accounts) => {
             await ktyWethOracle.setProxy(proxy.address)
             await ktyUniswap.setProxy(proxy.address)
             await daiWethOracle.setProxy(proxy.address)
+            await multiSig.setProxy(proxy.address)
 
             console.log("Proxy: ", proxy.address);
 
@@ -388,7 +396,7 @@ module.exports = (deployer, network, accounts) => {
             await register.addAdmin(accounts[0])
 
             console.log('\nUpgrading Escrow...');
-            await endowmentFund.initUpgradeEscrow(escrow.address)
+            await endowmentFund.initUpgradeEscrow(escrow.address, 0)
             //Transfer KTY
             await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
             await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);

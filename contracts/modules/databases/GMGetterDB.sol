@@ -22,6 +22,7 @@ import "./ProfileDB.sol";
 import "../registration/Register.sol";
 import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
+import "../endowment/KtyUniswap.sol";
 
 /**
  * @dev Getters for game instances
@@ -232,6 +233,13 @@ contract GMGetterDB is Proxied {
     initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
   }
 
+  function getInitialHoneypotKTYInEther(uint256 gameId)
+      public view returns (uint256)
+  {
+    (,uint256 _initialKTY) = getInitialHoneypot(gameId);
+    return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
+  }
+
   function getHoneypotInfo(uint256 gameId)
     public view
     returns(uint honeypotId, uint status, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal, uint expTime)
@@ -282,6 +290,51 @@ contract GMGetterDB is Proxied {
     isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
     uint civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
     isVerified = civicId > 0;
+  }
+
+  function getLastGameID()
+    public view returns (uint256)
+  {
+    (,uint256 _prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, true);
+    return _prevGameId;
+  }
+
+  function getTotalGames()
+    public view returns (uint256)
+  {
+    return getLastGameID();
+  }
+
+  ///@dev return total Spent in ether in a game with gameId
+  function getTotalSpentInGame(uint256 gameId)
+      public view returns (uint256)
+  {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
+  }
+
+  ///@dev return total uniswap auto-swapped KTY in a game with gameId
+  function getTotalSwappedKtyInGame(uint256 gameId)
+      public view returns (uint256)
+  {
+    return genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
+  }
+
+
+  ///@dev return listing fee in ether and swapped listing fee KTY for each kittie with kittieId listed
+  function getKittieListingFee(uint256 kittieId)
+      public view returns (uint256, uint256)
+  {
+    uint256 _listingFeeEther = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(kittieId, "kittieListingFeeEther")));
+    uint256 _listingFeeKty = genericDB.getUintStorage(
+      CONTRACT_NAME_GM_SETTER_DB,
+      keccak256(abi.encodePacked(kittieId, "kittieListingFeeKty")));
+    return (_listingFeeEther, _listingFeeKty);
   }
 
 }

@@ -350,11 +350,11 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
-     * @dev calculates the total interest accumulated for all Ethie Token NFTs in the latest 250 epochs
-     * @return uint256 total interest accumulated for all Ethie Token NFTs in the last 250 epochs
+     * @dev calculates the total interest accumulated for all Ethie Token NFTs
+     * @return uint256 total interest accumulated for all Ethie Token NFTs
      */
     function viewTotalInterests() public view returns (uint256) {
-        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        uint256 activeEpochID = getCurrentEpoch();
         uint256 totalInterest = 0;
         uint256 startID = activeEpochID < 250 ? 0 : activeEpochID - 250;
         for (uint256 i = startID; i < activeEpochID; i++) {
@@ -366,6 +366,15 @@ contract EarningsTracker is Proxied, Guard {
     }
 
     /**
+     * @dev calculates the total interest accumulated for all Ethie Token NFTs in one epoch with _epochID
+     * @param _epochID uint256 epoch ID of the interest of the pooled ether
+     * @return uint256 total interest accumulated for all Ethie Token NFTs in one epoch with _epochID
+     */
+    function viewInterest(uint256 _epochID) public view returns (uint256) {
+        return amountsPerEpoch[_epochID].interest;
+    }
+
+    /**
      * @dev gets principal ethers locked plus the interest accumulated for an Ethie Token NFT
      * @param _eth_amount uint256 the amount of ethers associated with this NFT
      * with this NFT has been locked
@@ -374,7 +383,7 @@ contract EarningsTracker is Proxied, Guard {
     function calculateTotal(uint256 _eth_amount, uint256 _startingEpoch)
         public view returns (uint256)
     {
-        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        uint256 activeEpochID = getCurrentEpoch();
         if(_startingEpoch > activeEpochID) {
             return _eth_amount;
         }
@@ -388,6 +397,29 @@ contract EarningsTracker is Proxied, Guard {
             }
             return proportion;
         }
+    }
+
+    /**
+     * @dev calculates the total payout (i.e., total interest) for all lenders in the last weekly epoch
+     * @return uint256 total payout for all lenders in the last weekly epoch
+     */
+    function getLastWeeklyLenderPayOut()
+        public view returns (uint256)
+    {
+        uint256 lastEpochID = getCurrentEpoch() == 0 ? 0 : getCurrentEpoch().sub(1);
+        uint256 lastWeeklyPayOut = amountsPerEpoch[lastEpochID].interest;
+        return lastWeeklyPayOut;
+    }
+
+    /**
+     * @dev calculates the pooled ether for all lenders (i.e, investment) in an epoch with _epochID
+     * @param _epochID uint256 epoch ID of the pooled ether
+     * @return uint256 total payout for all lenders in all epochs
+     */
+    function getPooledEther(uint256 _epochID)
+        public view returns (uint256)
+    {
+        return amountsPerEpoch[_epochID].investment;
     }
 
     /**

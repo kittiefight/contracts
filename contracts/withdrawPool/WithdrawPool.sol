@@ -335,7 +335,7 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     /**
-     * @dev This function is returning the Ether that has been claimed by this contract till now.
+     * @dev This function is returning the Ether that has been allocated to all pools.
      */
     function getEthPaidOut()
     external
@@ -492,6 +492,7 @@ contract WithdrawPool is Proxied, Guard {
         weeklyPools[pool_id].initialETHadded = true;
         weeklyPools[pool_id].initialETHAvailable = totalETHtoPool;
         weeklyPools[pool_id].ETHAvailable = totalETHtoPool;
+
         emit AddETHtoPool(pool_id, totalETHtoPool);
         return true;
     }

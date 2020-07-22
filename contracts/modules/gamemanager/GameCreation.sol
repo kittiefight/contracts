@@ -120,6 +120,8 @@ contract GameCreation is Proxied, Guard {
 
         scheduler.addKittyToList(kittieId, player);
 
+        gmSetterDB.recordKittieListingFee(kittieId, msg.value, listingFeeKTY);
+
         emit NewListing(kittieId, player, now);
     }
 
@@ -183,6 +185,8 @@ contract GameCreation is Proxied, Guard {
         // update betting fee dynamically as a percentage of initial honeypot size
         gameStore.updateBettingFee(gameId);
 
+        recordListingFeeInGame(gameId, kittyRed, kittyBlack);
+
         emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
     }
 
@@ -220,6 +224,18 @@ contract GameCreation is Proxied, Guard {
 
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
+    }
+
+    function recordListingFeeInGame(uint256 _gameId, uint256 _kittyRed, uint256 _kittyBlack)
+        internal
+    {
+        // add kittie listing fee to total spent ether in game
+        (uint256 _listingFeeEthRed, uint256 _listingFeeKtyRed) = gmGetterDB.getKittieListingFee(_kittyRed);
+        gmSetterDB.setTotalSpentInGame(_gameId, _listingFeeEthRed, _listingFeeKtyRed);
+
+        // add uniswap swapped kittie listing fee in KTY in game
+        (uint256 _listingFeeEthBlack, uint256 _listingFeeKtyBlack) = gmGetterDB.getKittieListingFee(_kittyBlack);
+        gmSetterDB.setTotalSpentInGame(_gameId, _listingFeeEthBlack, _listingFeeKtyBlack);
     }
 
 
