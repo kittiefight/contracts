@@ -2397,7 +2397,7 @@ contract("GameManager", accounts => {
     );
   });
 
-  it("sets new epoch when finalized", async () => {
+  it("sets no new epoch when freeze", async () => {
     let _wait = await timeFrame.timeUntilEpochEnd(1);
     _wait = _wait.toNumber();
     console.log(_wait);
@@ -2450,7 +2450,7 @@ contract("GameManager", accounts => {
     console.log("********************************************************\n");
   });
 
-  it("creates a new pool", async () => {
+  it("creates no new pool during feeze", async () => {
     const numberOfDissolvedPools = await withdrawPool.getNumberOfDissolvedPools();
     console.log(
       "Total number of dissolved Pools:",
@@ -2512,6 +2512,7 @@ contract("GameManager", accounts => {
 
   // ============================== System Unfreezes ==============================
   it("system unfreezes", async () => {
+    await timeout(100);
     console.log("KittieFight System Unfreezes...");
     freezeInfo.setFrozen(false);
   })
