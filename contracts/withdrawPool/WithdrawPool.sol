@@ -15,6 +15,7 @@ import "../interfaces/ERC20Standard.sol";
 import "../modules/databases/EndowmentDB.sol";
 import "../modules/endowment/EndowmentFund.sol";
 import "../modules/endowment/EarningsTracker.sol";
+import "../modules/databases/EarningsTrackerDB.sol";
 
 contract WithdrawPool is Proxied, Guard {
 
@@ -35,6 +36,8 @@ contract WithdrawPool is Proxied, Guard {
     EndowmentFund public endowmentFund;
 
     EarningsTracker public earningsTracker;
+
+    EarningsTrackerDB public earningsTrackerDB;
 
 
     uint256 staking_period; //Time needed a staker to stake, so as to be able to claim.
@@ -140,6 +143,7 @@ contract WithdrawPool is Proxied, Guard {
         superDaoToken = ERC20Standard(_superDaoToken);
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         earningsTracker = EarningsTracker(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER));
+        earningsTrackerDB = EarningsTrackerDB(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER_DB));
     }
 
     /*                                                   CONSTRUCTOR                                                  */
@@ -250,7 +254,7 @@ contract WithdrawPool is Proxied, Guard {
         withdrawalPool.dateDissolved = withdrawalPool.dateAvailable.add(timeFrame.REST_DAY());
         
         weeklyPools[0] = withdrawalPool;
-        earningsTracker.setInvestment(0, endowmentDB.checkInvestment(0));
+        earningsTrackerDB.setInvestment(0, endowmentDB.checkInvestment(0));
 
         noOfPools = noOfPools.add(1);
 
@@ -285,7 +289,7 @@ contract WithdrawPool is Proxied, Guard {
                 weeklyPools[pool_id].dateAvailable.add(timeFrame.REST_DAY());
         }
         timeFrame.unlockAndAddDelay(pool_id, delay);
-        earningsTracker.setInterest(pool_id, total);
+        earningsTrackerDB.setInterest(pool_id, total);
      }
 
     /**
@@ -318,7 +322,7 @@ contract WithdrawPool is Proxied, Guard {
         weeklyPools[_newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
         weeklyPools[_newPoolId].dateDissolved = weeklyPools[_newPoolId].dateAvailable.add(timeFrame.REST_DAY());
 
-        earningsTracker.setInvestment(_newPoolId, endowmentDB.checkInvestment(_newPoolId));
+        earningsTrackerDB.setInvestment(_newPoolId, endowmentDB.checkInvestment(_newPoolId));
 
         noOfPools = noOfPools.add(1);
 
@@ -519,7 +523,7 @@ contract WithdrawPool is Proxied, Guard {
         weeklyPools[newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
         weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(timeFrame.REST_DAY());
 
-        earningsTracker.setInvestment(newPoolId, endowmentDB.checkInvestment(newPoolId));
+        earningsTrackerDB.setInvestment(newPoolId, endowmentDB.checkInvestment(newPoolId));
         noOfPools = noOfPools.add(1);
 
         emit PoolDissolved(pool_id, now);

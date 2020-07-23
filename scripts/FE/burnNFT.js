@@ -1,6 +1,7 @@
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const MockStaking = artifacts.require("MockStaking");
 const EarningsTracker = artifacts.require("EarningsTracker");
+const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
 const GameVarAndFee = artifacts.require("GameVarAndFee");
@@ -37,6 +38,7 @@ module.exports = async (callback) => {
     let superDaoToken = await SuperDaoToken.deployed();
     let staking = await MockStaking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
+    let earningsTrackerDB = await EarningsTrackerDB.deployed();
     let ethieToken = await EthieToken.deployed();
     let withdrawPool = await WithdrawPool.deployed();
     let gameVarAndFee = await GameVarAndFee.deployed();
@@ -65,9 +67,9 @@ module.exports = async (callback) => {
     let owner = await ethieToken.ownerOf(tokenID);
     console.log(owner);
 
-    let valueReturned = await earningsTracker.calculateTotal(web3.utils.toWei("5"), 0);
+    let valueReturned = await earningsTrackerDB.calculateTotal(web3.utils.toWei("5"), 0);
     console.log(web3.utils.fromWei(valueReturned.toString()));
-    let burn_fee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let burn_fee = await earningsTrackerDB.KTYforBurnEthie(tokenID);
     let ether_burn_ethie = burn_fee[0]
     let ktyFee = burn_fee[1]
     // await kittieFightToken.transfer(owner, ktyFee.toString(), {

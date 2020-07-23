@@ -3,6 +3,7 @@ const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require('KittieFightToken');
 const MockStaking = artifacts.require("MockStaking");
 const EarningsTracker = artifacts.require("EarningsTracker");
+const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
 const EthieToken = artifacts.require("EthieToken");
 const BigNumber = web3.utils.BN;
 require("chai")
@@ -32,6 +33,7 @@ module.exports = async (callback) => {
     let superDaoToken = await SuperDaoToken.deployed();
     let staking = await MockStaking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
+    let earningsTrackerDB = await EarningsTrackerDB.deployed();
     let ethieToken = await EthieToken.deployed();
 
     accounts = await web3.eth.getAccounts();
@@ -70,7 +72,7 @@ module.exports = async (callback) => {
     }
 
     await ethieToken.addMinter(earningsTracker.address);
-    await earningsTracker.setCurrentFundingLimit();
+    await earningsTrackerDB.setCurrentFundingLimit();
 
     for (let i = 0; i < 6; i++) {
       let ethAmount = new BigNumber(web3.utils.toWei('10'));
