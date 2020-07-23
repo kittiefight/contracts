@@ -35,7 +35,7 @@ module.exports = async (callback) => {
 
         console.log("Initialize...");
         await timeFrame.initialize();
-	  	await earningsTracker.initialize(ethieToken.address);
+	  	await earningsTracker.initialize();
         await withdrawPool.initialize(staking.address, superDaoToken.address);
 		await gameStore.initialize();
 		

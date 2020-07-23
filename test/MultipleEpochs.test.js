@@ -42,6 +42,7 @@ const WithdrawPool = artifacts.require("WithdrawPool");
 const MockStaking = artifacts.require("MockStaking");
 const EthieToken = artifacts.require("EthieToken");
 const EarningsTracker = artifacts.require("EarningsTracker");
+const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
 const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("IUniswapV2Pair");
@@ -119,6 +120,7 @@ let proxy,
   withdrawPool,
   staking,
   earningsTracker,
+  earningsTrackerDB,
   ethieToken,
   factory,
   weth,
@@ -153,6 +155,7 @@ contract("GameManager", accounts => {
     getterDB = await GMGetterDB.deployed();
     setterDB = await GMSetterDB.deployed();
     kittieHellDB = await KittieHellDB.deployed();
+    earningsTrackerDB = await EarningsTrackerDB.deployed();
 
     // CRONJOB
     cronJob = await CronJob.deployed();
@@ -406,7 +409,7 @@ contract("GameManager", accounts => {
     }
 
     await ethieToken.addMinter(earningsTracker.address);
-    await earningsTracker.setCurrentFundingLimit();
+    await earningsTrackerDB.setCurrentFundingLimit();
 
     for (let i = 0; i < 6; i++) {
       let ethAmount = web3.utils.toWei(String(10 + i), "ether");
@@ -1494,12 +1497,12 @@ contract("GameManager", accounts => {
     let owner = await ethieToken.ownerOf(tokenID);
     console.log(owner);
 
-    let valueReturned = await earningsTracker.calculateTotal(
+    let valueReturned = await earningsTrackerDB.calculateTotal(
       web3.utils.toWei("5"),
       0
     );
     console.log(web3.utils.fromWei(valueReturned.toString()));
-    let burn_fee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let burn_fee = await earningsTrackerDB.KTYforBurnEthie(tokenID);
     let ether_burn_ethie = burn_fee[0];
     let ktyFee = burn_fee[1];
 
@@ -1577,7 +1580,7 @@ contract("GameManager", accounts => {
 
     console.log("Initialize...");
     await timeFrame.initialize();
-    await earningsTracker.initialize(ethieToken.address);
+    await earningsTracker.initialize();
     await withdrawPool.initialize(staking.address, superDaoToken.address);
     await gameStore.initialize();
 
@@ -2788,12 +2791,12 @@ contract("GameManager", accounts => {
     let owner = await ethieToken.ownerOf(tokenID);
     console.log(owner);
 
-    let valueReturned = await earningsTracker.calculateTotal(
+    let valueReturned = await earningsTrackerDB.calculateTotal(
       web3.utils.toWei("3"),
       0
     );
     console.log(web3.utils.fromWei(valueReturned.toString()));
-    let burn_fee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let burn_fee = await earningsTrackerDB.KTYforBurnEthie(tokenID);
     let ether_burn_ethie = burn_fee[0];
     let ktyFee = burn_fee[1];
 
@@ -4067,12 +4070,12 @@ contract("GameManager", accounts => {
     let owner = await ethieToken.ownerOf(tokenID);
     console.log(owner);
 
-    let valueReturned = await earningsTracker.calculateTotal(
+    let valueReturned = await earningsTrackerDB.calculateTotal(
       web3.utils.toWei("5"),
       0
     );
     console.log(web3.utils.fromWei(valueReturned.toString()));
-    let burn_fee = await earningsTracker.KTYforBurnEthie(tokenID);
+    let burn_fee = await earningsTrackerDB.KTYforBurnEthie(tokenID);
     let ether_burn_ethie = burn_fee[0];
     let ktyFee = burn_fee[1];
 
