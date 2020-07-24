@@ -17,6 +17,7 @@ module.exports = {
       },
     }
   },
+  plugins: ["truffle-contract-size"],
   networks: {
     mainnet: {
       provider: providerFactory("mainnet"),
