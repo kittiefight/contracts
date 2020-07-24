@@ -250,6 +250,25 @@ contract KittieHellDB is Proxied, Guard {
     return false;
   }
 
+  /**
+   * @author @pash7ka
+   * @notice Returns Id of scheduled cron job, which will make kittie a ghost
+   * @param _kittieID the kittieID of the kittie
+   * @return Id of scheduled cron job, which will make kittie a ghost
+   */
+  function getGhostifyJob(uint256 _kittieID) public view returns(uint256) {
+    return genericDB.getUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostifyJob")));  
+  }
+
+  /**
+   * @author @pash7ka
+   * @notice Sets Id of scheduled cron job, which will make kittie a ghost
+   * @param _kittieID the kittieID of the kittie
+   */
+  function setGhostifyJob(uint256 _kittieID, uint256 job) public onlyContract(CONTRACT_NAME_KITTIEHELL) {
+    genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostifyJob")), job);  
+  }
+
   event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);
 }
 

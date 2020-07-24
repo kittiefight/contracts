@@ -37,9 +37,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
     EndowmentFund public endowmentFund;
     address[] public path;
 
-    uint256 public scheduledJob;
-    mapping (uint => uint) public scheduledJobs;
-
     struct KittyStatus {
         address owner;  // This is the owner before the kitty got transferred to us
         bool dead;      // This is the mortality status of the kitty
@@ -215,8 +212,10 @@ contract KittieHell is BasicControls, Proxied, Guard {
         cryptoKitties.transfer(kitties[_kittyID].owner, _kittyID);
         kitties[_kittyID].owner = address(0);
         if(kitties[_kittyID].dead){
-            CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-            cron.deleteCronJob(CONTRACT_NAME_KITTIEHELL, scheduledJobs[_kittyID]);
+            uint256 job = kittieHellDB.getGhostifyJob(_kittyID);
+            if(job != 0) {
+                cronJob.deleteCronJob(CONTRACT_NAME_KITTIEHELL, job);
+            }
         }
         emit KittyReleased(_kittyID);
         return true;
@@ -241,12 +240,11 @@ contract KittieHell is BasicControls, Proxied, Guard {
         internal
         returns(bool)
     {
-        CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-        scheduledJob = cron.addCronJob(
+        uint256 scheduledJob = cronJob.addCronJob(
             CONTRACT_NAME_KITTIEHELL,
             now.add(_delay),
             abi.encodeWithSignature("becomeGhost(uint256)", _kittyID));
-        scheduledJobs[_kittyID] = scheduledJob;
+        kittieHellDB.setGhostifyJob(_kittyID, scheduledJob);
         emit Scheduled(scheduledJob, now.add(_delay), _kittyID);
         return true;
     }
