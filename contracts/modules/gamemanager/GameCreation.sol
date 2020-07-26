@@ -61,7 +61,7 @@ contract GameCreation is Proxied, Guard {
     event NewListing(uint indexed kittieId, address indexed owner, uint timeListed);
     // event Scheduled(uint indexed jobId, uint jobTime, uint indexed gameId, string job);
 
-    mapping(uint256 => uint256) public cronJobsForGames;
+    //mapping(uint256 => uint256) public cronJobsForGames; //using gmGetterDB.getCronJobForGame()/gmSetterDB.setCronJobForGame() instead
 
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
@@ -249,7 +249,7 @@ contract GameCreation is Proxied, Guard {
             (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
             uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, preStartTime, abi.encodeWithSignature("updateGameStateCron(uint256)", gameId));
             // emit Scheduled(scheduledJob, preStartTime, gameId, "Change state to 1");
-            cronJobsForGames[gameId] = scheduledJob;
+            gmSetterDB.setCronJobForGame(gameId, scheduledJob);
         }
 
         if(state == 1){
@@ -259,7 +259,7 @@ contract GameCreation is Proxied, Guard {
             (uint startTime,,) = gmGetterDB.getGameTimes(gameId);
             uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, startTime, abi.encodeWithSignature("callForfeiterCron(uint256)", gameId));
             // emit Scheduled(scheduledJob, startTime, gameId, "Change state to 2");
-            cronJobsForGames[gameId] = scheduledJob;
+            gmSetterDB.setCronJobForGame(gameId, scheduledJob);
         }
         if(state == 2){
             //If it is MAIN_GAME we endgame immediately
@@ -267,7 +267,7 @@ contract GameCreation is Proxied, Guard {
             (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
             uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, endTime, abi.encodeWithSignature("callGameEndCron(uint256)", gameId));
             // emit Scheduled(scheduledJob, endTime, gameId, "Change state to 3");
-            cronJobsForGames[gameId] = scheduledJob;
+            gmSetterDB.setCronJobForGame(gameId, scheduledJob);
         }
     }
 
@@ -303,18 +303,19 @@ contract GameCreation is Proxied, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         //Reschedule CronJob when more time added
-        uint256 jobId = cronJobsForGames[gameId];
+
+        uint256 jobId = gmGetterDB.getCronJobForGame(gameId);
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
         uint newJobId = cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
         // emit Scheduled(newJobId, endTime, gameId, "Change state to 3");
-        cronJobsForGames[gameId] = newJobId;
+        gmSetterDB.setCronJobForGame(gameId, newJobId);
     }
 
     function deleteCronjob(uint gameId)
         external
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
-        uint256 jobId = cronJobsForGames[gameId];
+        uint256 jobId = gmGetterDB.getCronJobForGame(gameId);
         cronJob.deleteCronJob(CONTRACT_NAME_GAMECREATION, jobId);
     }
 

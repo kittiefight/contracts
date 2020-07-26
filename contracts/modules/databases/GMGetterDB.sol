@@ -103,6 +103,10 @@ contract GMGetterDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")));
   }
 
+  function getCronJobForGame(uint256 gameId) public view returns(uint256){
+    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "cronJobForGame")));
+  }
+
   /**
    * @dev get fighting kittyId for specific game and player
    */
