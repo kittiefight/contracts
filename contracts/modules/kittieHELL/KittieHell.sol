@@ -58,8 +58,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
         gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         kittieHellDB = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
-        delete path;
 
+        delete path; //Required to allow calling initialize() several times
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
         path.push(_WETH);
         address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
