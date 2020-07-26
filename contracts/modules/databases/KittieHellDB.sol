@@ -269,6 +269,14 @@ contract KittieHellDB is Proxied, Guard {
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostifyJob")), job);  
   }
 
+  function getKittieStatus(uint256 _kittieID) external view onlyContract(CONTRACT_NAME_KITTIEHELL) returns(bytes memory){
+    return genericDB.getBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")));  
+  }
+
+  function setKittieStatus(uint256 _kittieID, bytes calldata encodedStatus) external onlyContract(CONTRACT_NAME_KITTIEHELL) {
+    genericDB.setBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")), encodedStatus);  
+  }
+
   event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);
 }
 

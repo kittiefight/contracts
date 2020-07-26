@@ -39,14 +39,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
     struct KittyStatus {
         address owner;  // This is the owner before the kitty got transferred to us
+        uint deadAt;    // Timestamp when the kitty is dead.
         bool dead;      // This is the mortality status of the kitty
         bool playing;   // This is the current game participation status of the kitty
         bool ghost;     // This is set to "destroy" or permanent kill the kitty
-        uint deadAt;    // Timestamp when the kitty is dead.
     }
 
     /* This is all the kitties owned and managed by the game */
-    mapping(uint256 => KittyStatus) public kitties;
+    //mapping(uint256 => KittyStatus) public kitties; //moved to KittieHellDB
 
     function initialize() external onlyOwner {
         cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
@@ -97,7 +97,9 @@ contract KittieHell is BasicControls, Proxied, Guard {
     {
         cryptoKitties.transferFrom(owner, address(this), _kittyID);
         require(cryptoKitties.ownerOf(_kittyID) == address(this));
-        kitties[_kittyID].owner = owner;
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        ks.owner = owner;
+        kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
         emit KittyAcquired(_kittyID);
         return true;
     }
@@ -113,7 +115,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
     view
     onlyOwnedKitty(_kittyID)
     returns (bool) {
-        return kitties[_kittyID].dead;
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        return ks.dead;
     }
 
     /**
@@ -128,8 +131,10 @@ contract KittieHell is BasicControls, Proxied, Guard {
     onlyOwnedKitty(_kittyID)
     onlyContract(CONTRACT_NAME_GAMECREATION)
     returns (bool) {
-        kitties[_kittyID].dead = true;
-        kitties[_kittyID].deadAt = now;
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        ks.dead = true;
+        ks.deadAt = now;
+        kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
         scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
@@ -142,7 +147,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @return the kitty's death time
      */
     function kittyDeathTime(uint256 _kittyID) public view returns(uint) {
-        return kitties[_kittyID].deadAt;
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        return ks.deadAt;
     }
 
      /**
@@ -192,9 +198,15 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
         kittieHellDB.lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);
-        kitties[_kittyID].dead = false;
-        emit KittyResurrected(_kittyID);
+        resurrectKitty(_kittyID);
         return true;
+    }
+
+    function resurrectKitty(uint256 _kittyID) private {
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        ks.dead = false;
+        kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
+        emit KittyResurrected(_kittyID);
     }
 
     /**
@@ -209,9 +221,11 @@ contract KittieHell is BasicControls, Proxied, Guard {
         internal
         onlyOwnedKitty(_kittyID)
     returns (bool) {
-        cryptoKitties.transfer(kitties[_kittyID].owner, _kittyID);
-        kitties[_kittyID].owner = address(0);
-        if(kitties[_kittyID].dead){
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        cryptoKitties.transfer(ks.owner, _kittyID);
+        ks.owner = address(0);
+        kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
+        if(ks.dead){
             uint256 job = kittieHellDB.getGhostifyJob(_kittyID);
             if(job != 0) {
                 cronJob.deleteCronJob(CONTRACT_NAME_KITTIEHELL, job);
@@ -219,6 +233,15 @@ contract KittieHell is BasicControls, Proxied, Guard {
         }
         emit KittyReleased(_kittyID);
         return true;
+    }
+
+    /**
+     * @dev This will be used for upgrades only
+     */
+    function moveKitties(uint256[] calldata _kittyIDs, address newKittieHell) external onlySuperAdmin {
+        for(uint256 i=0; i<_kittyIDs.length; i++){
+            cryptoKitties.transfer(newKittieHell, _kittyIDs[i]);
+        }
     }
 
     function releaseKittyGameManager(uint256 _kittyID)
@@ -266,9 +289,11 @@ contract KittieHell is BasicControls, Proxied, Guard {
         //unnecessary to check kittie expiration time since this is ensured by cronjob
         //uint kittieExpiry = gameStore.getKittieExpirationTime(_gameId);
 	    //require(now.sub(kitties[_kittyID].deadAt) > kittieExpiry);
-        kitties[_kittyID].ghost = true;
-        cryptoKitties.transfer(address(kittieHellDB), _kittyID);
-        kittieHellDB.loserKittieToHell(_kittyID, kitties[_kittyID].owner);
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        ks.ghost = true;
+        kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
+        //cryptoKitties.transfer(address(kittieHellDB), _kittyID); // Now ghosts are also stored in KittieHell, so that we can revive them later
+        kittieHellDB.loserKittieToHell(_kittyID, ks.owner);
         emit KittyPermanentDeath(_kittyID);
         return true;
     }
@@ -279,11 +304,27 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @return the previous kitty owner, the kitty dead status, the kitty playing status, the kitty ghost status, and the kitty death time   
      */
     function getKittyStatus(uint256 _kittyID) public view returns (address _owner, bool _dead, bool _playing, bool _ghost, uint _deadAt) {
-        _owner = kitties[_kittyID].owner;
-        _dead = kitties[_kittyID].dead;
-        _playing = kitties[_kittyID].playing;
-        _ghost = kitties[_kittyID].ghost;
-        _deadAt = kitties[_kittyID].deadAt;
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        _owner = ks.owner;
+        _dead = ks.dead;
+        _playing = ks.playing;
+        _ghost = ks.ghost;
+        _deadAt = ks.deadAt;
+    }
+
+
+    function encodeKittieStatus(KittyStatus memory status) internal pure returns(bytes memory){
+        return abi.encode(
+            status.owner,
+            status.deadAt,
+            status.dead,
+            status.playing,
+            status.ghost
+        );
+    }
+    function decodeKittieStatus(bytes memory encStatus) internal pure returns(KittyStatus memory status){
+        (address owner, uint deadAt, bool dead, bool playing, bool ghost) = abi.decode(encStatus, (address, uint, bool, bool, bool));
+        status = KittyStatus(owner, deadAt, dead, playing, ghost);
     }
 
     /*
@@ -291,7 +332,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * the kitty is owned by the game
      */
     modifier onlyOwnedKitty(uint256 _kittyID) {
-        require(kitties[_kittyID].owner != address(0));
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        require(ks.owner != address(0));
         _;
     }
 
@@ -300,7 +342,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * the kitty is not already owned by the game
      */
     modifier onlyNotOwnedKitty(uint256 _kittyID) {
-        require(kitties[_kittyID].owner == address(0));
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        require(ks.owner == address(0));
         _;
     }
 
@@ -309,7 +352,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * the kitty is not permanent killed
      */
     modifier onlyNotGhostKitty(uint256 _kittyID) {
-        require(!kitties[_kittyID].ghost);
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        require(!ks.ghost);
         _;
     }
 
@@ -318,7 +362,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * the kitty is not temporary killed
      */
     modifier onlyNotKilledKitty(uint256 _kittyID) {
-        require(!kitties[_kittyID].dead);
+        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
+        require(!ks.dead);
         _;
     }
 
