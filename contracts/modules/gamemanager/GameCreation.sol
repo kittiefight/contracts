@@ -59,7 +59,7 @@ contract GameCreation is Proxied, Guard {
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
     event NewListing(uint indexed kittieId, address indexed owner, uint timeListed);
-    event Scheduled(uint indexed jobId, uint jobTime, uint indexed gameId, string job);
+    // event Scheduled(uint indexed jobId, uint jobTime, uint indexed gameId, string job);
 
     mapping(uint256 => uint256) public cronJobsForGames;
 
@@ -248,7 +248,7 @@ contract GameCreation is Proxied, Guard {
         if(state == 0){
             (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
             uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, preStartTime, abi.encodeWithSignature("updateGameStateCron(uint256)", gameId));
-            emit Scheduled(scheduledJob, preStartTime, gameId, "Change state to 1");
+            // emit Scheduled(scheduledJob, preStartTime, gameId, "Change state to 1");
             cronJobsForGames[gameId] = scheduledJob;
         }
 
@@ -258,7 +258,7 @@ contract GameCreation is Proxied, Guard {
             //If they both press start this job is cancelled (In start function of GameManager)
             (uint startTime,,) = gmGetterDB.getGameTimes(gameId);
             uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, startTime, abi.encodeWithSignature("callForfeiterCron(uint256)", gameId));
-            emit Scheduled(scheduledJob, startTime, gameId, "Change state to 2");
+            // emit Scheduled(scheduledJob, startTime, gameId, "Change state to 2");
             cronJobsForGames[gameId] = scheduledJob;
         }
         if(state == 2){
@@ -266,7 +266,7 @@ contract GameCreation is Proxied, Guard {
             //We reschedule this Job if game extends (In checkPerformance of GameManager)
             (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
             uint scheduledJob = cronJob.addCronJob(CONTRACT_NAME_GAMECREATION, endTime, abi.encodeWithSignature("callGameEndCron(uint256)", gameId));
-            emit Scheduled(scheduledJob, endTime, gameId, "Change state to 3");
+            // emit Scheduled(scheduledJob, endTime, gameId, "Change state to 3");
             cronJobsForGames[gameId] = scheduledJob;
         }
     }
@@ -306,7 +306,7 @@ contract GameCreation is Proxied, Guard {
         uint256 jobId = cronJobsForGames[gameId];
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
         uint newJobId = cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
-        emit Scheduled(newJobId, endTime, gameId, "Change state to 3");
+        // emit Scheduled(newJobId, endTime, gameId, "Change state to 3");
         cronJobsForGames[gameId] = newJobId;
     }
 
