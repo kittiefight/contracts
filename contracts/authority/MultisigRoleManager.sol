@@ -70,7 +70,7 @@ contract MultisigRoleManager is Guard {
     }
 
     function hasRole(address who, string memory role) private view returns (bool) {
-        return RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).hasRole(role, getOriginalSender());
+        return RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).hasRole(role, who);
     }
 
 }
