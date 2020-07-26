@@ -69,6 +69,10 @@ contract MultisigRoleManager is Guard {
         }
     }
 
+    function totalRoleMoveRequests() public view returns (uint256) {
+        return requests.length;
+    }
+
     function hasRole(address who, string memory role) private view returns (bool) {
         return RoleDB(proxy.getContract(CONTRACT_NAME_ROLE_DB)).hasRole(role, who);
     }
