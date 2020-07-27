@@ -39,6 +39,9 @@ module.exports = async callback => {
     let register = await Register.deployed();
     let roleDB = await RoleDB.deployed();
 
+    let isSuperAdmin0 = await roleDB.hasRole("super_admin", accounts[0])
+    console.log("Is accounts[0] super admin?", isSuperAdmin0)
+
     let isSuperAdmin20 = await roleDB.hasRole("super_admin", accounts[20])
     console.log("Is accounts[20] super admin?", isSuperAdmin20)
 
@@ -101,6 +104,9 @@ module.exports = async callback => {
       console.log("    id ", e.returnValues.id);
       console.log("========================\n");
     });
+
+    isSuperAdmin0 = await roleDB.hasRole("super_admin", accounts[0])
+    console.log("Is accounts[0] super admin?", isSuperAdmin0)
 
     isSuperAdmin20 = await roleDB.hasRole("super_admin", accounts[20])
     console.log("Is accounts[20] super admin?", isSuperAdmin20)
