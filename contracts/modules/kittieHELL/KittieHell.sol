@@ -323,8 +323,18 @@ contract KittieHell is BasicControls, Proxied, Guard {
         );
     }
     function decodeKittieStatus(bytes memory encStatus) internal pure returns(KittyStatus memory status){
-        (address owner, uint deadAt, bool dead, bool playing, bool ghost) = abi.decode(encStatus, (address, uint, bool, bool, bool));
-        status = KittyStatus(owner, deadAt, dead, playing, ghost);
+        if(encStatus.length == 0) {
+            status = KittyStatus({
+                owner: address(0),
+                deadAt: 0,
+                dead: false,
+                playing: false,
+                ghost:false
+            });
+        }else{
+            (address owner, uint deadAt, bool dead, bool playing, bool ghost) = abi.decode(encStatus, (address, uint, bool, bool, bool));
+            status = KittyStatus(owner, deadAt, dead, playing, ghost);
+        }
     }
 
     /*
