@@ -53,10 +53,6 @@ module.exports = async (callback) => {
       pool_0_details.epochID.toString()
     );
     console.log(
-      "block number when this pool was created",
-      pool_0_details.blockNumber.toString()
-    );
-    console.log(
       "initial ether available in this pool:",
       pool_0_details.initialETHAvailable.toString()
     );

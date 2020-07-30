@@ -10,12 +10,12 @@ import "../modules/proxy/Proxied.sol";
 import "../authority/Guard.sol";
 import "../modules/datetime/TimeFrame.sol";
 import "../libs/SafeMath.sol";
-import "../interfaces/IStaking.sol";
 import "../interfaces/ERC20Standard.sol";
 import "../modules/databases/EndowmentDB.sol";
 import "../modules/endowment/EndowmentFund.sol";
 import "../modules/endowment/EarningsTracker.sol";
 import "../modules/databases/EarningsTrackerDB.sol";
+import "../stakingAragon/TimeLockManager.sol";
 
 contract WithdrawPool is Proxied, Guard {
 
@@ -25,7 +25,7 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                     START                                                      */
     /* ============================================================================================================== */
 
-    IStaking public staking;
+    TimeLockManager public timeLockManager;
 
     ERC20Standard public superDaoToken;
 
@@ -39,8 +39,6 @@ contract WithdrawPool is Proxied, Guard {
 
     EarningsTrackerDB public earningsTrackerDB;
 
-
-    uint256 staking_period; //Time needed a staker to stake, so as to be able to claim.
 
     //uint256 validClaimTime; //Valid time duration during which a staker can claim his/her dividends from a pool, after this valid time the pool will be dissolved, and unclaimed ether returned back to endowment
 
@@ -64,7 +62,6 @@ contract WithdrawPool is Proxied, Guard {
 
     struct WithdrawalPool {
         uint256 epochID;            // epochID of the epoch asscoated with this pool
-        uint256 blockNumber;        //The block number of the block in which this pool was created
         uint256 initialETHAvailable; // How much Eth this pool initially has, which is the amount of eth distributed
                                      // to this pool when the associated honeypot dissolves
         uint256 ETHAvailable;       //How much Eth this pool contains.
@@ -73,18 +70,13 @@ contract WithdrawPool is Proxied, Guard {
         bool unlocked;              //If this is true when rest_day starts stakers will be able to claim.
         bool dissolved;             //If this is true the pool has been dissolved, otherwise has not.
         uint256 dateDissolved;      //The date this pool got dissolved in unix time.
-        //uint256 stakersEligible;    //How many stakers are eligible to claim from this pool.
         uint256 stakersClaimed;     //How many stakers claimed from this pool.
         address[] allClaimedStakers; //Addresses of all stakers who have claimed from this pool.
-        //address[] eligibleStakers; //Addresses of all stakers that are eligible to claim from this pool.
     }
 
     struct Staker{
-        //uint256 stakeStartDate;        //Timestamp of the date this staker started to stake.
-        uint256 previousStartTime;      //Block Number of the block in which this staker started to stake the previous time.
-        uint256 stakeStartTime;         //Block Number of the block in which this staker started to lock superDao.
-        mapping(uint256 => bool) staking;                   //
         mapping(uint256 => bool) claimed; // true if this staker has already claimed from this pool
+        mapping(uint256 => uint256) etherClaimed; // How many ether this staker has claimed from this pool
         uint256 totalPoolsClaimed;      //From how many pools this staker claimed funds.
         uint256 currentAvailablePools;  //From how many pools this staker hasn't yet claimed, while he is eligible.
     }
@@ -93,14 +85,6 @@ contract WithdrawPool is Proxied, Guard {
 
     mapping(address => Staker) internal stakers; //Stake information about this address
 
-    // mapping(uint256 => bool) internal dissolveScheduled; //True if a pool is already scheduled for dissolve
-    // uint256 public scheduledJob;                 //Current cronJob ID of the cronJob scheduled for pool dissolving
-    // mapping (uint => uint) public scheduledJobs; // Mapping pool_id to cronJob ID which schdules dissolving this pool
-
-    //address[] internal potentialStakers; // A list of the addresses of SuperDao holders who stake their tokens,
-                                         // may not eligible for claiming yields
-                                         //if not meeting staking period requirement
-
     /*                                                 POOL VARIABLES                                                 */
     /*                                                      END                                                       */
     /* ============================================================================================================== */
@@ -108,16 +92,6 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                   MODIFIERS                                                    */
     /*                                                     START                                                      */
     /* ============================================================================================================== */
-
-    //modifier onlyCronJob() {
-      //  require(msg.sender == cronJob, "WithdrawPool: Only CronJob");
-        //_;
-    //}
-
-    //modifier onlyEndowmentFund() {
-      //  require(msg.sender == endowmentFund, "WithdrawPool: Only EndowmentFund");
-        //_;
-    //}
 
     modifier onlyActivePool(uint pool_id) {
          require(pool_id == getActivePoolID());
@@ -133,12 +107,12 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                      START                                                     */
     /* ============================================================================================================== */
 
-    function initialize(address _stakingContract, address _superDaoToken)
+    function initialize(address _timeLockManager, address _superDaoToken)
         external
         onlyOwner
     {
         timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
-        staking = IStaking(_stakingContract);
+        timeLockManager = TimeLockManager(_timeLockManager);
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         superDaoToken = ERC20Standard(_superDaoToken);
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
@@ -188,14 +162,11 @@ contract WithdrawPool is Proxied, Guard {
 
         address payable msgSender = address(uint160(getOriginalSender()));
 
-        // the claimer must have tokens staked in the staking contract at this moment
-        require(staking.totalStakedFor(msgSender) > 0, "You don't have any superDao tokens staked currently");
+        (,,,uint256 lockedAmount) = timeLockManager.getTimeInterval(msgSender, pool_id);
+        // check if claimer has locked SuperDao tokens for this epoch
+        require(lockedAmount > 0, "No tokens locked for this epoch");
 
-        // get the last time that the claimer's staked token amount has been changed
-        // the tokens need to be staked before the the current epoch started
-        uint256 lastModifiedBlockNumber = staking.lastStakedFor(msgSender);
-        require(lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber, "You are not eligible to claim for this pool");
-        require(stakers[msgSender].claimed[pool_id] == false, "You have already claimed from this pool");
+        require(stakers[msgSender].claimed[pool_id] == false, "Already claimed from this pool");
 
         // record initial ether in pool in withdrawPool struct
         // only need to be called once for each pool
@@ -204,10 +175,12 @@ contract WithdrawPool is Proxied, Guard {
                 addAmountToPool(pool_id);
             }
 
-        // update staker
-        _updateStaker(msgSender, pool_id, lastModifiedBlockNumber);
         // calculate the amount of ether entitled to the caller
         uint256 yield = checkYield(msgSender, pool_id);
+
+        // update staker
+        _updateStaker(msgSender, pool_id, yield);
+
         // update pool data
         _updatePool(msgSender, pool_id, yield);
         // pay dividend to the caller
@@ -227,12 +200,10 @@ contract WithdrawPool is Proxied, Guard {
         view
     returns(uint256)
     {
-        // divided by 1000000000 because getPercentagePool() returns a value amplified by 1000000000
-        //return getPercentageSuperDao(staker).mul(weeklyPools[pool_id].initialETHAvailable).div(1000000000);
-        uint256 stakedByStaker = staking.totalStakedFor(staker);
-        uint256 stakedByAllStakers = staking.totalStaked();
+        (,,,uint256 lockedByStaker) = timeLockManager.getTimeInterval(staker, pool_id);
+        uint256 lockedByAllStakers = timeLockManager.getTotalLockedForEpoch(pool_id);
         uint256 initialETHinPool = weeklyPools[pool_id].initialETHAvailable;
-        return stakedByStaker.mul(initialETHinPool).div(stakedByAllStakers);
+        return lockedByStaker.mul(initialETHinPool).div(lockedByAllStakers);
     }
 
     /*                                                 STAKER FUNCTIONS                                               */
@@ -249,7 +220,7 @@ contract WithdrawPool is Proxied, Guard {
         uint256 epoch0StartTime = now;
         WithdrawalPool memory withdrawalPool;
         withdrawalPool.epochID = 0; // poolId is the same as its associated epoch
-        withdrawalPool.blockNumber = block.number;
+        //withdrawalPool.blockNumber = block.number;
         withdrawalPool.dateAvailable = epoch0StartTime.add(timeFrame.SIX_WORKING_DAYS());
         withdrawalPool.dateDissolved = withdrawalPool.dateAvailable.add(timeFrame.REST_DAY());
         
@@ -292,16 +263,16 @@ contract WithdrawPool is Proxied, Guard {
         earningsTrackerDB.setInterest(pool_id, total);
      }
 
-    /**
-     * @dev This function is used by owner to change stakingContract's address.
-     * @param _stakingContract The address of the new stakingContract.
-     */
-    function setStakingContract(address _stakingContract)
-        external
-        onlyOwner
-    {
-        staking = IStaking(_stakingContract);
-    }
+    // /**
+    //  * @dev This function is used by owner to change stakingContract's address.
+    //  * @param _stakingContract The address of the new stakingContract.
+    //  */
+    // function setStakingContract(address _stakingContract)
+    //     external
+    //     onlyOwner
+    // {
+    //     staking = Staking(_stakingContract);
+    // }
 
     function terminateEpochAndPoolManually()
         public
@@ -318,7 +289,7 @@ contract WithdrawPool is Proxied, Guard {
         timeFrame.setNewEpochManually();
         uint256 _newPoolId = noOfPools;
         weeklyPools[_newPoolId].epochID = _newPoolId; // poolId is always the same as its associated epoch
-        weeklyPools[_newPoolId].blockNumber = block.number;
+       // weeklyPools[_newPoolId].blockNumber = block.number;
         weeklyPools[_newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
         weeklyPools[_newPoolId].dateDissolved = weeklyPools[_newPoolId].dateAvailable.add(timeFrame.REST_DAY());
 
@@ -392,30 +363,6 @@ contract WithdrawPool is Proxied, Guard {
     returns(uint256)
     {
         return noOfTotalStakers;
-    }
-
-    /**
-     * @dev This function is returning the total number of Tokens that are staked.
-     */
-    function getNumberOfTokensStaked()
-    external
-    view
-    returns(uint256)
-    {
-        return staking.totalStaked();
-    }
-
-    // calculate the percentage of a staker's token staked in the total SuperDao tokens minted
-    function getPercentageSuperDao(address account)
-        //internal
-        public
-        view
-        returns (uint256)
-    {
-        uint256 total = superDaoToken.totalSupply(); // TODO: total minted
-        uint256 stakedAmount = staking.totalStakedFor(account);
-        uint256 percentagePool = stakedAmount.mul(1000000000).div(total); // multiply 1000000000 to ensure it is always an integer
-        return percentagePool;
     }
 
     // get the pool ID of the currently active pool
@@ -519,7 +466,7 @@ contract WithdrawPool is Proxied, Guard {
         // create new pool
         uint256 newPoolId = pool_id.add(1);
         weeklyPools[newPoolId].epochID = newPoolId; // poolId is always the same as its associated epoch
-        weeklyPools[newPoolId].blockNumber = block.number;
+        //weeklyPools[newPoolId].blockNumber = block.number;
         weeklyPools[newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
         weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(timeFrame.REST_DAY());
 
@@ -554,13 +501,11 @@ contract WithdrawPool is Proxied, Guard {
     /**
      * @dev This function is used to update staker's data, when a claim occurs.
      */
-    function _updateStaker(address _staker, uint256 pool_id, uint256 _stakeStartTime)
+    function _updateStaker(address _staker, uint256 _pool_id, uint256 _yield)
     internal
     {
-        stakers[_staker].previousStartTime = stakers[_staker].stakeStartTime;
-        stakers[_staker].stakeStartTime = _stakeStartTime;
-        //stakers[_staker].staking[pool_id] = true;
-        stakers[_staker].claimed[pool_id] = true;
+        stakers[_staker].claimed[_pool_id] = true;
+        stakers[_staker].etherClaimed[_pool_id] = _yield;
         stakers[_staker].totalPoolsClaimed = stakers[_staker].totalPoolsClaimed.add(1);
         stakers[_staker].currentAvailablePools = stakers[_staker].currentAvailablePools > 0 ?
                                                  stakers[_staker].currentAvailablePools.sub(1) : 0;

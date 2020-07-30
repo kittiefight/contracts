@@ -1,5 +1,5 @@
 const SuperDaoToken = artifacts.require("MockERC20Token");
-const MockStaking = artifacts.require("MockStaking");
+const Staking = artifacts.require("Staking");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
 const EthieToken = artifacts.require("EthieToken");
@@ -36,7 +36,7 @@ module.exports = async (callback) => {
 
   try{
     let superDaoToken = await SuperDaoToken.deployed();
-    let staking = await MockStaking.deployed();
+    let staking = await Staking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
     let earningsTrackerDB = await EarningsTrackerDB.deployed();
     let ethieToken = await EthieToken.deployed();
