@@ -344,6 +344,18 @@ contract KittieHell is BasicControls, Proxied, Guard {
         }
     }
 
+    /**
+     * @dev This function is used for upgrading KittieHell only
+     * @dev This function needs to be run before upgrading to new KittieHell
+     */
+    function transferKTYsLockedInHell(address _newKittieHell)
+        external onlySuperAdmin returns (bool)
+    {
+        uint256 lockedKTYs = kittieFightToken.balanceOf(address(this));
+        kittieFightToken.transfer(_newKittieHell, lockedKTYs);
+        return true;
+    }
+
     /*
      * Use the owner field as a control indicator to check if
      * the kitty is owned by the game

@@ -4,7 +4,14 @@ const KFProxy = artifacts.require("KFProxy");
 const Forfeiter = artifacts.require("Forfeiter.sol");
 const Scheduler = artifacts.require("Scheduler");
 const GameCreation = artifacts.require("GameCreation");
+const KittieFightToken = artifacts.require('KittieFightToken')
 const editJsonFile = require("edit-json-file");
+
+function weiToEther(w) {
+  //let eth = web3.utils.fromWei(w.toString(), "ether");
+  //return Math.round(parseFloat(eth));
+  return web3.utils.fromWei(w.toString(), "ether");
+}
 
 module.exports = async callback => {
   try {
@@ -14,9 +21,20 @@ module.exports = async callback => {
     let forfeiter = await Forfeiter.deployed();
     let gameCreation = await GameCreation.deployed();
     let scheduler = await Scheduler.deployed();
+    let kittieFightToken = await KittieFightToken.deployed();
+    let oldKittieHell = await KittieHell.deployed();
+    console.log("Old KittieHell address:", oldKittieHell.address)
 
     let kittieHell = await KittieHell.new();
-    console.log(kittieHell.address);
+    console.log("New KittieHell address:", kittieHell.address);
+
+    // transfer all the locked KTYs to the new kittieHell address before upgrading kittieHell
+    await oldKittieHell.transferKTYsLockedInHell(kittieHell.address);
+    let balBefore = await kittieFightToken.balanceOf(oldKittieHell.address);
+    let balAfter = await kittieFightToken.balanceOf(kittieHell.address);
+
+    console.log("KTYs owned by old KittieHell:", weiToEther(balBefore));
+    console.log("KTYs owned by new KittieHell:", weiToEther(balAfter));
 
     let file = editJsonFile("build/contracts/KittieHell.json");
 
@@ -31,7 +49,7 @@ module.exports = async callback => {
 
     console.log("Initialize...");
     await kittieHell.initialize();
-    await kittieHellDB.setKittieHELL();
+    await kittieHellDB.initialize();
     await forfeiter.initialize();
     await scheduler.initialize();
     await gameCreation.initialize();
