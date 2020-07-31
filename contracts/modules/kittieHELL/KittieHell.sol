@@ -15,6 +15,7 @@ import "../databases/KittieHellDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
 import "../endowment/KtyUniswap.sol";
+import "./KittieHellDungeon.sol";
 
 /**
  * @title This contract is responsible to acquire ownership of participating kitties,
@@ -35,6 +36,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     GMSetterDB public gmSetterDB;
     KittieHellDB public kittieHellDB;
     EndowmentFund public endowmentFund;
+    KittieHellDungeon public kittieHellDungeon;
     address[] public path;
 
     struct KittyStatus {
@@ -58,6 +60,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         kittieHellDB = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
+        kittieHellDungeon = KittieHellDungeon(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON));
 
         delete path; //Required to allow calling initialize() several times
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
@@ -95,8 +98,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
         internal
         returns (bool)
     {
-        cryptoKitties.transferFrom(owner, address(this), _kittyID);
-        require(cryptoKitties.ownerOf(_kittyID) == address(this));
+        kittieHellDungeon.transferFrom(owner, _kittyID);
+        require(cryptoKitties.ownerOf(_kittyID) == address(kittieHellDungeon));
         KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
         ks.owner = owner;
         kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
@@ -222,7 +225,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyOwnedKitty(_kittyID)
     returns (bool) {
         KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
-        cryptoKitties.transfer(ks.owner, _kittyID);
+        //cryptoKitties.transfer(ks.owner, _kittyID);
+        kittieHellDungeon.transfer(ks.owner, _kittyID);
         ks.owner = address(0);
         kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
         if(ks.dead){
