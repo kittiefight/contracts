@@ -240,11 +240,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
     }
 
     /**
-     * @dev This will be used for upgrades only
+     * @dev This will be used for upgrading kittieHellDungeon only,
+     *      if kittieHellDungeon ever needs to be upgraded
      */
-    function moveKitties(uint256[] calldata _kittyIDs, address newKittieHell) external onlySuperAdmin {
-        for(uint256 i=0; i<_kittyIDs.length; i++){
-            cryptoKitties.transfer(newKittieHell, _kittyIDs[i]);
+    function moveKittiesManually(uint256[] calldata _kittyIDs, address newKittieHellDungeon)
+        external onlySuperAdmin
+    {
+        for(uint256 i = 0; i < _kittyIDs.length; i++) {
+            kittieHellDungeon.transfer(newKittieHellDungeon, _kittyIDs[i]);
         }
     }
 
