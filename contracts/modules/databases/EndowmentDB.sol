@@ -367,15 +367,19 @@ contract EndowmentDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
   }
 
-  function checkTotalForEpoch(uint256 pool_id)
+  function getTotalForEpoch(uint256 pool_id)
   external
-  view
-  onlyContract(CONTRACT_NAME_GAMESTORE)
-  returns(uint256)
+  onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+  returns(uint256, uint256)
   {
     uint256 fundsForPool = getETHinPool(pool_id);
+    genericDB.setUintStorage(
+        CONTRACT_NAME_ENDOWMENT_DB,
+        keccak256(abi.encodePacked(pool_id, "InitialETHinPool")),
+        fundsForPool
+      );
     uint256 actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
-    return actualFunds.sub(fundsForPool);
+    return (actualFunds.sub(fundsForPool), fundsForPool);
   }
 
 /**

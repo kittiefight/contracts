@@ -30,6 +30,7 @@ import "./GameCreation.sol";
 import "../../interfaces/ERC721.sol";
 import "../kittieHELL/KittieHell.sol";
 import "./GameStore.sol";
+import "../databases/GenericDB.sol";
 
 /**
  * @title Scheduler
@@ -45,6 +46,7 @@ contract Scheduler is Proxied {
     KittieHell public kittieHell;
     ERC721 public cryptoKitties;
     GameStore public gameStore;
+    GenericDB public genericDB;
 
     struct Game {
         address playerRed;
@@ -101,6 +103,21 @@ contract Scheduler is Proxied {
         cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         kittieHell = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+        genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
+    }
+
+    /**
+    * @dev Changes mode of game creation.
+    */
+    function changeMode() public onlyOwner {
+        require(genericDB.getBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("unlocked"))), "Can change mode only in Rest Day");
+
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            genericDB.setBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode")), false);
+        else
+            genericDB.setBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode")), true);
     }
 
     /*                                                   INITIALIZOR                                                  */
@@ -128,7 +145,6 @@ contract Scheduler is Proxied {
         noOfKittiesListed = noOfKittiesListed.add(1);
 
         if(noOfKittiesListed >= 2) {
-            immediateStart = gameStore.checkGame();
             if((gameVarAndFee.getRequiredNumberMatches().mul(2)) == noOfKittiesListed)
                 matchKitties();
             else if(immediateStart) {
@@ -298,10 +314,8 @@ contract Scheduler is Proxied {
 
         noOfKittiesListed = 0;
 
-        if(immediateStart) {
-            _startGame();
-            immediateStart = false;
-        }
+        if(immediateStart)
+            immediateStart = !(_startGame());
     }
 
     /**
@@ -309,16 +323,24 @@ contract Scheduler is Proxied {
      */
     function _startGame()
     internal
+    returns(bool)
     {
+        uint256 gameStartTime = gameVarAndFee.getGameTimes().add(now);
+        if(genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(
+            genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))),"endTimeForGames"))) > gameStartTime
+            || !genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            return false;
+
         gameCreation.createFight(
             gameList[headGame].playerRed,
             gameList[headGame].playerBlack,
             gameList[headGame].kittyRed,
             gameList[headGame].kittyBlack,
-            gameVarAndFee.getGameTimes().add(now)
+            gameStartTime
         );
 
         headGame = gameList[headGame].next;
+        return true;
     }
 
 

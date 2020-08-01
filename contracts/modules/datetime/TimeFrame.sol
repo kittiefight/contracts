@@ -60,107 +60,26 @@ pragma solidity ^0.5.5;
         REST_DAY = restDay;
         SIX_HOURS = sixHours;
      }
-     /**
-      * @dev sets epoch 0
-      */
-     function setEpoch_0()
-     public
-     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
-     {
-         _setNewEpoch(0, now);
-     }
-
-     /**
-      * @dev creates a new epoch, the ID of which is total number of epochs - 1
-      * This function should be called by GameManager when the last game
-      * in an epoch ends in order to set new epoch
-      */
-     function setNewEpoch()
-         public
-         onlyContract(CONTRACT_NAME_GAMESTORE)
-     {
-         uint newEpochId = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked("totalNumberOfEpochs")));
-
-         uint prevEpochId = newEpochId.sub(1);
-
-         uint prevEpochEnd = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(prevEpochId, "restDayEnd")));
-
-         _setNewEpoch(newEpochId, prevEpochEnd);
-     }
-
-     /**
-      * @dev adds gaming delay to an epoch
-      * This function should be called by GameManager when the last game
-      * in an epoch runs longer than the intended sixDayEnd
-      * @param epoch_id the id of the epoch
-      * @param gamingDelay gaming delay time in seconds
-      */
-     function unlockAndAddDelay(uint epoch_id, uint gamingDelay)
-         public
-         onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
-     {
-         genericDB.setBoolStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "unlocked")),
-            true);
-         if(gamingDelay > 0)
-             _addGamingDelayToEpoch(epoch_id, gamingDelay);
-     }
-
-    function terminateEpochManually()
-        public
-        onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
-    {
-        uint epoch_id = getActiveEpochID();
-        _terminateEpoch(epoch_id);
-    }
-
-    function setNewEpochManually()
-        public
-        onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
-    {
-        uint newEpochId = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked("totalNumberOfEpochs")));
-
-        _setNewEpoch(newEpochId, now);
-
-        emit NewEpochSet(newEpochId, now);
-    }
-
-     //===================== public functions ===================
-
-     /**
-      * @dev converts date and time in human-readable format to unix timestamp
-      */
-     function timestampFromDateTime
-     (
-         uint year,
-         uint month,
-         uint day,
-         uint hour,
-         uint minute,
-         uint second
-     ) public pure returns (uint timestamp)
-     {
-        return BokkyPooBahsDateTimeLibrary.timestampFromDateTime(year, month, day, hour, minute, second);
-    }
 
     /**
-     * @dev converts unix timestamp to date and time in human-readable format
+     * @dev sets epoch 0
      */
-     function timestampToDateTime(uint timestamp)
-         public
-         pure
-         returns (uint year, uint month, uint day, uint hour, uint minute, uint second)
+    function setEpoch_0()
+    external
+    onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
     {
-        (year, month, day, hour, minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(timestamp);
+        _setNewEpoch(0, now);
     }
 
+    function setEpochTimes(uint256 epochID)
+    external
+    onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+    {
+        uint256 _startTime = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epochID.sub(1), "restDayEnd")));
+        _setNewEpoch(epochID, _startTime);
+    }
 
      //===================== getters ===================
      /**
@@ -178,21 +97,9 @@ pragma solidity ^0.5.5;
       * @dev return the ID of the active epoch
       */
      function getActiveEpochID() public view returns (uint) {
-         uint numberOfEpochs = getTotalEpochs();
-
-         if (numberOfEpochs < 2) {
-             return 0;
-         }
-
-         return numberOfEpochs.sub(1);
-     }
-
-     /**
-      * @dev return the last epoch ID
-      */
-     function getLastEpochID() public view returns (uint) {
-         uint numberOfEpochs = getTotalEpochs();
-         return numberOfEpochs.sub(1);
+         genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encode("activeEpoch")));
      }
 
      /**
@@ -219,7 +126,7 @@ pragma solidity ^0.5.5;
             keccak256(abi.encodePacked(epoch_id, "sixDayStart")));
          uint _sixDayEnd = genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "sixDayEnd")));
+            keccak256(abi.encodePacked(epoch_id, "restDayStart")));
          return now >= _sixDayStart && now <= _sixDayEnd.sub(SIX_HOURS);
      }
 
@@ -239,10 +146,10 @@ pragma solidity ^0.5.5;
       * @param epoch_id the id of the epoch
       */
      function hasEpochEnded(uint epoch_id) public view returns (bool) {
-         uint _sixDayEnd = genericDB.getUintStorage(
+         uint _restDayStart = genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "sixDayEnd")));
-         return now > _sixDayEnd;
+            keccak256(abi.encodePacked(epoch_id, "restDayStart")));
+         return now > _restDayStart;
      }
 
      /**
@@ -270,25 +177,6 @@ pragma solidity ^0.5.5;
      }
 
      /**
-      * @dev return the start time (in human-readable format) of the epoch with epoch_id
-      * @param epoch_id the id of the epoch
-      */
-     function epochStartTime(uint epoch_id)
-         public view
-         returns (
-             uint year,
-             uint month,
-             uint day,
-             uint hour,
-             uint minute,
-             uint second
-         )
-     {
-         uint timestamp = _epochStartTime(epoch_id);
-         (year, month, day, hour, minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(timestamp);
-     }
-
-     /**
       * @dev return the end time (in unix time) of the epoch with epoch_id
       * @param epoch_id the id of the epoch
       */
@@ -299,23 +187,12 @@ pragma solidity ^0.5.5;
          return _restDayEnd;
      }
 
-     /**
-      * @dev return the end time (in human-readable format) of the epoch with epoch_id
-      * @param epoch_id the id of the epoch
-      */
-     function epochEndTime(uint epoch_id)
-         public view
-         returns (
-             uint year,
-             uint month,
-             uint day,
-             uint hour,
-             uint minute,
-             uint second
-         )
-     {
-         uint timestamp = _epochEndTime(epoch_id);
-         (year, month, day, hour, minute, second) = BokkyPooBahsDateTimeLibrary.timestampToDateTime(timestamp);
+     function _newEpochStartTime() public view returns (uint) {
+        uint256 epoch_id = getActiveEpochID();
+        uint256 _restDayEnd = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epoch_id, "restDayEnd")));
+        return _restDayEnd.add(REST_DAY);
      }
 
      /**
@@ -367,24 +244,7 @@ pragma solidity ^0.5.5;
          uint activeEpoch = getActiveEpochID();
          end = genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(activeEpoch, "sixDayEnd")));
-     }
-
-     function checkBurn()
-     external
-     view
-     returns(bool)
-     {
-        uint activeEpoch = getActiveEpochID();
-        bool unlocked = genericDB.getBoolStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(activeEpoch, "unlocked")));
-        uint _sixDayEnd = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(activeEpoch, "sixDayEnd")));
-        if(unlocked && now > _sixDayEnd)
-            return true;
-        return false;
+            keccak256(abi.encodePacked(activeEpoch, "restDayStart")));
      }
 
      /**
@@ -423,10 +283,10 @@ pragma solidity ^0.5.5;
          uint _sixDayStart = genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
             keccak256(abi.encodePacked(epoch_id, "sixDayStart")));
-         uint _sixDayEnd = genericDB.getUintStorage(
+         uint _restDayStart = genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "sixDayEnd")));
-         return (block.timestamp >= _sixDayStart) && (block.timestamp <= _sixDayEnd);
+            keccak256(abi.encodePacked(epoch_id, "restDayStart")));
+         return (block.timestamp >= _sixDayStart) && (block.timestamp <= _restDayStart);
      }
 
      /**
@@ -474,8 +334,13 @@ pragma solidity ^0.5.5;
 
          genericDB.setUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(_newEpochId, "sixDayEnd")),
-            _startTime.add(SIX_WORKING_DAYS));
+            keccak256(abi.encodePacked(_newEpochId, "endTimeForGames")),
+            _startTime.add(SIX_WORKING_DAYS).sub(SIX_HOURS));
+
+         genericDB.setUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encode("activeEpoch")),
+            _newEpochId);
 
          genericDB.setUintStorage(
             CONTRACT_NAME_TIMEFRAME,
@@ -498,56 +363,35 @@ pragma solidity ^0.5.5;
      /**
       * @dev adds gaming delay to an epoch
       * @param _epoch_id the id of the epoch
-      * @param _gamingDelay gaming delay time in seconds
       */
-     function _addGamingDelayToEpoch(uint _epoch_id, uint _gamingDelay)
-         internal
+     function _addGamingDelayToEpoch(uint _epoch_id, uint restDayStart)
+     external
+     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
      {
-         require(_gamingDelay > 0);
-
-         uint _prevGamingDelay = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(_epoch_id, "gamingDelay")));
-
-         genericDB.setUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(_epoch_id, "gamingDelay")),
-            _prevGamingDelay.add(_gamingDelay));
-
-         uint _sixDayEnd = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(_epoch_id, "sixDayEnd")));
-
-         genericDB.setUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(_epoch_id, "sixDayEnd")),
-            _sixDayEnd.add(_gamingDelay));
-
          genericDB.setUintStorage(
             CONTRACT_NAME_TIMEFRAME,
             keccak256(abi.encodePacked(_epoch_id, "restDayStart")),
-            _sixDayEnd.add(_gamingDelay));
+            restDayStart);
 
          genericDB.setUintStorage(
             CONTRACT_NAME_TIMEFRAME,
             keccak256(abi.encodePacked(_epoch_id, "restDayEnd")),
-            _sixDayEnd.add(_gamingDelay).add(REST_DAY));
+            restDayStart.add(REST_DAY));
 
-         emit GamingDelayAdded(_epoch_id, _gamingDelay, _sixDayEnd.add(_gamingDelay).add(REST_DAY));
+         // emit GamingDelayAdded(_epoch_id, _gamingDelay, _restDayStart.add(_gamingDelay).add(REST_DAY));
      }
 
      /**
-      * @dev terminates an epoch
-      * @param epoch_id the id of the epoch
+      * @dev adds gaming delay to an epoch
+      * @param _epoch_id the id of the epoch
       */
-     function _terminateEpoch(uint epoch_id) internal {
-         uint _restDayEnd = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "restDayEnd")));
-         require(now <= _restDayEnd, "Epoch has already ended");
+     function _addDelayToRestDay(uint _epoch_id, uint restDayEnd)
+     external
+     onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+     {
          genericDB.setUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "restDayEnd")),
-            now.sub(1));
+            keccak256(abi.encodePacked(_epoch_id, "restDayEnd")),
+            restDayEnd);
      }
  }

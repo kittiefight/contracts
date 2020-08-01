@@ -41,6 +41,8 @@ import "./Forfeiter.sol";
 import '../kittieHELL/KittieHell.sol';
 import "../endowment/HoneypotAllocationAlgo.sol";
 import '../endowment/KtyUniswap.sol';
+import "../databases/GenericDB.sol";
+import "../../withdrawPool/WithdrawPool.sol";
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -55,6 +57,9 @@ contract GameCreation is Proxied, Guard {
     GameStore public gameStore;
     CronJob public cronJob;
     KittieHell public kittieHELL;
+    GenericDB public genericDB;
+    WithdrawPool public withdrawPool;
+
 
     //EVENTS
     event NewGame(uint indexed gameId, address playerBlack, uint kittieBlack, address playerRed, uint kittieRed, uint gameStartTime);
@@ -82,6 +87,8 @@ contract GameCreation is Proxied, Guard {
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
+        withdrawPool = WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL));
     }
 
     /**
@@ -139,13 +146,17 @@ contract GameCreation is Proxied, Guard {
         onlyKittyOwner(playerRed, kittyRed)
         onlyKittyOwner(playerBlack, kittyBlack)
     {
+        require(genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(
+            genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))),"endTimeForGames"))) > gameStartTime,
+            "Wrong start time");
+
+        require(!genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))), "No manual match mode");
+
         require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
         require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
 
         require(kittieHELL.acquireKitty(kittyRed, playerRed));
         require(kittieHELL.acquireKitty(kittyBlack, playerBlack));
-
-        require(gameStore.startManually(gameStartTime));
 
         emit NewListing(kittyRed, playerRed, now);
         emit NewListing(kittyBlack, playerBlack, now);
@@ -211,8 +222,12 @@ contract GameCreation is Proxied, Guard {
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
         ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+
         //Set gameId to 0 to both kitties (not playing any game)
         gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, 0);
+
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            scheduler.startGame();
     }
 
     function updateKitties(address winner, address loser, uint256 gameId)
@@ -224,6 +239,9 @@ contract GameCreation is Proxied, Guard {
 
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
+
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            scheduler.startGame();
     }
 
     function recordListingFeeInGame(uint256 _gameId, uint256 _kittyRed, uint256 _kittyBlack)
@@ -306,6 +324,9 @@ contract GameCreation is Proxied, Guard {
         uint256 jobId = cronJobsForGames[gameId];
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
         uint newJobId = cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
+        if(endTime > genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(
+            genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))),"restDayStart"))))
+            withdrawPool.addGamingDelay(endTime);
         emit Scheduled(newJobId, endTime, gameId, "Change state to 3");
         cronJobsForGames[gameId] = newJobId;
     }

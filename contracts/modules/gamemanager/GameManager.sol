@@ -304,8 +304,6 @@ contract GameManager is Proxied, Guard {
         //Lock Honeypot Final Details
         gmSetterDB.storeHoneypotDetails(gameId);
 
-        gameCreation.updateKitties(winner, loser, gameId);
-
         (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
         endowmentFund.addETHtoPool(gameId, loser);
 
@@ -319,6 +317,8 @@ contract GameManager is Proxied, Guard {
         endowmentFund.sendFinalizeRewards(getOriginalSender());
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
+
+        gameCreation.updateKitties(winner, loser, gameId);
 
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
 
@@ -341,7 +341,5 @@ contract GameManager is Proxied, Guard {
         gameCreation.removeKitties(gameId);
 
         gameCreation.deleteCronjob(gameId);
-        gameStore.startAfterCancel();
-
     }
 }

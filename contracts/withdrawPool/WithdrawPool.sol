@@ -16,6 +16,8 @@ import "../modules/databases/EndowmentDB.sol";
 import "../modules/endowment/EndowmentFund.sol";
 import "../modules/endowment/EarningsTracker.sol";
 import "../modules/databases/EarningsTrackerDB.sol";
+import "../modules/databases/GenericDB.sol";
+import "../CronJob.sol";
 
 contract WithdrawPool is Proxied, Guard {
 
@@ -26,33 +28,14 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     IStaking public staking;
-
     ERC20Standard public superDaoToken;
-
     TimeFrame public timeFrame;
-
     EndowmentDB public endowmentDB;
-
     EndowmentFund public endowmentFund;
-
     EarningsTracker public earningsTracker;
-
     EarningsTrackerDB public earningsTrackerDB;
-
-
-    uint256 staking_period; //Time needed a staker to stake, so as to be able to claim.
-
-    //uint256 validClaimTime; //Valid time duration during which a staker can claim his/her dividends from a pool, after this valid time the pool will be dissolved, and unclaimed ether returned back to endowment
-
-    uint256 totalEthPaidOut; //The total amount of Eth this contract paid to stakers.
-
-    uint256 noOfPools; //The number of all pools created.
-
-    uint256 noOfDissolvedPools; //The number of all pools that have been dissolved.
-
-    uint256 noOfOpenPools; //The number of all pools yet to be dissolved.
-
-    uint256 noOfTotalStakers; //The number of total stakers that withdrew from this contract.
+    GenericDB public genericDB;
+    CronJob public cronJob;
 
     /*                                               GENERAL VARIABLES                                                */
     /*                                                      END                                                       */
@@ -63,20 +46,9 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     struct WithdrawalPool {
-        uint256 epochID;            // epochID of the epoch asscoated with this pool
         uint256 blockNumber;        //The block number of the block in which this pool was created
-        uint256 initialETHAvailable; // How much Eth this pool initially has, which is the amount of eth distributed
-                                     // to this pool when the associated honeypot dissolves
-        uint256 ETHAvailable;       //How much Eth this pool contains.
-        uint256 dateAvailable;      //When this pool's Eth will be available for withdrawal, in unix time
-        bool initialETHadded;    // check whether initial ether is recorded in withdrawPool
-        bool unlocked;              //If this is true when rest_day starts stakers will be able to claim.
-        bool dissolved;             //If this is true the pool has been dissolved, otherwise has not.
-        uint256 dateDissolved;      //The date this pool got dissolved in unix time.
-        //uint256 stakersEligible;    //How many stakers are eligible to claim from this pool.
         uint256 stakersClaimed;     //How many stakers claimed from this pool.
         address[] allClaimedStakers; //Addresses of all stakers who have claimed from this pool.
-        //address[] eligibleStakers; //Addresses of all stakers that are eligible to claim from this pool.
     }
 
     struct Staker{
@@ -109,21 +81,10 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                     START                                                      */
     /* ============================================================================================================== */
 
-    //modifier onlyCronJob() {
-      //  require(msg.sender == cronJob, "WithdrawPool: Only CronJob");
-        //_;
-    //}
-
-    //modifier onlyEndowmentFund() {
-      //  require(msg.sender == endowmentFund, "WithdrawPool: Only EndowmentFund");
-        //_;
-    //}
-
     modifier onlyActivePool(uint pool_id) {
          require(pool_id == getActivePoolID());
          _;
      }
-
 
     /*                                                    MODIFIERS                                                   */
     /*                                                       END                                                      */
@@ -144,6 +105,8 @@ contract WithdrawPool is Proxied, Guard {
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         earningsTracker = EarningsTracker(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER));
         earningsTrackerDB = EarningsTrackerDB(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER_DB));
+        genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
+        cronJob = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
     }
 
     /*                                                   CONSTRUCTOR                                                  */
@@ -182,9 +145,9 @@ contract WithdrawPool is Proxied, Guard {
     function claimYield(uint256 pool_id)
     external onlyProxy returns(bool)
     {
-        require(weeklyPools[pool_id].dateAvailable <= now, "This pool is not available for claiming yet");
-        require(weeklyPools[pool_id].unlocked == true, "This pool is locked");
-        require(weeklyPools[pool_id].dissolved == false, "This pool is already dissolved");
+        require(genericDB.getBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(pool_id, "unlocked"))), "Pool is not claimable");
 
         address payable msgSender = address(uint160(getOriginalSender()));
 
@@ -194,15 +157,10 @@ contract WithdrawPool is Proxied, Guard {
         // get the last time that the claimer's staked token amount has been changed
         // the tokens need to be staked before the the current epoch started
         uint256 lastModifiedBlockNumber = staking.lastStakedFor(msgSender);
-        require(lastModifiedBlockNumber <= weeklyPools[pool_id].blockNumber, "You are not eligible to claim for this pool");
+        require(lastModifiedBlockNumber <= genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(pool_id, "blockNumber"))), "You are not eligible to claim for this pool");
         require(stakers[msgSender].claimed[pool_id] == false, "You have already claimed from this pool");
-
-        // record initial ether in pool in withdrawPool struct
-        // only need to be called once for each pool
-        if (weeklyPools[pool_id].initialETHadded == false &&
-            weeklyPools[pool_id].initialETHAvailable == 0) {
-                addAmountToPool(pool_id);
-            }
 
         // update staker
         _updateStaker(msgSender, pool_id, lastModifiedBlockNumber);
@@ -231,7 +189,10 @@ contract WithdrawPool is Proxied, Guard {
         //return getPercentageSuperDao(staker).mul(weeklyPools[pool_id].initialETHAvailable).div(1000000000);
         uint256 stakedByStaker = staking.totalStakedFor(staker);
         uint256 stakedByAllStakers = staking.totalStaked();
-        uint256 initialETHinPool = weeklyPools[pool_id].initialETHAvailable;
+        uint256 initialETHinPool = genericDB.getUintStorage(
+            CONTRACT_NAME_ENDOWMENT_DB,
+            keccak256(abi.encodePacked(pool_id, "InitialETHinPool"))
+          );
         return stakedByStaker.mul(initialETHinPool).div(stakedByAllStakers);
     }
 
@@ -244,53 +205,18 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     function setPool_0() public onlyOwner {
-        require(noOfPools == 0, "Pool 0 already exists");
-        timeFrame.setEpoch_0();
-        uint256 epoch0StartTime = now;
-        WithdrawalPool memory withdrawalPool;
-        withdrawalPool.epochID = 0; // poolId is the same as its associated epoch
-        withdrawalPool.blockNumber = block.number;
-        withdrawalPool.dateAvailable = epoch0StartTime.add(timeFrame.SIX_WORKING_DAYS());
-        withdrawalPool.dateDissolved = withdrawalPool.dateAvailable.add(timeFrame.REST_DAY());
-        
-        weeklyPools[0] = withdrawalPool;
-        earningsTrackerDB.setInvestment(0, endowmentDB.checkInvestment(0));
+        uint256 blockNumber = genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked("0", "blockNumber")));
 
-        noOfPools = noOfPools.add(1);
+        require(blockNumber == 0, "Pool 0 already exists");
+
+        timeFrame.setEpoch_0();
+
+        _startNewEpoch(0);
 
         emit Pool0Set(0, now);
     }
-
-    /**
-      * @dev adds gaming delay to a pool
-      * This function should be called by GameManager when the last game
-      * in an epoch runs longer than the intended sixDayEnd
-      * @param pool_id the id of the pool
-      * @param gamingDelay gaming delay time in seconds
-      */
-     function addGamingDelayToPool(uint pool_id, uint gamingDelay)
-         public
-         onlyActivePool(pool_id)
-         onlyContract(CONTRACT_NAME_GAMEMANAGER)
-     {
-         _addGamingDelayToPool(pool_id, gamingDelay);
-     }
-
-     function setInterestToEarningsTracker(uint256 pool_id, uint256 total)
-     external
-     onlyContract(CONTRACT_NAME_GAMESTORE)
-     {
-        weeklyPools[pool_id].unlocked = true;
-        uint256 delay;
-        if(now > weeklyPools[pool_id].dateAvailable) {
-            delay = now.sub(weeklyPools[pool_id].dateAvailable);
-            weeklyPools[pool_id].dateAvailable = now;
-            weeklyPools[pool_id].dateDissolved =
-                weeklyPools[pool_id].dateAvailable.add(timeFrame.REST_DAY());
-        }
-        timeFrame.unlockAndAddDelay(pool_id, delay);
-        earningsTrackerDB.setInterest(pool_id, total);
-     }
 
     /**
      * @dev This function is used by owner to change stakingContract's address.
@@ -301,32 +227,6 @@ contract WithdrawPool is Proxied, Guard {
         onlyOwner
     {
         staking = IStaking(_stakingContract);
-    }
-
-    function terminateEpochAndPoolManually()
-        public
-        onlySuperAdmin
-    {
-        timeFrame.terminateEpochManually();
-        _terminatePool();
-    }
-
-    function setNewEpochAndPoolManually()
-        public
-        onlySuperAdmin
-    {
-        timeFrame.setNewEpochManually();
-        uint256 _newPoolId = noOfPools;
-        weeklyPools[_newPoolId].epochID = _newPoolId; // poolId is always the same as its associated epoch
-        weeklyPools[_newPoolId].blockNumber = block.number;
-        weeklyPools[_newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
-        weeklyPools[_newPoolId].dateDissolved = weeklyPools[_newPoolId].dateAvailable.add(timeFrame.REST_DAY());
-
-        earningsTrackerDB.setInvestment(_newPoolId, endowmentDB.checkInvestment(_newPoolId));
-
-        noOfPools = noOfPools.add(1);
-
-        emit NewPoolCreated(_newPoolId, now);
     }
 
 
@@ -346,41 +246,10 @@ contract WithdrawPool is Proxied, Guard {
     view
     returns(uint256)
     {
-        return totalEthPaidOut;
-    }
-
-    /**
-     * @dev This function is returning the total number of Pools that were created.
-     */
-    function getTotalNumberOfPools()
-    external
-    view
-    returns(uint256)
-    {
-        return noOfPools;
-    }
-
-    /**
-     * @dev This function is returning the total number of Pools that have been dissolved.
-     */
-    function getNumberOfDissolvedPools()
-    external
-    view
-    returns(uint256)
-    {
-        return noOfDissolvedPools;
-    }
-
-    //TODO: there should always be only 1 open pool at any time, so this function is stale.
-    /**
-     * @dev This function is returning the total number of Pools that are still open.
-     */
-    function getNumberOfOpenPools()
-    external
-    view
-    returns(uint256)
-    {
-        return noOfOpenPools;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("totalEthPaidOut"))
+          );
     }
 
     /**
@@ -391,7 +260,10 @@ contract WithdrawPool is Proxied, Guard {
     view
     returns(uint256)
     {
-        return noOfTotalStakers;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("noOfTotalStakers"))
+          );
     }
 
     /**
@@ -425,8 +297,7 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        //return timeFrame.getActiveEpochID();
-        return noOfPools.sub(1);
+        return genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch")));
     }
 
     // get the initial ether available in a pool
@@ -435,7 +306,10 @@ contract WithdrawPool is Proxied, Guard {
         view
         returns (uint256)
     {
-        return weeklyPools[_poolID].initialETHAvailable;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_ENDOWMENT_DB,
+            keccak256(abi.encodePacked(_poolID, "InitialETHinPool"))
+          );
     }
 
     // get all stakers who have received yields from a pool with _poolID
@@ -448,19 +322,19 @@ contract WithdrawPool is Proxied, Guard {
     }
 
      /**
-      * @dev return the time remaining (in seconds) until time availabe for claiming the current pool
+      * @dev return the time remaining (in seconds) until time available for claiming the current pool
       * only current pool can be claimed
       */
      function timeUntilClaiming() public view returns (uint256) {
-         uint256 pool_id = getActivePoolID();
-         require(weeklyPools[pool_id].dissolved == false, "Pool already dissolved");
-         uint256 claimTime = weeklyPools[pool_id].dateAvailable;
+         uint256 epochID = getActivePoolID();
+         uint256 claimTime = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epochID, "restDayStart")));
          if (claimTime > now) {
              return claimTime.sub(now);
          } else {
              return 0;
          }
-
      }
 
      /**
@@ -468,8 +342,10 @@ contract WithdrawPool is Proxied, Guard {
       * If the pool is already dissolved, returns 0.
       */
      function timeUntilPoolDissolve() public view returns (uint256) {
-         uint256 pool_id = getActivePoolID();
-         uint256 dissolveTime = weeklyPools[pool_id].dateDissolved;
+         uint256 epochID = getActivePoolID();
+         uint256 dissolveTime = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epochID, "restDayEnd")));
          if (dissolveTime > now) {
              return dissolveTime.sub(now);
          } else {
@@ -484,52 +360,6 @@ contract WithdrawPool is Proxied, Guard {
     /*                                                INTERNAL FUNCTIONS                                              */
     /*                                                      START                                                     */
     /* ============================================================================================================== */
-    /**
-     * @dev This function adds initial ether allocation to a pool with pool_id
-     * @dev This function is called only once when the first claimer claims from this pool
-     */
-    function addAmountToPool(uint256 pool_id)
-        internal
-        returns (bool)
-    {
-        uint256 totalETHtoPool = endowmentDB.getETHinPool(pool_id);
-        weeklyPools[pool_id].initialETHadded = true;
-        weeklyPools[pool_id].initialETHAvailable = totalETHtoPool;
-        weeklyPools[pool_id].ETHAvailable = totalETHtoPool;
-
-        emit AddETHtoPool(pool_id, totalETHtoPool);
-        return true;
-    }
-
-    /**
-     * @dev This function is used by cronJob to dissolve an old pool at its dissolving time
-     * and create a new pool.
-     * @dev Any unclaimed ethers left in the old pool is returned to endowmentFund upon the pool's dissolution
-     */
-    function dissolveOldCreateNew()
-    public
-    onlyContract(CONTRACT_NAME_GAMESTORE)
-    {
-        uint256 pool_id = noOfPools.sub(1);
-        // dissolve the old pool
-        weeklyPools[pool_id].dissolved = true;
-
-        noOfDissolvedPools = noOfDissolvedPools.add(1);
-
-        // create new pool
-        uint256 newPoolId = pool_id.add(1);
-        weeklyPools[newPoolId].epochID = newPoolId; // poolId is always the same as its associated epoch
-        weeklyPools[newPoolId].blockNumber = block.number;
-        weeklyPools[newPoolId].dateAvailable = now.add(timeFrame.SIX_WORKING_DAYS());
-        weeklyPools[newPoolId].dateDissolved = weeklyPools[newPoolId].dateAvailable.add(timeFrame.REST_DAY());
-
-        earningsTrackerDB.setInvestment(newPoolId, endowmentDB.checkInvestment(newPoolId));
-        noOfPools = noOfPools.add(1);
-
-        emit PoolDissolved(pool_id, now);
-
-        emit NewPoolCreated(newPoolId, now);
-    }
 
     /**
      * @dev This function is used to update pool data, when a claim occurs.
@@ -538,14 +368,23 @@ contract WithdrawPool is Proxied, Guard {
     function _updatePool(address _staker, uint256 pool_id, uint256 _yield)
     internal
     {
-        weeklyPools[pool_id].ETHAvailable = weeklyPools[pool_id].ETHAvailable.sub(_yield);
         weeklyPools[pool_id].stakersClaimed = weeklyPools[pool_id].stakersClaimed.add(1);
         weeklyPools[pool_id].allClaimedStakers.push(_staker);
-        totalEthPaidOut = totalEthPaidOut.add(_yield);
+
+        uint256 totalEthPaidOut = _yield.add(genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("totalEthPaidOut"))
+          ));
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("totalEthPaidOut")),
+            totalEthPaidOut
+          );
 
         emit PoolUpdated(
             pool_id,
-            weeklyPools[pool_id].ETHAvailable,
+            endowmentDB.getETHinPool(pool_id),
             weeklyPools[pool_id].stakersClaimed,
             totalEthPaidOut
         );
@@ -559,38 +398,153 @@ contract WithdrawPool is Proxied, Guard {
     {
         stakers[_staker].previousStartTime = stakers[_staker].stakeStartTime;
         stakers[_staker].stakeStartTime = _stakeStartTime;
-        //stakers[_staker].staking[pool_id] = true;
         stakers[_staker].claimed[pool_id] = true;
         stakers[_staker].totalPoolsClaimed = stakers[_staker].totalPoolsClaimed.add(1);
         stakers[_staker].currentAvailablePools = stakers[_staker].currentAvailablePools > 0 ?
                                                  stakers[_staker].currentAvailablePools.sub(1) : 0;
     }
 
-    /**
-      * @dev adds gaming delay to a pool
-      * @param _pool_id the id of the pool
-      * @param _gamingDelay gaming delay time in seconds
-      */
-     function _addGamingDelayToPool(uint _pool_id, uint _gamingDelay)
-         internal
-     {
-         require(_gamingDelay > 0, "Gaming delay must be longer than 0");
-         weeklyPools[_pool_id].dateAvailable = weeklyPools[_pool_id].dateAvailable.add(_gamingDelay);
-         weeklyPools[_pool_id].dateDissolved = weeklyPools[_pool_id].dateDissolved.add(_gamingDelay);
-         emit GamingDelayAddedtoPool(_pool_id, _gamingDelay, weeklyPools[_pool_id].dateAvailable);
-     }
+    function addGamingDelay(uint256 newEndTime)
+    external
+    //onlyContract TODO
+    {
+        uint256 epochID = getActivePoolID();
+        uint256 jobID = genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "jobID"))
+        );
 
-    /**
-      * @dev terminates a pool
-      */
-    function _terminatePool() internal {
-        uint256 _pool_id = getActivePoolID();
-        require(now <= weeklyPools[_pool_id].dateDissolved, "Pool has already dissolved");
-        weeklyPools[_pool_id].dateDissolved = now.sub(1);
-        weeklyPools[_pool_id].unlocked = false;
-        weeklyPools[_pool_id].dissolved = true;
+        uint256 scheduledJob = cronJob.rescheduleCronJob(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            jobID,
+            newEndTime);
 
-        emit PoolDissolved(_pool_id, now);
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "jobID")),
+            scheduledJob
+        );
+
+        timeFrame._addGamingDelayToEpoch(epochID, newEndTime);
+    }
+
+    function _addInvestmentDelay() 
+    internal
+    {
+        uint256 epochID = getActivePoolID();
+        uint256 jobID = genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "jobID"))
+        );
+
+        uint256 newTime = now.add(timeFrame.REST_DAY());
+
+        uint256 scheduledJob = cronJob.rescheduleCronJob(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            jobID,
+            newTime);
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "jobID")),
+            scheduledJob
+        );
+
+        timeFrame._addDelayToRestDay(epochID, newTime);
+    }
+
+    function startRestDay(uint256 epochID)
+    external
+    onlyContract(CONTRACT_NAME_CRONJOB)
+    {
+        _startRestDay(epochID);
+    }
+
+    function startNewEpoch(uint256 epochID)
+    external
+    onlyContract(CONTRACT_NAME_CRONJOB)
+    {
+        timeFrame.setEpochTimes(epochID);
+
+        _startNewEpoch(epochID);
+
+        emit PoolDissolved(epochID.sub(1), now);
+    }
+
+    function _startRestDay(uint256 epochID)
+    internal
+    {
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "unlocked")),
+            true);
+
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("rest_day")),
+            true);
+
+        (uint256 interest, uint256 fundsForPool) = endowmentDB.getTotalForEpoch(epochID);
+        earningsTrackerDB.setInterest(epochID, interest);
+
+        uint256 newEpochStart = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epochID, "restDayEnd")));
+
+        uint256 scheduledJob = cronJob.addCronJob(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            newEpochStart,
+            abi.encodeWithSignature("(startNewEpoch(uint256)", epochID.add(1)));
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "jobID")),
+            scheduledJob
+        );
+    }
+
+    function _startNewEpoch(uint256 epochID)
+    internal
+    {
+        uint256 investment = endowmentDB.checkInvestment(epochID);
+        if(investment == 0) {
+            _addInvestmentDelay();
+            return;
+        }
+
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encode("rest_day")),
+            false);
+
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID.sub(1), "unlocked")),
+            false);
+
+        earningsTrackerDB.setInvestment(epochID, investment);
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "blockNumber")),
+            block.number);
+
+        uint256 restDayStart = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epochID, "restDayStart")));
+
+        uint256 scheduledJob = cronJob.addCronJob(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            restDayStart,
+            abi.encodeWithSignature("(startRestDay(uint256)", epochID));
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID, "jobID")),
+            scheduledJob
+        );
+
+        emit NewPoolCreated(epochID, now);
     }
     
     /*                                                INTERNAL FUNCTIONS                                              */

@@ -93,9 +93,7 @@ contract GameStore is Proxied, Guard {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
         (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
-        gameSettings[gameId].redemptionFee = scheduler.calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);        
-
-        startGameAndCalculateEpoch(/*gameVarAndFee.getGameTimes().add(now)*/);
+        gameSettings[gameId].redemptionFee = scheduler.calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);
     }
 
     // update Ticket Fee and store in Dai
@@ -278,90 +276,5 @@ contract GameStore is Proxied, Guard {
                 loser = playerBlack;
             }
         }
-    }
-
-    /**
-    * @dev This function is called if a game gets cancelled, so as to start a new game.
-    */
-    function startAfterCancel()
-    external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    {
-        startGameAndCalculateEpoch(/*gameVarAndFee.getGameTimes().add(now)*/);
-    }
-
-    /**
-    * @dev This function is called from manualMatching, to check if game can be scheduled.
-    */
-    function startManually(uint256 gameStartTime)
-    external
-    onlyContract(CONTRACT_NAME_GAMECREATION)
-    returns(bool)
-    {
-        uint256 activeEpochId = timeFrame.getActiveEpochID();
-        uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
-        return checkIfGameCanStart(gameStartTime, currentEpochEndTime);
-    }
-
-    function checkGame()
-    external
-    onlyContract(CONTRACT_NAME_SCHEDULER)
-    returns(bool)
-    {
-        uint256 activeEpochId = timeFrame.getActiveEpochID();
-        uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
-        return checkIfGameCanStart(gameVarAndFee.getGameTimes().add(now), currentEpochEndTime);
-    }
-
-    function checkIfGameCanStart(uint256 gameStartTime, uint256 currentEpochEndTime)
-    internal
-    returns(bool)
-    {
-        //If less than "some time" from epoch's ending or anotherGame is scheduled, cannot create.
-        if(currentEpochEndTime.sub(timeFrame.REST_DAY().add(timeFrame.SIX_HOURS())) <= gameStartTime || gameScheduled)
-            return false;
-
-        gameScheduled = true;
-        return true;
-    }
-
-    function startGameAndCalculateEpoch(/*uint256 gameStartTime*/)
-    internal
-    {
-        uint256 activeEpochId = timeFrame.getActiveEpochID();
-        uint256 currentEpochEndTime = timeFrame._epochEndTime(activeEpochId);
-        gameScheduled = false;
-
-        if(checkIfGameCanStart(gameVarAndFee.getGameTimes().add(now), currentEpochEndTime))
-            gameScheduled = scheduler.startGame();
-        else {
-            uint256 delay;
-            if(now > currentEpochEndTime.sub(timeFrame.REST_DAY()))
-                delay = now.sub(currentEpochEndTime.sub(timeFrame.REST_DAY()));
-
-            CronJob cron = CronJob(proxy.getContract(CONTRACT_NAME_CRONJOB));
-            cron.addCronJob(
-                CONTRACT_NAME_GAMESTORE,
-                currentEpochEndTime.add(delay),
-                abi.encodeWithSignature("createGameAndEpoch()")
-            );
-
-            WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).setInterestToEarningsTracker(
-                activeEpochId,
-                EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).checkTotalForEpoch(activeEpochId)
-            );
-        }
-    }
-
-    /**
-    * @dev added to cronjob : Creates new Game and New Epoch
-    */
-    function createGameAndEpoch()
-    external
-    onlyContract(CONTRACT_NAME_CRONJOB)
-    {
-        timeFrame.setNewEpoch();
-        gameScheduled = scheduler.startGame();
-        WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL)).dissolveOldCreateNew();
     }
 }
