@@ -6,6 +6,8 @@ const EarningsTracker = artifacts.require("EarningsTracker");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
 const BigNumber = web3.utils.BN;
+const Register = artifacts.require("Register");
+const TimeFrame = artifacts.require("TimeFrame");
 require("chai")
   .use(require("chai-shallow-deep-equal"))
   .use(require("chai-bignumber")(BigNumber))
@@ -20,6 +22,12 @@ function weiToEther(w) {
 function timeout(s) {
   // console.log(`~~~ Timeout for ${s} seconds`);
   return new Promise(resolve => setTimeout(resolve, s * 1000));
+}
+
+function formatDate(timestamp) {
+  let date = new Date(null);
+  date.setSeconds(timestamp);
+  return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
 function setMessage(contract, funcName, argArray) {
@@ -40,6 +48,8 @@ module.exports = async (callback) => {
     let earningsTracker = await EarningsTracker.deployed();
     let ethieToken = await EthieToken.deployed();
     let withdrawPool = await WithdrawPool.deployed();
+    let register = await Register.deployed();
+    let timeFrame = await TimeFrame.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -47,6 +57,9 @@ module.exports = async (callback) => {
     const stakedTokens = new BigNumber(
       web3.utils.toWei("5", "ether")
     );
+
+    let epochID = await timeFrame.getActiveEpochID();
+    console.log(epochID.toString());
 
     let timeTillClaiming = await withdrawPool.timeUntilClaiming();
     console.log(
@@ -56,8 +69,23 @@ module.exports = async (callback) => {
     if (timeTillClaiming.toNumber() > 0) {
       await timeout(timeTillClaiming.toNumber());
     }
+
+    console.log(formatDate(await timeFrame.restDayStartTime()));
+    console.log(formatDate(await timeFrame.restDayEndTime()));
     
+    await proxy.execute(
+        "Register",
+        setMessage(register, "register", []),
+        {
+          from: accounts[47]
+        }
+      )
     console.log("Available for claiming...");
+
+    let boolean = await withdrawPool.getUnlocked(0);
+    console.log(boolean);
+    epochID = await timeFrame.getActiveEpochID();
+    console.log(epochID.toString());
 
     for (let i = 1; i < 4; i++) {
       //await withdrawPool.claimYield(poolId, {from: accounts[i]});

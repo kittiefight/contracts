@@ -321,6 +321,16 @@ contract WithdrawPool is Proxied, Guard {
         return weeklyPools[_poolID].allClaimedStakers;
     }
 
+    function getUnlocked(uint256 _poolID)
+    public
+    view
+    returns(bool)
+    {
+        return genericDB.getBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_poolID, "unlocked")));
+    }
+
      /**
       * @dev return the time remaining (in seconds) until time available for claiming the current pool
       * only current pool can be claimed
@@ -466,6 +476,11 @@ contract WithdrawPool is Proxied, Guard {
     {
         timeFrame.setEpochTimes(epochID);
 
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(epochID.sub(1), "unlocked")),
+            false);
+
         _startNewEpoch(epochID);
 
         emit PoolDissolved(epochID.sub(1), now);
@@ -494,7 +509,7 @@ contract WithdrawPool is Proxied, Guard {
         uint256 scheduledJob = cronJob.addCronJob(
             CONTRACT_NAME_WITHDRAW_POOL,
             newEpochStart,
-            abi.encodeWithSignature("(startNewEpoch(uint256)", epochID.add(1)));
+            abi.encodeWithSignature("startNewEpoch(uint256)", epochID.add(1)));
 
         genericDB.setUintStorage(
             CONTRACT_NAME_WITHDRAW_POOL,
@@ -517,11 +532,6 @@ contract WithdrawPool is Proxied, Guard {
             keccak256(abi.encode("rest_day")),
             false);
 
-        genericDB.setBoolStorage(
-            CONTRACT_NAME_WITHDRAW_POOL,
-            keccak256(abi.encodePacked(epochID.sub(1), "unlocked")),
-            false);
-
         earningsTrackerDB.setInvestment(epochID, investment);
 
         genericDB.setUintStorage(
@@ -536,7 +546,7 @@ contract WithdrawPool is Proxied, Guard {
         uint256 scheduledJob = cronJob.addCronJob(
             CONTRACT_NAME_WITHDRAW_POOL,
             restDayStart,
-            abi.encodeWithSignature("(startRestDay(uint256)", epochID));
+            abi.encodeWithSignature("startRestDay(uint256)", epochID));
 
         genericDB.setUintStorage(
             CONTRACT_NAME_WITHDRAW_POOL,
