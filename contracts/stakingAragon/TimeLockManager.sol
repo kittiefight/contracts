@@ -107,6 +107,7 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
     /**
      * @notice Check if the owner can unlock the funds, i.e., if current timestamp is outside the lock interval
      * @param _owner Owner of the locked funds
+     * @param _amount Amount of locked tokens to unlock.
      * @return True if current timestamp is outside the lock interval
      */
     function canUnlock(address _owner, uint256 _amount) external view returns (bool) {
@@ -132,9 +133,9 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
         // Locked amount for an epoch cannot be unlocked until the end of this epoch
         // Since at the time of query, current epoch is not at the end yet (otherwise next epoch will be current epoch),
         // neither locked amount for current epoch nor locked amount for next epoch can be unlocked at this time.
-        // However, the amount locked for epochs preceding current epoch can be unlocked 
+        // However, the amount locked for epochs preceding current epoch can be unlocked
         if (currentTimeInterval.amount > 0 || nextTimeInterval.amount > 0) {
-            return _amount > totalAmount.sub(amountCurrentNext);
+            return _amount <= totalAmount.sub(amountCurrentNext);
         }
 
         return false;
