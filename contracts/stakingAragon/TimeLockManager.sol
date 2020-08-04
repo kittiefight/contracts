@@ -171,4 +171,11 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
         }
         return false;
     }
+
+    /**
+     * @notice This function returns the address of TimeLockManager
+     */
+    function getTimeLockManager() external view returns (address) {
+        return address(this);
+    }
 }
