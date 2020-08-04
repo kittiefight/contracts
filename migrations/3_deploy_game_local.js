@@ -27,6 +27,7 @@ const EndowmentDB = artifacts.require('EndowmentDB')
 const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
+const KittieHellDungeon = artifacts.require('KittieHellDungeon')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('KittieFightToken');
 const CryptoKitties = artifacts.require('MockERC721Token');
@@ -38,7 +39,8 @@ const EthieToken = artifacts.require('EthieToken')
 const EarningsTracker = artifacts.require('EarningsTracker')
 const EarningsTrackerDB = artifacts.require('EarningsTrackerDB')
 const WithdrawPool = artifacts.require('WithdrawPool')
-const MockStaking = artifacts.require('MockStaking')
+const Staking = artifacts.require('Staking')
+const TimeLockManager = artifacts.require('TimeLockManager')
 const Factory = artifacts.require('UniswapV2Factory')
 const WETH = artifacts.require('WETH9')
 const KtyWethPair = artifacts.require('IUniswapV2Pair')
@@ -153,10 +155,12 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(RarityCalculator))
         .then(() => deployer.deploy(EndowmentFund))
         .then(() => deployer.deploy(KittieHELL))
+        .then(() => deployer.deploy(KittieHellDungeon, CryptoKitties.address))
         .then(() => deployer.deploy(EthieToken))
         .then(() => deployer.deploy(EarningsTracker))
         .then(() => deployer.deploy(EarningsTrackerDB, GenericDB.address))
-        .then(() => deployer.deploy(MockStaking))
+        .then(() => deployer.deploy(Staking))
+        .then(() => deployer.deploy(TimeLockManager))
         .then(() => deployer.deploy(WithdrawPool))
         .then(() => deployer.deploy(KtyUniswap))
         .then(() => deployer.deploy(Router))
@@ -198,6 +202,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('CronJobTarget', CronJobTarget.address);
             await proxy.addContract('KittieHell', KittieHELL.address)
             await proxy.addContract('KittieHellDB', KittieHellDB.address)
+            await proxy.addContract('KittieHellDungeon', KittieHellDungeon.address)
             await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
             await proxy.addContract('EarningsTracker', EarningsTracker.address)
             await proxy.addContract('EarningsTrackerDB', EarningsTrackerDB.address)
@@ -314,6 +319,8 @@ module.exports = (deployer, network, accounts) => {
             console.log(endowmentFund.address)
             kittieHELL = await KittieHELL.deployed()
             console.log(kittieHELL.address)
+            kittieHellDungeon = await KittieHellDungeon.deployed()
+            console.log(kittieHellDungeon.address)
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
             console.log(honeypotAllocationAlgo.address)
             earningsTracker = await EarningsTracker.deployed()
@@ -324,9 +331,11 @@ module.exports = (deployer, network, accounts) => {
             withdrawPool = await WithdrawPool.deployed()
             console.log(withdrawPool.address)
             
-            // staking - a mock contract of Aragon's staking contract
-            staking = await MockStaking.deployed()
+            // staking - Aragon's staking contract
+            staking = await Staking.deployed()
             console.log(staking.address)
+            timeLockManager = await TimeLockManager.deployed()
+            console.log(timeLockManager.address)
 
             //ESCROW
             escrow = await Escrow.deployed()
@@ -359,6 +368,7 @@ module.exports = (deployer, network, accounts) => {
             await cronJob.setProxy(proxy.address)
             await kittieHELL.setProxy(proxy.address)
             await kittieHellDB.setProxy(proxy.address)
+            await kittieHellDungeon.setProxy(proxy.address)
             await cronJobTarget.setProxy(proxy.address);
             await freezeInfo.setProxy(proxy.address);
             await honeypotAllocationAlgo.setProxy(proxy.address)
@@ -384,13 +394,14 @@ module.exports = (deployer, network, accounts) => {
             await getterDB.initialize()
             await setterDB.initialize()
             await endowmentFund.initialize()
-            await kittieHellDB.setKittieHELL()
+            await kittieHellDB.initialize()
             await kittieHELL.initialize()
             await hitsResolve.initialize()
             await earningsTracker.initialize()
             await earningsTrackerDB.initialize()
-            await withdrawPool.initialize(MockStaking.address, SuperDaoToken.address)
+            await withdrawPool.initialize(TimeLockManager.address, SuperDaoToken.address)
             await staking.initialize(SuperDaoToken.address)
+            await timeLockManager.initialize(Staking.address, TimeFrame.address)
             await ktyWethOracle.initialize()
             await router.initialize(Factory.address, WETH.address)
             await ktyUniswap.initialize()

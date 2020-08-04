@@ -236,6 +236,11 @@ contract GMSetterDB is Proxied {
   }
 
   // ==== CRONJOBS FUNCTIONS
+
+  function setCronJobForGame(uint256 gameId, uint256 jobId) external onlyContract(CONTRACT_NAME_GAMECREATION) {
+    return genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "cronJobForGame")), jobId);
+  }
+
   function updateGameStateCron(uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)

@@ -16,6 +16,7 @@ contract ContractNames {
     string constant CONTRACT_NAME_KITTIEFIGHTOKEN   = "KittieFightToken";
     string constant CONTRACT_NAME_KITTIEHELL        = "KittieHell";
     string constant CONTRACT_NAME_KITTIEHELL_DB     = "KittieHellDB";
+    string constant CONTRACT_NAME_KITTIEHELL_DUNGEON     = "KittieHellDungeon";
     string constant CONTRACT_NAME_GAMEMANAGER       = "GameManager";
     string constant CONTRACT_NAME_GAMESTORE         = "GameStore";
     string constant CONTRACT_NAME_GAMECREATION      = "GameCreation";

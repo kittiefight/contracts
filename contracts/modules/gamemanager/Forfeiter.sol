@@ -19,6 +19,7 @@ import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
 import '../kittieHELL/KittieHell.sol';
+import '../kittieHELL/KittieHellDungeon.sol';
 
 
 /**
@@ -34,6 +35,7 @@ contract Forfeiter is Proxied {
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
   KittieHell public kittieHELL;
+  KittieHellDungeon public kittieHellDungeon;
 
   uint256 public constant UNDERSUPPORTED = 0;
   uint256 public constant KITTIE_LEFT = 1;
@@ -52,6 +54,7 @@ contract Forfeiter is Proxied {
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+    kittieHellDungeon = KittieHellDungeon(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON));
   }
 
   /**
@@ -97,8 +100,10 @@ contract Forfeiter is Proxied {
   function forfeitGame(uint256 gameId, string memory reason) internal {
     (/*address playerBlack*/, /*address playerRed*/, uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    kittieHELL.releaseKittyGameManager(kittyBlack);
-    kittieHELL.releaseKittyGameManager(kittyRed);
+    // kittieHELL.releaseKittyGameManager(kittyBlack);
+    // kittieHELL.releaseKittyGameManager(kittyRed);
+    if(ckc.ownerOf(kittyBlack) == address(kittieHellDungeon)) kittieHELL.releaseKittyGameManager(kittyBlack);
+    if(ckc.ownerOf(kittyRed) == address(kittieHellDungeon)) kittieHELL.releaseKittyGameManager(kittyRed);
     gameManager.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }
@@ -144,11 +149,11 @@ contract Forfeiter is Proxied {
     bool checkRed;
 
     //When one player hits start, that kittie is owned by kittieHELL
-    if (ckc.ownerOf(kittieIdBlack) == address(kittieHELL)) checkBlack = true;
+    if (ckc.ownerOf(kittieIdBlack) == address(kittieHellDungeon)) checkBlack = true;
     else if(ckc.ownerOf(kittieIdBlack) == playerBlack) checkBlack = true;
     else checkBlack = false;
 
-    if(ckc.ownerOf(kittieIdRed) == address(kittieHELL)) checkRed = true;
+    if(ckc.ownerOf(kittieIdRed) == address(kittieHellDungeon)) checkRed = true;
     else if(ckc.ownerOf(kittieIdRed) == playerRed) checkRed = true;
     else checkRed = false;
 

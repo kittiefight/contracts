@@ -30,6 +30,7 @@ const EndowmentFund = artifacts.require("EndowmentFund");
 const EndowmentDB = artifacts.require("EndowmentDB");
 const Escrow = artifacts.require("Escrow");
 const KittieHELL = artifacts.require("KittieHell");
+const KittieHellDungeon = artifacts.require("KittieHellDungeon")
 const KittieHellDB = artifacts.require("KittieHellDB");
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require("KittieFightToken");
@@ -39,7 +40,8 @@ const FreezeInfo = artifacts.require("FreezeInfo");
 const CronJobTarget = artifacts.require("CronJobTarget");
 const TimeFrame = artifacts.require("TimeFrame");
 const WithdrawPool = artifacts.require("WithdrawPool");
-const MockStaking = artifacts.require("MockStaking");
+const Staking = artifacts.require("Staking");
+const TimeLockManager = artifacts.require('TimeLockManager')
 const EthieToken = artifacts.require("EthieToken");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
@@ -110,6 +112,7 @@ let proxy,
   rarityCalculator,
   kittieHell,
   kittieHellDB,
+  kittieHellDungeon,
   getterDB,
   setterDB,
   gameManager,
@@ -119,6 +122,7 @@ let proxy,
   timeFrame,
   withdrawPool,
   staking,
+  timeLockManager,
   earningsTracker,
   earningsTrackerDB,
   ethieToken,
@@ -186,6 +190,7 @@ contract("GameManager", accounts => {
     rarityCalculator = await RarityCalculator.deployed();
     endowmentFund = await EndowmentFund.deployed();
     kittieHell = await KittieHELL.deployed();
+    kittieHellDungeon = await KittieHellDungeon.deployed();
     earningsTracker = await EarningsTracker.deployed();
 
     //ESCROW
@@ -195,7 +200,8 @@ contract("GameManager", accounts => {
     withdrawPool = await WithdrawPool.deployed();
 
     // staking - a mock contract of Aragon's staking contract
-    staking = await MockStaking.deployed();
+    staking = await Staking.deployed();
+    timeLockManager = await TimeLockManager.deployed();
   });
 
   it("set up uniswap environment", async () => {
@@ -349,7 +355,7 @@ contract("GameManager", accounts => {
 
     await cryptoKitties.mint(accounts[1], kitties[0], {from: accounts[0]})
       .should.be.fulfilled;
-    await cryptoKitties.approve(kittieHell.address, kitties[0], {
+    await cryptoKitties.approve(kittieHellDungeon.address, kitties[0], {
       from: accounts[1]
     }).should.be.fulfilled;
     await proxy.execute(
@@ -406,7 +412,25 @@ contract("GameManager", accounts => {
         `Balance of staker ${i} after staking:`,
         weiToEther(balAfter)
       );
+
+      await staking.allowManager(timeLockManager.address, stakedTokens, '0x', { from: accounts[i] })
+
+      await timeLockManager.lock(stakedTokens, { from: accounts[i] });
     }
+
+    let lockEvents = await timeLockManager.getPastEvents('SuperDaoTokensLocked', {
+      fromBlock: 0,
+      toBlock: "latest"
+    })
+
+    lockEvents.map(async (e) => {
+      console.log('\n==== SuperDao Tokens Locked ===');
+      console.log('    staker ', e.returnValues.user)
+      console.log('    for Epoch ', e.returnValues.nextEpochId)
+      console.log('    locked amount ', weiToEther(e.returnValues.amount))
+      console.log('    totla locked amount ', weiToEther(e.returnValues.totalAmount))
+      console.log('========================\n')
+    })
 
     await ethieToken.addMinter(earningsTracker.address);
     await earningsTrackerDB.setCurrentFundingLimit();
@@ -1264,7 +1288,7 @@ contract("GameManager", accounts => {
     }
 
     for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], {
+      await cryptoKitties.approve(kittieHellDungeon.address, sacrificeKitties[i], {
         from: loser
       });
     }
