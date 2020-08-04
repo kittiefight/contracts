@@ -79,6 +79,13 @@ contract SchedulerDB is Proxied {
         return genericDB.setUintStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked("noOfKittiesListed")), noOfKittiesListed);
     }
 
+    function getKittyId(uint256 idx) internal view returns(uint256){
+        return genericDB.getUintStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked(idx, "kittyList")));  
+    }
+    function setKittyId(uint256 idx, uint256 kittyId) internal{
+        genericDB.setUintStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked(idx, "kittyList")), kittyId);  
+    }
+
     function getImmediateStart() internal view returns(bool){
         return genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked("immediateStart")));  
     }

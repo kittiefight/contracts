@@ -63,11 +63,11 @@ contract Scheduler is Proxied, SchedulerDB {
     // uint256 noOfGames;
 
     //mapping(uint256 => address) kittyOwner;
-    mapping(uint256 => uint256) kittyList;
+    //mapping(uint256 => uint256) kittyList;
 
     //uint256 noOfKittiesListed;
 
-    uint256 randomNonce;
+    //uint256 randomNonce;
 
     //mapping(uint256 => bool) public isKittyListed;
 
@@ -141,7 +141,7 @@ contract Scheduler is Proxied, SchedulerDB {
         uint noOfKittiesListed = getNoOfKittiesListed();
 
         setKittyListed(_kittyId, true);
-        kittyList[noOfKittiesListed] = _kittyId;
+        setKittyId(noOfKittiesListed, _kittyId);    //kittyList[noOfKittiesListed] = _kittyId;
         setKittyOwner(_kittyId, _player);   //kittyOwner[_kittyId] = _player;
         
         noOfKittiesListed = noOfKittiesListed.add(1);
@@ -198,7 +198,7 @@ contract Scheduler is Proxied, SchedulerDB {
         uint256 noOfKittiesListed = getNoOfKittiesListed();
         uint256[] memory listedKitties = new uint256[](noOfKittiesListed);
         for (uint256 i = 0; i < noOfKittiesListed; i++){
-            listedKitties[i] = kittyList[i];
+            listedKitties[i] = getKittyId(i);
         }
         return listedKitties;
     }
@@ -210,7 +210,7 @@ contract Scheduler is Proxied, SchedulerDB {
         uint256 noOfKittiesListed = getNoOfKittiesListed();
         address[] memory listedPlayers = new address[](noOfKittiesListed);
         for (uint256 i = 0; i < noOfKittiesListed; i++){
-            listedPlayers[i] = getKittyOwner(kittyList[i]);
+            listedPlayers[i] = getKittyOwner(getKittyId(i));
         }
         return listedPlayers;
     }
@@ -276,13 +276,11 @@ contract Scheduler is Proxied, SchedulerDB {
         uint noOfKittiesListed = getNoOfKittiesListed();
 
         Game memory game;
-        // game.playerRed = kittyOwner[kittyList[noOfKittiesListed.sub(1)]];
-        // game.playerBlack = kittyOwner[kittyList[noOfKittiesListed.sub(2)]];
-        game.kittyRed = kittyList[noOfKittiesListed.sub(1)];
-        game.kittyBlack = kittyList[noOfKittiesListed.sub(2)];
+        game.kittyRed = getKittyId(noOfKittiesListed.sub(1));
+        game.kittyBlack = getKittyId(noOfKittiesListed.sub(2));
 
-        setKittyListed(kittyList[noOfKittiesListed.sub(1)],false);
-        setKittyListed(kittyList[noOfKittiesListed.sub(2)],false);
+        setKittyListed(game.kittyRed,false);
+        setKittyListed(game.kittyBlack,false);
 
         uint noOfGames = getNoOfGames().add(1);
         noOfKittiesListed = noOfKittiesListed.sub(2);
@@ -310,13 +308,11 @@ contract Scheduler is Proxied, SchedulerDB {
         uint256 noOfKittiesListed = getNoOfKittiesListed();
 
         for(uint256 i = 0; i < noOfKittiesListed.div(2); i += 2) {
-            // game.playerRed = kittyOwner[kittyList[i]];
-            // game.playerBlack = kittyOwner[kittyList[i.add(1)]];
-            game.kittyRed = kittyList[i];
-            game.kittyBlack = kittyList[i.add(1)];
+            game.kittyRed = getKittyId(i);
+            game.kittyBlack = getKittyId(i.add(1));
 
-            setKittyListed(kittyList[i], false);
-            setKittyListed(kittyList[i.add(1)], false);
+            setKittyListed(game.kittyRed, false);
+            setKittyListed(game.kittyBlack, false);
 
             noOfGames = noOfGames.add(1);
 
@@ -376,10 +372,10 @@ contract Scheduler is Proxied, SchedulerDB {
     function shuffleKittyList() internal {
         uint256 noOfKittiesListed = getNoOfKittiesListed();
         for(uint256 i = 0; i < noOfKittiesListed; i++) {
-            uint256 tempKitty = kittyList[i];
-            uint256 index = randomNumber(noOfKittiesListed);
-            kittyList[i] = kittyList[index];
-            kittyList[index] = tempKitty;
+            uint256 tempKitty = getKittyId(i);
+            uint256 index = randomNumber(noOfKittiesListed, i);
+            setKittyId(i, getKittyId(index));
+            setKittyId(index, tempKitty);
         }
     }
 
@@ -387,10 +383,8 @@ contract Scheduler is Proxied, SchedulerDB {
      * @dev This function is providing a random number between 0 and max.
      * @param max The number generated is less than max (not euqal).
      */
-    function randomNumber(uint256 max) internal returns (uint256){
-        uint256 random = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, randomNonce))).mod(max);
-        randomNonce = randomNonce.add(1);
-        return random;
+    function randomNumber(uint256 max, uint256 iteration) internal returns (uint256){
+        return uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, iteration))).mod(max);
     }
 
 
