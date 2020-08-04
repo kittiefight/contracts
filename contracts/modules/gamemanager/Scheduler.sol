@@ -31,6 +31,7 @@ import "../../interfaces/ERC721.sol";
 import "../kittieHELL/KittieHell.sol";
 import "./GameStore.sol";
 import "../databases/GenericDB.sol";
+import "../databases/SchedulerDB.sol";
 
 /**
  * @title Scheduler
@@ -38,7 +39,7 @@ import "../databases/GenericDB.sol";
  * @author @Xaleee
  */
 
-contract Scheduler is Proxied {
+contract Scheduler is Proxied, SchedulerDB {
     using SafeMath for uint256;
 
     GameCreation public gameCreation;
@@ -46,32 +47,31 @@ contract Scheduler is Proxied {
     KittieHell public kittieHell;
     ERC721 public cryptoKitties;
     GameStore public gameStore;
-    GenericDB public genericDB;
 
     struct Game {
-        address playerRed;
-        address playerBlack;
+        // address playerRed;
+        // address playerBlack;
         uint256 kittyRed;
         uint256 kittyBlack;
         uint256 next;
     }
 
-    mapping(uint256 => Game) public gameList;
+    //mapping(uint256 => Game) public gameList;
 
-    uint256 headGame;
-    uint256 tailGame;
-    uint256 noOfGames;
+    // uint256 headGame;
+    // uint256 tailGame;
+    // uint256 noOfGames;
 
-    mapping(uint256 => address) kittyOwner;
+    //mapping(uint256 => address) kittyOwner;
     mapping(uint256 => uint256) kittyList;
 
-    uint256 noOfKittiesListed;
+    //uint256 noOfKittiesListed;
 
     uint256 randomNonce;
 
-    mapping(uint256 => bool) public isKittyListed;
+    //mapping(uint256 => bool) public isKittyListed;
 
-    bool immediateStart = true;
+    //bool immediateStart = true;
 
     /*                                                GENERAL VARIABLES                                               */
     /*                                                       END                                                      */
@@ -82,7 +82,7 @@ contract Scheduler is Proxied {
     /* ============================================================================================================== */
 
     modifier onlyUnlistedKitty(uint256 _kittyId) { 
-        require(!isKittyListed[_kittyId], "Scheduler: Cannot list same Kitty again");
+        require(!getKittyListed(_kittyId), "Scheduler: Cannot list same Kitty again");
         _;
     }    
 
@@ -138,18 +138,22 @@ contract Scheduler is Proxied {
     onlyUnlistedKitty(_kittyId)
     {
         require(kittieHell.acquireKitty(_kittyId, _player));
-        isKittyListed[_kittyId] = true;
+        uint noOfKittiesListed = getNoOfKittiesListed();
+
+        setKittyListed(_kittyId, true);
         kittyList[noOfKittiesListed] = _kittyId;
-        kittyOwner[_kittyId] = _player;
+        setKittyOwner(_kittyId, _player);   //kittyOwner[_kittyId] = _player;
         
         noOfKittiesListed = noOfKittiesListed.add(1);
+        setNoOfKittiesListed(noOfKittiesListed);
+        bool immediateStart = getImmediateStart();
 
         if(noOfKittiesListed >= 2) {
             if((gameVarAndFee.getRequiredNumberMatches().mul(2)) == noOfKittiesListed)
                 matchKitties();
             else if(immediateStart) {
                 createFlashGame();
-                immediateStart = false;
+                setImmediateStart(false); //immediateStart = false;
             }
         }
     }
@@ -165,6 +169,8 @@ contract Scheduler is Proxied {
     onlyContract(CONTRACT_NAME_GAMESTORE)
     returns(bool)
     {
+        uint noOfKittiesListed = getNoOfKittiesListed();
+        uint headGame = getHeadGame();        
         if(headGame == 0) {
             if(noOfKittiesListed >= 2)
                 createFlashGame();
@@ -189,6 +195,7 @@ contract Scheduler is Proxied {
      * @dev This function is returning the kitties that are listed in kittyList.
      */
     function getListedKitties() public view returns (uint256[] memory){
+        uint256 noOfKittiesListed = getNoOfKittiesListed();
         uint256[] memory listedKitties = new uint256[](noOfKittiesListed);
         for (uint256 i = 0; i < noOfKittiesListed; i++){
             listedKitties[i] = kittyList[i];
@@ -200,9 +207,10 @@ contract Scheduler is Proxied {
      * @dev This function is returning the addresses of players that their Kitties are listed in kittyList.
      */
     function getListedPlayers() public view returns (address[] memory){
+        uint256 noOfKittiesListed = getNoOfKittiesListed();
         address[] memory listedPlayers = new address[](noOfKittiesListed);
         for (uint256 i = 0; i < noOfKittiesListed; i++){
-            listedPlayers[i] = kittyOwner[kittyList[i]];
+            listedPlayers[i] = getKittyOwner(kittyList[i]);
         }
         return listedPlayers;
     }
@@ -215,7 +223,7 @@ contract Scheduler is Proxied {
     view
     returns(bool)
     {
-        return isKittyListed[_kittyId];
+        return getKittyListed(_kittyId);
     }
 
     // return amount in dai
@@ -265,22 +273,27 @@ contract Scheduler is Proxied {
     {
         shuffleKittyList();
 
+        uint noOfKittiesListed = getNoOfKittiesListed();
+
         Game memory game;
-        game.playerRed = kittyOwner[kittyList[noOfKittiesListed.sub(1)]];
-        game.playerBlack = kittyOwner[kittyList[noOfKittiesListed.sub(2)]];
+        // game.playerRed = kittyOwner[kittyList[noOfKittiesListed.sub(1)]];
+        // game.playerBlack = kittyOwner[kittyList[noOfKittiesListed.sub(2)]];
         game.kittyRed = kittyList[noOfKittiesListed.sub(1)];
         game.kittyBlack = kittyList[noOfKittiesListed.sub(2)];
 
-        isKittyListed[kittyList[noOfKittiesListed.sub(1)]] = false;
-        isKittyListed[kittyList[noOfKittiesListed.sub(2)]] = false;
+        setKittyListed(kittyList[noOfKittiesListed.sub(1)],false);
+        setKittyListed(kittyList[noOfKittiesListed.sub(2)],false);
 
-        noOfGames = noOfGames.add(1);
+        uint noOfGames = getNoOfGames().add(1);
         noOfKittiesListed = noOfKittiesListed.sub(2);
 
-        gameList[noOfGames] = game;
-        headGame = noOfGames;
+        setGame(noOfGames, encodeGame(game)); //gameList[noOfGames] = game;
+        setHeadGame(noOfGames);
 
         _startGame();
+
+        setNoOfKittiesListed(noOfKittiesListed);
+        setNoOfGames(noOfGames);
     }
 
     /**
@@ -291,31 +304,42 @@ contract Scheduler is Proxied {
         shuffleKittyList();
 
         Game memory game;
+        uint256 noOfGames = getNoOfGames();
+        uint256 headGame = getHeadGame();
+        uint256 tailGame = getTailGame();
+        uint256 noOfKittiesListed = getNoOfKittiesListed();
 
         for(uint256 i = 0; i < noOfKittiesListed.div(2); i += 2) {
-            game.playerRed = kittyOwner[kittyList[i]];
-            game.playerBlack = kittyOwner[kittyList[i.add(1)]];
+            // game.playerRed = kittyOwner[kittyList[i]];
+            // game.playerBlack = kittyOwner[kittyList[i.add(1)]];
             game.kittyRed = kittyList[i];
             game.kittyBlack = kittyList[i.add(1)];
 
-            isKittyListed[kittyList[i]] = false;
-            isKittyListed[kittyList[i.add(1)]] = false;
+            setKittyListed(kittyList[i], false);
+            setKittyListed(kittyList[i.add(1)], false);
 
             noOfGames = noOfGames.add(1);
 
-            if(headGame == 0)
+            if(headGame == 0) {
                 headGame = noOfGames;
-            else
-                gameList[tailGame].next = noOfGames;
+            } else {
+                setGameProperty_next(tailGame, noOfGames); //gameList[tailGame].next = noOfGames;
+            }
 
             tailGame = noOfGames;
-            gameList[noOfGames] = game;
+            setGame(noOfGames, encodeGame(game));//gameList[noOfGames] = game;
         }
 
-        noOfKittiesListed = 0;
+        setHeadGame(headGame);
+        setTailGame(tailGame);
+        setNoOfGames(noOfGames);
+        setNoOfKittiesListed(0); //noOfKittiesListed = 0;
 
-        if(immediateStart)
+        bool immediateStart = getImmediateStart();
+        if(immediateStart) {
             immediateStart = !(_startGame());
+            setImmediateStart(immediateStart);
+        }
     }
 
     /**
@@ -331,15 +355,17 @@ contract Scheduler is Proxied {
             || !genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
             return false;
 
+        uint256 headGame = getHeadGame();
+        Game memory game = decodeGame(getGame(headGame));
         gameCreation.createFight(
-            gameList[headGame].playerRed,
-            gameList[headGame].playerBlack,
-            gameList[headGame].kittyRed,
-            gameList[headGame].kittyBlack,
+            getKittyOwner(game.kittyRed),
+            getKittyOwner(game.kittyBlack),
+            game.kittyRed,
+            game.kittyBlack,
             gameStartTime
         );
 
-        headGame = gameList[headGame].next;
+        setHeadGame(game.next);
         return true;
     }
 
@@ -348,6 +374,7 @@ contract Scheduler is Proxied {
      * @dev This function is shuffling the list of Kitties, for random matching.
      */
     function shuffleKittyList() internal {
+        uint256 noOfKittiesListed = getNoOfKittiesListed();
         for(uint256 i = 0; i < noOfKittiesListed; i++) {
             uint256 tempKitty = kittyList[i];
             uint256 index = randomNumber(noOfKittiesListed);
@@ -365,6 +392,39 @@ contract Scheduler is Proxied {
         randomNonce = randomNonce.add(1);
         return random;
     }
+
+
+    function setGameProperty_next(uint256 gameId, uint256 newNext) internal {
+        Game memory game = decodeGame(getGame(gameId));
+        game.next = newNext;
+        setGame(gameId, encodeGame(game));
+    }
+
+    function encodeGame(Game memory game) internal pure returns(bytes memory){
+        return abi.encode(
+            // game.playerRed;
+            // game.playerBlack;
+            game.kittyRed,
+            game.kittyBlack,
+            game.next
+        );
+    }
+
+    function decodeGame(bytes memory encGame) internal pure returns(Game memory game){
+        if(encGame.length == 0) {
+            game = Game({
+                // playerRed: address(0),
+                // playerBlack: address(0),
+                kittyRed: 0,
+                kittyBlack: 0,
+                next:0
+            });
+        }else{
+            (uint256 kittyRed, uint256 kittyBlack, uint256 next) = abi.decode(encGame, (uint256, uint256, uint256));
+            game = Game(kittyRed, kittyBlack, next);
+        }
+    }
+
     
     /*                                                INTERNAL FUNCTIONS                                              */
     /*                                                       END                                                      */
