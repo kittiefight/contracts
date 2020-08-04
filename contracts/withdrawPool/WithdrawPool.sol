@@ -162,9 +162,8 @@ contract WithdrawPool is Proxied, Guard {
 
         address payable msgSender = address(uint160(getOriginalSender()));
 
-        (,,,uint256 lockedAmount) = timeLockManager.getTimeInterval(msgSender, pool_id);
-        // check if claimer has locked SuperDao tokens for this epoch
-        require(lockedAmount > 0, "No tokens locked for this epoch");
+        // check claimer's eligibility for claiming pool from this epoch
+        require(timeLockManager.isEligible(msgSender, pool_id), "No tokens locked for this epoch");
 
         require(stakers[msgSender].claimed[pool_id] == false, "Already claimed from this pool");
 

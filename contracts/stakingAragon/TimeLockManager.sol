@@ -150,4 +150,25 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
     function getTotalLockedForEpoch(uint256 _epoch) external view returns (uint256) {
         return totalLockedPerEpoch[_epoch];
     }
+
+    /**
+     * @notice Check if the owner is eligible for claiming from a pool associated with _epoch
+     * @dev Only eligibility for current epoch or next epoch is relevant, because pools in past epochs cannot be claimed.
+     * @param _owner Owner of the locked funds
+     * @param _epoch Epoch ID associated with the locked amount, only current or next epoch is relevant
+     * @return True if _owner is eligible for claiming for a pool associated with _epoch
+     */
+    function isEligible(address _owner, uint256 _epoch) external view returns (bool) {
+        uint256 currentEpoch = timeFrame.getActiveEpochID();
+        // Eligiblity is only relevant for current epoch or next epoch.
+        require(_epoch >= currentEpoch, "TimeLockManager: cannot claim pools in past epochs");
+        // At time of query, if total amount locked via TimeLockManager by _owner is 0, this means either the _owner
+        // never locks for any epoch, or has unlocked all SuperDao tokens in each epoch including current
+        // epoch and next epoch.
+        (uint256 totalLocked,) = staking.getLock(_owner, address(this));
+        if( totalLocked > 0 && timeIntervals[_owner][_epoch].amount > 0) {
+            return true;
+        }
+        return false;
+    }
 }
