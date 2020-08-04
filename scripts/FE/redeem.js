@@ -2,6 +2,7 @@ const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const KittieHell = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require("KittieHellDB");
+const KittieHellDungeon = artifacts.require("KittieHellDungeon");
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken')
 const CryptoKitties = artifacts.require('MockERC721Token');
@@ -31,6 +32,7 @@ module.exports = async (callback) => {
     let getterDB = await GMGetterDB.deployed();
     let kittieHell = await KittieHell.deployed();
     let kittieHellDB = await KittieHellDB.deployed();
+    let kittieHellDungeon = await KittieHellDungeon.deployed();
     let endowmentFund = await EndowmentFund.deployed();
     let kittieFightToken = await KittieFightToken.deployed();
     let cryptoKitties = await CryptoKitties.deployed();
@@ -74,7 +76,7 @@ module.exports = async (callback) => {
     }
 
     for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], {
+      await cryptoKitties.approve(kittieHellDungeon.address, sacrificeKitties[i], {
         from: loser
       });
     }

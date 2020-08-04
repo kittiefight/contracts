@@ -16,6 +16,7 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfProfileDB() public view returns(address)         {return getContract(CONTRACT_NAME_PROFILE_DB);}
      function addressOfKittieHell() public view returns(address)        {return getContract(CONTRACT_NAME_KITTIEHELL);}
      function addressOfKittieHellDB() public view returns(address)      {return getContract(CONTRACT_NAME_KITTIEHELL_DB);}
+     function addressOfKittieHellDungeon() public view returns(address) {return getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON);}
      function addressOfGameManager() public view returns(address)       {return getContract(CONTRACT_NAME_GAMEMANAGER);}
      function addressOfGMSetterDB() public view returns(address)        {return getContract(CONTRACT_NAME_GM_SETTER_DB);}
      function addressOfGMGetterDB() public view returns(address)        {return getContract(CONTRACT_NAME_GM_GETTER_DB);}

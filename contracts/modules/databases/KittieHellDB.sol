@@ -27,7 +27,7 @@ import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../../interfaces/ERC721.sol";
 import "../kittieHELL/KittieHell.sol";
-
+import "../kittieHELL/KittieHellDungeon.sol";
 /**
  * @title KittieHellDB
  * @author @kittieFIGHT @ziweidream
@@ -38,6 +38,8 @@ contract KittieHellDB is Proxied, Guard {
 
     GenericDB public genericDB;
     KittieHell public kittieHELL;
+    KittieHellDungeon public kittieHellDungeon;
+    ERC721 public cryptoKitties;
 
     bytes32 internal constant TABLE_KEY_KITTIEHELL = keccak256(abi.encodePacked("KittieHellTable"));
     string internal constant ERROR_ALREADY_EXIST = "Ghost already exists in Hell";
@@ -51,8 +53,10 @@ contract KittieHellDB is Proxied, Guard {
       genericDB = GenericDB(_genericDB);
    }
 
-    function setKittieHELL() public onlyOwner {
+    function initialize() public onlyOwner {
       kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+      kittieHellDungeon = KittieHellDungeon(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON));
+      cryptoKitties = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
   /**
@@ -140,9 +144,9 @@ contract KittieHellDB is Proxied, Guard {
       public
       onlyContract(CONTRACT_NAME_KITTIEHELL)
   {
-    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_sacrificeKittie) == _owner);
-    ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).transferFrom(_owner, address(this), _sacrificeKittie);
-    require(ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).ownerOf(_sacrificeKittie) == address(this));
+    require(cryptoKitties.ownerOf(_sacrificeKittie) == _owner, "Not the owner of this kittie");
+    kittieHellDungeon.transferFrom(_owner, _sacrificeKittie);
+    require(cryptoKitties.ownerOf(_sacrificeKittie) == address(kittieHellDungeon), "Kittie not in dungeon");
     uint256 _id = getLastGhostId().add(1);
     fallToHell(_id);
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_id, "kittieId")), _sacrificeKittie);
@@ -267,6 +271,14 @@ contract KittieHellDB is Proxied, Guard {
    */
   function setGhostifyJob(uint256 _kittieID, uint256 job) public onlyContract(CONTRACT_NAME_KITTIEHELL) {
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostifyJob")), job);  
+  }
+
+  function getKittieStatus(uint256 _kittieID) external view onlyContract(CONTRACT_NAME_KITTIEHELL) returns(bytes memory){
+    return genericDB.getBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")));  
+  }
+
+  function setKittieStatus(uint256 _kittieID, bytes calldata encodedStatus) external onlyContract(CONTRACT_NAME_KITTIEHELL) {
+    genericDB.setBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")), encodedStatus);  
   }
 
   event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);

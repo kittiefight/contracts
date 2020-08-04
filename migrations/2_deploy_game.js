@@ -420,7 +420,7 @@ module.exports = (deployer, network, accounts) => {
     //         await getterDB.initialize()
     //         await setterDB.initialize()
     //         await endowmentFund.initialize()
-    //         await kittieHellDB.setKittieHELL()
+    //         await kittieHellDB.initialize()
     //         await kittieHELL.initialize()
     //         await hitsResolve.initialize()
     //         await earningsTracker.initialize(EthieToken_rinkeby_ADDRESS)

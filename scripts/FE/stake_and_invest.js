@@ -1,7 +1,8 @@
 const KFProxy = artifacts.require('KFProxy')
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require('KittieFightToken');
-const MockStaking = artifacts.require("MockStaking");
+const Staking = artifacts.require("Staking");
+const TimeLockManager = artifacts.require("TimeLockManager");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
 const EthieToken = artifacts.require("EthieToken");
@@ -31,7 +32,8 @@ module.exports = async (callback) => {
   try{
     let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
-    let staking = await MockStaking.deployed();
+    let staking = await Staking.deployed();
+    let timeLockManager = await TimeLockManager.deployed();
     let earningsTracker = await EarningsTracker.deployed();
     let earningsTrackerDB = await EarningsTrackerDB.deployed();
     let ethieToken = await EthieToken.deployed();
@@ -56,7 +58,7 @@ module.exports = async (callback) => {
         from: accounts[i]
       });
 
-      await staking.stake(stakedTokens, {from: accounts[i]});
+      await staking.stake(stakedTokens, '0x', {from: accounts[i]});
 
       let balStaking = await superDaoToken.balanceOf(staking.address);
       console.log(
@@ -69,7 +71,27 @@ module.exports = async (callback) => {
         `Balance of staker ${i} after staking:`,
         weiToEther(balAfter)
       );
+
+      await staking.allowManager(timeLockManager.address, stakedTokens, '0x', { from: accounts[i] })
+
+      await timeLockManager.lock(stakedTokens, { from: accounts[i] });
     }
+
+    let lockEvents = await timeLockManager.getPastEvents('SuperDaoTokensLocked', {
+      fromBlock: 0,
+      toBlock: "latest"
+    })
+
+    lockEvents.map(async (e) => {
+      console.log('\n==== SuperDao Tokens Locked ===');
+      console.log('    staker ', e.returnValues.user)
+      console.log('    for Epoch ', e.returnValues.nextEpochId)
+      console.log('    locked amount ', weiToEther(e.returnValues.amount))
+      console.log('    totla locked amount ', weiToEther(e.returnValues.totalAmount))
+      console.log('========================\n')
+    })
+
+
 
     await ethieToken.addMinter(earningsTracker.address);
     await earningsTrackerDB.setCurrentFundingLimit();
