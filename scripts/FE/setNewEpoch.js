@@ -16,6 +16,11 @@ function formatDate(timestamp) {
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
+function weiToEther(w) {
+  let eth = web3.utils.fromWei(w.toString(), "ether");
+  return Math.round(parseFloat(eth));
+}
+
 //truffle exec scripts/FE/setNewEpoch.js
 
 module.exports = async (callback) => {    
@@ -47,9 +52,10 @@ module.exports = async (callback) => {
     console.log("********************************************************\n");
 
     const numberOfPools = await timeFrame.getTotalEpochs();
-    console.log("Number of pools:", numberOfPools.toNumber());
+    const stakersClaimed = await withdrawPool.getAllClaimersForPool(0);
+
     console.log("\n******************* Pool 0 Created*******************");
-    const pool_0_details = await withdrawPool.weeklyPools(0);
+    console.log("Number of pools:", numberOfPools.toNumber());
     const epochID = await timeFrame.getActiveEpochID()
     console.log(
       "epoch ID associated with this pool",
@@ -57,19 +63,17 @@ module.exports = async (callback) => {
     );
     console.log(
       "initial ether available in this pool:",
-      await withdrawPool.getInitialETH(epochID)
+      weiToEther(await withdrawPool.getInitialETH(epochID))
     );
     console.log(
       "date available for claiming from this pool:",
       formatDate(await timeFrame.restDayStartTime())
     );
     console.log(
-      "stakers who have claimed from this pool:",
-      pool_0_details.stakersClaimed[0]
+      "Number of stakers who have claimed from this pool:",
+      stakersClaimed.toString()
     );
     console.log("********************************************************\n");
-
-    console.log(formatDate(await withdrawPool.restDayStart1()));
     callback()
   }
   catch(e){

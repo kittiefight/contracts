@@ -28,7 +28,6 @@ contract WithdrawPool is Proxied, Guard {
     /* ============================================================================================================== */
 
     TimeLockManager public timeLockManager;
-
     ERC20Standard public superDaoToken;
     TimeFrame public timeFrame;
     EndowmentDB public endowmentDB;
@@ -39,31 +38,6 @@ contract WithdrawPool is Proxied, Guard {
     CronJob public cronJob;
 
     /*                                               GENERAL VARIABLES                                                */
-    /*                                                      END                                                       */
-    /* ============================================================================================================== */
-
-    /*                                                 POOL VARIABLES                                                 */
-    /*                                                     START                                                      */
-    /* ============================================================================================================== */
-
-    struct WithdrawalPool {
-        uint256 blockNumber;        //The block number of the block in which this pool was created
-        uint256 stakersClaimed;     //How many stakers claimed from this pool.
-        address[] allClaimedStakers; //Addresses of all stakers who have claimed from this pool.
-    }
-
-    struct Staker{
-        mapping(uint256 => bool) claimed; // true if this staker has already claimed from this pool
-        mapping(uint256 => uint256) etherClaimed; // How many ether this staker has claimed from this pool
-        uint256 totalPoolsClaimed;      //From how many pools this staker claimed funds.
-        uint256 currentAvailablePools;  //From how many pools this staker hasn't yet claimed, while he is eligible.
-    }
-
-    mapping(uint256 => WithdrawalPool) public weeklyPools; //Ids for all weekly pools
-
-    mapping(address => Staker) internal stakers; //Stake information about this address
-
-    /*                                                 POOL VARIABLES                                                 */
     /*                                                      END                                                       */
     /* ============================================================================================================== */
 
@@ -144,7 +118,11 @@ contract WithdrawPool is Proxied, Guard {
         // check claimer's eligibility for claiming pool from this epoch
         require(timeLockManager.isEligible(msgSender, pool_id), "No tokens locked for this epoch");
 
-        require(stakers[msgSender].claimed[pool_id] == false, "Already claimed from this pool");
+        bool claimed = genericDB.getBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(pool_id, msgSender, "claimed")));
+
+        require(claimed == false, "Already claimed from this pool");
 
         // calculate the amount of ether entitled to the caller
         uint256 yield = checkYield(msgSender, pool_id);
@@ -257,13 +235,16 @@ contract WithdrawPool is Proxied, Guard {
           );
     }
 
-    // get all stakers who have received yields from a pool with _poolID
+    // get number of stakers who have received yields from a pool with _poolID
     function getAllClaimersForPool(uint256 _poolID)
         public
         view
-        returns (address[] memory)
+        returns (uint256)
     {
-        return weeklyPools[_poolID].allClaimedStakers;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_poolID, "totalStakersClaimed"))
+        );
     }
 
     function getUnlocked(uint256 _poolID)
@@ -318,13 +299,21 @@ contract WithdrawPool is Proxied, Guard {
 
     /**
      * @dev This function is used to update pool data, when a claim occurs.
-     * @param pool_id The pool id.
+     * @param _pool_id The pool id.
      */
-    function _updatePool(address _staker, uint256 pool_id, uint256 _yield)
+    function _updatePool(address _staker, uint256 _pool_id, uint256 _yield)
     internal
     {
-        weeklyPools[pool_id].stakersClaimed = weeklyPools[pool_id].stakersClaimed.add(1);
-        weeklyPools[pool_id].allClaimedStakers.push(_staker);
+        uint256 totalStakersClaimed = genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, "totalStakersClaimed"))
+        ).add(1);
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, "totalStakersClaimed")),
+            totalStakersClaimed
+        );
 
         uint256 totalEthPaidOut = _yield.add(genericDB.getUintStorage(
             CONTRACT_NAME_WITHDRAW_POOL,
@@ -338,9 +327,9 @@ contract WithdrawPool is Proxied, Guard {
           );
 
         emit PoolUpdated(
-            pool_id,
-            endowmentDB.getETHinPool(pool_id),
-            weeklyPools[pool_id].stakersClaimed,
+            _pool_id,
+            endowmentDB.getETHinPool(_pool_id),
+            totalStakersClaimed,
             totalEthPaidOut
         );
     }
@@ -351,11 +340,39 @@ contract WithdrawPool is Proxied, Guard {
     function _updateStaker(address _staker, uint256 _pool_id, uint256 _yield)
     internal
     {
-        stakers[_staker].claimed[_pool_id] = true;
-        stakers[_staker].etherClaimed[_pool_id] = _yield;
-        stakers[_staker].totalPoolsClaimed = stakers[_staker].totalPoolsClaimed.add(1);
-        stakers[_staker].currentAvailablePools = stakers[_staker].currentAvailablePools > 0 ?
-                                                 stakers[_staker].currentAvailablePools.sub(1) : 0;
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, _staker, "claimed")),
+            true
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, _staker, "etherClaimed")),
+            _yield
+        );
+
+        uint256 prevEthersClaimed = genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, _staker, "totalEthersClaimed"))
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, _staker, "totalEthersClaimed")),
+            prevEthersClaimed.add(_yield)
+        );
+
+        uint256 prevPoolsClaimed = genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, _staker, "totalPoolsClaimed"))
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL,
+            keccak256(abi.encodePacked(_pool_id, _staker, "totalPoolsClaimed")),
+            prevPoolsClaimed.add(1)
+        );
     }
 
     function addGamingDelay(uint256 newEndTime)

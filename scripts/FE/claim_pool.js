@@ -8,6 +8,7 @@ const WithdrawPool = artifacts.require("WithdrawPool");
 const BigNumber = web3.utils.BN;
 const Register = artifacts.require("Register");
 const TimeFrame = artifacts.require("TimeFrame");
+const EndowmentDB = artifacts.require('EndowmentDB');
 require("chai")
   .use(require("chai-shallow-deep-equal"))
   .use(require("chai-bignumber")(BigNumber))
@@ -50,6 +51,7 @@ module.exports = async (callback) => {
     let withdrawPool = await WithdrawPool.deployed();
     let register = await Register.deployed();
     let timeFrame = await TimeFrame.deployed();
+    let endowmentDB = await EndowmentDB.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -98,46 +100,41 @@ module.exports = async (callback) => {
       )
     }
 
-    const pool_0_details = await withdrawPool.weeklyPools(0);
-    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
+    const initialETHAvailable = await withdrawPool.getInitialETH(0);
+    const ethAvailable = await endowmentDB.getETHinPool(0);
+    const numberOfClaimers = await withdrawPool.getAllClaimersForPool(0);
     const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
+    const dateAvailable = await timeFrame.restDayStartTime();
+    const dateDissolved = await timeFrame.restDayEndTime();
     console.log(
       "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
     );
-    console.log(
-      "epoch ID associated with this pool",
-      pool_0_details.epochID.toString()
-    );
+    
     console.log(
       "initial ether available in this pool:",
-      weiToEther(pool_0_details.initialETHAvailable)
+      weiToEther(weiToEther(initialETHAvailable))
     );
     console.log(
       "ether available in this pool:",
-      weiToEther(pool_0_details.ETHAvailable)
+      weiToEther(ethAvailable)
     );
     console.log(
       "date available for claiming from this pool:",
-      pool_0_details.dateAvailable.toString()
+      dateAvailable.toString()
     );
-    console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_0_details.initialETHadded
-    );
+    // console.log(
+    //   "whether initial ether has been distributed to this pool:",
+    //   pool_0_details.initialETHadded
+    // );
     console.log(
       "time when this pool is dissolved:",
-      pool_0_details.dateDissolved.toString()
+      dateDissolved.toString()
     );
     console.log(
       "Number of stakers who have claimed from this pool:",
-      numberOfClaimers
+      numberOfClaimers.toString()
     );
     console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
-    console.log("-------- Stakers who have claimed from this pool ------");
-
-    let claimers = await withdrawPool.getAllClaimersForPool(0);
-    console.log(claimers);
-
     console.log("********************************************************\n");
 
     callback()
