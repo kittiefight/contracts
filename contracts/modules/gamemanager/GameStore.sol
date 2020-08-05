@@ -11,6 +11,7 @@ import "../../withdrawPool/WithdrawPool.sol";
 import "../gamemanager/Scheduler.sol";
 import "../../CronJob.sol";
 import "../databases/EndowmentDB.sol";
+import "../databases/GenericDB.sol";
 
 contract GameStore is Proxied, Guard {
 
@@ -21,30 +22,7 @@ contract GameStore is Proxied, Guard {
     HitsResolve public hitsResolve;
     Scheduler public scheduler;
     TimeFrame public timeFrame;
-
-    struct Game {
-        uint randomNum; //when pressing start
-        bool pressedStart;
-        address topBettor;
-        address secondTopBettor;
-    }
-
-    struct GlobalSettings {
-        uint bettingFee;
-        uint ticketFee;
-        uint redemptionFee;
-        uint kittieHellExpirationTime;
-        uint honeypotExpirationTime;
-        uint minimumContributors;
-        //uint finalizeRewards;
-        uint timeExtension;
-        uint performanceTime;
-        uint[5] distributionRates;
-    }
-
-    //Players info in a game
-    mapping(uint => mapping(address => Game)) public gameByPlayer;
-    mapping(uint => GlobalSettings) public gameSettings;
+    GenericDB public genericDB;
 
     bool gameScheduled;
 
@@ -54,23 +32,89 @@ contract GameStore is Proxied, Guard {
         hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
         timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
+        genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
     }
 
     function lock(uint gameId) internal{
-        GlobalSettings memory globalSettings;
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "bettingFee")),
+            0
+        );
 
-        globalSettings.bettingFee = 0;
-        globalSettings.ticketFee = 0;
-        globalSettings.redemptionFee = 0;
-        globalSettings.kittieHellExpirationTime = gameVarAndFee.getKittieExpiry();
-        globalSettings.honeypotExpirationTime = gameVarAndFee.getHoneypotExpiration();
-        globalSettings.minimumContributors = gameVarAndFee.getMinimumContributors();
-        globalSettings.distributionRates = gameVarAndFee.getDistributionRates();
-        //globalSettings.finalizeRewards = gameVarAndFee.getFinalizeRewards();
-        globalSettings.timeExtension = gameVarAndFee.getTimeExtension();
-        globalSettings.performanceTime = gameVarAndFee.getPerformanceTimeCheck();
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "ticketFee")),
+            0
+        );
 
-        gameSettings[gameId] = globalSettings;
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee")),
+            0
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieHellExpirationTime")),
+            gameVarAndFee.getKittieExpiry()
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "honeypotExpirationTime")),
+            gameVarAndFee.getHoneypotExpiration()
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "minimumContributors")),
+            gameVarAndFee.getMinimumContributors()
+        );
+
+        uint[5] memory distributionRates = gameVarAndFee.getDistributionRates();
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "winningKittie")),
+            distributionRates[0]
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "topBettor")),
+            distributionRates[1]
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "secondRunnerUp")),
+            distributionRates[2]
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "otherBettors")),
+            distributionRates[3]
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "endownment")),
+            distributionRates[4]
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "timeExtension")),
+            gameVarAndFee.getTimeExtension()
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "performanceTime")),
+            gameVarAndFee.getPerformanceTimeCheck()
+        );
     }
 
     function lockVars(uint gameId) external onlyContract(CONTRACT_NAME_GAMECREATION){
@@ -82,7 +126,28 @@ contract GameStore is Proxied, Guard {
     }
 
     function getDistributionRates(uint gameId) public view returns(uint[5] memory){
-        return gameSettings[gameId].distributionRates;
+        uint[5] memory distributionRates;
+        distributionRates[0] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "winningKittie"))
+        );
+        distributionRates[1] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "topBettor"))
+        );
+        distributionRates[2] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "secondRunnerUp"))
+        );
+        distributionRates[3] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "otherBettors"))
+        );
+        distributionRates[4] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "endownment"))
+        );
+        return distributionRates;
     }
 
     // update kittieRedemptionFee and store in Dai
@@ -93,7 +158,12 @@ contract GameStore is Proxied, Guard {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForKittieRedemptionFee();
         (uint256 totalEthFunds, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
-        gameSettings[gameId].redemptionFee = scheduler.calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);
+        uint256 redemptionFee = scheduler.calculateDynamicFee(percentageHoneyPot, totalEthFunds, totalKTYFunds);
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee")),
+            redemptionFee
+        );
     }
 
     // update Ticket Fee and store in Dai
@@ -103,7 +173,12 @@ contract GameStore is Proxied, Guard {
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForTicketFee();
         (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
-        gameSettings[gameId].ticketFee = scheduler.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+        uint256 ticketFee = scheduler.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "ticketFee")),
+            ticketFee
+        );
     }
 
     // update Betting Fee and store in Dai
@@ -113,78 +188,122 @@ contract GameStore is Proxied, Guard {
     {
         uint256 percentageHoneyPot = gameVarAndFee.getPercentageForBettingFee();
         (uint256 initialHoneypotEth, uint256 initialHoneypotKTY) = gmGetterDB.getInitialHoneypot(gameId);
-        gameSettings[gameId].bettingFee = scheduler.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+        uint256 bettingFee = scheduler.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "bettingFee")),
+            bettingFee
+        );
     }
 
     function getKittieExpirationTime(uint gameId) public view returns(uint){
-        return  gameSettings[gameId].kittieHellExpirationTime;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieHellExpirationTime"))
+        );
     }
 
     function getKittieRedemptionFee(uint256 gameId) public view returns(uint256, uint256) {
-        uint256 redemptionFeeDAI = gameSettings[gameId].redemptionFee;
+        uint256 redemptionFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee"))
+        );
         uint256 redemptionFeeKTY = getKTY(redemptionFeeDAI);
         uint256 etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(redemptionFeeKTY);
         return (etherForSwap, redemptionFeeKTY);
     }
     
     function getHoneypotExpiration(uint gameId) public view returns(uint){
-        return  gameSettings[gameId].honeypotExpirationTime;
+        return  genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "honeypotExpirationTime"))
+        );
     }
 
     function start(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
-        gameByPlayer[gameId][player].pressedStart = true;
-        gameByPlayer[gameId][player].randomNum = randomNum;
+        genericDB.setBoolStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "pressedStart")),
+            true
+        );
+
+        genericDB.setUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "randomNum")),
+            randomNum
+        );
     }
 
     function didHitStart(uint gameId, address player) public view returns(bool){
-        return gameByPlayer[gameId][player].pressedStart;
+        return genericDB.getBoolStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "pressedStart"))
+        );
     }
 
     function getRandom(uint gameId, address player) public view returns(uint){
-        return gameByPlayer[gameId][player].randomNum;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "randomNum"))
+        );
     }
 
     function updateTopBettor(uint gameId, address player, address newTopBettor) external onlyContract(CONTRACT_NAME_GM_SETTER_DB){
-        gameByPlayer[gameId][player].topBettor = newTopBettor;
+        genericDB.setAddressStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "topBettor")),
+            newTopBettor
+        );
     }
 
     function getTopBettor(uint gameId, address player) public view returns(address){
-        return gameByPlayer[gameId][player].topBettor;
+        return genericDB.getAddressStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "topBettor"))
+        );
     }
 
     function updateSecondTopBettor(uint gameId, address player, address newSecondTopBettor) external onlyContract(CONTRACT_NAME_GM_SETTER_DB){
-        gameByPlayer[gameId][player].secondTopBettor = newSecondTopBettor;
+        genericDB.setAddressStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "secondTopBettor")),
+            newSecondTopBettor
+        );
     }
 
     function getSecondTopBettor(uint gameId, address player) public view returns(address){
-        return gameByPlayer[gameId][player].secondTopBettor;
+        return genericDB.getAddressStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "secondTopBettor"))
+        );
     }
 
     function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
-        uint256 ticketFeeDAI = gameSettings[gameId].ticketFee;
+        uint256 ticketFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "ticketFee"))
+        );
         uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
         uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
         return (ethForSwap, ticketFeeKTY);
     }
 
     function getBettingFee(uint256 gameId) public view returns(uint256, uint256){
-        uint256 bettingFeeDAI = gameSettings[gameId].bettingFee;
+        uint256 bettingFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "bettingFee"))
+        );
         uint256 bettingFeeKTY = getKTY(bettingFeeDAI);
         uint256 ethForFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(bettingFeeKTY);
         return (ethForFeeSwap, bettingFeeKTY);
     }
 
     function getMinimumContributors(uint gameId) public view returns(uint){
-        return gameSettings[gameId].minimumContributors;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "minimumContributors"))
+        );
     }
-    
-    // stale function
-    // function getFinalizeRewards(uint gameId) public view returns(uint){
-    //     // get finalize rewards in dai
-    //     uint256 rewardsDAI = gameSettings[gameId].finalizeRewards;
-
-    //     return getKTY(rewardsDAI);
-    // }
 
     function getKTY(uint256 _DAI) internal view returns(uint256) {
         uint256 _ETH = gameVarAndFee.convertDaiToEth(_DAI);
@@ -192,11 +311,17 @@ contract GameStore is Proxied, Guard {
     }
 
     function getPerformanceTimeCheck(uint gameId) public view returns(uint){
-        return gameSettings[gameId].performanceTime;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "performanceTime"))
+        );
     }
 
     function getTimeExtension(uint gameId) public view returns(uint){
-        return gameSettings[gameId].timeExtension;
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "timeExtension"))
+        );
     }
 
     function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
@@ -212,14 +337,27 @@ contract GameStore is Proxied, Guard {
         if(topBettor != _account){
             if (bettorTotal > topBettorEth){
                 //If topBettor is already the account, dont update
-                gameByPlayer[_gameId][_supportedPlayer].topBettor = _account;
-                gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = topBettor;
+                genericDB.setAddressStorage(
+                    CONTRACT_NAME_GAMESTORE,
+                    keccak256(abi.encodePacked(_gameId, _supportedPlayer, "topBettor")),
+                    _account
+                );
+
+                genericDB.setAddressStorage(
+                    CONTRACT_NAME_GAMESTORE,
+                    keccak256(abi.encodePacked(_gameId, _supportedPlayer, "secondTopBettor")),
+                    topBettor
+                );
             }
             else {
                 address secondTopBettor = getSecondTopBettor(_gameId, _supportedPlayer);
                 (uint256 secondTopBettorEth,,,) = gmGetterDB.getSupporterInfo(_gameId, secondTopBettor);
                 if (bettorTotal > secondTopBettorEth && secondTopBettor != _account){
-                    gameByPlayer[_gameId][_supportedPlayer].secondTopBettor = _account;
+                    genericDB.setAddressStorage(
+                    CONTRACT_NAME_GAMESTORE,
+                    keccak256(abi.encodePacked(_gameId, _supportedPlayer, "secondTopBettor")),
+                    _account
+                );
                 }
             }
         }
