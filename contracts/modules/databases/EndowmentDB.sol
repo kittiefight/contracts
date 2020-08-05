@@ -294,6 +294,14 @@ contract EndowmentDB is Proxied {
       CONTRACT_NAME_ENDOWMENT_DB,
       keccak256(abi.encodePacked(_pool_id, "ETHinPool"))
     );
+
+    // record initial ether amount added to this pool
+    genericDB.setUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      keccak256(abi.encodePacked(_pool_id, "InitialETHinPool")),
+      prevETH.add(_eth)
+    );
+
     // add _eth to the previous amount of ether in this pool
     genericDB.setUintStorage(
       CONTRACT_NAME_ENDOWMENT_DB,

@@ -87,9 +87,9 @@ module.exports = async (callback) => {
     let boolean = await withdrawPool.getUnlocked(0);
     console.log(boolean);
     epochID = await timeFrame.getActiveEpochID();
-    console.log(epochID.toString());
+    console.log("Current Epoch:", epochID.toString());
 
-    for (let i = 1; i < 4; i++) {
+    for (let i = 1; i < 3; i++) {
       //await withdrawPool.claimYield(poolId, {from: accounts[i]});
       await proxy.execute(
         "WithdrawPool",
@@ -112,7 +112,7 @@ module.exports = async (callback) => {
     
     console.log(
       "initial ether available in this pool:",
-      weiToEther(weiToEther(initialETHAvailable))
+      weiToEther(initialETHAvailable)
     );
     console.log(
       "ether available in this pool:",
