@@ -40,7 +40,7 @@ const FreezeInfo = artifacts.require("FreezeInfo");
 const CronJobTarget = artifacts.require("CronJobTarget");
 const TimeFrame = artifacts.require("TimeFrame");
 const WithdrawPool = artifacts.require("WithdrawPool");
-const Staking = artifacts.require("Staking");
+const SuperDaoStaking = artifacts.require("SuperDaoStaking");
 const TimeLockManager = artifacts.require("TimeLockManager");
 const EthieToken = artifacts.require("EthieToken");
 const EarningsTracker = artifacts.require("EarningsTracker");
@@ -121,7 +121,7 @@ let proxy,
   honeypotAllocationAlgo,
   timeFrame,
   withdrawPool,
-  staking,
+  superDaoStaking,
   timeLockManager,
   earningsTracker,
   earningsTrackerDB,
@@ -200,7 +200,7 @@ contract("GameManager", accounts => {
     withdrawPool = await WithdrawPool.deployed();
 
     // staking - a mock contract of Aragon's staking contract
-    staking = await Staking.deployed();
+    superDaoStaking = await SuperDaoStaking.deployed();
     timeLockManager = await TimeLockManager.deployed();
   });
 
@@ -378,13 +378,13 @@ contract("GameManager", accounts => {
         weiToEther(balBefore)
       );
 
-      await superDaoToken.approve(staking.address, stakedTokens, {
+      await superDaoToken.approve(superDaoStaking.address, stakedTokens, {
         from: accounts[i]
       });
 
-      await staking.stake(stakedTokens, "0x", {from: accounts[i]});
+      await superDaoStaking.stake(stakedTokens, "0x", {from: accounts[i]});
 
-      let balStaking = await superDaoToken.balanceOf(staking.address);
+      let balStaking = await superDaoToken.balanceOf(superDaoStaking.address);
       console.log(
         "Balance of staking contract after staking:",
         weiToEther(balStaking)
@@ -396,7 +396,7 @@ contract("GameManager", accounts => {
         weiToEther(balAfter)
       );
 
-      await staking.allowManager(timeLockManager.address, stakedTokens, "0x", {
+      await superDaoStaking.allowManager(timeLockManager.address, stakedTokens, "0x", {
         from: accounts[i]
       });
 
@@ -1526,13 +1526,13 @@ contract("GameManager", accounts => {
         weiToEther(balBefore)
       );
 
-      await superDaoToken.approve(staking.address, stakedTokens, {
+      await superDaoToken.approve(superDaoStaking.address, stakedTokens, {
         from: accounts[i]
       });
 
-      await staking.stake(stakedTokens, "0x", {from: accounts[i]});
+      await superDaoStaking.stake(stakedTokens, "0x", {from: accounts[i]});
 
-      let balStaking = await superDaoToken.balanceOf(staking.address);
+      let balStaking = await superDaoToken.balanceOf(superDaoStaking.address);
       console.log(
         "Balance of staking contract after staking:",
         weiToEther(balStaking)
@@ -1544,7 +1544,7 @@ contract("GameManager", accounts => {
         weiToEther(balAfter)
       );
 
-      await staking.allowManager(timeLockManager.address, stakedTokens, "0x", {
+      await superDaoStaking.allowManager(timeLockManager.address, stakedTokens, "0x", {
         from: accounts[i]
       });
 

@@ -17,7 +17,7 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
     using ScriptHelpers for bytes;
     using SafeMath for uint256;
 
-    IStakingLocking public staking;
+    IStakingLocking public superDaoStaking;
     TimeFrame public timeFrame;
 
     string private constant ERROR_ALREADY_LOCKED = "TLM_ALREADY_LOCKED";
@@ -40,9 +40,9 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
     event LogLockCallback(uint256 amount, uint256 allowance, bytes data);
     event SuperDaoTokensLocked(address indexed user, uint256 indexed nextEpochId, uint256 amount, uint256 totalAmount);
 
-    function initialize(address _staking, address _timeFrame) public onlyOwner {
+    function initialize(address _superDaoStaking, address _timeFrame) public onlyOwner {
         timeFrame = TimeFrame(_timeFrame);
-        staking = IStakingLocking(_staking);
+        superDaoStaking = IStakingLocking(_superDaoStaking);
     }
 
     /**
@@ -85,7 +85,7 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
         timeIntervals[msg.sender][_nextEpochId] = TimeInterval(1, _start, _end, _amount);
 
         // Lock the _amount for this user using function lock(...) in staking contract
-        staking.lock(msg.sender, address(this), _amount);
+        superDaoStaking.lock(msg.sender, address(this), _amount);
 
         // Add this user's locked amount to the total amount for next epoch
         totalLockedPerEpoch[_nextEpochId] = totalLockedPerEpoch[_nextEpochId].add(_amount);
@@ -126,7 +126,7 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
         }
 
         // Get total locked amount by this user via TimeLockManager
-        (uint256 totalAmount,) = staking.getLock(_owner, address(this));
+        (uint256 totalAmount,) = superDaoStaking.getLock(_owner, address(this));
         // Get the sum of the locked amount for current epoch and for next epoch
         uint256 amountCurrentNext = currentTimeInterval.amount.add(nextTimeInterval.amount);
 
@@ -165,7 +165,7 @@ contract TimeLockManager is ILockManager, TimeHelpers, Owned {
         // At time of query, if total amount locked via TimeLockManager by _owner is 0, this means either the _owner
         // never locks for any epoch, or has unlocked all SuperDao tokens in each epoch including current
         // epoch and next epoch.
-        (uint256 totalLocked,) = staking.getLock(_owner, address(this));
+        (uint256 totalLocked,) = superDaoStaking.getLock(_owner, address(this));
         if( totalLocked > 0 && timeIntervals[_owner][_epoch].amount > 0) {
             return true;
         }
