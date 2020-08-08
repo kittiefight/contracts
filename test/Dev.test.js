@@ -456,7 +456,7 @@ contract("GameManager", accounts => {
   });
 
   it("sets Epoch 0, Pool 0, and sets investment for Epoch 0", async () => {
-    await timeFrame.setTimes(210, 120, 120);
+    await timeFrame.setTimes(215, 120, 120);
 
     await withdrawPool.setPool_0();
 
@@ -1511,55 +1511,6 @@ contract("GameManager", accounts => {
     );
   });
 
-  it("sets new epoch", async () => {
-    let _wait = await timeFrame.timeUntilEpochEnd(0);
-    _wait = _wait.toNumber();
-    console.log(_wait);
-    await timeout(_wait);
-    await proxy.executeScheduledJobs();
-    console.log("Hi, new epoch!");
-
-    const epoch_1_start_unix = await timeFrame._epochStartTime(1);
-    console.log(
-      "epoch 1 start time in unix time:",
-      epoch_1_start_unix.toNumber()
-    );
-    const epoch_1_end_unix = await timeFrame._epochEndTime(1);
-    initial_epoch_1_end_time = epoch_1_end_unix
-    console.log("\n******************* Epoch 1 Start Time *****************");
-    console.log(epoch_1_start_unix.toString())
-    console.log(formatDate(epoch_1_start_unix));
-    console.log("\n******************* Epoch 1 End Time *******************");
-    console.log(epoch_1_end_unix.toString())
-    console.log(formatDate(epoch_1_end_unix));
-    console.log("********************************************************\n");
-  });
-
-  it("creates a new pool", async () => {
-    let currentEpochId = await timeFrame.getActiveEpochID();
-    let timeUntilClaimingPool1 = await withdrawPool.timeUntilClaiming();
-    let timeUntilDissolvePool1 = await withdrawPool.timeUntilPoolDissolve();
-    console.log("************* Details of New Pool Created ************");
-    console.log(
-      "Current Epoch:",
-      currentEpochId.toString()
-    );
-    
-    console.log(
-      "Time until claiming from new pool:",
-      timeUntilClaimingPool1.toString()
-    );
-    console.log(
-        "Time until new pool dissolves:",
-        timeUntilDissolvePool1.toString()
-    );
-    
-    console.log("********************************************************\n");
-  });
-
-  // ============================== Epoch 0 Ended ==============================
-
-  // ============================== Epoch 1 Started ==============================
   it("superDaoToken holders stake superDaoToken, and investors invest via EthieToken NFTs", async () => {
     const stakedTokens = new BigNumber(
       web3.utils.toWei("10000", "ether") //
@@ -1649,6 +1600,55 @@ contract("GameManager", accounts => {
     }
   });
 
+  it("sets new epoch", async () => {
+    let _wait = await timeFrame.timeUntilEpochEnd(0);
+    _wait = _wait.toNumber();
+    console.log(_wait);
+    await timeout(_wait);
+    await proxy.executeScheduledJobs();
+    console.log("Hi, new epoch!");
+
+    const epoch_1_start_unix = await timeFrame._epochStartTime(1);
+    console.log(
+      "epoch 1 start time in unix time:",
+      epoch_1_start_unix.toNumber()
+    );
+    const epoch_1_end_unix = await timeFrame._epochEndTime(1);
+    initial_epoch_1_end_time = epoch_1_end_unix
+    console.log("\n******************* Epoch 1 Start Time *****************");
+    console.log(epoch_1_start_unix.toString())
+    console.log(formatDate(epoch_1_start_unix));
+    console.log("\n******************* Epoch 1 End Time *******************");
+    console.log(epoch_1_end_unix.toString())
+    console.log(formatDate(epoch_1_end_unix));
+    console.log("********************************************************\n");
+  });
+
+  it("creates a new pool", async () => {
+    let currentEpochId = await timeFrame.getActiveEpochID();
+    let timeUntilClaimingPool1 = await withdrawPool.timeUntilClaiming();
+    let timeUntilDissolvePool1 = await withdrawPool.timeUntilPoolDissolve();
+    console.log("************* Details of New Pool Created ************");
+    console.log(
+      "Current Epoch:",
+      currentEpochId.toString()
+    );
+    
+    console.log(
+      "Time until claiming from new pool:",
+      timeUntilClaimingPool1.toString()
+    );
+    console.log(
+        "Time until new pool dissolves:",
+        timeUntilDissolvePool1.toString()
+    );
+    
+    console.log("********************************************************\n");
+  });
+
+  // ============================== Epoch 0 Ended ==============================
+
+  // ============================== Epoch 1 Started ==============================
   it("manual matches kitties", async () => {
     console.log(
       "\n============================== EPOCH 1 =============================="
@@ -1934,7 +1934,7 @@ contract("GameManager", accounts => {
       //PlayerBlack
       if (randomPlayer == 1) {
         randomSupporter = randomValue(supportersBlack - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(47);
         player = "playerBlack";
         supportedPlayer = accounts[Number(randomSupporter) + 10];
 
@@ -1949,7 +1949,7 @@ contract("GameManager", accounts => {
       //PlayerRed
       else {
         randomSupporter = randomValue(Number(supportersRed) - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(47);
         player = "playerRed";
         supportedPlayer = accounts[Number(randomSupporter) + 30];
 
@@ -2507,7 +2507,7 @@ contract("GameManager", accounts => {
   it("extends the epoch end time depending on gaming delay", async () => {
     const epoch_1_end_unix_extended = await timeFrame._epochEndTime(1);
     console.log(
-      "epoch 0 end time extended by:",
+      "epoch 1 end time extended by:",
       epoch_1_end_unix_extended.toNumber() - initial_epoch_1_end_time.toNumber()
     );
   });
