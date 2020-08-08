@@ -377,7 +377,7 @@ contract WithdrawPool is Proxied, Guard {
 
     function addGamingDelay(uint256 newEndTime)
     external
-    //onlyContract TODO
+    onlyContract(CONTRACT_NAME_GAMECREATION)
     {
         uint256 epochID = getActivePoolID();
         uint256 jobID = genericDB.getUintStorage(

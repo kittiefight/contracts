@@ -85,7 +85,7 @@ module.exports = async (callback) => {
         let {endTime} = await getterDB.getGameTimes(gameId);
         console.log('\nEnd Time: ', endTime);
 
-        while (block < endTime) {
+        while (block <= endTime) {
           block = Math.floor(Date.now() / 1000);
           await timeout(3);
         }

@@ -329,7 +329,6 @@ contract GameCreation is Proxied, Guard {
         if(endTime > genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(activeEpoch,"restDayStart")))) {
             withdrawPool.addGamingDelay(endTime);
         }
-        //emit Scheduled(newJobId, endTime, gameId, "Change state to 3");
         gmSetterDB.setCronJobForGame(gameId, newJobId);
     }
 

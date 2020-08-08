@@ -38,6 +38,33 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
+function increaseTime(addSeconds, web3Instance = web3) {
+  const id = Date.now();
+
+  return new Promise((resolve, reject) => {
+    web3Instance.currentProvider.send(
+      {
+        jsonrpc: '2.0',
+        method: 'evm_increaseTime',
+        params: [addSeconds],
+        id,
+      },
+      (err1) => {
+        if (err1) return reject(err1);
+
+        return web3Instance.currentProvider.send(
+          {
+            jsonrpc: '2.0',
+            method: 'evm_mine',
+            id: id + 1,
+          },
+          (err2, res) => (err2 ? reject(err2) : resolve(res)),
+        );
+      },
+    );
+  });
+}
+
 //truffle exec scripts/FE/claim_pool.js poolID
 
 module.exports = async (callback) => {    
@@ -56,6 +83,7 @@ module.exports = async (callback) => {
     accounts = await web3.eth.getAccounts();
 
     let poolId = process.argv[4]
+    let user = process.argv[5] === null ? 45 : process.argv[5];
     const stakedTokens = new BigNumber(
       web3.utils.toWei("5", "ether")
     );
@@ -79,7 +107,7 @@ module.exports = async (callback) => {
         "Register",
         setMessage(register, "register", []),
         {
-          from: accounts[47]
+          from: accounts[user]
         }
       )
     console.log("Available for claiming...");

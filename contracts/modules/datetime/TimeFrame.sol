@@ -97,7 +97,7 @@ pragma solidity ^0.5.5;
       * @dev return the ID of the active epoch
       */
      function getActiveEpochID() public view returns (uint) {
-         genericDB.getUintStorage(
+         return genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
             keccak256(abi.encode("activeEpoch")));
      }

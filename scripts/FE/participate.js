@@ -68,28 +68,8 @@ module.exports = async (callback) => {
     let blacks = Number(blackParticipators) + 10;
     let reds = Number(redParticipators) + 30;
 
-    let ktyReserve = await ktyUniswap.getReserveKTY();
-    let ethReserve = await ktyUniswap.getReserveETH();
-    console.log("reserveKTY:", weiToEther(ktyReserve));
-    console.log("reserveETH:", weiToEther(ethReserve));
-
-    let ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
-    let kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
-    console.log(
-      "Ether to KTY ratio:",
-      "1 ether to",
-      weiToEther(ether_kty_ratio),
-      "KTY"
-    );
-    console.log(
-      "KTY to Ether ratio:",
-      "1 KTY to",
-      weiToEther(kty_ether_ratio),
-      "ether"
-    );
-
     for(let i = 10; i < blacks; i++){
-      let participate_fee = await gameStore.getTicketFee(1);
+      let participate_fee = await gameStore.getTicketFee(gameId);
       let ether_participate = participate_fee[0]
       let kty_participate = participate_fee[1]
       console.log("ether needed for swapping participate_fee in kty:", weiToEther(ether_participate))
