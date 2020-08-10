@@ -5,6 +5,7 @@ const Staking = artifacts.require("Staking");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
+const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
 const BigNumber = web3.utils.BN;
 const Register = artifacts.require("Register");
 const TimeFrame = artifacts.require("TimeFrame");
@@ -76,6 +77,7 @@ module.exports = async (callback) => {
     let earningsTracker = await EarningsTracker.deployed();
     let ethieToken = await EthieToken.deployed();
     let withdrawPool = await WithdrawPool.deployed();
+    let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
     let register = await Register.deployed();
     let timeFrame = await TimeFrame.deployed();
     let endowmentDB = await EndowmentDB.deployed();
@@ -83,7 +85,7 @@ module.exports = async (callback) => {
     accounts = await web3.eth.getAccounts();
 
     let poolId = process.argv[4]
-    let user = process.argv[5] === null ? 45 : process.argv[5];
+    let user = process.argv[5] === null ? 3 : process.argv[5];
     const stakedTokens = new BigNumber(
       web3.utils.toWei("5", "ether")
     );
@@ -91,7 +93,7 @@ module.exports = async (callback) => {
     let epochID = await timeFrame.getActiveEpochID();
     console.log(epochID.toString());
 
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming();
+    let timeTillClaiming = await withdrawPoolGetters.timeUntilClaiming();
     console.log(
       "Time (in seconds) till claiming from the current pool:",
       timeTillClaiming.toNumber()
@@ -112,7 +114,7 @@ module.exports = async (callback) => {
       )
     console.log("Available for claiming...");
 
-    let boolean = await withdrawPool.getUnlocked(0);
+    let boolean = await withdrawPoolGetters.getUnlocked(0);
     console.log(boolean);
     epochID = await timeFrame.getActiveEpochID();
     console.log("Current Epoch:", epochID.toString());
@@ -128,10 +130,10 @@ module.exports = async (callback) => {
       )
     }
 
-    const initialETHAvailable = await withdrawPool.getInitialETH(0);
+    const initialETHAvailable = await withdrawPoolGetters.getInitialETH(0);
     const ethAvailable = await endowmentDB.getETHinPool(0);
-    const numberOfClaimers = await withdrawPool.getAllClaimersForPool(0);
-    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
+    const numberOfClaimers = await withdrawPoolGetters.getAllClaimersForPool(0);
+    const etherPaidOutPool0 = await withdrawPoolGetters.getEthPaidOut();
     const dateAvailable = await timeFrame.restDayStartTime();
     const dateDissolved = await timeFrame.restDayEndTime();
     console.log(

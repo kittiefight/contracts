@@ -1,7 +1,6 @@
 const KFProxy = artifacts.require('KFProxy')
 const SuperDaoToken = artifacts.require("MockERC20Token");
-const KittieFightToken = artifacts.require('KittieFightToken');
-const Staking = artifacts.require("Staking");
+const SuperDaoStaking = artifacts.require("SuperDaoStaking");
 const TimeLockManager = artifacts.require("TimeLockManager");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
@@ -32,7 +31,7 @@ module.exports = async (callback) => {
   try{
     let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
-    let staking = await Staking.deployed();
+    let superDaoStaking = await SuperDaoStaking.deployed();
     let timeLockManager = await TimeLockManager.deployed();
     let earningsTracker = await EarningsTracker.deployed();
     let earningsTrackerDB = await EarningsTrackerDB.deployed();
@@ -54,13 +53,13 @@ module.exports = async (callback) => {
         weiToEther(balBefore)
       );
 
-      await superDaoToken.approve(staking.address, stakedTokens, {
+      await superDaoToken.approve(superDaoStaking.address, stakedTokens, {
         from: accounts[i]
       });
 
-      await staking.stake(stakedTokens, '0x', {from: accounts[i]});
+      await superDaoStaking.stake(stakedTokens, '0x', {from: accounts[i]});
 
-      let balStaking = await superDaoToken.balanceOf(staking.address);
+      let balStaking = await superDaoToken.balanceOf(superDaoStaking.address);
       console.log(
         "Balance of staking contract after staking:",
         weiToEther(balStaking)
@@ -72,7 +71,7 @@ module.exports = async (callback) => {
         weiToEther(balAfter)
       );
 
-      await staking.allowManager(timeLockManager.address, stakedTokens, '0x', { from: accounts[i] })
+      await superDaoStaking.allowManager(timeLockManager.address, stakedTokens, '0x', { from: accounts[i] })
 
       await timeLockManager.lock(stakedTokens, { from: accounts[i] });
     }

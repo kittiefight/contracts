@@ -1,4 +1,5 @@
 const WithdrawPool = artifacts.require("WithdrawPool");
+const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const TimeFrame = artifacts.require("TimeFrame");
 const GenericDB = artifacts.require("GenericDB");
@@ -27,6 +28,7 @@ module.exports = async (callback) => {
 
   try{
     let withdrawPool = await WithdrawPool.deployed();
+    let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
     let earningsTracker = await EarningsTracker.deployed();
     let timeFrame = await TimeFrame.deployed();
     let genericDB = await GenericDB.deployed();
@@ -52,18 +54,18 @@ module.exports = async (callback) => {
     console.log("********************************************************\n");
 
     const numberOfPools = await timeFrame.getTotalEpochs();
-    const stakersClaimed = await withdrawPool.getAllClaimersForPool(0);
+    const epochID = await timeFrame.getActiveEpochID()
+    const stakersClaimed = await withdrawPoolGetters.getAllClaimersForPool(epochID);
 
     console.log("\n******************* Pool 0 Created*******************");
     console.log("Number of pools:", numberOfPools.toNumber());
-    const epochID = await timeFrame.getActiveEpochID()
     console.log(
       "epoch ID associated with this pool",
       epochID.toString()
     );
     console.log(
       "initial ether available in this pool:",
-      weiToEther(await withdrawPool.getInitialETH(epochID))
+      weiToEther(await withdrawPoolGetters.getInitialETH(epochID))
     );
     console.log(
       "date available for claiming from this pool:",
