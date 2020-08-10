@@ -18,6 +18,7 @@ contract ContractNames {
     string constant CONTRACT_NAME_KITTIEHELL_DB     = "KittieHellDB";
     string constant CONTRACT_NAME_KITTIEHELL_DUNGEON     = "KittieHellDungeon";
     string constant CONTRACT_NAME_GAMEMANAGER       = "GameManager";
+    string constant CONTRACT_NAME_GAMEMANAGER_HELPER     = "GameManagerHelper";
     string constant CONTRACT_NAME_GAMESTORE         = "GameStore";
     string constant CONTRACT_NAME_GAMECREATION      = "GameCreation";
     string constant CONTRACT_NAME_GM_SETTER_DB      = "GMSetterDB";

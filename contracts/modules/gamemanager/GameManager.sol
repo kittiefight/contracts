@@ -38,6 +38,7 @@ import '../../mocks/MockERC721Token.sol';
 import "./GameStore.sol";
 import "./GameCreation.sol";
 import "../endowment/KtyUniswap.sol";
+import "./GameManagerHelper.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -50,6 +51,7 @@ contract GameManager is Proxied, Guard {
     Betting public betting;
     GameStore public gameStore;
     GameCreation public gameCreation;
+    GameManagerHelper public gameManagerHelper;
 
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
@@ -79,6 +81,7 @@ contract GameManager is Proxied, Guard {
         betting = Betting(proxy.getContract(CONTRACT_NAME_BETTING));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
     }
 
     /**
@@ -188,7 +191,7 @@ contract GameManager is Proxied, Guard {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
         uint timeExtension = gameStore.getTimeExtension(gameId);
 
-        if(gameCreation.checkPerformanceHelper(gameId, gameEndTime)){
+        if(gameManagerHelper.checkPerformanceHelper(gameId, gameEndTime)){
             if(now <= gameEndTime)
                 gmSetterDB.updateEndTime(gameId, gameEndTime.add(timeExtension));
             else
