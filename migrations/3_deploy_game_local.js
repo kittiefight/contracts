@@ -53,6 +53,7 @@ const Dai = artifacts.require('Dai')
 const DaiWethPair = artifacts.require('IDaiWethPair')
 const DaiWethOracle = artifacts.require('DaiWethOracle')
 const MultiSig = artifacts.require('Multisig5of12')
+const BusinessInsight = artifacts.require('BusinessInsight')
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -170,6 +171,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(Dai, 1))
         .then(() => deployer.deploy(DaiWethOracle))
         .then(() => deployer.deploy(MultiSig))
+        .then(() => deployer.deploy(BusinessInsight))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address);
@@ -219,6 +221,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('Dai', Dai.address)
             await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
             await proxy.addContract('Multisig5of12', MultiSig.address)
+            await proxy.addContract('BusinessInsight', BusinessInsight.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -247,6 +250,8 @@ module.exports = (deployer, network, accounts) => {
             console.log(kittieHellDB.address)
             earningsTrackerDB = await EarningsTrackerDB.deployed()
             console.log(earningsTrackerDB.address)
+            businessInsight = await BusinessInsight.deployed()
+            console.log(businessInsight.address)
 
             // CRONJOB
             cronJob = await CronJob.deployed()
@@ -386,6 +391,7 @@ module.exports = (deployer, network, accounts) => {
             await ktyUniswap.setProxy(proxy.address)
             await daiWethOracle.setProxy(proxy.address)
             await multiSig.setProxy(proxy.address)
+            await businessInsight.setProxy(proxy.address)
 
             console.log("Proxy: ", proxy.address);
 
@@ -414,6 +420,7 @@ module.exports = (deployer, network, accounts) => {
             await router.initialize(Factory.address, WETH.address)
             await ktyUniswap.initialize()
             await daiWethOracle.initialize()
+            await businessInsight.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             //await register.addSuperAdmin(SUPERADMIN)

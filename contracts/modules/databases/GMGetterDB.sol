@@ -43,16 +43,9 @@ contract GMGetterDB is Proxied {
     require(doesGameExist(gameId));
     _;
   }
-  
-  constructor(GenericDB _genericDB) public {
-    setGenericDB(_genericDB);
-  }
-
-  function setGenericDB(GenericDB _genericDB) public onlyOwner {
-    genericDB = _genericDB;
-  }
 
   function initialize() external onlyOwner {
+    genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
     gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
   }
@@ -156,9 +149,6 @@ contract GMGetterDB is Proxied {
     return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "playingGame")));
   }
 
-  // temporarily hardcode totalEth and totalKty for truffle testing of GameStore-kittieRedemptionFee.test.js
-  // otherwise the entire gaming process has to be run throughly to get totalEth and totalKty
-  // please remove hardcoding once test is done and uncomment line 172 and line 173
   function getFinalHoneypot(uint256 gameId)
     public view
     returns(uint totalEth, uint totalKty )
@@ -257,27 +247,6 @@ contract GMGetterDB is Proxied {
     (status, expTime) = endowmentDB.getHoneypotState(gameId);
   }
 
-  function getMyInfo(uint256 gameId, address sender)
-    public view
-    returns(bool isSupporter, uint supportedCorner, bool isPlayerInGame, uint corner)
-  {
-    isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), sender);
-    address supportedPlayer = genericDB.getAddressStorage(
-      CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, sender, "supportedPlayer")));
-    supportedCorner = gameStore.getCorner(gameId, supportedPlayer);
-    isPlayerInGame = isPlayer(gameId, sender);
-    corner = gameStore.getCorner(gameId, sender);
-  }
-
-  function getPlayer(uint gameId, address player)
-    public view
-    returns(uint kittieId, uint corner, uint betsTotalEth)
-  {
-    kittieId = getKittieInGame(gameId, player);
-    corner = gameStore.getCorner(gameId, player);
-    betsTotalEth = getTotalBet(gameId, player);
-  }
-
   function getWinners(uint256 gameId)
     public view
     returns (address winner, address topBettor, address secondTopBettor)
@@ -287,58 +256,16 @@ contract GMGetterDB is Proxied {
     secondTopBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "secondTopBettor")));
   }
 
-  function getAccountInfo(address account)
-    public view
-    returns(bool isRegistered, bool isVerified)
-  {
-    isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
-    uint civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
-    isVerified = civicId > 0;
-  }
-
-  function getLastGameID()
-    public view returns (uint256)
-  {
-    (,uint256 _prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, true);
-    return _prevGameId;
-  }
-
-  function getTotalGames()
-    public view returns (uint256)
-  {
-    return getLastGameID();
-  }
-
-  ///@dev return total Spent in ether in a game with gameId
-  function getTotalSpentInGame(uint256 gameId)
-      public view returns (uint256)
-  {
-    return genericDB.getUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
-  }
-
-  ///@dev return total uniswap auto-swapped KTY in a game with gameId
-  function getTotalSwappedKtyInGame(uint256 gameId)
-      public view returns (uint256)
-  {
-    return genericDB.getUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
-  }
-
-
   ///@dev return listing fee in ether and swapped listing fee KTY for each kittie with kittieId listed
-  function getKittieListingFee(uint256 kittieId)
-      public view returns (uint256, uint256)
-  {
-    uint256 _listingFeeEther = genericDB.getUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(kittieId, "kittieListingFeeEther")));
-    uint256 _listingFeeKty = genericDB.getUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(kittieId, "kittieListingFeeKty")));
-    return (_listingFeeEther, _listingFeeKty);
-  }
-
+    function getKittieListingFee(uint256 kittieId)
+    public view returns (uint256, uint256)
+    {
+        uint256 _listingFeeEther = genericDB.getUintStorage(
+            CONTRACT_NAME_GM_SETTER_DB,
+            keccak256(abi.encodePacked(kittieId, "kittieListingFeeEther")));
+        uint256 _listingFeeKty = genericDB.getUintStorage(
+            CONTRACT_NAME_GM_SETTER_DB,
+            keccak256(abi.encodePacked(kittieId, "kittieListingFeeKty")));
+        return (_listingFeeEther, _listingFeeKty);
+    }
 }
