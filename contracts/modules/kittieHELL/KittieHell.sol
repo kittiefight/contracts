@@ -109,21 +109,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
     /**
      * @author @ziweidream
-     * @notice Getting kitty `_kittyID` mortality status
-     * @param _kittyID The kitty to get status
-     * @return true/false if the kitty ID is dead or not
-     */
-    function isKittyDead(uint256 _kittyID)
-    public
-    view
-    onlyOwnedKitty(_kittyID)
-    returns (bool) {
-        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
-        return ks.dead;
-    }
-
-    /**
-     * @author @ziweidream
      * @notice Killing kitty `_kittyID`
      * @dev This function can only be carried out via CronJOb
      * @param _kittyID The kitty to kill
@@ -141,17 +126,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
         scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
-    }
-
-    /**
-     * @author @ziweidream
-     * @notice Getting kitty `_kittyID` death time
-     * @param _kittyID The kitty whose death time is requested
-     * @return the kitty's death time
-     */
-    function kittyDeathTime(uint256 _kittyID) public view returns(uint) {
-        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
-        return ks.deadAt;
     }
 
      /**
@@ -179,14 +153,14 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyProxy
     returns (bool) {
         (uint ethersNeeded, uint256 tokenAmount) = gameStore.getKittieRedemptionFee(gameId);
-        require(tokenAmount > 0, "KTY amount must be greater than 0");
-        require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers to pay for resurrection");
+        require(tokenAmount > 0, "KTY cannot be 0");
+        require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers");
         for (uint i = 0; i < sacrificeKitties.length; i++) {
             kittieHellDB.sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
         }
         uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
         uint256 numberOfSacrificeKitties = kittieHellDB.getNumberOfSacrificeKitties(_kittyID);
-        require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Please meet the required number of sacrificing kitties.");
+        require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Insufficient sacrificing kitties");
         //kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
         // exchange KTY on uniswap
         IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(

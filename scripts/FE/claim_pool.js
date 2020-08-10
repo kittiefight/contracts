@@ -85,7 +85,7 @@ module.exports = async (callback) => {
     accounts = await web3.eth.getAccounts();
 
     let poolId = process.argv[4]
-    let user = process.argv[5] === null ? 3 : process.argv[5];
+    let user = process.argv[5] === null ? 45 : process.argv[5];
     const stakedTokens = new BigNumber(
       web3.utils.toWei("5", "ether")
     );
@@ -105,13 +105,13 @@ module.exports = async (callback) => {
     console.log(formatDate(await timeFrame.restDayStartTime()));
     console.log(formatDate(await timeFrame.restDayEndTime()));
     
-    await proxy.execute(
-        "Register",
-        setMessage(register, "register", []),
-        {
-          from: accounts[user]
-        }
-      )
+    // await proxy.execute(
+    //     "Register",
+    //     setMessage(register, "register", []),
+    //     {
+    //       from: accounts[user]
+    //     }
+    //   )
     console.log("Available for claiming...");
 
     let boolean = await withdrawPoolGetters.getUnlocked(0);
