@@ -43,6 +43,7 @@ import "../endowment/HoneypotAllocationAlgo.sol";
 import '../endowment/KtyUniswap.sol';
 import "../databases/GenericDB.sol";
 import "../../withdrawPool/WithdrawPool.sol";
+import "../databases/AccountingDB.sol";
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -59,6 +60,7 @@ contract GameCreation is Proxied, Guard {
     KittieHell public kittieHELL;
     GenericDB public genericDB;
     WithdrawPool public withdrawPool;
+    AccountingDB public accountingDB;
 
 
     //EVENTS
@@ -89,6 +91,7 @@ contract GameCreation is Proxied, Guard {
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
         genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
         withdrawPool = WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL));
+        accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
     }
 
     /**
@@ -127,7 +130,7 @@ contract GameCreation is Proxied, Guard {
 
         scheduler.addKittyToList(kittieId, player);
 
-        gmSetterDB.recordKittieListingFee(kittieId, msg.value, listingFeeKTY);
+        accountingDB.recordKittieListingFee(kittieId, msg.value, listingFeeKTY);
 
         emit NewListing(kittieId, player, now);
     }
@@ -196,7 +199,7 @@ contract GameCreation is Proxied, Guard {
         // update betting fee dynamically as a percentage of initial honeypot size
         gameStore.updateBettingFee(gameId);
 
-        recordListingFeeInGame(gameId, kittyRed, kittyBlack);
+        accountingDB.setListingFeeInGame(gameId, kittyRed, kittyBlack);
 
         emit NewGame(gameId, playerBlack, kittyBlack, playerRed, kittyRed, gameStartTime);
     }
@@ -243,19 +246,6 @@ contract GameCreation is Proxied, Guard {
         if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
             scheduler.startGame();
     }
-
-    function recordListingFeeInGame(uint256 _gameId, uint256 _kittyRed, uint256 _kittyBlack)
-        internal
-    {
-        // add kittie listing fee to total spent ether in game
-        (uint256 _listingFeeEthRed, uint256 _listingFeeKtyRed) = gmGetterDB.getKittieListingFee(_kittyRed);
-        gmSetterDB.setTotalSpentInGame(_gameId, _listingFeeEthRed, _listingFeeKtyRed);
-
-        // add uniswap swapped kittie listing fee in KTY in game
-        (uint256 _listingFeeEthBlack, uint256 _listingFeeKtyBlack) = gmGetterDB.getKittieListingFee(_kittyBlack);
-        gmSetterDB.setTotalSpentInGame(_gameId, _listingFeeEthBlack, _listingFeeKtyBlack);
-    }
-
 
     // ==== CRONJOBS FUNCTIONS
 

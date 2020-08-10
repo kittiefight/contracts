@@ -314,48 +314,6 @@ contract GMSetterDB is Proxied {
     genericDB.setAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "secondTopBettor")), secondTopBettor);
   }
 
-  /**
-   * @dev record actual kittie listing fee in ether and in uniswap swapped kty for each kittie listed
-   */
-  function recordKittieListingFee(uint256 kittieId, uint256 listingFeeEther, uint256 listingFeeKty)
-      external
-      onlyContract(CONTRACT_NAME_GAMECREATION)
-  {
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(kittieId, "kittieListingFeeEther")),
-      listingFeeEther);
-
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(kittieId, "kittieListingFeeKty")),
-      listingFeeKty);
-  }
-
-  /**
-   * @dev set total spent "ether" and total uniswap auto-swapped KTY for each game
-   */
-  function setTotalSpentInGame(uint256 gameId, uint256 etherAmount, uint256 ktyAmount)
-      external
-      only3Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_KITTIEHELL)
-  {
-    uint256 prevEtherAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "totalSpentInGame")),
-      prevEtherAmount.add(etherAmount));
-
-      uint256 prevKtyAmount = genericDB.getUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
-    genericDB.setUintStorage(
-      CONTRACT_NAME_GM_SETTER_DB,
-      keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")),
-      prevKtyAmount.add(ktyAmount));
-  }
-
   // function updateTopbettors(uint256 _gameId, address _account, address _supportedPlayer)
   //   external
   //   onlyContract(CONTRACT_NAME_GAMEMANAGER)

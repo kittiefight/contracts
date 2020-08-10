@@ -255,17 +255,4 @@ contract GMGetterDB is Proxied {
     topBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "topBettor")));
     secondTopBettor = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB,keccak256(abi.encodePacked(gameId, "secondTopBettor")));
   }
-
-  ///@dev return listing fee in ether and swapped listing fee KTY for each kittie with kittieId listed
-    function getKittieListingFee(uint256 kittieId)
-    public view returns (uint256, uint256)
-    {
-        uint256 _listingFeeEther = genericDB.getUintStorage(
-            CONTRACT_NAME_GM_SETTER_DB,
-            keccak256(abi.encodePacked(kittieId, "kittieListingFeeEther")));
-        uint256 _listingFeeKty = genericDB.getUintStorage(
-            CONTRACT_NAME_GM_SETTER_DB,
-            keccak256(abi.encodePacked(kittieId, "kittieListingFeeKty")));
-        return (_listingFeeEther, _listingFeeKty);
-    }
 }

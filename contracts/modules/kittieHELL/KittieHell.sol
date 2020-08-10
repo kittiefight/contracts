@@ -16,6 +16,7 @@ import "../endowment/EndowmentFund.sol";
 import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
 import "../endowment/KtyUniswap.sol";
 import "./KittieHellDungeon.sol";
+import "../databases/AccountingDB.sol";
 
 /**
  * @title This contract is responsible to acquire ownership of participating kitties,
@@ -37,6 +38,8 @@ contract KittieHell is BasicControls, Proxied, Guard {
     KittieHellDB public kittieHellDB;
     EndowmentFund public endowmentFund;
     KittieHellDungeon public kittieHellDungeon;
+    AccountingDB public accountingDB;
+
     address[] public path;
 
     struct KittyStatus {
@@ -61,6 +64,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         kittieHellDB = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         kittieHellDungeon = KittieHellDungeon(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON));
+        accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
 
         delete path; //Required to allow calling initialize() several times
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
@@ -171,7 +175,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         );
 
         // record kittie redemption fee in total spent in game
-        gmSetterDB.setTotalSpentInGame(gameId, msg.value, tokenAmount);
+        accountingDB.setTotalSpentInGame(gameId, msg.value, tokenAmount);
 
         kittieHellDB.lockKTYsInKittieHell(_kittyID, tokenAmount);
         releaseKitty(_kittyID);

@@ -1,7 +1,6 @@
 const KFProxy = artifacts.require("KFProxy");
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require('KittieFightToken');
-const Staking = artifacts.require("Staking");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
@@ -73,7 +72,6 @@ module.exports = async (callback) => {
   try{
     let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
-    let staking = await Staking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
     let ethieToken = await EthieToken.deployed();
     let withdrawPool = await WithdrawPool.deployed();

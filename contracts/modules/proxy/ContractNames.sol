@@ -54,4 +54,5 @@ contract ContractNames {
     string constant CONTRACT_NAME_DAI_WETH_ORACLE   = "DaiWethOracle";
     string constant CONTRACT_NAME_MULTISIG = "Multisig5of12";
     string constant CONTRACT_NAME_BUSINESS_INSIGHT = "BusinessInsight";
+    string constant CONTRACT_NAME_ACCOUNTING_DB = "AccountingDB";
 }

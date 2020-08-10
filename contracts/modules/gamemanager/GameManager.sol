@@ -39,6 +39,7 @@ import "./GameStore.sol";
 import "./GameCreation.sol";
 import "../endowment/KtyUniswap.sol";
 import "./GameManagerHelper.sol";
+import "../databases/AccountingDB.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -52,6 +53,7 @@ contract GameManager is Proxied, Guard {
     GameStore public gameStore;
     GameCreation public gameCreation;
     GameManagerHelper public gameManagerHelper;
+    AccountingDB public accountingDB;
 
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
@@ -73,7 +75,6 @@ contract GameManager is Proxied, Guard {
     * @dev Can be called only by the owner of this contract
     */
     function initialize() external onlyOwner {
-
         gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
@@ -82,6 +83,7 @@ contract GameManager is Proxied, Guard {
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
         gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
+        accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
     }
 
     /**
@@ -116,7 +118,7 @@ contract GameManager is Proxied, Guard {
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
 
         // add paid ticket fee to total spent in game
-        gmSetterDB.setTotalSpentInGame(gameId, msg.value, ticketFeeKTY);
+        accountingDB.setTotalSpentInGame(gameId, msg.value, ticketFeeKTY);
 
         (,uint preStartTime,) = gmGetterDB.getGameTimes(gameId);
 
@@ -241,7 +243,7 @@ contract GameManager is Proxied, Guard {
         require(endowmentFund.contributeKTY.value(etherForSwap)(sender, etherForSwap, bettingFeeKTY));
         
         // add betting fee to total spent in game
-        gmSetterDB.setTotalSpentInGame(gameId, etherForSwap, bettingFeeKTY);
+        accountingDB.setTotalSpentInGame(gameId, etherForSwap, bettingFeeKTY);
 
         // Update Random
         HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE)).calculateCurrentRandom(gameId, randomNum);
