@@ -100,6 +100,8 @@ module.exports = async (callback) => {
       await timeout(timeTillClaiming.toNumber());
     }
 
+    await proxy.executeScheduledJobs();
+
     console.log(formatDate(await timeFrame.restDayStartTime()));
     console.log(formatDate(await timeFrame.restDayEndTime()));
     

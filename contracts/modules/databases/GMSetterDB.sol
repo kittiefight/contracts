@@ -257,17 +257,6 @@ contract GMSetterDB is Proxied {
   }
 
   /**
-   * @dev Update kittie playing game Id
-   */
-  function updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
-    external
-    onlyContract(CONTRACT_NAME_GAMECREATION)
-  {
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
-  }
-
-  /**
    * @dev set initial ETH and initial KTY in honeypot created by Endowment
    */
   function setHoneypotInfo(uint256 gameId, uint256 _initialKTY, uint256 _initialETH)

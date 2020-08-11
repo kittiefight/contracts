@@ -44,6 +44,7 @@ import '../endowment/KtyUniswap.sol';
 import "../databases/GenericDB.sol";
 import "../../withdrawPool/WithdrawPool.sol";
 import "../databases/AccountingDB.sol";
+import "./GameManagerHelper.sol";
 
 contract GameCreation is Proxied, Guard {
     using SafeMath for uint256;
@@ -61,6 +62,7 @@ contract GameCreation is Proxied, Guard {
     GenericDB public genericDB;
     WithdrawPool public withdrawPool;
     AccountingDB public accountingDB;
+    GameManagerHelper public gameManagerHelper;
 
 
     //EVENTS
@@ -92,6 +94,7 @@ contract GameCreation is Proxied, Guard {
         genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
         withdrawPool = WithdrawPool(proxy.getContract(CONTRACT_NAME_WITHDRAW_POOL));
         accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
     }
 
     /**
@@ -191,7 +194,7 @@ contract GameCreation is Proxied, Guard {
 
         EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).setPoolIDinGame(gameId, poolId);
 
-        gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, gameId);
+        gameManagerHelper.updateKittiesGame(kittyBlack, kittyRed, gameId);
 
         // update ticket fee dynamically as a percentage of initial honeypot size
         gameStore.updateTicketFee(gameId);
@@ -227,7 +230,7 @@ contract GameCreation is Proxied, Guard {
         ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
 
         //Set gameId to 0 to both kitties (not playing any game)
-        gmSetterDB.updateKittiesGame(kittyBlack, kittyRed, 0);
+        gameManagerHelper.updateKittiesGame(kittyBlack, kittyRed, 0);
 
         if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
             scheduler.startGame();

@@ -146,7 +146,7 @@ contract GMGetterDB is Proxied {
   }
 
   function getGameOfKittie(uint kittieId) public view returns(uint){
-    return genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittieId, "playingGame")));
+    return genericDB.getUintStorage(CONTRACT_NAME_GAMEMANAGER_HELPER, keccak256(abi.encodePacked(kittieId, "playingGame")));
   }
 
   function getFinalHoneypot(uint256 gameId)
