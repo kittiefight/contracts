@@ -40,6 +40,7 @@ import "./GameCreation.sol";
 import "../endowment/KtyUniswap.sol";
 import "./GameManagerHelper.sol";
 import "../databases/AccountingDB.sol";
+import "../databases/EndowmentDB.sol";
 
 contract GameManager is Proxied, Guard {
     using SafeMath for uint256;
@@ -310,7 +311,7 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.storeHoneypotDetails(gameId);
 
         (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
-        endowmentFund.addETHtoPool(gameId, loser);
+        EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).addETHtoPool(gameId, loser);
 
         //Set to claiming
         gameManagerHelper.updateHoneyPotState(gameId, 5);

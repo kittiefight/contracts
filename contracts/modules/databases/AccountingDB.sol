@@ -40,15 +40,6 @@ contract AccountingDB is Proxied {
         _;
     }
 
-    // function addETHtoPool(uint256 gameId, address loser)
-    //     external
-    //     onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    // {
-    //     uint256 totalEthForLoser = gmGetterDB.getTotalBet(gameId, loser);
-    //     uint256 ETHtoPool = totalEthForLoser.mul(gameVarAndFee.getPercentageForPool()).div(1000000);
-    //     endowmentDB.addETHtoPool(gameId, ETHtoPool);
-    // }
-
     /**
     * @dev record actual kittie listing fee in ether and in uniswap swapped kty for each kittie listed
     */

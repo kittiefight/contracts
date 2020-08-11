@@ -3,6 +3,8 @@ pragma solidity ^0.5.5;
 import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
+import '../../GameVarAndFee.sol';
+import './GMGetterDB.sol';
 
 contract EndowmentDB is Proxied {
   using SafeMath for uint256;
@@ -254,9 +256,20 @@ contract EndowmentDB is Proxied {
     );
   }
 
-  function addETHtoPool(uint _gameId, uint _eth)
-      external
-      onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+  function addETHtoPool(uint256 gameId, address loser)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        uint256 totalEthForLoser = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB)).getTotalBet(gameId, loser);
+        uint256 percentageForPool = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE)).getPercentageForPool();
+        uint256 ETHtoPool = totalEthForLoser.mul(percentageForPool).div(1000000);
+        _addETHtoPool(gameId, ETHtoPool);
+    }
+
+  function _addETHtoPool(uint _gameId, uint _eth)
+      internal
+      // external
+      // onlyContract(CONTRACT_NAME_ACCOUNTING_DB)
   {
     // get _pool_id of the pool associated with the game with _gameId
     uint _pool_id = getPoolID(_gameId);

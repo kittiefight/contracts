@@ -250,15 +250,6 @@ contract EndowmentFund is Distribution, Guard {
         return true;
     }
 
-    function addETHtoPool(uint256 gameId, address loser)
-        external
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    {
-        uint256 totalEthForLoser = gmGetterDB.getTotalBet(gameId, loser);
-        uint256 ETHtoPool = totalEthForLoser.mul(gameVarAndFee.getPercentageForPool()).div(1000000);
-        endowmentDB.addETHtoPool(gameId, ETHtoPool);
-    }
-
     /**
     * @dev Initialize or Upgrade Escrow
     * @notice BEFORE CALLING: Deploy escrow contract and set the owner as EndowmentFund contract
