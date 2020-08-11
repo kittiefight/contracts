@@ -130,7 +130,7 @@ contract GameManagerHelper is Proxied, Guard {
             endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
         }
         if(_state == uint(HoneypotState.forefeited)) {
-            (uint256 eth, uint256 kty) = endowmentDB.getHoneypotTotal(_gameId);
+            (uint256 eth, uint256 kty) = accountingDB.getHoneypotTotal(_gameId);
             endowmentDB.updateEndowmentFund(kty, eth, false);
             endowmentDB.updateHoneyPotFund(_gameId, kty, eth, true);
         }
@@ -159,6 +159,15 @@ contract GameManagerHelper is Proxied, Guard {
             if(currentJackpotEth < initialEth.mul(10)) return true;
             return false;
         }
+    }
+
+     function getWinnerLoser(uint256 gameId)
+        public view
+        returns(address winner, address loser, uint256 totalBetsForLosingCorner)
+    {
+        (winner,,) = gmGetterDB.getWinners(gameId);
+        loser = getOpponent(gameId, winner);
+        totalBetsForLosingCorner = gmGetterDB.getTotalBet(gameId, loser);
     }
 
     function getDistributionRates(uint gameId) public view returns(uint[5] memory){

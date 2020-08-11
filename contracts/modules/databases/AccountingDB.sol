@@ -108,7 +108,28 @@ contract AccountingDB is Proxied {
 
 
     // getters
-     ///@dev return listing fee in ether and swapped listing fee KTY for each kittie with kittieId listed
+
+    function getHoneyPotBalance(uint256 _gameId)
+        public view
+        returns (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH)
+    {
+        honeyPotBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
+        honeyPotBalanceETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
+    }
+
+    function getHoneypotState(uint gameId) external view returns (uint state, uint256 claimTime) {
+        return (
+            genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state"))),
+            genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")))
+            );
+    }
+
+    function getHoneypotTotal(uint _gameId) external view returns (uint256 totalEth, uint256 totalKty) {
+        totalEth = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
+        totalKty = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
+    }
+
+    ///@dev return listing fee in ether and swapped listing fee KTY for each kittie with kittieId listed
     function getKittieListingFee(uint256 kittieId)
     public view returns (uint256, uint256)
     {

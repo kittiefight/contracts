@@ -76,7 +76,7 @@ contract Distribution is Proxied {
         public view
         returns(uint256 winningsETH, uint256 winningsKTY)
     {
-        (address winner, /*address loser*/, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+        (address winner, /*address loser*/, uint256 totalBetsForLosingCorner) = gameManagerHelper.getWinnerLoser(gameId);
 
         require(winner != address(0));
 
@@ -144,7 +144,7 @@ contract Distribution is Proxied {
         uint256[5] memory rates = gameManagerHelper.getDistributionRates(gameId);
         (,, uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
 
-        (/*address winner*/, /*address loser*/, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+        (/*address winner*/, /*address loser*/, uint256 totalBetsForLosingCorner) = gameManagerHelper.getWinnerLoser(gameId);
 
         winningsETH = initialEth.add(totalBetsForLosingCorner.mul(rates[4]).div(1000000)); //1,000,000 is the percentage base
         winningsKTY = (totalKTYFunds.mul(rates[4])).div(1000000); //1,000,000 is the percentage base
@@ -169,14 +169,5 @@ contract Distribution is Proxied {
 
         // Winning Other Bettors List
         return 3;
-    }
-
-    function getWinnerLoser(uint256 gameId)
-        public view
-        returns(address winner, address loser, uint256 totalBetsForLosingCorner)
-    {
-        (winner,,) = gmGetterDB.getWinners(gameId);
-        loser = gameManagerHelper.getOpponent(gameId, winner);
-        totalBetsForLosingCorner = gmGetterDB.getTotalBet(gameId, loser);
     }
 }

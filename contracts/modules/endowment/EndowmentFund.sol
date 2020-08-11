@@ -54,7 +54,7 @@ contract EndowmentFund is Distribution, Guard {
         address payable msgSender = address(uint160(getOriginalSender()));
 
         // Honeypot status
-        (uint status, /*uint256 claimTime*/) = endowmentDB.getHoneypotState(_gameId);
+        (uint status, /*uint256 claimTime*/) = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).getHoneypotState(_gameId);
 
         require(uint(HoneypotState.claiming) == status);
 

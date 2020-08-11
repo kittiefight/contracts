@@ -43,12 +43,6 @@ contract EndowmentDB is Proxied {
     genericDB = _genericDB;
   }
 
-  function getHoneyPotBalance(uint256 _gameId) public view
-  returns (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH)  {
-    honeyPotBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
-    honeyPotBalanceETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
-  }
-
   function updateHoneyPotFund(
     uint256 _gameId, uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
   )
@@ -190,18 +184,6 @@ contract EndowmentDB is Proxied {
     genericDB.setStringStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "honeypotClass")), honeypotClass);
   }
 
-  function getHoneypotState(
-    uint gameId
-  )
-    external
-    view returns (uint state, uint256 claimTime)
-  {
-    return(
-      genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state"))),
-      genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")))
-    );
-  }
-
   function setHoneypotState( uint _gameId, uint state)
   external
   only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
@@ -213,12 +195,6 @@ contract EndowmentDB is Proxied {
     // else{
     //   genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "claimTime")), 0);
     // }
-  }
-
-
-  function getHoneypotTotal(uint _gameId) external view returns (uint256 totalEth, uint256 totalKty) {
-      totalEth = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
-      totalKty = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
   }
 
   /**
