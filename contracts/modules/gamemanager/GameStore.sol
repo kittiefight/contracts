@@ -125,31 +125,6 @@ contract GameStore is Proxied, Guard {
         lock(gameId);
     }
 
-    function getDistributionRates(uint gameId) public view returns(uint[5] memory){
-        uint[5] memory distributionRates;
-        distributionRates[0] = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "distributionRates", "winningKittie"))
-        );
-        distributionRates[1] = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "distributionRates", "topBettor"))
-        );
-        distributionRates[2] = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "distributionRates", "secondRunnerUp"))
-        );
-        distributionRates[3] = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "distributionRates", "otherBettors"))
-        );
-        distributionRates[4] = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "distributionRates", "endownment"))
-        );
-        return distributionRates;
-    }
-
     // update kittieRedemptionFee and store in Dai
     function updateKittieRedemptionFee(uint256 gameId)
         public

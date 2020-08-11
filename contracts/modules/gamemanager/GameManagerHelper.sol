@@ -161,6 +161,31 @@ contract GameManagerHelper is Proxied, Guard {
         }
     }
 
+    function getDistributionRates(uint gameId) public view returns(uint[5] memory){
+        uint[5] memory distributionRates;
+        distributionRates[0] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "winningKittie"))
+        );
+        distributionRates[1] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "topBettor"))
+        );
+        distributionRates[2] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "secondRunnerUp"))
+        );
+        distributionRates[3] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "otherBettors"))
+        );
+        distributionRates[4] = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "distributionRates", "endownment"))
+        );
+        return distributionRates;
+    }
+
     function getKittieExpirationTime(uint gameId) public view returns(uint){
         return genericDB.getUintStorage(
             CONTRACT_NAME_GAMESTORE,
@@ -237,8 +262,6 @@ contract GameManagerHelper is Proxied, Guard {
             keccak256(abi.encodePacked(gameId, "timeExtension"))
         );
     }
-
-    
 
     function getOpponent(uint gameId, address player) public view returns(address){
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
