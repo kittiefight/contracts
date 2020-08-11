@@ -45,7 +45,7 @@ contract AccountingDB is Proxied {
     */
     function recordKittieListingFee(uint256 kittieId, uint256 listingFeeEther, uint256 listingFeeKty)
         external
-        onlyContract(CONTRACT_NAME_GAMECREATION)
+        onlyContract(CONTRACT_NAME_GAMEMANAGER_HELPER)
     {
         genericDB.setUintStorage(
             CONTRACT_NAME_ACCOUNTING_DB,

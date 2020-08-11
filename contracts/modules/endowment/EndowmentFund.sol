@@ -133,7 +133,7 @@ contract EndowmentFund is Distribution, Guard {
      *      original ether to KTY ratio.
      */
     function contributeKTY(address _sender, uint256 _ether_amount_swap, uint256 _kty_amount) external 
-            only3Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_EARNINGS_TRACKER) 
+            only3Contracts(CONTRACT_NAME_GAMEMANAGER_HELPER, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_EARNINGS_TRACKER) 
             payable returns(bool) {
         HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).swapEtherForKTY.value(msg.value)(_ether_amount_swap, address(escrow));
 

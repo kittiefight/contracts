@@ -73,7 +73,7 @@ contract GameCreation is Proxied, Guard {
     //mapping(uint256 => uint256) public cronJobsForGames; //using gmGetterDB.getCronJobForGame()/gmSetterDB.setCronJobForGame() instead
 
     modifier onlyKittyOwner(address player, uint kittieId) {
-        require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
+        require(cryptoKitties.ownerOf(kittieId) == player, "Not the owner of this kittie");
         _;
     }
 
@@ -97,46 +97,35 @@ contract GameCreation is Proxied, Guard {
         gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
     }
 
-    /**
-     * @dev calculate listing fee dynamically as a percentage of initial honey pot
-     */
-   //function calculateListingFee() public view returns(uint256)
-    //{
-      //  uint256 percentageHoneyPot = gameVarAndFee.getPercentageForListingFee();
-      //  uint256 initialHoneypotEth = gameVarAndFee.getEthPerGame();
-      //  uint256 initialHoneypotKTY = gameVarAndFee.getPercentageJackpotAllocationKTY().mul(gameVarAndFee.getActualFundsKTY());
-      //  return gameStore.calculateDynamicFee(percentageHoneyPot, initialHoneypotEth, initialHoneypotKTY);
-    //}
+    // /**
+    //  * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
+    //  */
+    // function listKittie
+    // (
+    //     uint kittieId
+    // )
+    //     external
+    //     payable
+    //     onlyProxy onlyPlayer
+    //     onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
+    // {
+    //     address player = getOriginalSender();
 
-    /**
-     * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
-     */
-    function listKittie
-    (
-        uint kittieId
-    )
-        external
-        payable
-        onlyProxy onlyPlayer
-        onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
-    {
-        address player = getOriginalSender();
+    //     //Pay Listing Fee
+    //     // get listing fee in Dai
+    //     (uint etherForListingFeeSwap, uint listingFeeKTY) = gameVarAndFee.getListingFee();
 
-        //Pay Listing Fee
-        // get listing fee in Dai
-        (uint etherForListingFeeSwap, uint listingFeeKTY) = gameVarAndFee.getListingFee();
+    //     require(endowmentFund.contributeKTY.value(msg.value)(player, etherForListingFeeSwap, listingFeeKTY), "Need to pay listing fee");
+    //     //endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
 
-        require(endowmentFund.contributeKTY.value(msg.value)(player, etherForListingFeeSwap, listingFeeKTY), "Need to pay listing fee");
-        //endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
+    //     require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
 
-        require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
+    //     scheduler.addKittyToList(kittieId, player);
 
-        scheduler.addKittyToList(kittieId, player);
+    //     accountingDB.recordKittieListingFee(kittieId, msg.value, listingFeeKTY);
 
-        accountingDB.recordKittieListingFee(kittieId, msg.value, listingFeeKTY);
-
-        emit NewListing(kittieId, player, now);
-    }
+    //     emit NewListing(kittieId, player, now);
+    // }
 
     /**
      * @dev Check to make sure the only superADmin can list, Takes in two kittieID's and accounts as well as the jackpot ether and token number.
@@ -158,8 +147,8 @@ contract GameCreation is Proxied, Guard {
 
         require(!genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))), "No manual match mode");
 
-        require(!scheduler.isKittyListedForMatching(kittyRed), "fighter is already listed for matching");
-        require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter is already listed for matching");
+        require(!scheduler.isKittyListedForMatching(kittyRed), "fighter already listed");
+        require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter already listed");
 
         require(kittieHELL.acquireKitty(kittyRed, playerRed));
         require(kittieHELL.acquireKitty(kittyBlack, playerBlack));
