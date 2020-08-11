@@ -166,7 +166,7 @@ contract Scheduler is Proxied, SchedulerDB {
      */
     function startGame()
     external
-    onlyContract(CONTRACT_NAME_GAMESTORE)
+    only2Contracts(CONTRACT_NAME_GAMESTORE, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns(bool)
     {
         uint noOfKittiesListed = getNoOfKittiesListed();

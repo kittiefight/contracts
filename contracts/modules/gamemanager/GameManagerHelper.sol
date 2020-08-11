@@ -8,6 +8,7 @@ import "../databases/GenericDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../databases/EndowmentDB.sol";
+import "./Scheduler.sol";
 
 
 contract GameManagerHelper is Proxied, Guard {
@@ -19,6 +20,7 @@ contract GameManagerHelper is Proxied, Guard {
     GameVarAndFee public gameVarAndFee;
     EndowmentDB public endowmentDB;
     EndowmentFund public endowmentFund;
+    Scheduler public scheduler;
 
     enum HoneypotState {
         created,
@@ -40,6 +42,20 @@ contract GameManagerHelper is Proxied, Guard {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
+        scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
+    }
+
+    function removeKitties(uint256 gameId)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+
+        //Set gameId to 0 to both kitties (not playing any game)
+        _updateKittiesGame(kittyBlack, kittyRed, 0);
+
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            scheduler.startGame();
     }
 
     /**
@@ -82,7 +98,15 @@ contract GameManagerHelper is Proxied, Guard {
         external
         onlyContract(CONTRACT_NAME_GAMECREATION)
     {
+        _updateKittiesGame(kittyBlack, kittyRed, gameId);
+    }
+
+    // internal functions
+    function _updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
+        internal
+    {
         genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_HELPER, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
         genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_HELPER, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
     }
+    
 }

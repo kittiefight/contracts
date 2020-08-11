@@ -223,19 +223,6 @@ contract GameCreation is Proxied, Guard {
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
-    function removeKitties(uint256 gameId)
-        external
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    {
-        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-
-        //Set gameId to 0 to both kitties (not playing any game)
-        gameManagerHelper.updateKittiesGame(kittyBlack, kittyRed, 0);
-
-        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
-            scheduler.startGame();
-    }
-
     function updateKitties(address winner, address loser, uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMEMANAGER)
