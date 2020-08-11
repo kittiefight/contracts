@@ -228,7 +228,7 @@ contract GMSetterDB is Proxied {
    */
   function updateGameState(uint256 gameId, uint256 state)
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    only2Contracts(CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_GAMEMANAGER_HELPER)
     onlyExistentGame(gameId)
   {
     gameCreation.scheduleJobs(gameId, state);

@@ -104,7 +104,7 @@ contract Forfeiter is Proxied {
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
     if(ckc.ownerOf(kittyBlack) == address(kittieHellDungeon)) kittieHELL.releaseKittyGameManager(kittyBlack);
     if(ckc.ownerOf(kittyRed) == address(kittieHellDungeon)) kittieHELL.releaseKittyGameManager(kittyRed);
-    gameManager.cancelGame(gameId);
+    gameManagerHelper.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }
 

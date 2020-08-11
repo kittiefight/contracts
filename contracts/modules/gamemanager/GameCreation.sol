@@ -303,7 +303,7 @@ contract GameCreation is Proxied, Guard {
 
     function deleteCronjob(uint gameId)
         external
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        only2Contracts(CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_GAMEMANAGER_HELPER)
     {
         uint256 jobId = gmGetterDB.getCronJobForGame(gameId);
         cronJob.deleteCronJob(CONTRACT_NAME_GAMECREATION, jobId);
