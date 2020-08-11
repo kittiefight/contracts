@@ -75,7 +75,7 @@ contract EndowmentFund is Distribution, Guard {
         }
 
         // log tokens sent to an address
-        endowmentDB.setTotalDebit(_gameId, msgSender, winningsETH, winningsKTY);
+        AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).setTotalDebit(_gameId, msgSender, winningsETH, winningsKTY);
 
         emit WinnerClaimed(_gameId, msgSender, winningsETH, winningsKTY, address(escrow));
     }
@@ -94,7 +94,7 @@ contract EndowmentFund is Distribution, Guard {
     }
 
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
-        (uint256 totalETHdebited, uint256 totalKTYdebited) = endowmentDB.getTotalDebit(_gameId, _account);
+        (uint256 totalETHdebited, uint256 totalKTYdebited) = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).getTotalDebit(_gameId, _account);
         return ((totalETHdebited > 0) && (totalKTYdebited > 0));
     }
 

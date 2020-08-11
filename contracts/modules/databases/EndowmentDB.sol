@@ -243,35 +243,6 @@ contract EndowmentDB is Proxied {
     return (ktyAllocated, ethAllocated);
   }
 
-/**
- * @dev store the total debit by an a/c per game
- */
-  function setTotalDebit(
-    uint _gameId, address _account, uint _eth_amount, uint _kty_amount
-  ) external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    onlyExistingHoneypot(_gameId)
-    returns (bool) {
-
-    if (_eth_amount > 0) {
-
-      bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
-      uint ethTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey, ethTotal.add(_eth_amount));
-
-    }
-
-    if (_kty_amount > 0) {
-
-      bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
-      uint ktyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey, ktyTotal.add(_kty_amount));
-
-    }
-
-  return true;
-  }
-
   function setPoolIDinGame(uint _gameId, uint _poolId)
       external
       onlyContract(CONTRACT_NAME_GAMECREATION)
@@ -388,22 +359,6 @@ contract EndowmentDB is Proxied {
       );
     uint256 actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
     return (actualFunds.sub(fundsForPool), fundsForPool);
-  }
-
-/**
- * @dev get total debit by an a/c per game
- */
-  function getTotalDebit(
-    uint _gameId, address _account
-  ) external view
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    //onlyExistingProfile(_account)
-    onlyExistingHoneypot(_gameId)
-    returns (uint256 ethTotalDebit, uint256 ktyTotalDebit) {
-      bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
-      bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
-      ethTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
-      ktyTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
   }
 
   // get pool ID of the pool associated with a honey pot
