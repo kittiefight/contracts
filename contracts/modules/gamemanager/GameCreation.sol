@@ -223,19 +223,19 @@ contract GameCreation is Proxied, Guard {
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }
 
-    function updateKitties(address winner, address loser, uint256 gameId)
-    external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
-    {
-        //Release winner's Kittie
-        kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
+    // function updateKitties(address winner, address loser, uint256 gameId)
+    // external
+    // onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    // {
+    //     //Release winner's Kittie
+    //     kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
 
-        //Kill losers's Kittie
-        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
+    //     //Kill losers's Kittie
+    //     kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
-        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
-            scheduler.startGame();
-    }
+    //     if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+    //         scheduler.startGame();
+    // }
 
     // ==== CRONJOBS FUNCTIONS
 

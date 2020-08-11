@@ -324,7 +324,7 @@ contract GameManager is Proxied, Guard {
 
         gmSetterDB.updateGameState(gameId, uint(eGameState.CLAIMING));
 
-        gameCreation.updateKitties(winner, loser, gameId);
+        gameManagerHelper.updateKitties(winner, loser, gameId);
 
         emit GameStateChanged(gameId, eGameState.MAIN_GAME, eGameState.CLAIMING);
 

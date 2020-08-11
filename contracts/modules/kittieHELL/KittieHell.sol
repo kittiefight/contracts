@@ -121,7 +121,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     function killKitty(uint256 _kittyID, uint gameId)
     public
     onlyOwnedKitty(_kittyID)
-    onlyContract(CONTRACT_NAME_GAMECREATION)
+    only2Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool) {
         KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
         ks.dead = true;
@@ -231,7 +231,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
 
     function releaseKittyGameManager(uint256 _kittyID)
         public
-        only2Contracts(CONTRACT_NAME_FORFEITER, CONTRACT_NAME_GAMECREATION)
+        only3Contracts(CONTRACT_NAME_FORFEITER, CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool) {
         releaseKitty(_kittyID);
     }

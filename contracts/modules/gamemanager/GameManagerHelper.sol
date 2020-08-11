@@ -9,7 +9,7 @@ import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../databases/EndowmentDB.sol";
 import "./Scheduler.sol";
-
+import '../kittieHELL/KittieHell.sol';
 
 contract GameManagerHelper is Proxied, Guard {
     using SafeMath for uint256;
@@ -21,6 +21,7 @@ contract GameManagerHelper is Proxied, Guard {
     EndowmentDB public endowmentDB;
     EndowmentFund public endowmentFund;
     Scheduler public scheduler;
+    KittieHell public kittieHELL;
 
     enum HoneypotState {
         created,
@@ -43,6 +44,7 @@ contract GameManagerHelper is Proxied, Guard {
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
+        kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
     }
 
     function removeKitties(uint256 gameId)
@@ -53,6 +55,20 @@ contract GameManagerHelper is Proxied, Guard {
 
         //Set gameId to 0 to both kitties (not playing any game)
         _updateKittiesGame(kittyBlack, kittyRed, 0);
+
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            scheduler.startGame();
+    }
+
+    function updateKitties(address winner, address loser, uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        //Release winner's Kittie
+        kittieHELL.releaseKittyGameManager(gmGetterDB.getKittieInGame(gameId, winner));
+
+        //Kill losers's Kittie
+        kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
         if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
             scheduler.startGame();
