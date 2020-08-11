@@ -60,7 +60,9 @@ contract EndowmentFund is Distribution, Guard {
 
         // require(now < claimTime, "2");
 
-        require(!getWithdrawalState(_gameId, msgSender));
+        bool hasClaimed = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).getWithdrawalState(_gameId, msgSender);
+
+        require(hasClaimed == false);
 
         (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
 
@@ -91,30 +93,6 @@ contract EndowmentFund is Distribution, Guard {
         uint256 reward = gameVarAndFee.getFinalizeRewards();
         transferKTYfromEscrow(address(uint160(user)), reward);
         return true;
-    }
-
-    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
-        (uint256 totalETHdebited, uint256 totalKTYdebited) = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).getTotalDebit(_gameId, _account);
-        return ((totalETHdebited > 0) && (totalKTYdebited > 0));
-    }
-
-    /**
-    * @dev updateHoneyPotState
-    */
-    function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
-        uint256 claimTime;
-        if (_state == uint(HoneypotState.claiming)){
-            //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
-            (uint256 winningsETH, uint256 winningsKTY) = getEndowmentShare(_gameId);
-            endowmentDB.updateEndowmentFund(winningsKTY, winningsETH, false);
-            endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
-        }
-        if(_state == uint(HoneypotState.forefeited)) {
-            (uint256 eth, uint256 kty) = endowmentDB.getHoneypotTotal(_gameId);
-            endowmentDB.updateEndowmentFund(kty, eth, false);
-            endowmentDB.updateHoneyPotFund(_gameId, kty, eth, true);
-        }
-        endowmentDB.setHoneypotState(_gameId, _state);
     }
 
     /**

@@ -3,11 +3,17 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
+import '../../GameVarAndFee.sol';
+import './GMGetterDB.sol';
+import "./EndowmentDB.sol";
 
 contract AccountingDB is Proxied {
     using SafeMath for uint256;
 
     GenericDB public genericDB;
+    GameVarAndFee public gameVarAndFee;
+    GMGetterDB public gmGetterDB;
+    EndowmentDB public endowmentDB;
 
     bytes32 internal constant TABLE_KEY_HONEYPOT = keccak256(abi.encodePacked("HoneypotTable"));
 
@@ -19,10 +25,29 @@ contract AccountingDB is Proxied {
         genericDB = _genericDB;
     }
 
+    /**
+    * @dev Sets related contracts
+    * @dev Can be called only by the owner of this contract
+    */
+    function initialize() external onlyOwner {
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+    }
+
     modifier onlyExistingHoneypot(uint gameId) {
         require(genericDB.doesNodeExist(CONTRACT_NAME_ENDOWMENT_DB, TABLE_KEY_HONEYPOT, gameId), "Honeypot Not exists");
         _;
     }
+
+    // function addETHtoPool(uint256 gameId, address loser)
+    //     external
+    //     onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    // {
+    //     uint256 totalEthForLoser = gmGetterDB.getTotalBet(gameId, loser);
+    //     uint256 ETHtoPool = totalEthForLoser.mul(gameVarAndFee.getPercentageForPool()).div(1000000);
+    //     endowmentDB.addETHtoPool(gameId, ETHtoPool);
+    // }
 
     /**
     * @dev record actual kittie listing fee in ether and in uniswap swapped kty for each kittie listed
@@ -121,6 +146,11 @@ contract AccountingDB is Proxied {
         bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
         ethTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ACCOUNTING_DB, ethTotalDebitPerGamePerAcKey);
         ktyTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ACCOUNTING_DB, ktyTotalDebitPerGamePerAcKey);
+    }
+
+    function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
+        (uint256 totalETHdebited, uint256 totalKTYdebited) = getTotalDebit(_gameId, _account);
+        return ((totalETHdebited > 0) && (totalKTYdebited > 0));
     }
 
     // internal functions

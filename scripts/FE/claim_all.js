@@ -1,6 +1,7 @@
 const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const EndowmentFund = artifacts.require('EndowmentFund')
+const AccountingDB = artifacts.require('AccountingDB')
 
 const BigNumber = web3.utils.BN;
 
@@ -24,6 +25,7 @@ module.exports = async (callback) => {
     let proxy = await KFProxy.deployed();
     let getterDB = await GMGetterDB.deployed();
     let endowmentFund = await EndowmentFund.deployed();
+    let accountingDB = await AccountingDB.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -40,7 +42,7 @@ module.exports = async (callback) => {
     console.log('Winner withdrawing ', String(web3.utils.fromWei(winnerShare.winningsKTY.toString())), 'KTY')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.winner });
-    let withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.winner);
+    let withdrawalState = await accountingDB.getWithdrawalState(gameId, winners.winner);
     console.log('Withdrew funds from Winner? ', withdrawalState);
 
     let honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
@@ -58,7 +60,7 @@ module.exports = async (callback) => {
     console.log('Top Bettor withdrawing ', String(web3.utils.fromWei(topBettorsShare.winningsKTY.toString())), 'KTY')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.topBettor });
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.topBettor);
+    withdrawalState = await accountingDB.getWithdrawalState(gameId, winners.topBettor);
     console.log('Withdrew funds from Top Bettor? ', withdrawalState);
 
     honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
@@ -76,7 +78,7 @@ module.exports = async (callback) => {
     console.log('Second Top Bettor withdrawing ', String(web3.utils.fromWei(secondTopBettorsShare.winningsKTY.toString())), 'KTY')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
       [gameId]), { from: winners.secondTopBettor });
-    withdrawalState = await endowmentFund.getWithdrawalState(gameId, winners.secondTopBettor);
+    withdrawalState = await accountingDB.getWithdrawalState(gameId, winners.secondTopBettor);
     console.log('Withdrew funds from Second Top Bettor? ', withdrawalState);
 
     honeyPotInfo = await getterDB.getHoneypotInfo(gameId);
@@ -113,7 +115,7 @@ module.exports = async (callback) => {
         if(Number(String(web3.utils.fromWei(share.winningsETH.toString()))) != 0){
           await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
             [gameId]), { from: claimer });
-          withdrawalState = await endowmentFund.getWithdrawalState(gameId, claimer);
+          withdrawalState = await accountingDB.getWithdrawalState(gameId, claimer);
           console.log('Withdrew funds from Claimer? ', withdrawalState);
         }
 

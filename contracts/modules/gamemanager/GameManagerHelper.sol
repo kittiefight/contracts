@@ -6,6 +6,8 @@ import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "../databases/GenericDB.sol";
 import "../databases/GMGetterDB.sol";
+import "../endowment/EndowmentFund.sol";
+import "../databases/EndowmentDB.sol";
 
 
 contract GameManagerHelper is Proxied, Guard {
@@ -15,6 +17,18 @@ contract GameManagerHelper is Proxied, Guard {
     GenericDB public genericDB;
     GMGetterDB public gmGetterDB;
     GameVarAndFee public gameVarAndFee;
+    EndowmentDB public endowmentDB;
+    EndowmentFund public endowmentFund;
+
+    enum HoneypotState {
+        created,
+        assigned,
+        gameScheduled,
+        gameStarted,
+        forefeited,
+        claiming,
+        dissolved
+    }
 
     /**
     * @dev Sets related contracts
@@ -24,7 +38,29 @@ contract GameManagerHelper is Proxied, Guard {
         genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+        endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
     }
+
+    /**
+    * @dev updateHoneyPotState
+    */
+    function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
+        uint256 claimTime;
+        if (_state == uint(HoneypotState.claiming)){
+            //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
+            (uint256 winningsETH, uint256 winningsKTY) = endowmentFund.getEndowmentShare(_gameId);
+            endowmentDB.updateEndowmentFund(winningsKTY, winningsETH, false);
+            endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
+        }
+        if(_state == uint(HoneypotState.forefeited)) {
+            (uint256 eth, uint256 kty) = endowmentDB.getHoneypotTotal(_gameId);
+            endowmentDB.updateEndowmentFund(kty, eth, false);
+            endowmentDB.updateHoneyPotFund(_gameId, kty, eth, true);
+        }
+        endowmentDB.setHoneypotState(_gameId, _state);
+    }
+
 
     function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
         //each time 1 minute before game ends

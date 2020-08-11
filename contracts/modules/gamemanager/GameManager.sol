@@ -179,7 +179,7 @@ contract GameManager is Proxied, Guard {
 
                 //GameStarts
                 gmSetterDB.updateGameState(gameId, uint(eGameState.MAIN_GAME));
-                endowmentFund.updateHoneyPotState(gameId, 3);
+                gameManagerHelper.updateHoneyPotState(gameId, 3);
                 emit GameStateChanged(gameId, eGameState.PRE_GAME, eGameState.MAIN_GAME);
             }
         }
@@ -313,7 +313,7 @@ contract GameManager is Proxied, Guard {
         endowmentFund.addETHtoPool(gameId, loser);
 
         //Set to claiming
-        endowmentFund.updateHoneyPotState(gameId, 5);
+        gameManagerHelper.updateHoneyPotState(gameId, 5);
 
         // update kittie redemption fee dynamically to a percentage of the final honey pot
         gameStore.updateKittieRedemptionFee(gameId); 
@@ -342,7 +342,7 @@ contract GameManager is Proxied, Guard {
         gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
 
         //Set to forfeited
-        endowmentFund.updateHoneyPotState(gameId, 4);
+        gameManagerHelper.updateHoneyPotState(gameId, 4);
         gameCreation.removeKitties(gameId);
 
         gameCreation.deleteCronjob(gameId);

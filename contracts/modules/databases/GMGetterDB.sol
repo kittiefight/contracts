@@ -23,6 +23,7 @@ import "../registration/Register.sol";
 import "../kittieHELL/KittieHell.sol";
 import "../endowment/EndowmentFund.sol";
 import "../endowment/KtyUniswap.sol";
+import "./AccountingDB.sol";
 
 /**
  * @dev Getters for game instances
@@ -197,7 +198,7 @@ contract GMGetterDB is Proxied {
     );
 
     ticketFeePaid = genericDB.getBoolStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, bettor, "ticketFeePaid")));
-    hasClaimed = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND)).getWithdrawalState(gameId, bettor);
+    hasClaimed = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).getWithdrawalState(gameId, bettor);
   }
 
   /**

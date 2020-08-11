@@ -51,7 +51,7 @@ contract EndowmentDB is Proxied {
     uint256 _gameId, uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
   )
     external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool)
   {
     uint honeyPotKtyTotal;
@@ -117,7 +117,7 @@ contract EndowmentDB is Proxied {
     uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
   )
     external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool)
   {
     return (_updateEndowmentFund(_kty_amount, _eth_amount, deductFunds));
@@ -202,7 +202,7 @@ contract EndowmentDB is Proxied {
 
   function setHoneypotState( uint _gameId, uint state)
   external
-  onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+  only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
   {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "state")), state);
     // if (claimTime > 0){

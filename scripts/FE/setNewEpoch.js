@@ -35,7 +35,7 @@ module.exports = async (callback) => {
 
     accounts = await web3.eth.getAccounts();
 
-    await timeFrame.setTimes(200, 50, 50);
+    await timeFrame.setTimes(205, 50, 50);
 
     await withdrawPool.setPool_0();
 
