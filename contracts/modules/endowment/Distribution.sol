@@ -26,6 +26,7 @@ import "../gamemanager/GameStore.sol";
 import "../endowment/HoneypotAllocationAlgo.sol";
 import "./Multisig5of12.sol";
 import "../databases/AccountingDB.sol";
+import "../gamemanager/GameManagerHelper.sol";
 
 /**
  * @title Distribution Contract
@@ -44,6 +45,7 @@ contract Distribution is Proxied {
     ERC20Standard public kittieFightToken;
     GameStore public gameStore;
     Multisig5of12 public multiSig;
+    GameManagerHelper public gameManagerHelper;
 
     modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
         (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
@@ -63,6 +65,7 @@ contract Distribution is Proxied {
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         multiSig = Multisig5of12(proxy.getContract(CONTRACT_NAME_MULTISIG));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
         HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).initialize();
     }
 
@@ -174,7 +177,7 @@ contract Distribution is Proxied {
         returns(address winner, address loser, uint256 totalBetsForLosingCorner)
     {
         (winner,,) = gmGetterDB.getWinners(gameId);
-        loser = gameStore.getOpponent(gameId, winner);
+        loser = gameManagerHelper.getOpponent(gameId, winner);
         totalBetsForLosingCorner = gmGetterDB.getTotalBet(gameId, loser);
     }
 }

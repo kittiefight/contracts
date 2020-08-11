@@ -9,6 +9,7 @@ const CryptoKitties = artifacts.require('MockERC721Token');
 const KtyUniswap = artifacts.require("KtyUniswap");
 const Escrow = artifacts.require("Escrow");
 const GameStore = artifacts.require('GameStore')
+const GameManagerHelper = artifacts.require('GameManagerHelper')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -39,6 +40,7 @@ module.exports = async (callback) => {
     let ktyUniswap = await KtyUniswap.deployed();
     let escrow = await Escrow.deployed()
     let gameStore = await GameStore.deployed()
+    let gameManagerHelper = await GameManagerHelper.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -66,7 +68,7 @@ module.exports = async (callback) => {
 
     console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionFee = await gameStore.getKittieRedemptionFee(gameId);
+    let resurrectionFee = await gameManagerHelper.getKittieRedemptionFee(gameId);
     let resurrectionCost = resurrectionFee[1]
   
     const sacrificeKitties = [1017555, 413830, 888];

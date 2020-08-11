@@ -60,6 +60,7 @@ contract GameManagerHelper is Proxied, Guard {
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
 
+    // Setters
     /**
      * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
      */
@@ -136,7 +137,17 @@ contract GameManagerHelper is Proxied, Guard {
         endowmentDB.setHoneypotState(_gameId, _state);
     }
 
+    /**
+     * @dev Update kittie playing game Id
+     */
+    function updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
+        external
+        onlyContract(CONTRACT_NAME_GAMECREATION)
+    {
+        _updateKittiesGame(kittyBlack, kittyRed, gameId);
+    }
 
+    // getters
     function checkPerformanceHelper(uint gameId, uint gameEndTime) external view returns(bool){
         //each time 1 minute before game ends
         uint performanceTimeCheck = gameVarAndFee.getPerformanceTimeCheck();
@@ -150,15 +161,108 @@ contract GameManagerHelper is Proxied, Guard {
         }
     }
 
-    /**
-     * @dev Update kittie playing game Id
-     */
-    function updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
-        external
-        onlyContract(CONTRACT_NAME_GAMECREATION)
-    {
-        _updateKittiesGame(kittyBlack, kittyRed, gameId);
+    function getKittieExpirationTime(uint gameId) public view returns(uint){
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieHellExpirationTime"))
+        );
     }
+
+    function getKittieRedemptionFee(uint256 gameId) public view returns(uint256, uint256) {
+        uint256 redemptionFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee"))
+        );
+        uint256 redemptionFeeKTY = getKTY(redemptionFeeDAI);
+        uint256 etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(redemptionFeeKTY);
+        return (etherForSwap, redemptionFeeKTY);
+    }
+    
+    function getHoneypotExpiration(uint gameId) public view returns(uint){
+        return  genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "honeypotExpirationTime"))
+        );
+    }
+
+    function didHitStart(uint gameId, address player) public view returns(bool){
+        return genericDB.getBoolStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "pressedStart"))
+        );
+    }
+
+    function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
+        uint256 ticketFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "ticketFee"))
+        );
+        uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
+        uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
+        return (ethForSwap, ticketFeeKTY);
+    }
+
+    function getBettingFee(uint256 gameId) public view returns(uint256, uint256){
+        uint256 bettingFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "bettingFee"))
+        );
+        uint256 bettingFeeKTY = getKTY(bettingFeeDAI);
+        uint256 ethForFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(bettingFeeKTY);
+        return (ethForFeeSwap, bettingFeeKTY);
+    }
+
+    function getMinimumContributors(uint gameId) public view returns(uint){
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "minimumContributors"))
+        );
+    }
+
+    function getKTY(uint256 _DAI) internal view returns(uint256) {
+        uint256 _ETH = gameVarAndFee.convertDaiToEth(_DAI);
+        return gameVarAndFee.convertEthToKty(_ETH);
+    }
+
+    function getPerformanceTimeCheck(uint gameId) public view returns(uint){
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "performanceTime"))
+        );
+    }
+
+    function getTimeExtension(uint gameId) public view returns(uint){
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "timeExtension"))
+        );
+    }
+
+    
+
+    function getOpponent(uint gameId, address player) public view returns(address){
+        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
+        if(playerBlack == player) return playerRed;
+        return playerBlack;
+    }
+
+    function getCorner(uint gameId, address player) public view returns(uint){
+        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
+        if(playerBlack == player) return 0;
+        if(playerRed == player) return 1;
+        return 2;
+    }
+
+    function getFighterByKittieID(uint256 kittieId)
+    public view
+    returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
+  {
+    (owner, isDead,, isGhost, deathTime) = kittieHELL.getKittyStatus(kittieId);
+    gameId = gmGetterDB.getGameOfKittie(kittieId);
+    //If gameId is 0 is not playing, otherwise, it is.
+    isPlaying = (gameId != 0);
+    if(isDead) kittieHellExp = deathTime.add(getKittieExpirationTime(gameId));
+  }
 
     // internal functions
     function _updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)

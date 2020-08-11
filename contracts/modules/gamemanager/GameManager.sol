@@ -113,7 +113,7 @@ contract GameManager is Proxied, Guard {
         require(gameState <= 2);
 
         //pay ticket fee
-        (uint etherForSwap, uint ticketFeeKTY) = gameStore.getTicketFee(gameId);
+        (uint etherForSwap, uint ticketFeeKTY) = gameManagerHelper.getTicketFee(gameId);
         require(endowmentFund.contributeKTY.value(msg.value)(supporter, etherForSwap, ticketFeeKTY));
 
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
@@ -167,12 +167,12 @@ contract GameManager is Proxied, Guard {
             // uint genes = MockERC721Token(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES)).getKitty(kittieId);
             betting.setOriginalDefenseLevel(gameId, player, RarityCalculator(proxy.getContract(CONTRACT_NAME_RARITYCALCULATOR)).getDefenseLevel(kittieId, genes));
 
-            address opponentPlayer = gameStore.getOpponent(gameId, player);
+            address opponentPlayer = gameManagerHelper.getOpponent(gameId, player);
 
             emit PressStart(gameId, player);
 
             //Both Players Hit start
-            if (gameStore.didHitStart(gameId, opponentPlayer)){
+            if (gameManagerHelper.didHitStart(gameId, opponentPlayer)){
                 //Call betting to set fight map
                 betting.startGame(gameId, randomNum, gameStore.getRandom(gameId, opponentPlayer));
                 
@@ -192,7 +192,7 @@ contract GameManager is Proxied, Guard {
      */
     function checkPerformance(uint gameId) internal {
         (,,uint gameEndTime) = gmGetterDB.getGameTimes(gameId);
-        uint timeExtension = gameStore.getTimeExtension(gameId);
+        uint timeExtension = gameManagerHelper.getTimeExtension(gameId);
 
         if(gameManagerHelper.checkPerformanceHelper(gameId, gameEndTime)){
             if(now <= gameEndTime)
@@ -236,7 +236,7 @@ contract GameManager is Proxied, Guard {
             supportedPlayer = sender;
         }
 
-        (uint etherForSwap, uint bettingFeeKTY) = gameStore.getBettingFee(gameId);
+        (uint etherForSwap, uint bettingFeeKTY) = gameManagerHelper.getBettingFee(gameId);
 
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value.sub(etherForSwap))(gameId));
@@ -249,7 +249,7 @@ contract GameManager is Proxied, Guard {
         // Update Random
         HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE)).calculateCurrentRandom(gameId, randomNum);
         
-        address opponentPlayer = gameStore.getOpponent(gameId, supportedPlayer);
+        address opponentPlayer = gameManagerHelper.getOpponent(gameId, supportedPlayer);
         
         //Send bet to betting algo, to decide attacks
         betting.bet(gameId, sender, msg.value.sub(etherForSwap), supportedPlayer, opponentPlayer, randomNum);

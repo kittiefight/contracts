@@ -9,6 +9,7 @@ import "../../interfaces/ERC721.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "../../GameVarAndFee.sol";
 import "../gamemanager/GameStore.sol";
+import "../gamemanager/GameManagerHelper.sol";
 import "../databases/GMGetterDB.sol";
 import "../databases/GMSetterDB.sol";
 import "../databases/KittieHellDB.sol";
@@ -39,6 +40,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
     EndowmentFund public endowmentFund;
     KittieHellDungeon public kittieHellDungeon;
     AccountingDB public accountingDB;
+    GameManagerHelper public gameManagerHelper;
 
     address[] public path;
 
@@ -65,6 +67,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         kittieHellDungeon = KittieHellDungeon(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON));
         accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
 
         delete path; //Required to allow calling initialize() several times
         address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
@@ -127,7 +130,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         ks.dead = true;
         ks.deadAt = now;
         kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
-        scheduleBecomeGhost(_kittyID, gameStore.getKittieExpirationTime(gameId));
+        scheduleBecomeGhost(_kittyID, gameManagerHelper.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
     }
@@ -156,7 +159,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         onlyNotGhostKitty(_kittyID)
         onlyProxy
     returns (bool) {
-        (uint ethersNeeded, uint256 tokenAmount) = gameStore.getKittieRedemptionFee(gameId);
+        (uint ethersNeeded, uint256 tokenAmount) = gameManagerHelper.getKittieRedemptionFee(gameId);
         require(tokenAmount > 0, "KTY cannot be 0");
         require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers");
         for (uint i = 0; i < sacrificeKitties.length; i++) {

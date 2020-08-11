@@ -196,30 +196,6 @@ contract GameStore is Proxied, Guard {
         );
     }
 
-    function getKittieExpirationTime(uint gameId) public view returns(uint){
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "kittieHellExpirationTime"))
-        );
-    }
-
-    function getKittieRedemptionFee(uint256 gameId) public view returns(uint256, uint256) {
-        uint256 redemptionFeeDAI = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee"))
-        );
-        uint256 redemptionFeeKTY = getKTY(redemptionFeeDAI);
-        uint256 etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(redemptionFeeKTY);
-        return (etherForSwap, redemptionFeeKTY);
-    }
-    
-    function getHoneypotExpiration(uint gameId) public view returns(uint){
-        return  genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "honeypotExpirationTime"))
-        );
-    }
-
     function start(uint gameId, address player, uint randomNum) external onlyContract(CONTRACT_NAME_GAMEMANAGER){
         genericDB.setBoolStorage(
             CONTRACT_NAME_GAMESTORE,
@@ -231,13 +207,6 @@ contract GameStore is Proxied, Guard {
             CONTRACT_NAME_GAMESTORE,
             keccak256(abi.encodePacked(gameId, player, "randomNum")),
             randomNum
-        );
-    }
-
-    function didHitStart(uint gameId, address player) public view returns(bool){
-        return genericDB.getBoolStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, player, "pressedStart"))
         );
     }
 
@@ -256,71 +225,11 @@ contract GameStore is Proxied, Guard {
         );
     }
 
-    function getTopBettor(uint gameId, address player) public view returns(address){
-        return genericDB.getAddressStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, player, "topBettor"))
-        );
-    }
-
     function updateSecondTopBettor(uint gameId, address player, address newSecondTopBettor) external onlyContract(CONTRACT_NAME_GM_SETTER_DB){
         genericDB.setAddressStorage(
             CONTRACT_NAME_GAMESTORE,
             keccak256(abi.encodePacked(gameId, player, "secondTopBettor")),
             newSecondTopBettor
-        );
-    }
-
-    function getSecondTopBettor(uint gameId, address player) public view returns(address){
-        return genericDB.getAddressStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, player, "secondTopBettor"))
-        );
-    }
-
-    function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
-        uint256 ticketFeeDAI = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "ticketFee"))
-        );
-        uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
-        uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
-        return (ethForSwap, ticketFeeKTY);
-    }
-
-    function getBettingFee(uint256 gameId) public view returns(uint256, uint256){
-        uint256 bettingFeeDAI = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "bettingFee"))
-        );
-        uint256 bettingFeeKTY = getKTY(bettingFeeDAI);
-        uint256 ethForFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(bettingFeeKTY);
-        return (ethForFeeSwap, bettingFeeKTY);
-    }
-
-    function getMinimumContributors(uint gameId) public view returns(uint){
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "minimumContributors"))
-        );
-    }
-
-    function getKTY(uint256 _DAI) internal view returns(uint256) {
-        uint256 _ETH = gameVarAndFee.convertDaiToEth(_DAI);
-        return gameVarAndFee.convertEthToKty(_ETH);
-    }
-
-    function getPerformanceTimeCheck(uint gameId) public view returns(uint){
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "performanceTime"))
-        );
-    }
-
-    function getTimeExtension(uint gameId) public view returns(uint){
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "timeExtension"))
         );
     }
 
@@ -363,19 +272,6 @@ contract GameStore is Proxied, Guard {
         }
     }
 
-    function getOpponent(uint gameId, address player) public view returns(address){
-        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
-        if(playerBlack == player) return playerRed;
-        return playerBlack;
-    }
-
-    function getCorner(uint gameId, address player) public view returns(uint){
-        (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
-        if(playerBlack == player) return 0;
-        if(playerRed == player) return 1;
-        return 2;
-    }
-
     function calculateWinner
     (
         uint gameId, address playerBlack, address playerRed, uint random
@@ -414,5 +310,20 @@ contract GameStore is Proxied, Guard {
                 loser = playerBlack;
             }
         }
+    }
+
+    // getters
+    function getTopBettor(uint gameId, address player) public view returns(address){
+        return genericDB.getAddressStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "topBettor"))
+        );
+    }
+
+    function getSecondTopBettor(uint gameId, address player) public view returns(address){
+        return genericDB.getAddressStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, player, "secondTopBettor"))
+        );
     }
 }

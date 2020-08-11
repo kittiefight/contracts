@@ -17,6 +17,7 @@ import "../proxy/Proxied.sol";
 import "./GenericDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
+import "../gamemanager/GameManagerHelper.sol";
 import "./EndowmentDB.sol";
 import "./ProfileDB.sol";
 import "../registration/Register.sol";
@@ -36,6 +37,7 @@ contract GMGetterDB is Proxied {
   GenericDB public genericDB;
   GameStore public gameStore;
   EndowmentDB public endowmentDB;
+  GameManagerHelper public gameManagerHelper;
 
   bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
@@ -49,6 +51,7 @@ contract GMGetterDB is Proxied {
     genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
     gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
     endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+    gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
   }
 
   /**
@@ -169,17 +172,6 @@ contract GMGetterDB is Proxied {
   }
 
   // === FRONTEND GETTERS ===
-  function getFighterByKittieID(uint256 kittieId)
-    public view
-    returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
-  {
-    (owner, isDead,, isGhost, deathTime) = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL)).getKittyStatus(kittieId);
-    gameId = getGameOfKittie(kittieId);
-    //If gameId is 0 is not playing, otherwise, it is.
-    isPlaying = (gameId != 0);
-    if(isDead) kittieHellExp = deathTime.add(gameStore.getKittieExpirationTime(gameId));
-  }
-
   /**
    * @dev Returns the total amount of bet of the given bettor
    * and the player supported by that bettor in the game given.
@@ -215,8 +207,8 @@ contract GMGetterDB is Proxied {
     state = getGameState(gameId);
     supporters[0] = getSupporters(gameId, players[0]);
     supporters[1] = getSupporters(gameId, players[1]);
-    pressedStart[0] = gameStore.didHitStart(gameId, players[0]);
-    pressedStart[1] = gameStore.didHitStart(gameId, players[1]);
+    pressedStart[0] = gameManagerHelper.didHitStart(gameId, players[0]);
+    pressedStart[1] = gameManagerHelper.didHitStart(gameId, players[1]);
     timeCreated = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "createdTime")));
     winner = genericDB.getAddressStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "winner")));
   }

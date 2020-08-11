@@ -5,6 +5,7 @@ import "./GenericDB.sol";
 import "./GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
+import "../gamemanager/GameManagerHelper.sol";
 
 
 contract BusinessInsight is Proxied {
@@ -13,6 +14,7 @@ contract BusinessInsight is Proxied {
     GenericDB public genericDB;
     GMGetterDB public gmGetterDB;
     GameStore public gameStore;
+    GameManagerHelper public gameManagerHelper;
 
     bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
     string internal constant TABLE_NAME_BETTOR = "BettorTable";
@@ -21,6 +23,7 @@ contract BusinessInsight is Proxied {
         genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
     }
 
      // === FRONTEND GETTERS ===
@@ -32,9 +35,9 @@ contract BusinessInsight is Proxied {
         address supportedPlayer = genericDB.getAddressStorage(
             CONTRACT_NAME_GM_SETTER_DB,
             keccak256(abi.encodePacked(gameId, sender, "supportedPlayer")));
-        supportedCorner = gameStore.getCorner(gameId, supportedPlayer);
+        supportedCorner = gameManagerHelper.getCorner(gameId, supportedPlayer);
         isPlayerInGame = gmGetterDB.isPlayer(gameId, sender);
-        corner = gameStore.getCorner(gameId, sender);
+        corner = gameManagerHelper.getCorner(gameId, sender);
     }
 
     function getPlayer(uint gameId, address player)
@@ -42,7 +45,7 @@ contract BusinessInsight is Proxied {
     returns(uint kittieId, uint corner, uint betsTotalEth)
     {
         kittieId = gmGetterDB.getKittieInGame(gameId, player);
-        corner = gameStore.getCorner(gameId, player);
+        corner = gameManagerHelper.getCorner(gameId, player);
         betsTotalEth = gmGetterDB.getTotalBet(gameId, player);
     }
 

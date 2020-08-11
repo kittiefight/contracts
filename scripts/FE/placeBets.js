@@ -5,6 +5,7 @@ const Betting = artifacts.require('Betting')
 const DateTime = artifacts.require('DateTime')
 const GameStore = artifacts.require('GameStore')
 const KtyUniswap = artifacts.require("KtyUniswap");
+const GameManagerHelper = artifacts.require('GameManagerHelper')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -45,6 +46,7 @@ module.exports = async (callback) => {
     let dateTime = await DateTime.deployed();
     let gameStore = await GameStore.deployed();
     let ktyUniswap = await KtyUniswap.deployed();
+    let gameManagerHelper = await GameManagerHelper.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -71,7 +73,7 @@ module.exports = async (callback) => {
     for(let i=0; i<noOfBets; i++){
       let randomPlayer = randomValue(2);
 
-      let betting_fee = await gameStore.getBettingFee(1);
+      let betting_fee = await gameManagerHelper.getBettingFee(1);
       let kty_betting = betting_fee[1]
       console.log("kty_betting_fee:", weiToEther(kty_betting))
       let ether_betting = betting_fee[0]
