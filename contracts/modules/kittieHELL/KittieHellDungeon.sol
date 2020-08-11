@@ -15,7 +15,7 @@ contract KittieHellDungeon is Proxied {
     }
 
     function transfer(address _to, uint256 _kittyID)
-        external onlyContract(CONTRACT_NAME_KITTIEHELL)
+        external only2Contracts(CONTRACT_NAME_KITTIEHELL, CONTRACT_NAME_KITTIEHELL_DB)
     {
         cryptoKitties.transfer(_to, _kittyID);
     }

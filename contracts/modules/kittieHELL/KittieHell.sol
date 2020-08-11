@@ -18,6 +18,7 @@ import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol"
 import "../endowment/KtyUniswap.sol";
 import "./KittieHellDungeon.sol";
 import "../databases/AccountingDB.sol";
+import "./KittieHellStruct.sol";
 
 /**
  * @title This contract is responsible to acquire ownership of participating kitties,
@@ -25,7 +26,7 @@ import "../databases/AccountingDB.sol";
  * @author @panos, @ugwu, @ziweidream @Xalee @wafflemakr
  * @notice This contract is able to lock kitties forever caution is advised
  */
-contract KittieHell is BasicControls, Proxied, Guard {
+contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
 
     using SafeMath for uint256;
 
@@ -43,14 +44,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
     GameManagerHelper public gameManagerHelper;
 
     address[] public path;
-
-    struct KittyStatus {
-        address owner;  // This is the owner before the kitty got transferred to us
-        uint deadAt;    // Timestamp when the kitty is dead.
-        bool dead;      // This is the mortality status of the kitty
-        bool playing;   // This is the current game participation status of the kitty
-        bool ghost;     // This is set to "destroy" or permanent kill the kitty
-    }
 
     /* This is all the kitties owned and managed by the game */
     //mapping(uint256 => KittyStatus) public kitties; //moved to KittieHellDB
@@ -145,7 +138,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
      * @dev The ressurection payment is in KTY tokens and locked/burned in kittieHELL contract
      * @return true/false if the kitty ID is resurrected or not
      */
-
     function payForResurrection
     (
         uint256 _kittyID,
@@ -220,17 +212,7 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return true;
     }
 
-    /**
-     * @dev This will be used for upgrading kittieHellDungeon only,
-     *      if kittieHellDungeon ever needs to be upgraded
-     */
-    function moveKittiesManually(uint256[] calldata _kittyIDs, address newKittieHellDungeon)
-        external onlySuperAdmin
-    {
-        for(uint256 i = 0; i < _kittyIDs.length; i++) {
-            kittieHellDungeon.transfer(newKittieHellDungeon, _kittyIDs[i]);
-        }
-    }
+    
 
     function releaseKittyGameManager(uint256 _kittyID)
         public
@@ -286,44 +268,6 @@ contract KittieHell is BasicControls, Proxied, Guard {
         return true;
     }
 
-    /**
-     * @author @ziweidream
-     * @param _kittyID The kittie to release
-     * @return the previous kitty owner, the kitty dead status, the kitty playing status, the kitty ghost status, and the kitty death time   
-     */
-    function getKittyStatus(uint256 _kittyID) public view returns (address _owner, bool _dead, bool _playing, bool _ghost, uint _deadAt) {
-        KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
-        _owner = ks.owner;
-        _dead = ks.dead;
-        _playing = ks.playing;
-        _ghost = ks.ghost;
-        _deadAt = ks.deadAt;
-    }
-
-
-    function encodeKittieStatus(KittyStatus memory status) internal pure returns(bytes memory){
-        return abi.encode(
-            status.owner,
-            status.deadAt,
-            status.dead,
-            status.playing,
-            status.ghost
-        );
-    }
-    function decodeKittieStatus(bytes memory encStatus) internal pure returns(KittyStatus memory status){
-        if(encStatus.length == 0) {
-            status = KittyStatus({
-                owner: address(0),
-                deadAt: 0,
-                dead: false,
-                playing: false,
-                ghost:false
-            });
-        }else{
-            (address owner, uint deadAt, bool dead, bool playing, bool ghost) = abi.decode(encStatus, (address, uint, bool, bool, bool));
-            status = KittyStatus(owner, deadAt, dead, playing, ghost);
-        }
-    }
 
     /**
      * @dev This function is used for upgrading KittieHell only

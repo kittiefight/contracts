@@ -8,6 +8,7 @@ import "../databases/GenericDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../databases/EndowmentDB.sol";
+import "../databases/KittieHellDB.sol";
 import "./Scheduler.sol";
 import '../kittieHELL/KittieHell.sol';
 import "../databases/AccountingDB.sol";
@@ -24,6 +25,7 @@ contract GameManagerHelper is Proxied, Guard {
     EndowmentFund public endowmentFund;
     Scheduler public scheduler;
     KittieHell public kittieHELL;
+    KittieHellDB public kittieHellDB;
     AccountingDB public accountingDB;
     IKittyCore public cryptoKitties;
 
@@ -56,6 +58,7 @@ contract GameManagerHelper is Proxied, Guard {
         endowmentFund = EndowmentFund(proxy.getContract(CONTRACT_NAME_ENDOWMENT_FUND));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
         kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+        kittieHellDB = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB));
         accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     }
@@ -289,7 +292,7 @@ contract GameManagerHelper is Proxied, Guard {
     public view
     returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
   {
-    (owner, isDead,, isGhost, deathTime) = kittieHELL.getKittyStatus(kittieId);
+    (owner, isDead,, isGhost, deathTime) = kittieHellDB.kittyStatus(kittieId);
     gameId = gmGetterDB.getGameOfKittie(kittieId);
     //If gameId is 0 is not playing, otherwise, it is.
     isPlaying = (gameId != 0);

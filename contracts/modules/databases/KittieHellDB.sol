@@ -28,12 +28,13 @@ import "../../libs/SafeMath.sol";
 import "../../interfaces/ERC721.sol";
 import "../kittieHELL/KittieHell.sol";
 import "../kittieHELL/KittieHellDungeon.sol";
+import "../kittieHELL/KittieHellStruct.sol";
 /**
  * @title KittieHellDB
  * @author @kittieFIGHT @ziweidream
  */
 
-contract KittieHellDB is Proxied, Guard {
+contract KittieHellDB is Proxied, Guard, KittieHellStruct {
     using SafeMath for uint256;
 
     GenericDB public genericDB;
@@ -273,13 +274,40 @@ contract KittieHellDB is Proxied, Guard {
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostifyJob")), job);  
   }
 
-  function getKittieStatus(uint256 _kittieID) external view onlyContract(CONTRACT_NAME_KITTIEHELL) returns(bytes memory){
+  function getKittieStatus(uint256 _kittieID) public view onlyContract(CONTRACT_NAME_KITTIEHELL) returns(bytes memory){
     return genericDB.getBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")));  
   }
 
   function setKittieStatus(uint256 _kittieID, bytes calldata encodedStatus) external onlyContract(CONTRACT_NAME_KITTIEHELL) {
     genericDB.setBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")), encodedStatus);  
   }
+
+  /**
+   * @author @ziweidream
+   * @param _kittyID The kittie to release
+   * @return the previous kitty owner, the kitty dead status, the kitty playing status, the kitty ghost status, and the kitty death time   
+   */
+  function kittyStatus(uint256 _kittyID) public view returns (address _owner, bool _dead, bool _playing, bool _ghost, uint _deadAt) {
+      KittyStatus memory ks = decodeKittieStatus(getKittieStatus(_kittyID));
+      _owner = ks.owner;
+      _dead = ks.dead;
+      _playing = ks.playing;
+      _ghost = ks.ghost;
+      _deadAt = ks.deadAt;
+  }
+
+  /**
+   * @dev This will be used for upgrading kittieHellDungeon only,
+   *      if kittieHellDungeon ever needs to be upgraded
+   */
+  function moveKittiesManually(uint256[] calldata _kittyIDs, address newKittieHellDungeon)
+      external onlySuperAdmin
+  {
+      for(uint256 i = 0; i < _kittyIDs.length; i++) {
+          kittieHellDungeon.transfer(newKittieHellDungeon, _kittyIDs[i]);
+      }
+  }
+
 
   event AddedToKittieHellDB(uint256 indexed kittyID, address _owner, uint256 indexed _id);
 }
