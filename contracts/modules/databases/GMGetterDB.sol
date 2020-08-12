@@ -220,13 +220,6 @@ contract GMGetterDB is Proxied {
     initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
   }
 
-  function getInitialHoneypotKTYInEther(uint256 gameId)
-      public view returns (uint256)
-  {
-    (,uint256 _initialKTY) = getInitialHoneypot(gameId);
-    return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
-  }
-
   function getHoneypotInfo(uint256 gameId)
     public view
     returns(uint honeypotId, uint status, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal, uint expTime)

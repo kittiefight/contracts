@@ -209,6 +209,15 @@ contract EarningsTrackerDB is Proxied, Guard {
     }
 
     /**
+     * @return uint256 total interest accumulated for all Ethie Token NFTs in each epoch
+     */
+    function viewWeeklyInterests(uint256 _epochID) public view returns (uint256) {
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_EARNINGS_TRACKER_DB,
+            keccak256(abi.encodePacked(_epochID, "interest")));
+    }
+
+    /**
      * @dev calculates the total interest accumulated for all Ethie Token NFTs in the latest 250 epochs
      * @return uint256 total interest accumulated for all Ethie Token NFTs in the last 250 epochs
      */
@@ -217,7 +226,7 @@ contract EarningsTrackerDB is Proxied, Guard {
         uint256 totalInterest = 0;
         uint256 startID = activeEpochID < 250 ? 0 : activeEpochID - 250;
         for (uint256 i = startID; i < activeEpochID; i++) {
-            uint256 interest = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(i, "interest")));
+            uint256 interest = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER_DB, keccak256(abi.encodePacked(i, "interest")));
             totalInterest = totalInterest.add(interest);
         }
         return totalInterest;
