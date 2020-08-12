@@ -11,6 +11,7 @@ const Escrow = artifacts.require("Escrow");
 const GameStore = artifacts.require('GameStore')
 const GameManagerHelper = artifacts.require('GameManagerHelper')
 const AccountingDB = artifacts.require('AccountingDB')
+const RedeemKittie = artifacts.require('RedeemKittie')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -43,6 +44,7 @@ module.exports = async (callback) => {
     let gameStore = await GameStore.deployed()
     let gameManagerHelper = await GameManagerHelper.deployed()
     let accountingDB = await AccountingDB.deployed()
+    let redeemKittie = await RedeemKittie.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -94,8 +96,8 @@ module.exports = async (callback) => {
     console.log("ether needed for swap KTY resurrection:", weiToEther(ether_resurrection_cost))
 
     await proxy.execute(
-      "KittieHell",
-      setMessage(kittieHell, "payForResurrection", [
+      "RedeemKittie",
+      setMessage(redeemKittie, "payForResurrection", [
         loserKitty,
         gameId,
         loser,
@@ -105,10 +107,6 @@ module.exports = async (callback) => {
     );
 
     let owner = await cryptoKitties.ownerOf(loserKitty);
-
-    if (owner === kittieHellDB.address) {
-      console.log("Loser kitty became ghost in kittieHELL FOREVER :(");
-    }
 
     if (owner === loser) {
       console.log("Kitty Redeemed :)");

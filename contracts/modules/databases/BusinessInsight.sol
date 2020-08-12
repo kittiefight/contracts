@@ -144,8 +144,7 @@ contract BusinessInsight is Proxied {
     function viewTotalInterests() public view returns (uint256) {
         uint256 activeEpochID = timeFrame.getActiveEpochID();
         uint256 totalInterest = 0;
-        uint256 startID = activeEpochID < 250 ? 0 : activeEpochID - 250;
-        for (uint256 i = startID; i < activeEpochID; i++) {
+        for (uint256 i = 0; i < activeEpochID+1; i++) {
             uint256 interest = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER_DB, keccak256(abi.encodePacked(i, "interest")));
             totalInterest = totalInterest.add(interest);
         }
@@ -168,6 +167,19 @@ contract BusinessInsight is Proxied {
     // ========= getters about withdraw pools (SuperDao stakers) =========
     /**
      * @dev This function is returning the Ether that has been allocated to all pools.
+     */
+    function viewTotalEthAllocatedToPools() public view returns (uint256) {
+        uint256 activeEpochID = timeFrame.getActiveEpochID();
+        uint256 totalAllocated = 0;
+        for (uint256 i = 0; i < activeEpochID+1; i++) {
+            uint256 allocated = getInitialETH(i);
+            totalAllocated = totalAllocated.add(allocated);
+        }
+        return totalAllocated;
+    }
+
+    /**
+     * @dev This function is returning the Ether that has been claimed by all pools.
      */
     function getEthPaidOut()
     external

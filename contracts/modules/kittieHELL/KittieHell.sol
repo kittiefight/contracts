@@ -43,7 +43,7 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
     AccountingDB public accountingDB;
     GameManagerHelper public gameManagerHelper;
 
-    address[] public path;
+    // address[] public path;
 
     /* This is all the kitties owned and managed by the game */
     //mapping(uint256 => KittyStatus) public kitties; //moved to KittieHellDB
@@ -62,11 +62,11 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
         accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
         gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
 
-        delete path; //Required to allow calling initialize() several times
-        address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
-        path.push(_WETH);
-        address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
-        path.push(_KTY);
+        // delete path; //Required to allow calling initialize() several times
+        // address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
+        // path.push(_WETH);
+        // address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
+        // path.push(_KTY);
     }
 
     /**
@@ -128,61 +128,65 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
         return true;
     }
 
-     /**
-     * @author @ziweidream
-     * @notice Resurrecting kitty `_kittyID`
-     * @param _kittyID The kitty to resurrect
-     * @dev The kitty must not be permanent dead
-     * @dev This function can only be carried out via proxy
-     * @dev This function can only proceed after the required number of replacement kitties have become permanent ghosts
-     * @dev The ressurection payment is in KTY tokens and locked/burned in kittieHELL contract
-     * @return true/false if the kitty ID is resurrected or not
-     */
-    function payForResurrection
-    (
-        uint256 _kittyID,
-        uint gameId,
-        address _owner,
-        uint256[] memory sacrificeKitties
-    )
-        public
-        payable
-        onlyOwnedKitty(_kittyID)
-        onlyNotGhostKitty(_kittyID)
-        onlyProxy
-    returns (bool) {
-        (uint ethersNeeded, uint256 tokenAmount) = accountingDB.getKittieRedemptionFee(gameId);
-        require(tokenAmount > 0, "KTY cannot be 0");
-        require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers");
-        for (uint i = 0; i < sacrificeKitties.length; i++) {
-            kittieHellDB.sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
-        }
-        uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
-        uint256 numberOfSacrificeKitties = kittieHellDB.getNumberOfSacrificeKitties(_kittyID);
-        require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Insufficient sacrificing kitties");
-        //kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
-        // exchange KTY on uniswap
-        IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
-            0,
-            path,
-            address(this),
-            2**255
-        );
+    //  /**
+    //  * @author @ziweidream
+    //  * @notice Resurrecting kitty `_kittyID`
+    //  * @param _kittyID The kitty to resurrect
+    //  * @dev The kitty must not be permanent dead
+    //  * @dev This function can only be carried out via proxy
+    //  * @dev This function can only proceed after the required number of replacement kitties have become permanent ghosts
+    //  * @dev The ressurection payment is in KTY tokens and locked/burned in kittieHELL contract
+    //  * @return true/false if the kitty ID is resurrected or not
+    //  */
+    // function payForResurrection
+    // (
+    //     uint256 _kittyID,
+    //     uint gameId,
+    //     address _owner,
+    //     uint256[] memory sacrificeKitties
+    // )
+    //     public
+    //     payable
+    //     onlyOwnedKitty(_kittyID)
+    //     onlyNotGhostKitty(_kittyID)
+    //     onlyProxy
+    // returns (bool) {
+    //     (uint ethersNeeded, uint256 tokenAmount) = accountingDB.getKittieRedemptionFee(gameId);
+    //     require(tokenAmount > 0, "KTY cannot be 0");
+    //     require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers");
+    //     for (uint i = 0; i < sacrificeKitties.length; i++) {
+    //         kittieHellDB.sacrificeKittieToHell(_kittyID, _owner, sacrificeKitties[i]);
+    //     }
+    //     uint256 requiredNumberOfSacrificeKitties = gameVarAndFee.getRequiredKittieSacrificeNum();
+    //     uint256 numberOfSacrificeKitties = kittieHellDB.getNumberOfSacrificeKitties(_kittyID);
+    //     require(requiredNumberOfSacrificeKitties == numberOfSacrificeKitties, "Insufficient sacrificing kitties");
+    //     //kittieFightToken.transferFrom(kitties[_kittyID].owner, address(this), tokenAmount);
+    //     // exchange KTY on uniswap
+    //     IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
+    //         0,
+    //         path,
+    //         address(this),
+    //         2**255
+    //     );
 
-        // record kittie redemption fee in total spent in game
-        accountingDB.setTotalSpentInGame(gameId, msg.value, tokenAmount);
+    //     // record kittie redemption fee in total spent in game
+    //     accountingDB.setTotalSpentInGame(gameId, msg.value, tokenAmount);
 
-        kittieHellDB.lockKTYsInKittieHell(_kittyID, tokenAmount);
-        releaseKitty(_kittyID);
-        resurrectKitty(_kittyID);
-        return true;
-    }
+    //     kittieHellDB.lockKTYsInKittieHell(_kittyID, tokenAmount);
+    //     releaseKitty(_kittyID);
+    //     resurrectKitty(_kittyID);
+    //     return true;
+    // }
 
-    function resurrectKitty(uint256 _kittyID) private {
+    function _resurrectKitty(uint256 _kittyID) internal {
         KittyStatus memory ks = decodeKittieStatus(kittieHellDB.getKittieStatus(_kittyID));
         ks.dead = false;
         kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
         emit KittyResurrected(_kittyID);
+    }
+
+    function resurrectKitty(uint256 _kittyID) public onlyContract(CONTRACT_NAME_REDEEM_KITTIE) {
+        _resurrectKitty(_kittyID);
     }
 
     /**
@@ -193,7 +197,7 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
      * @param _kittyID The kittie to release
      * @return true if the release was successful
      */
-    function releaseKitty(uint256 _kittyID)
+    function _releaseKitty(uint256 _kittyID)
         internal
         onlyOwnedKitty(_kittyID)
     returns (bool) {
@@ -218,7 +222,11 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
         public
         only3Contracts(CONTRACT_NAME_FORFEITER, CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool) {
-        releaseKitty(_kittyID);
+        _releaseKitty(_kittyID);
+    }
+
+    function releaseKitty(uint256 _kittyID) public onlyContract(CONTRACT_NAME_REDEEM_KITTIE) returns (bool) {
+        _releaseKitty(_kittyID);
     }
 
     function adminRelease(uint256 _kittyID)

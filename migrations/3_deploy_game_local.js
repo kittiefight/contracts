@@ -29,6 +29,7 @@ const Escrow = artifacts.require('Escrow')
 const KittieHELL = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require('KittieHellDB')
 const KittieHellDungeon = artifacts.require('KittieHellDungeon')
+const RedeemKittie = artifacts.require('RedeemKittie')
 const SuperDaoToken = artifacts.require('MockERC20Token');
 const KittieFightToken = artifacts.require('KittieFightToken');
 const CryptoKitties = artifacts.require('MockERC721Token');
@@ -163,6 +164,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(EndowmentFund))
         .then(() => deployer.deploy(KittieHELL))
         .then(() => deployer.deploy(KittieHellDungeon, CryptoKitties.address))
+        .then(() => deployer.deploy(RedeemKittie))
         .then(() => deployer.deploy(EthieToken))
         .then(() => deployer.deploy(EarningsTracker))
         .then(() => deployer.deploy(EarningsTrackerDB, GenericDB.address))
@@ -215,6 +217,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('KittieHell', KittieHELL.address)
             await proxy.addContract('KittieHellDB', KittieHellDB.address)
             await proxy.addContract('KittieHellDungeon', KittieHellDungeon.address)
+            await proxy.addContract('RedeemKittie', RedeemKittie.address)
             await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
             await proxy.addContract('EarningsTracker', EarningsTracker.address)
             await proxy.addContract('EarningsTrackerDB', EarningsTrackerDB.address)
@@ -343,6 +346,8 @@ module.exports = (deployer, network, accounts) => {
             console.log(kittieHELL.address)
             kittieHellDungeon = await KittieHellDungeon.deployed()
             console.log(kittieHellDungeon.address)
+            redeemKittie = await RedeemKittie.deployed()
+            console.log(redeemKittie.address)
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
             console.log(honeypotAllocationAlgo.address)
             earningsTracker = await EarningsTracker.deployed()
@@ -396,6 +401,7 @@ module.exports = (deployer, network, accounts) => {
             await kittieHELL.setProxy(proxy.address)
             await kittieHellDB.setProxy(proxy.address)
             await kittieHellDungeon.setProxy(proxy.address)
+            await redeemKittie.setProxy(proxy.address)
             await cronJobTarget.setProxy(proxy.address);
             await freezeInfo.setProxy(proxy.address);
             await honeypotAllocationAlgo.setProxy(proxy.address)
@@ -428,6 +434,7 @@ module.exports = (deployer, network, accounts) => {
             await endowmentFund.initialize()
             await kittieHellDB.initialize()
             await kittieHELL.initialize()
+            await redeemKittie.initialize()
             await hitsResolve.initialize()
             await earningsTracker.initialize()
             await earningsTrackerDB.initialize()

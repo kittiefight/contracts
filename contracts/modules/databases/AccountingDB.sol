@@ -64,7 +64,7 @@ contract AccountingDB is Proxied {
     */
     function setTotalSpentInGame(uint256 gameId, uint256 etherAmount, uint256 ktyAmount)
         external
-        only3Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_KITTIEHELL)
+        only3Contracts(CONTRACT_NAME_GAMECREATION, CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_REDEEM_KITTIE)
     {
         _setTotalSpentInGame(gameId, etherAmount, ktyAmount);
     }

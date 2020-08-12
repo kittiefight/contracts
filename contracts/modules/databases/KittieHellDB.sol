@@ -143,7 +143,7 @@ contract KittieHellDB is Proxied, Guard, KittieHellStruct {
    */
   function sacrificeKittieToHell(uint256 _kittieID, address _owner, uint256 _sacrificeKittie)
       public
-      onlyContract(CONTRACT_NAME_KITTIEHELL)
+      onlyContract(CONTRACT_NAME_REDEEM_KITTIE)
   {
     require(cryptoKitties.ownerOf(_sacrificeKittie) == _owner, "Not the owner of this kittie");
     kittieHellDungeon.transferFrom(_owner, _sacrificeKittie);
@@ -188,7 +188,7 @@ contract KittieHellDB is Proxied, Guard, KittieHellStruct {
    */
   function lockKTYsInKittieHell(uint256 _kittieID, uint256 _kty_amount)
       public
-      onlyContract(CONTRACT_NAME_KITTIEHELL)
+      onlyContract(CONTRACT_NAME_REDEEM_KITTIE)
   {
     genericDB.setUintStorage(
       CONTRACT_NAME_KITTIEHELL_DB,
