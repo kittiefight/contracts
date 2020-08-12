@@ -246,17 +246,6 @@ contract GameManagerHelper is Proxied, Guard {
         return 2;
     }
 
-    function getFighterByKittieID(uint256 kittieId)
-    public view
-    returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
-  {
-    (owner, isDead,, isGhost, deathTime) = kittieHellDB.kittyStatus(kittieId);
-    gameId = gmGetterDB.getGameOfKittie(kittieId);
-    //If gameId is 0 is not playing, otherwise, it is.
-    isPlaying = (gameId != 0);
-    if(isDead) kittieHellExp = deathTime.add(accountingDB.getKittieExpirationTime(gameId));
-  }
-
     // internal functions
     function _updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
         internal

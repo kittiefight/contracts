@@ -6,6 +6,7 @@ import "../../libs/SafeMath.sol";
 import '../../GameVarAndFee.sol';
 import './GMGetterDB.sol';
 import "./EndowmentDB.sol";
+import "./KittieHellDB.sol";
 
 contract AccountingDB is Proxied {
     using SafeMath for uint256;
@@ -213,6 +214,17 @@ contract AccountingDB is Proxied {
     function getWithdrawalState(uint _gameId, address _account) public view returns (bool) {
         (uint256 totalETHdebited, uint256 totalKTYdebited) = getTotalDebit(_gameId, _account);
         return ((totalETHdebited > 0) && (totalKTYdebited > 0));
+    }
+
+    function getFighterByKittieID(uint256 kittieId)
+        public view
+        returns (address owner, bool isDead, uint deathTime, uint kittieHellExp, bool isGhost, bool isPlaying, uint gameId)
+    {
+        (owner, isDead,, isGhost, deathTime) = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB)).kittyStatus(kittieId);
+        gameId = gmGetterDB.getGameOfKittie(kittieId);
+        //If gameId is 0 is not playing, otherwise, it is.
+        isPlaying = (gameId != 0);
+        if(isDead) kittieHellExp = deathTime.add(getKittieExpirationTime(gameId));
     }
 
     // internal functions
