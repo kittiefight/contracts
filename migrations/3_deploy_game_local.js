@@ -434,6 +434,7 @@ module.exports = (deployer, network, accounts) => {
             await ktyUniswap.initialize()
             await daiWethOracle.initialize()
             await businessInsight.initialize()
+            await accountingDB.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             //await register.addSuperAdmin(SUPERADMIN)

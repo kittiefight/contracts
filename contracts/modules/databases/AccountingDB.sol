@@ -142,6 +142,56 @@ contract AccountingDB is Proxied {
         return (_listingFeeEther, _listingFeeKty);
     }
 
+    function getKittieExpirationTime(uint gameId) public view returns(uint){
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieHellExpirationTime"))
+        );
+    }
+
+    function getKittieRedemptionFee(uint256 gameId) public view returns(uint256, uint256) {
+        uint256 redemptionFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee"))
+        );
+        uint256 redemptionFeeKTY = getKTY(redemptionFeeDAI);
+        uint256 etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(redemptionFeeKTY);
+        return (etherForSwap, redemptionFeeKTY);
+    }
+    
+    function getHoneypotExpiration(uint gameId) public view returns(uint){
+        return  genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "honeypotExpirationTime"))
+        );
+    }
+
+    function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
+        uint256 ticketFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "ticketFee"))
+        );
+        uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
+        uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
+        return (ethForSwap, ticketFeeKTY);
+    }
+
+    function getBettingFee(uint256 gameId) public view returns(uint256, uint256){
+        uint256 bettingFeeDAI = genericDB.getUintStorage(
+            CONTRACT_NAME_GAMESTORE,
+            keccak256(abi.encodePacked(gameId, "bettingFee"))
+        );
+        uint256 bettingFeeKTY = getKTY(bettingFeeDAI);
+        uint256 ethForFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(bettingFeeKTY);
+        return (ethForFeeSwap, bettingFeeKTY);
+    }
+
+    function getKTY(uint256 _DAI) internal view returns(uint256) {
+        uint256 _ETH = gameVarAndFee.convertDaiToEth(_DAI);
+        return gameVarAndFee.convertEthToKty(_ETH);
+    }
+
+
     /**
      * @dev get total debit by an a/c per game
      */

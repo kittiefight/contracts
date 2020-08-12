@@ -9,6 +9,7 @@ const EndowmentFund = artifacts.require('EndowmentFund')
 const KtyUniswap = artifacts.require("KtyUniswap");
 const KittieFightToken = artifacts.require('KittieFightToken')
 const GameManagerHelper = artifacts.require('GameManagerHelper')
+const AccountingDB = artifacts.require('AccountingDB')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -50,6 +51,7 @@ module.exports = async (callback) => {
     let ktyUniswap = await KtyUniswap.deployed();
     let kittieFightToken = await KittieFightToken.deployed()
     let gameManagerHelper = await GameManagerHelper.deployed()
+    let accountingDB = await AccountingDB.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -59,7 +61,6 @@ module.exports = async (callback) => {
     let timeInterval = process.argv[7];
     let supportersForRed = [];
     let supportersForBlack = [];
-    let ticketFee = await gameManagerHelper.getTicketFee(gameId);
 
     let KTY_escrow_before_swap = await kittieFightToken.balanceOf(escrow.address)
 
@@ -71,7 +72,7 @@ module.exports = async (callback) => {
     let reds = Number(redParticipators) + 30;
 
     for(let i = 10; i < blacks; i++){
-      let participate_fee = await gameManagerHelper.getTicketFee(gameId);
+      let participate_fee = await accountingDB.getTicketFee(gameId);
       let ether_participate = participate_fee[0]
       let kty_participate = participate_fee[1]
       console.log("ether needed for swapping participate_fee in kty:", weiToEther(ether_participate))
@@ -99,7 +100,7 @@ module.exports = async (callback) => {
           await timeout(3);
         }
       }
-      let participate_fee = await gameManagerHelper.getTicketFee(1);
+      let participate_fee = await accountingDB.getTicketFee(1);
       let ether_participate = participate_fee[0]
       let kty_participate = participate_fee[1]
       console.log("ether needed for swapping participate_fee in kty:", weiToEther(ether_participate))

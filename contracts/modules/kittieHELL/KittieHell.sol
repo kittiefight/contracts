@@ -123,7 +123,7 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
         ks.dead = true;
         ks.deadAt = now;
         kittieHellDB.setKittieStatus(_kittyID, encodeKittieStatus(ks));
-        scheduleBecomeGhost(_kittyID, gameManagerHelper.getKittieExpirationTime(gameId));
+        scheduleBecomeGhost(_kittyID, accountingDB.getKittieExpirationTime(gameId));
         emit KittyDied(_kittyID);
         return true;
     }
@@ -151,7 +151,7 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
         onlyNotGhostKitty(_kittyID)
         onlyProxy
     returns (bool) {
-        (uint ethersNeeded, uint256 tokenAmount) = gameManagerHelper.getKittieRedemptionFee(gameId);
+        (uint ethersNeeded, uint256 tokenAmount) = accountingDB.getKittieRedemptionFee(gameId);
         require(tokenAmount > 0, "KTY cannot be 0");
         require(msg.value >= ethersNeeded.sub(10000000000000), "Insufficient ethers");
         for (uint i = 0; i < sacrificeKitties.length; i++) {

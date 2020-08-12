@@ -205,30 +205,6 @@ contract GameManagerHelper is Proxied, Guard {
         return distributionRates;
     }
 
-    function getKittieExpirationTime(uint gameId) public view returns(uint){
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "kittieHellExpirationTime"))
-        );
-    }
-
-    function getKittieRedemptionFee(uint256 gameId) public view returns(uint256, uint256) {
-        uint256 redemptionFeeDAI = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "kittieRedemptionFee"))
-        );
-        uint256 redemptionFeeKTY = getKTY(redemptionFeeDAI);
-        uint256 etherForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(redemptionFeeKTY);
-        return (etherForSwap, redemptionFeeKTY);
-    }
-    
-    function getHoneypotExpiration(uint gameId) public view returns(uint){
-        return  genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "honeypotExpirationTime"))
-        );
-    }
-
     function didHitStart(uint gameId, address player) public view returns(bool){
         return genericDB.getBoolStorage(
             CONTRACT_NAME_GAMESTORE,
@@ -236,36 +212,11 @@ contract GameManagerHelper is Proxied, Guard {
         );
     }
 
-    function getTicketFee(uint256 gameId) public view returns(uint256, uint256){
-        uint256 ticketFeeDAI = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "ticketFee"))
-        );
-        uint256 ticketFeeKTY = getKTY(ticketFeeDAI);
-        uint256 ethForSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(ticketFeeKTY);
-        return (ethForSwap, ticketFeeKTY);
-    }
-
-    function getBettingFee(uint256 gameId) public view returns(uint256, uint256){
-        uint256 bettingFeeDAI = genericDB.getUintStorage(
-            CONTRACT_NAME_GAMESTORE,
-            keccak256(abi.encodePacked(gameId, "bettingFee"))
-        );
-        uint256 bettingFeeKTY = getKTY(bettingFeeDAI);
-        uint256 ethForFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(bettingFeeKTY);
-        return (ethForFeeSwap, bettingFeeKTY);
-    }
-
     function getMinimumContributors(uint gameId) public view returns(uint){
         return genericDB.getUintStorage(
             CONTRACT_NAME_GAMESTORE,
             keccak256(abi.encodePacked(gameId, "minimumContributors"))
         );
-    }
-
-    function getKTY(uint256 _DAI) internal view returns(uint256) {
-        uint256 _ETH = gameVarAndFee.convertDaiToEth(_DAI);
-        return gameVarAndFee.convertEthToKty(_ETH);
     }
 
     function getPerformanceTimeCheck(uint gameId) public view returns(uint){
@@ -303,7 +254,7 @@ contract GameManagerHelper is Proxied, Guard {
     gameId = gmGetterDB.getGameOfKittie(kittieId);
     //If gameId is 0 is not playing, otherwise, it is.
     isPlaying = (gameId != 0);
-    if(isDead) kittieHellExp = deathTime.add(getKittieExpirationTime(gameId));
+    if(isDead) kittieHellExp = deathTime.add(accountingDB.getKittieExpirationTime(gameId));
   }
 
     // internal functions

@@ -113,7 +113,7 @@ contract GameManager is Proxied, Guard {
         require(gameState <= 2);
 
         //pay ticket fee
-        (uint etherForSwap, uint ticketFeeKTY) = gameManagerHelper.getTicketFee(gameId);
+        (uint etherForSwap, uint ticketFeeKTY) = accountingDB.getTicketFee(gameId);
         require(endowmentFund.contributeKTY.value(msg.value)(supporter, etherForSwap, ticketFeeKTY));
 
         require(gmSetterDB.addBettor(gameId, supporter, playerToSupport));
@@ -236,7 +236,7 @@ contract GameManager is Proxied, Guard {
             supportedPlayer = sender;
         }
 
-        (uint etherForSwap, uint bettingFeeKTY) = gameManagerHelper.getBettingFee(gameId);
+        (uint etherForSwap, uint bettingFeeKTY) = accountingDB.getBettingFee(gameId);
 
         //Transfer Funds to endowment
         require(endowmentFund.contributeETH.value(msg.value.sub(etherForSwap))(gameId));
