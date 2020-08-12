@@ -12,7 +12,7 @@ interface IStakingLocking {
 
 
     function allowManager(address _lockManager, uint256 _allowance, bytes calldata _data) external;
-    function allowManagerAndLock(uint256 _amount, address _lockManager, uint256 _allowance, bytes calldata _data) external;
+    // function allowManagerAndLock(uint256 _amount, address _lockManager, uint256 _allowance, bytes calldata _data) external;
     function unlockAndRemoveManager(address _account, address _lockManager) external;
     function increaseLockAllowance(address _lockManager, uint256 _allowance) external;
     function decreaseLockAllowance(address _account, address _lockManager, uint256 _allowance) external;
@@ -21,8 +21,8 @@ interface IStakingLocking {
     function setLockManager(address _account, address _newLockManager) external;
     function transfer(address _to, uint256 _amount) external;
     function transferAndUnstake(address _to, uint256 _amount) external;
-    function slash(address _account, address _to, uint256 _amount) external;
-    function slashAndUnstake(address _account, address _to, uint256 _amount) external;
+    // function slash(address _account, address _to, uint256 _amount) external;
+    // function slashAndUnstake(address _account, address _to, uint256 _amount) external;
 
     function getLock(address _account, address _lockManager)
         external

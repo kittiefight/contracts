@@ -105,20 +105,20 @@ contract Staking is Autopetrified, ERC900, IStakingLocking, IsContract, Owned {
         _callLockManagerCallback(0, _lockManager, _allowance, _data);
     }
 
-    /**
-     * @notice Lock `@tokenAmount(stakingToken: address, _amount)` and assign `_lockManager` as manager with `@tokenAmount(stakingToken: address, _allowance)` allowance and `_data` as data, so they can not be unstaked
-     * @param _amount The amount of tokens to be locked
-     * @param _lockManager The manager entity for this particular lock. This entity will have full control over the lock, in particular will be able to unlock it
-     * @param _allowance Amount of tokens that the manager can lock
-     * @param _data Data to parametrize logic for the lock to be enforced by the manager
-     */
-    function allowManagerAndLock(uint256 _amount, address _lockManager, uint256 _allowance, bytes calldata _data) external isInitialized {
-        _allowManager(_lockManager, _allowance, _data);
+    // /**
+    //  * @notice Lock `@tokenAmount(stakingToken: address, _amount)` and assign `_lockManager` as manager with `@tokenAmount(stakingToken: address, _allowance)` allowance and `_data` as data, so they can not be unstaked
+    //  * @param _amount The amount of tokens to be locked
+    //  * @param _lockManager The manager entity for this particular lock. This entity will have full control over the lock, in particular will be able to unlock it
+    //  * @param _allowance Amount of tokens that the manager can lock
+    //  * @param _data Data to parametrize logic for the lock to be enforced by the manager
+    //  */
+    // function allowManagerAndLock(uint256 _amount, address _lockManager, uint256 _allowance, bytes calldata _data) external isInitialized {
+    //     _allowManager(_lockManager, _allowance, _data);
 
-        _lockUnsafe(msg.sender, _lockManager, _amount);
+    //     _lockUnsafe(msg.sender, _lockManager, _amount);
 
-        _callLockManagerCallback(_amount, _lockManager, _allowance, _data);
-    }
+    //     _callLockManagerCallback(_amount, _lockManager, _allowance, _data);
+    // }
 
     /**
      * @notice Transfer `@tokenAmount(stakingToken: address, _amount)` to `_to`’s staked balance
@@ -139,42 +139,42 @@ contract Staking is Autopetrified, ERC900, IStakingLocking, IsContract, Owned {
         _unstake(_to, _amount, new bytes(0));
     }
 
-    /**
-     * @notice Transfer `@tokenAmount(stakingToken: address, _amount)` from `_from`'s lock by `msg.sender` to `_to`
-     * @param _from Owner of locked tokens
-     * @param _to Recipient of the tokens
-     * @param _amount Number of tokens to be transferred
-     */
-    function slash(
-        address _from,
-        address _to,
-        uint256 _amount
-    )
-        external
-        isInitialized
-    {
-        _unlockUnsafe(_from, msg.sender, _amount);
-        _transfer(_from, _to, _amount);
-    }
+    // /**
+    //  * @notice Transfer `@tokenAmount(stakingToken: address, _amount)` from `_from`'s lock by `msg.sender` to `_to`
+    //  * @param _from Owner of locked tokens
+    //  * @param _to Recipient of the tokens
+    //  * @param _amount Number of tokens to be transferred
+    //  */
+    // function slash(
+    //     address _from,
+    //     address _to,
+    //     uint256 _amount
+    // )
+    //     external
+    //     isInitialized
+    // {
+    //     _unlockUnsafe(_from, msg.sender, _amount);
+    //     _transfer(_from, _to, _amount);
+    // }
 
-    /**
-     * @notice Transfer `@tokenAmount(stakingToken: address, _amount)` from `_from`'s lock by `msg.sender` to `_to` (unstaked)
-     * @param _from Owner of locked tokens
-     * @param _to Recipient of the tokens
-     * @param _amount Number of tokens to be transferred
-     */
-    function slashAndUnstake(
-        address _from,
-        address _to,
-        uint256 _amount
-    )
-        external
-        isInitialized
-    {
-        _unlockUnsafe(_from, msg.sender, _amount);
-        _transfer(_from, _to, _amount);
-        _unstake(_to, _amount, new bytes(0));
-    }
+    // /**
+    //  * @notice Transfer `@tokenAmount(stakingToken: address, _amount)` from `_from`'s lock by `msg.sender` to `_to` (unstaked)
+    //  * @param _from Owner of locked tokens
+    //  * @param _to Recipient of the tokens
+    //  * @param _amount Number of tokens to be transferred
+    //  */
+    // function slashAndUnstake(
+    //     address _from,
+    //     address _to,
+    //     uint256 _amount
+    // )
+    //     external
+    //     isInitialized
+    // {
+    //     _unlockUnsafe(_from, msg.sender, _amount);
+    //     _transfer(_from, _to, _amount);
+    //     _unstake(_to, _amount, new bytes(0));
+    // }
 
     /**
      * @notice Transfer `@tokenAmount(stakingToken: address, _transferAmount)` from `_from`'s lock by `msg.sender` to `_to`, and decrease `@tokenAmount(stakingToken: address, _decreaseAmount)` from that lock

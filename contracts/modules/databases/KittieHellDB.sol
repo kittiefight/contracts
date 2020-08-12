@@ -274,7 +274,7 @@ contract KittieHellDB is Proxied, Guard, KittieHellStruct {
     genericDB.setUintStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "ghostifyJob")), job);  
   }
 
-  function getKittieStatus(uint256 _kittieID) public view onlyContract(CONTRACT_NAME_KITTIEHELL) returns(bytes memory){
+  function getKittieStatus(uint256 _kittieID) public view returns(bytes memory){
     return genericDB.getBytesStorage(CONTRACT_NAME_KITTIEHELL_DB, keccak256(abi.encodePacked(_kittieID, "kittieStatus")));  
   }
 
