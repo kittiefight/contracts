@@ -23,6 +23,8 @@ contract WithdrawPool is Proxied, Guard {
 
     using SafeMath for uint256;
 
+    uint public HALF_HOUR = 1800;
+
     /*                                               GENERAL VARIABLES                                                */
     /*                                                     START                                                      */
     /* ============================================================================================================== */
@@ -131,7 +133,7 @@ contract WithdrawPool is Proxied, Guard {
         _updateStaker(msgSender, pool_id, yield);
 
         // update pool data
-        _updatePool(msgSender, pool_id, yield);
+        _updatePool(pool_id, yield);
         // pay dividend to the caller
         require(endowmentFund.transferETHfromEscrowWithdrawalPool(msgSender, yield, pool_id));
 
@@ -207,7 +209,7 @@ contract WithdrawPool is Proxied, Guard {
      * @dev This function is used to update pool data, when a claim occurs.
      * @param _pool_id The pool id.
      */
-    function _updatePool(address _staker, uint256 _pool_id, uint256 _yield)
+    function _updatePool(uint256 _pool_id, uint256 _yield)
     internal
     {
         uint256 totalStakersClaimed = genericDB.getUintStorage(
@@ -334,7 +336,26 @@ contract WithdrawPool is Proxied, Guard {
     external
     onlyContract(CONTRACT_NAME_CRONJOB)
     {
-        _startRestDay(epochID);
+        (,uint256 gameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked("GameTable")), 0, true);
+
+        if(genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state"))) < 3) {
+            uint256 newTime = block.timestamp.add(HALF_HOUR);
+
+            uint256 scheduledJob = cronJob.addCronJob(
+                CONTRACT_NAME_WITHDRAW_POOL,
+                newTime,
+                abi.encodeWithSignature("startRestDay(uint256)", epochID));
+
+            genericDB.setUintStorage(
+                CONTRACT_NAME_WITHDRAW_POOL,
+                keccak256(abi.encodePacked(epochID, "jobID")),
+                scheduledJob
+            );
+
+            timeFrame._addGamingDelayToEpoch(epochID, newTime);
+        }
+        else
+            _startRestDay(epochID);
     }
 
     function startNewEpoch(uint256 epochID)
@@ -366,7 +387,7 @@ contract WithdrawPool is Proxied, Guard {
             keccak256(abi.encode("rest_day")),
             true);
 
-        (uint256 interest, uint256 fundsForPool) = endowmentDB.getTotalForEpoch(epochID);
+        (uint256 interest,) = endowmentDB.getTotalForEpoch(epochID);
         earningsTrackerDB.setInterest(epochID, interest);
 
         uint256 newEpochStart = genericDB.getUintStorage(

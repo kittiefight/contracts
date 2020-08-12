@@ -125,7 +125,6 @@ contract GameManagerHelper is Proxied, Guard {
     * @dev updateHoneyPotState
     */
     function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
-        uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
             //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
             (uint256 winningsETH, uint256 winningsKTY) = endowmentFund.getEndowmentShare(_gameId);

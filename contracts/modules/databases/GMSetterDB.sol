@@ -39,7 +39,7 @@ contract GMSetterDB is Proxied {
   GameStore public gameStore;
   GameCreation public gameCreation;
 
-  bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
+  bytes32 internal constant TABLE_KEY_GAME = keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
 
   modifier onlyExistentGame(uint256 gameId) {

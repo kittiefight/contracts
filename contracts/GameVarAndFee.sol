@@ -125,7 +125,7 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     /// @notice get eth/usd current price
     // temporarily hard code EthUsdPrice for truffle testing of BurnTokens.test.js
     // Please remove hardcoding and uncomment line 124 once testing is done
-    function getEthUsdPrice() public view returns(uint){
+    function getEthUsdPrice() public pure returns(uint){
         //return uint256(medianizer.read());
         return uint256(0x00000000000000000000000000000000000000000000000b49bcb0036fa6c000);
     }
