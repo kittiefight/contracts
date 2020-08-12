@@ -310,7 +310,6 @@ contract GameManager is Proxied, Guard {
         //Lock Honeypot Final Details
         gmSetterDB.storeHoneypotDetails(gameId);
 
-        (uint256 totalETHinHoneypot,) = gmGetterDB.getFinalHoneypot(gameId);
         EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB)).addETHtoPool(gameId, loser);
 
         //Set to claiming

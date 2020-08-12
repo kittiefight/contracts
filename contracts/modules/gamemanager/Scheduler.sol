@@ -383,7 +383,7 @@ contract Scheduler is Proxied, SchedulerDB {
      * @dev This function is providing a random number between 0 and max.
      * @param max The number generated is less than max (not euqal).
      */
-    function randomNumber(uint256 max, uint256 iteration) internal returns (uint256){
+    function randomNumber(uint256 max, uint256 iteration) internal view returns (uint256){
         return uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, iteration))).mod(max);
     }
 

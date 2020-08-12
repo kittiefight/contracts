@@ -161,8 +161,6 @@ contract EarningsTracker is Proxied, Guard {
         // burn Ethie Token NFT
         ethieToken.burn(_ethieTokenID);
 
-        uint256 tokenLockedAt = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "lockedAt")));
-        uint256 lockTime = now.sub(tokenLockedAt);
         // calculate interest
         uint256 ethValue = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "ethValue")));
         uint256 generation = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "generation")));

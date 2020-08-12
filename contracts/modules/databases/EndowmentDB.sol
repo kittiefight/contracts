@@ -327,7 +327,7 @@ contract EndowmentDB is Proxied {
     return actualFunds.sub(remainingFundsPool);
   }
 
-  function getInvestment(uint256 pool_id)
+  function getInvestment()
   external
   view
   returns(uint256)

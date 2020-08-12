@@ -46,7 +46,7 @@ contract KaiToCattributesDB is Proxied, Guard {
     }
 
     function bytes32ToStr(bytes32 _bytes32)
-        internal 
+        internal
         returns (string memory)
     {
         bytes memory bytesArray = new bytes(32);
@@ -68,5 +68,4 @@ contract KaiToCattributesDB is Proxied, Guard {
             result := mload(add(source, place))
         }
     }
-
 }
