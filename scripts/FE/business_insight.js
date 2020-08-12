@@ -69,14 +69,14 @@ module.exports = async callback => {
     console.log("==============================")
 
     console.log("\n====== Weekly DAO Payouts (in ether) ======") 
-    let weekly_dao_payouts_0 = await withdrawPoolGetters.getInitialETH(0)
+    let weekly_dao_payouts_0 = await businessInsight.getInitialETH(0)
     console.log("pool 0:", weiToEther(weekly_dao_payouts_0))
-    let weekly_dao_payouts_1 = await withdrawPoolGetters.getInitialETH(1)
+    let weekly_dao_payouts_1 = await businessInsight.getInitialETH(1)
     console.log("pool 1:", weiToEther(weekly_dao_payouts_1))
     console.log("==============================")
 
     console.log("\n====== Total DAO Payouts (in ether) ======") 
-    let total_dao_payouts = await withdrawPoolGetters.getEthPaidOut()
+    let total_dao_payouts = await businessInsight.getEthPaidOut()
     console.log(weiToEther(total_dao_payouts))
     console.log("==============================")
 

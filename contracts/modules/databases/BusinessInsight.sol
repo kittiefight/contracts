@@ -10,7 +10,10 @@ import "../gamemanager/GameManagerHelper.sol";
 import '../endowment/KtyUniswap.sol';
 import "../datetime/TimeFrame.sol";
 
-
+/**
+ * @title BusinessInsight
+ * @notice This contract is responsible for providing business insight to the front end
+ */
 
 contract BusinessInsight is Proxied {
     using SafeMath for uint256;
@@ -36,38 +39,17 @@ contract BusinessInsight is Proxied {
         ktyUniswap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP));
     }
 
-     // === FRONTEND GETTERS ===
-    function getMyInfo(uint256 gameId, address sender)
-    public view
-    returns(bool isSupporter, uint supportedCorner, bool isPlayerInGame, uint corner)
-    {
-        isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), sender);
-        address supportedPlayer = genericDB.getAddressStorage(
-            CONTRACT_NAME_GM_SETTER_DB,
-            keccak256(abi.encodePacked(gameId, sender, "supportedPlayer")));
-        supportedCorner = gameManagerHelper.getCorner(gameId, supportedPlayer);
-        isPlayerInGame = gmGetterDB.isPlayer(gameId, sender);
-        corner = gameManagerHelper.getCorner(gameId, sender);
+    // ===================== FRONTEND GETTERS =====================
+
+    // ========= getter for active epoch =========
+    /**
+     * @dev gets the current weekly epoch ID
+     */
+    function getCurrentEpoch() public view returns (uint256) {
+        return timeFrame.getActiveEpochID();
     }
 
-    function getPlayer(uint gameId, address player)
-    public view
-    returns(uint kittieId, uint corner, uint betsTotalEth)
-    {
-        kittieId = gmGetterDB.getKittieInGame(gameId, player);
-        corner = gameManagerHelper.getCorner(gameId, player);
-        betsTotalEth = gmGetterDB.getTotalBet(gameId, player);
-    }
-
-    function getAccountInfo(address account)
-    public view
-    returns(bool isRegistered, bool isVerified)
-    {
-        isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
-        uint civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
-        isVerified = civicId > 0;
-    }
-
+    // ========= getters about KTY uniswap in game =========
     /**
      * @dev returns the KTY to ether price on uniswap, that is, how many ether for 1 KTY
      */
@@ -82,7 +64,29 @@ contract BusinessInsight is Proxied {
         return ktyUniswap.ETH_KTY_price();
     }
 
+    /**
+     * @dev return total Spent in ether in a game with gameId
+     */
+    function getTotalSpentInGame(uint256 gameId)
+    public view returns (uint256)
+    {
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_ACCOUNTING_DB,
+            keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
+    }
 
+    /**
+     * @dev return total uniswap auto-swapped KTY in a game with gameId
+     */
+    function getTotalSwappedKtyInGame(uint256 gameId)
+    public view returns (uint256)
+    {
+        return genericDB.getUintStorage(
+        CONTRACT_NAME_ACCOUNTING_DB,
+        keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
+    }
+
+    // ========= getters about game and honeypot =========
     function getLastGameID()
     public view returns (uint256)
     {
@@ -96,31 +100,21 @@ contract BusinessInsight is Proxied {
         return getLastGameID();
     }
 
-    ///@dev return total Spent in ether in a game with gameId
-    function getTotalSpentInGame(uint256 gameId)
-    public view returns (uint256)
+    function getInitialHoneypot(uint256 gameId)
+        public view returns(uint256 initialHoneypotEth, uint256 initialHoneypotKty)
     {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_GM_SETTER_DB,
-            keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
+        initialHoneypotEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
+        initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
     }
 
-    ///@dev return total uniswap auto-swapped KTY in a game with gameId
-    function getTotalSwappedKtyInGame(uint256 gameId)
-    public view returns (uint256)
+    function getInitialHoneypotKTYInEther(uint256 gameId)
+        public view returns (uint256)
     {
-        return genericDB.getUintStorage(
-        CONTRACT_NAME_GM_SETTER_DB,
-        keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
+        (,uint256 _initialKTY) = getInitialHoneypot(gameId);
+        return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
     }
 
-    /**
-     * @dev gets the current weekly epoch ID
-     */
-    function getCurrentEpoch() public view returns (uint256) {
-        return timeFrame.getActiveEpochID();
-    }
-
+    // ========= getters about lenders (ethie token holders) =========
     /**
      * @return uint256 total interest accumulated for all Ethie Token NFTs in each epoch
      */
@@ -156,21 +150,6 @@ contract BusinessInsight is Proxied {
             totalInterest = totalInterest.add(interest);
         }
         return totalInterest;
-
-    }
-
-    function getInitialHoneypot(uint256 gameId)
-        public view returns(uint256 initialHoneypotEth, uint256 initialHoneypotKty)
-    {
-        initialHoneypotEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-        initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
-    }
-
-    function getInitialHoneypotKTYInEther(uint256 gameId)
-        public view returns (uint256)
-    {
-        (,uint256 _initialKTY) = getInitialHoneypot(gameId);
-        return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
     }
 
     /**
@@ -184,5 +163,64 @@ contract BusinessInsight is Proxied {
         return genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER_DB,
             keccak256(abi.encodePacked(_epochID, "investment")));
+    }
+
+    // ========= getters about withdraw pools (SuperDao stakers) =========
+    /**
+     * @dev This function is returning the Ether that has been allocated to all pools.
+     */
+    function getEthPaidOut()
+    external
+    view
+    returns(uint256)
+    {
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_WITHDRAW_POOL_YIELDS,
+            keccak256(abi.encode("totalEthPaidOut"))
+          );
+    }
+
+    // get the initial ether available in a pool
+    function getInitialETH(uint256 _poolID)
+        public
+        view
+        returns (uint256)
+    {
+        return genericDB.getUintStorage(
+            CONTRACT_NAME_ENDOWMENT_DB,
+            keccak256(abi.encodePacked(_poolID, "InitialETHinPool"))
+          );
+    }
+
+    // ========= other getters =========
+    function getMyInfo(uint256 gameId, address sender)
+    public view
+    returns(bool isSupporter, uint supportedCorner, bool isPlayerInGame, uint corner)
+    {
+        isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), sender);
+        address supportedPlayer = genericDB.getAddressStorage(
+            CONTRACT_NAME_GM_SETTER_DB,
+            keccak256(abi.encodePacked(gameId, sender, "supportedPlayer")));
+        supportedCorner = gameManagerHelper.getCorner(gameId, supportedPlayer);
+        isPlayerInGame = gmGetterDB.isPlayer(gameId, sender);
+        corner = gameManagerHelper.getCorner(gameId, sender);
+    }
+
+    function getPlayer(uint gameId, address player)
+    public view
+    returns(uint kittieId, uint corner, uint betsTotalEth)
+    {
+        kittieId = gmGetterDB.getKittieInGame(gameId, player);
+        corner = gameManagerHelper.getCorner(gameId, player);
+        betsTotalEth = gmGetterDB.getTotalBet(gameId, player);
+    }
+
+    function getAccountInfo(address account)
+    public view
+    returns(bool isRegistered, bool isVerified)
+    {
+        isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
+        uint civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
+        isVerified = civicId > 0;
     }
 }
