@@ -47,8 +47,6 @@ contract GameManagerHelper is Proxied, Guard {
 
     enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
-    event NewListing(uint indexed kittieId, address indexed owner, uint timeListed);
-
     modifier onlyKittyOwner(address player, uint kittieId) {
         require(cryptoKitties.ownerOf(kittieId) == player, "You are not the owner of this kittie");
         _;
@@ -75,36 +73,6 @@ contract GameManagerHelper is Proxied, Guard {
     }
 
     // Setters
-    /**
-     * @dev Checks and prevents unverified accounts, only accounts with available kitties can list
-     */
-    function listKittie
-    (
-        uint kittieId
-    )
-        external
-        payable
-        onlyProxy onlyPlayer
-        onlyKittyOwner(getOriginalSender(), kittieId) //currently doesKittieBelong is not used, better
-    {
-        address player = getOriginalSender();
-
-        //Pay Listing Fee
-        // get listing fee in Dai
-        (uint etherForListingFeeSwap, uint listingFeeKTY) = gameVarAndFee.getListingFee();
-
-        require(endowmentFund.contributeKTY.value(msg.value)(player, etherForListingFeeSwap, listingFeeKTY), "Need to pay listing fee");
-        //endowmentFund.contributeKTY(player, gameVarAndFee.getListingFee());
-
-        require((gmGetterDB.getGameOfKittie(kittieId) == 0), "Kittie is already playing a game");
-
-        scheduler.addKittyToList(kittieId, player);
-
-        accountingDB.recordKittieListingFee(kittieId, msg.value, listingFeeKTY);
-
-        emit NewListing(kittieId, player, now);
-    }
-
     function removeKitties(uint256 gameId)
         external
         onlyContract(CONTRACT_NAME_GAMEMANAGER)

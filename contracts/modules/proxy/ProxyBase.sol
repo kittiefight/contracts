@@ -53,4 +53,5 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfBusinessInsight() public view returns(address)     {return getContract(CONTRACT_NAME_BUSINESS_INSIGHT);}
      function addressOfAccountingDB() public view returns(address)     {return getContract(CONTRACT_NAME_ACCOUNTING_DB);}
      function addressOfRedeemKittie() public view returns(address)     {return getContract(CONTRACT_NAME_REDEEM_KITTIE);}
+     function addressOfListKitties() public view returns(address)     {return getContract(CONTRACT_NAME_LIST_KITTIES);}
 }

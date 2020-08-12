@@ -59,6 +59,7 @@ const MultiSig = artifacts.require('Multisig5of12')
 const BusinessInsight = artifacts.require('BusinessInsight')
 const AccountingDB = artifacts.require('AccountingDB')
 const Distribution = artifacts.require('Distribution')
+const ListKitties = artifacts.require('ListKitties')
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -182,6 +183,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(BusinessInsight))
         .then(() => deployer.deploy(AccountingDB, GenericDB.address))
         .then(() => deployer.deploy(Distribution))
+        .then(() => deployer.deploy(ListKitties))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address);
@@ -237,6 +239,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('BusinessInsight', BusinessInsight.address)
             await proxy.addContract('AccountingDB', AccountingDB.address)
             await proxy.addContract('Distribution', Distribution.address)
+            await proxy.addContract('ListKitties', ListKitties.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -327,6 +330,8 @@ module.exports = (deployer, network, accounts) => {
             console.log(gameStore.address)
             gameCreation = await GameCreation.deployed()
             console.log(gameCreation.address)
+            listKitties = await ListKitties.deployed()
+            console.log(listKitties.address)
             register = await Register.deployed()
             console.log(register.address)
             dateTime = await DateTime.deployed()
@@ -422,6 +427,7 @@ module.exports = (deployer, network, accounts) => {
             await businessInsight.setProxy(proxy.address)
             await accountingDB.setProxy(proxy.address)
             await distribution.setProxy(proxy.address)
+            await listKitties.setProxy(proxy.address)
 
             console.log("Proxy: ", proxy.address);
 
@@ -456,6 +462,7 @@ module.exports = (deployer, network, accounts) => {
             await businessInsight.initialize()
             await accountingDB.initialize()
             await distribution.initialize()
+            await listKitties.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             //await register.addSuperAdmin(SUPERADMIN)

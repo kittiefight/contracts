@@ -134,7 +134,7 @@ contract Scheduler is Proxied, SchedulerDB {
     */
     function addKittyToList(uint256 _kittyId, address _player)
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER_HELPER)
+    onlyContract(CONTRACT_NAME_LIST_KITTIES)
     onlyUnlistedKitty(_kittyId)
     {
         require(kittieHell.acquireKitty(_kittyId, _player));

@@ -127,37 +127,37 @@ contract GameCreation is Proxied, Guard {
     //     emit NewListing(kittieId, player, now);
     // }
 
-    /**
-     * @dev Check to make sure the only superADmin can list, Takes in two kittieID's and accounts as well as the jackpot ether and token number.
-     */
-    function manualMatchKitties
-    (
-        address playerRed, address playerBlack,
-        uint256 kittyRed, uint256 kittyBlack,
-        uint gameStartTime
-    )
-        external
-        onlyProxy onlySuperAdmin
-        onlyKittyOwner(playerRed, kittyRed)
-        onlyKittyOwner(playerBlack, kittyBlack)
-    {
-        require(genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(
-            genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))),"endTimeForGames"))) > gameStartTime,
-            "Wrong start time");
+    // /**
+    //  * @dev Check to make sure the only superADmin can list, Takes in two kittieID's and accounts as well as the jackpot ether and token number.
+    //  */
+    // function manualMatchKitties
+    // (
+    //     address playerRed, address playerBlack,
+    //     uint256 kittyRed, uint256 kittyBlack,
+    //     uint gameStartTime
+    // )
+    //     external
+    //     onlyProxy onlySuperAdmin
+    //     onlyKittyOwner(playerRed, kittyRed)
+    //     onlyKittyOwner(playerBlack, kittyBlack)
+    // {
+    //     require(genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(
+    //         genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))),"endTimeForGames"))) > gameStartTime,
+    //         "Wrong start time");
 
-        require(!genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))), "No manual match mode");
+    //     require(!genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))), "No manual match mode");
 
-        require(!scheduler.isKittyListedForMatching(kittyRed), "fighter already listed");
-        require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter already listed");
+    //     require(!scheduler.isKittyListedForMatching(kittyRed), "fighter already listed");
+    //     require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter already listed");
 
-        require(kittieHELL.acquireKitty(kittyRed, playerRed));
-        require(kittieHELL.acquireKitty(kittyBlack, playerBlack));
+    //     require(kittieHELL.acquireKitty(kittyRed, playerRed));
+    //     require(kittieHELL.acquireKitty(kittyBlack, playerBlack));
 
-        emit NewListing(kittyRed, playerRed, now);
-        emit NewListing(kittyBlack, playerBlack, now);
+    //     emit NewListing(kittyRed, playerRed, now);
+    //     emit NewListing(kittyBlack, playerBlack, now);
 
-        generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
-    }
+    //     generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
+    // }
 
     /**
      * @dev Creates game and generates gameId
@@ -207,7 +207,7 @@ contract GameCreation is Proxied, Guard {
         uint gameStartTime
     )
         external
-        onlyContract(CONTRACT_NAME_SCHEDULER)
+        only2Contracts(CONTRACT_NAME_SCHEDULER, CONTRACT_NAME_LIST_KITTIES)
     {
         generateFight(playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime);
     }

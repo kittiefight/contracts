@@ -57,4 +57,5 @@ contract ContractNames {
     string constant CONTRACT_NAME_BUSINESS_INSIGHT = "BusinessInsight";
     string constant CONTRACT_NAME_ACCOUNTING_DB = "AccountingDB";
     string constant CONTRACT_NAME_REDEEM_KITTIE = "RedeemKittie";
+    string constant CONTRACT_NAME_LIST_KITTIES = "ListKitties";
 }

@@ -80,7 +80,7 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
     function acquireKitty(uint256 _kittyID, address owner)
         public
         onlyNotOwnedKitty(_kittyID)
-        only2Contracts(CONTRACT_NAME_SCHEDULER, CONTRACT_NAME_GAMECREATION)
+        only2Contracts(CONTRACT_NAME_SCHEDULER, CONTRACT_NAME_LIST_KITTIES)
         returns (bool)
     {
         return _acquireKitty(_kittyID, owner);
@@ -215,8 +215,6 @@ contract KittieHell is BasicControls, Proxied, Guard, KittieHellStruct {
         emit KittyReleased(_kittyID);
         return true;
     }
-
-    
 
     function releaseKittyGameManager(uint256 _kittyID)
         public
