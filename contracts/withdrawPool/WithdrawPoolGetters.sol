@@ -27,7 +27,7 @@ contract WithdrawPoolGetters is Proxied, Guard {
     returns(uint256)
     {
         return genericDB.getUintStorage(
-            CONTRACT_NAME_WITHDRAW_POOL,
+            CONTRACT_NAME_WITHDRAW_POOL_YIELDS,
             keccak256(abi.encode("totalEthPaidOut"))
           );
     }
@@ -41,7 +41,7 @@ contract WithdrawPoolGetters is Proxied, Guard {
     returns(uint256)
     {
         return genericDB.getUintStorage(
-            CONTRACT_NAME_WITHDRAW_POOL,
+            CONTRACT_NAME_WITHDRAW_POOL_YIELDS,
             keccak256(abi.encode("noOfTotalStakers"))
           );
     }
@@ -75,7 +75,7 @@ contract WithdrawPoolGetters is Proxied, Guard {
         returns (uint256)
     {
         return genericDB.getUintStorage(
-            CONTRACT_NAME_WITHDRAW_POOL,
+            CONTRACT_NAME_WITHDRAW_POOL_YIELDS,
             keccak256(abi.encodePacked(_poolID, "totalStakersClaimed"))
         );
     }

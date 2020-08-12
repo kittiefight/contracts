@@ -5,6 +5,7 @@ const EarningsTracker = artifacts.require("EarningsTracker");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
 const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
+const WithdrawPoolYields = artifacts.require("WithdrawPoolYields");
 const BigNumber = web3.utils.BN;
 const Register = artifacts.require("Register");
 const TimeFrame = artifacts.require("TimeFrame");
@@ -76,6 +77,7 @@ module.exports = async (callback) => {
     let ethieToken = await EthieToken.deployed();
     let withdrawPool = await WithdrawPool.deployed();
     let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
+    let withdrawPoolYields = await WithdrawPoolYields.deployed();
     let register = await Register.deployed();
     let timeFrame = await TimeFrame.deployed();
     let endowmentDB = await EndowmentDB.deployed();
@@ -122,8 +124,8 @@ module.exports = async (callback) => {
     for (let i = 1; i < 3; i++) {
       //await withdrawPool.claimYield(poolId, {from: accounts[i]});
       await proxy.execute(
-        "WithdrawPool",
-        setMessage(withdrawPool, "claimYield", [0]),
+        "WithdrawPoolYields",
+        setMessage(withdrawPoolYields, "claimYield", [0]),
         {
           from: accounts[i]
         }

@@ -43,6 +43,7 @@ contract ContractNames {
     string constant CONTRACT_NAME_EARNINGS_TRACKER_DB  = "EarningsTrackerDB";
     string constant CONTRACT_NAME_WITHDRAW_POOL   = "WithdrawPool";
     string constant CONTRACT_NAME_WITHDRAW_POOL_GETTERS   = "WithdrawPoolGetters";
+    string constant CONTRACT_NAME_WITHDRAW_POOL_YIELDS   = "WithdrawPoolYields";
     string constant CONTRACT_NAME_ETHIETOKEN   = "EthieToken";
     string constant CONTRACT_NAME_UNISWAPV2_PAIR   = "UniswapV2Pair";
     string constant CONTRACT_NAME_UNISWAPV2_ROUTER   = "UniswapV2Router01";

@@ -211,7 +211,7 @@ contract EndowmentFund is Distribution, Guard {
 
     function transferETHfromEscrowWithdrawalPool(address payable _someAddress, uint256 _eth_amount, uint256 _pool_id)
         public
-        onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+        onlyContract(CONTRACT_NAME_WITHDRAW_POOL_YIELDS)
         returns(bool)
     {
         endowmentDB.subETHfromPool(_eth_amount, _pool_id);
