@@ -20,6 +20,17 @@ pragma solidity ^0.5.5;
 import "../proxy/Proxied.sol";
 import "../../authority/Guard.sol";
 import "./Distribution.sol";
+import '../../GameVarAndFee.sol';
+import '../../libs/SafeMath.sol';
+import '../databases/GMGetterDB.sol';
+import "../databases/EndowmentDB.sol";
+import "../../interfaces/ERC20Standard.sol";
+import "./Escrow.sol";
+import "../gamemanager/GameStore.sol";
+import "../endowment/HoneypotAllocationAlgo.sol";
+import "./Multisig5of12.sol";
+import "../databases/AccountingDB.sol";
+import "../gamemanager/GameManagerHelper.sol";
 
 /**
  * @title EndowmentFund
@@ -27,10 +38,25 @@ import "./Distribution.sol";
  * @author @vikrammndal @wafflemakr @Xaleee @ziweidream
  */
 
-contract EndowmentFund is Distribution, Guard {
+contract EndowmentFund is Proxied, Guard {
     using SafeMath for uint256;
 
     Escrow public escrow;
+    GameVarAndFee public gameVarAndFee;
+    GMGetterDB public gmGetterDB;
+    EndowmentDB public endowmentDB;
+    ERC20Standard public kittieFightToken;
+    GameStore public gameStore;
+    Multisig5of12 public multiSig;
+    GameManagerHelper public gameManagerHelper;
+    Distribution public distribution;
+
+    modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
+        (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
+        require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
+        require(_transferNum >= _lastTransferNumber, "Transer number should be bigger than previous transfer number");
+        _;
+    }
 
     event WinnerClaimed(uint indexed gameId, address indexed winner, uint256 ethAmount, uint256 ktyAmount, address from);
     event SentKTYtoEscrow(address sender, uint256 ktyAmount, address receiver);
@@ -45,6 +71,18 @@ contract EndowmentFund is Distribution, Guard {
         forefeited,
         claiming,
         dissolved
+    }
+
+    function initialize() external onlyOwner {
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+        gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+        kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
+        gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
+        gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+        multiSig = Multisig5of12(proxy.getContract(CONTRACT_NAME_MULTISIG));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
+        distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
+        HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).initialize();
     }
 
     /**
@@ -64,7 +102,7 @@ contract EndowmentFund is Distribution, Guard {
 
         require(hasClaimed == false);
 
-        (uint256 winningsETH, uint256 winningsKTY) = getWinnerShare(_gameId, msgSender);
+        (uint256 winningsETH, uint256 winningsKTY) = distribution.getWinnerShare(_gameId, msgSender);
 
         // make sure enough funds in HoneyPot and update HoneyPot balance
         endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);

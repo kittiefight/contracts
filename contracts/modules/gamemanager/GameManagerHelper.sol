@@ -9,6 +9,7 @@ import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../databases/EndowmentDB.sol";
+import "../endowment/Distribution.sol";
 import "../databases/KittieHellDB.sol";
 import "./Scheduler.sol";
 import '../kittieHELL/KittieHell.sol';
@@ -32,6 +33,7 @@ contract GameManagerHelper is Proxied, Guard {
     AccountingDB public accountingDB;
     IKittyCore public cryptoKitties;
     GameCreation public gameCreation;
+    Distribution public distribution;
 
     enum HoneypotState {
         created,
@@ -69,6 +71,7 @@ contract GameManagerHelper is Proxied, Guard {
         accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
+        distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
     }
 
     // Setters
@@ -270,7 +273,7 @@ contract GameManagerHelper is Proxied, Guard {
         uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
             //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
-            (uint256 winningsETH, uint256 winningsKTY) = endowmentFund.getEndowmentShare(_gameId);
+            (uint256 winningsETH, uint256 winningsKTY) = distribution.getEndowmentShare(_gameId);
             endowmentDB.updateEndowmentFund(winningsKTY, winningsETH, false);
             endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
         }

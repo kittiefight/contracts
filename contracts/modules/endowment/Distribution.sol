@@ -17,6 +17,7 @@ pragma solidity ^0.5.5;
 
 import '../../GameVarAndFee.sol';
 import '../proxy/Proxied.sol';
+import "../../authority/Guard.sol";
 import '../../libs/SafeMath.sol';
 import '../databases/GMGetterDB.sol';
 import "../databases/EndowmentDB.sol";
@@ -24,7 +25,6 @@ import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
 import "../gamemanager/GameStore.sol";
 import "../endowment/HoneypotAllocationAlgo.sol";
-import "./Multisig5of12.sol";
 import "../databases/AccountingDB.sol";
 import "../gamemanager/GameManagerHelper.sol";
 
@@ -35,7 +35,7 @@ import "../gamemanager/GameManagerHelper.sol";
  * to the scheduled percentage.
  * @author @wafflemakr @hamaad
  */
-contract Distribution is Proxied {
+contract Distribution is Proxied, Guard {
 
     using SafeMath for uint256;
 
@@ -44,15 +44,14 @@ contract Distribution is Proxied {
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
     GameStore public gameStore;
-    Multisig5of12 public multiSig;
     GameManagerHelper public gameManagerHelper;
 
-    modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
-        (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
-        require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
-        require(_transferNum >= _lastTransferNumber, "Transer number should be bigger than previous transfer number");
-        _;
-    }
+    // modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
+    //     (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
+    //     require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
+    //     require(_transferNum >= _lastTransferNumber, "Transer number should be bigger than previous transfer number");
+    //     _;
+    // }
 
     /**
     * @dev Sets related contracts
@@ -64,9 +63,7 @@ contract Distribution is Proxied {
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
-        multiSig = Multisig5of12(proxy.getContract(CONTRACT_NAME_MULTISIG));
         gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
-        HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).initialize();
     }
 
     /**
@@ -94,7 +91,7 @@ contract Distribution is Proxied {
     }
 
     function calculator(uint256 totalBetsForLosingCorner, uint256 winningCategory, uint256 bet, uint256 gameId)
-        internal view
+        public view
         returns(uint256, uint256)
     {
         uint256[5] memory rates = gameManagerHelper.getDistributionRates(gameId);
@@ -114,7 +111,7 @@ contract Distribution is Proxied {
 
     function getOtherWinnersShare(uint256 winningsKTY, uint256 winningsETH, uint256 bet,
         uint256 gameId)
-        internal view
+        public view
         returns(uint256, uint256)
     {
         address[3] memory winners;

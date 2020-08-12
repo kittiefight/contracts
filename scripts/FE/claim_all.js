@@ -2,6 +2,7 @@ const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const EndowmentFund = artifacts.require('EndowmentFund')
 const AccountingDB = artifacts.require('AccountingDB')
+const Distribution = artifacts.require('Distribution')
 
 const BigNumber = web3.utils.BN;
 
@@ -26,6 +27,7 @@ module.exports = async (callback) => {
     let getterDB = await GMGetterDB.deployed();
     let endowmentFund = await EndowmentFund.deployed();
     let accountingDB = await AccountingDB.deployed();
+    let distribution = await Distribution.deployed();
 
     accounts = await web3.eth.getAccounts();
 
@@ -37,7 +39,7 @@ module.exports = async (callback) => {
     let incrementingNumber;
     let claimer;
 
-    let winnerShare = await endowmentFund.getWinnerShare(gameId, winners.winner);
+    let winnerShare = await distribution.getWinnerShare(gameId, winners.winner);
     console.log('\nWinner withdrawing ', String(web3.utils.fromWei(winnerShare.winningsETH.toString())), 'ETH')
     console.log('Winner withdrawing ', String(web3.utils.fromWei(winnerShare.winningsKTY.toString())), 'KTY')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
@@ -55,7 +57,7 @@ module.exports = async (callback) => {
 
     await timeout(1);
 
-    let topBettorsShare = await endowmentFund.getWinnerShare(gameId, winners.topBettor);
+    let topBettorsShare = await distribution.getWinnerShare(gameId, winners.topBettor);
     console.log('\nTop Bettor withdrawing ', String(web3.utils.fromWei(topBettorsShare.winningsETH.toString())), 'ETH')
     console.log('Top Bettor withdrawing ', String(web3.utils.fromWei(topBettorsShare.winningsKTY.toString())), 'KTY')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
@@ -73,7 +75,7 @@ module.exports = async (callback) => {
 
     await timeout(1);
 
-    let secondTopBettorsShare = await endowmentFund.getWinnerShare(gameId, winners.secondTopBettor);
+    let secondTopBettorsShare = await distribution.getWinnerShare(gameId, winners.secondTopBettor);
     console.log('\nSecond Top Bettor withdrawing ', String(web3.utils.fromWei(secondTopBettorsShare.winningsETH.toString())), 'ETH')
     console.log('Second Top Bettor withdrawing ', String(web3.utils.fromWei(secondTopBettorsShare.winningsKTY.toString())), 'KTY')
     await proxy.execute('EndowmentFund', setMessage(endowmentFund, 'claim',
@@ -109,7 +111,7 @@ module.exports = async (callback) => {
       else if(claimer === winners.secondTopBettor) continue;
       else{
 
-        share = await endowmentFund.getWinnerShare(gameId, claimer);
+        share = await distribution.getWinnerShare(gameId, claimer);
         console.log('\nClaimer withdrawing ', String(web3.utils.fromWei(share.winningsETH.toString())), 'ETH')
         console.log('Claimer withdrawing ', String(web3.utils.fromWei(share.winningsKTY.toString())), 'KTY')
         if(Number(String(web3.utils.fromWei(share.winningsETH.toString()))) != 0){
@@ -131,7 +133,7 @@ module.exports = async (callback) => {
 
       }
 
-      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+      let endowmentShare = await distribution.getEndowmentShare(gameId);
       console.log(`\n==== ENDOWMENT INFO ==== `);
       console.log('\nEndowmentShare: ', String(web3.utils.fromWei(endowmentShare.winningsETH.toString())), 'ETH');
       console.log('EndowmentShare: ', String(web3.utils.fromWei(endowmentShare.winningsKTY.toString())), 'KTY');

@@ -58,6 +58,7 @@ const DaiWethOracle = artifacts.require('DaiWethOracle')
 const MultiSig = artifacts.require('Multisig5of12')
 const BusinessInsight = artifacts.require('BusinessInsight')
 const AccountingDB = artifacts.require('AccountingDB')
+const Distribution = artifacts.require('Distribution')
 
 //const KittieFightToken = artifacts.require('ERC20Standard')
 
@@ -180,6 +181,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(MultiSig))
         .then(() => deployer.deploy(BusinessInsight))
         .then(() => deployer.deploy(AccountingDB, GenericDB.address))
+        .then(() => deployer.deploy(Distribution))
         .then(() => deployer.deploy(Escrow))
         .then(async(escrow) => {
             await escrow.transferOwnership(EndowmentFund.address);
@@ -234,6 +236,7 @@ module.exports = (deployer, network, accounts) => {
             await proxy.addContract('Multisig5of12', MultiSig.address)
             await proxy.addContract('BusinessInsight', BusinessInsight.address)
             await proxy.addContract('AccountingDB', AccountingDB.address)
+            await proxy.addContract('Distribution', Distribution.address)
         })
         .then(async() => {
             console.log('\nGetting contract instances...');
@@ -340,6 +343,8 @@ module.exports = (deployer, network, accounts) => {
             console.log(hitsResolve.address)
             rarityCalculator = await RarityCalculator.deployed()
             console.log(rarityCalculator.address)
+            distribution = await Distribution.deployed()
+            console.log(distribution.address)
             endowmentFund = await EndowmentFund.deployed()
             console.log(endowmentFund.address)
             kittieHELL = await KittieHELL.deployed()
@@ -416,6 +421,7 @@ module.exports = (deployer, network, accounts) => {
             await multiSig.setProxy(proxy.address)
             await businessInsight.setProxy(proxy.address)
             await accountingDB.setProxy(proxy.address)
+            await distribution.setProxy(proxy.address)
 
             console.log("Proxy: ", proxy.address);
 
@@ -449,6 +455,7 @@ module.exports = (deployer, network, accounts) => {
             await daiWethOracle.initialize()
             await businessInsight.initialize()
             await accountingDB.initialize()
+            await distribution.initialize()
 
             console.log('\nAdding Super Admin and Admin to Account 0...');
             //await register.addSuperAdmin(SUPERADMIN)
