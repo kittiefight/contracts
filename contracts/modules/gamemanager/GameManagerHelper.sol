@@ -5,6 +5,7 @@ import '../../authority/Guard.sol';
 import "../../libs/SafeMath.sol";
 import "../../GameVarAndFee.sol";
 import "../databases/GenericDB.sol";
+import "../databases/GMSetterDB.sol";
 import "../databases/GMGetterDB.sol";
 import "../endowment/EndowmentFund.sol";
 import "../databases/EndowmentDB.sol";
@@ -13,12 +14,14 @@ import "./Scheduler.sol";
 import '../kittieHELL/KittieHell.sol';
 import "../databases/AccountingDB.sol";
 import "../../interfaces/IKittyCore.sol";
+import "./GameCreation.sol";
 
 contract GameManagerHelper is Proxied, Guard {
     using SafeMath for uint256;
 
     //Contract Variables
     GenericDB public genericDB;
+    GMSetterDB public gmSetterDB;
     GMGetterDB public gmGetterDB;
     GameVarAndFee public gameVarAndFee;
     EndowmentDB public endowmentDB;
@@ -28,6 +31,7 @@ contract GameManagerHelper is Proxied, Guard {
     KittieHellDB public kittieHellDB;
     AccountingDB public accountingDB;
     IKittyCore public cryptoKitties;
+    GameCreation public gameCreation;
 
     enum HoneypotState {
         created,
@@ -38,6 +42,8 @@ contract GameManagerHelper is Proxied, Guard {
         claiming,
         dissolved
     }
+
+    enum eGameState {WAITING, PRE_GAME, MAIN_GAME, GAME_OVER, CLAIMING, CANCELLED}
 
     event NewListing(uint indexed kittieId, address indexed owner, uint timeListed);
 
@@ -52,6 +58,7 @@ contract GameManagerHelper is Proxied, Guard {
     */
     function initialize() external onlyOwner {
         genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
+        gmSetterDB = GMSetterDB(proxy.getContract(CONTRACT_NAME_GM_SETTER_DB));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
@@ -61,6 +68,7 @@ contract GameManagerHelper is Proxied, Guard {
         kittieHellDB = KittieHellDB(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DB));
         accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
+        gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
     }
 
     // Setters
@@ -98,13 +106,7 @@ contract GameManagerHelper is Proxied, Guard {
         external
         onlyContract(CONTRACT_NAME_GAMEMANAGER)
     {
-        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-
-        //Set gameId to 0 to both kitties (not playing any game)
-        _updateKittiesGame(kittyBlack, kittyRed, 0);
-
-        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
-            scheduler.startGame();
+        _removeKitties(gameId);
     }
 
     function updateKitties(address winner, address loser, uint256 gameId)
@@ -125,18 +127,7 @@ contract GameManagerHelper is Proxied, Guard {
     * @dev updateHoneyPotState
     */
     function updateHoneyPotState(uint256 _gameId, uint _state) public onlyContract(CONTRACT_NAME_GAMEMANAGER) {
-        if (_state == uint(HoneypotState.claiming)){
-            //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
-            (uint256 winningsETH, uint256 winningsKTY) = endowmentFund.getEndowmentShare(_gameId);
-            endowmentDB.updateEndowmentFund(winningsKTY, winningsETH, false);
-            endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
-        }
-        if(_state == uint(HoneypotState.forefeited)) {
-            (uint256 eth, uint256 kty) = accountingDB.getHoneypotTotal(_gameId);
-            endowmentDB.updateEndowmentFund(kty, eth, false);
-            endowmentDB.updateHoneyPotFund(_gameId, kty, eth, true);
-        }
-        endowmentDB.setHoneypotState(_gameId, _state);
+        _updateHoneyPotState(_gameId, _state);
     }
 
     /**
@@ -147,6 +138,23 @@ contract GameManagerHelper is Proxied, Guard {
         onlyContract(CONTRACT_NAME_GAMECREATION)
     {
         _updateKittiesGame(kittyBlack, kittyRed, gameId);
+    }
+
+    /**
+     * @dev Cancels the game before the game starts
+     */
+    function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
+        uint gameState = gmGetterDB.getGameState(gameId);
+        require(gameState == uint(eGameState.WAITING) ||
+                gameState == uint(eGameState.PRE_GAME));
+
+        gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
+
+        //Set to forfeited
+        _updateHoneyPotState(gameId, 4);
+        _removeKitties(gameId);
+
+        gameCreation.deleteCronjob(gameId);
     }
 
     // getters
@@ -304,6 +312,34 @@ contract GameManagerHelper is Proxied, Guard {
     {
         genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_HELPER, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
         genericDB.setUintStorage(CONTRACT_NAME_GAMEMANAGER_HELPER, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
+    }
+
+    function _removeKitties(uint256 gameId)
+        internal
+    {
+        ( , ,uint256 kittyBlack, uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
+
+        //Set gameId to 0 to both kitties (not playing any game)
+        _updateKittiesGame(kittyBlack, kittyRed, 0);
+
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+            scheduler.startGame();
+    }
+
+    function _updateHoneyPotState(uint256 _gameId, uint _state) internal {
+        uint256 claimTime;
+        if (_state == uint(HoneypotState.claiming)){
+            //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
+            (uint256 winningsETH, uint256 winningsKTY) = endowmentFund.getEndowmentShare(_gameId);
+            endowmentDB.updateEndowmentFund(winningsKTY, winningsETH, false);
+            endowmentDB.updateHoneyPotFund(_gameId, winningsKTY, winningsETH, true);
+        }
+        if(_state == uint(HoneypotState.forefeited)) {
+            (uint256 eth, uint256 kty) = accountingDB.getHoneypotTotal(_gameId);
+            endowmentDB.updateEndowmentFund(kty, eth, false);
+            endowmentDB.updateHoneyPotFund(_gameId, kty, eth, true);
+        }
+        endowmentDB.setHoneypotState(_gameId, _state);
     }
     
 }

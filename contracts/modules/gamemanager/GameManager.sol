@@ -329,22 +329,4 @@ contract GameManager is Proxied, Guard {
 
         emit GameEnded(gameId, winner, loser, pointsBlack, pointsRed);
     }
-    
-
-    /**
-     * @dev Cancels the game before the game starts
-     */
-    function cancelGame(uint gameId) external onlyContract(CONTRACT_NAME_FORFEITER) {
-        uint gameState = gmGetterDB.getGameState(gameId);
-        require(gameState == uint(eGameState.WAITING) ||
-                gameState == uint(eGameState.PRE_GAME));
-
-        gmSetterDB.updateGameState(gameId, uint(eGameState.CANCELLED));
-
-        //Set to forfeited
-        gameManagerHelper.updateHoneyPotState(gameId, 4);
-        gameManagerHelper.removeKitties(gameId);
-
-        gameCreation.deleteCronjob(gameId);
-    }
 }
