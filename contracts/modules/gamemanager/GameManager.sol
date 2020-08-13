@@ -299,7 +299,7 @@ contract GameManager is Proxied, Guard {
 
         (address playerBlack, address playerRed,,) = gmGetterDB.getGamePlayers(gameId);
 
-        (address winner, address loser, uint256 pointsBlack, uint256 pointsRed) = gameStore.calculateWinner(
+        (address winner, address loser, uint256 pointsBlack, uint256 pointsRed) = gameManagerHelper.calculateWinner(
             gameId, playerBlack, playerRed, randomNum
         );
 

@@ -16,6 +16,7 @@ import '../kittieHELL/KittieHell.sol';
 import "../databases/AccountingDB.sol";
 import "../../interfaces/IKittyCore.sol";
 import "./GameCreation.sol";
+import "../algorithm/HitsResolveAlgo.sol";
 
 contract GameManagerHelper is Proxied, Guard {
     using SafeMath for uint256;
@@ -34,6 +35,7 @@ contract GameManagerHelper is Proxied, Guard {
     IKittyCore public cryptoKitties;
     GameCreation public gameCreation;
     Distribution public distribution;
+    HitsResolve public hitsResolve;
 
     enum HoneypotState {
         created,
@@ -70,9 +72,50 @@ contract GameManagerHelper is Proxied, Guard {
         cryptoKitties = IKittyCore(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
         gameCreation = GameCreation(proxy.getContract(CONTRACT_NAME_GAMECREATION));
         distribution = Distribution(proxy.getContract(CONTRACT_NAME_DISTRIBUTION));
+        hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
     }
 
     // Setters
+    function calculateWinner
+    (
+        uint gameId, address playerBlack, address playerRed, uint random
+    )
+        external view
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+        returns(address winner, address loser, uint pointsBlack, uint pointsRed)
+    {
+        pointsBlack = hitsResolve.calculateFinalPoints(gameId, playerBlack, random);
+        pointsRed = hitsResolve.calculateFinalPoints(gameId, playerRed, random);
+
+        //Added to make game more balanced
+        pointsBlack = (gmGetterDB.getTotalBet(gameId, playerBlack)).mul(pointsBlack);
+        pointsRed = (gmGetterDB.getTotalBet(gameId, playerRed)).mul(pointsRed);
+
+        if (pointsBlack > pointsRed)
+        {
+            winner = playerBlack;
+            loser = playerRed;
+        }
+        else if(pointsRed > pointsBlack)
+        {
+            winner = playerRed;
+            loser = playerBlack;
+        }
+        //If there is a tie in point, define by total eth bet
+        else
+        {
+            (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
+            if(ethByCorner[0] > ethByCorner[1] ){
+                winner = playerBlack;
+                loser = playerRed;
+            }
+            else{
+                winner = playerRed;
+                loser = playerBlack;
+            }
+        }
+    }
+
     function removeKitties(uint256 gameId)
         external
         onlyContract(CONTRACT_NAME_GAMEMANAGER)

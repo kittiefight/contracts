@@ -4,7 +4,6 @@ import '../proxy/Proxied.sol';
 import "../../GameVarAndFee.sol";
 import "../databases/GMGetterDB.sol";
 import "../../libs/SafeMath.sol";
-import "../algorithm/HitsResolveAlgo.sol";
 import '../../authority/Guard.sol';
 import "../datetime/TimeFrame.sol";
 import "../../withdrawPool/WithdrawPool.sol";
@@ -19,7 +18,6 @@ contract GameStore is Proxied, Guard {
 
     GameVarAndFee public gameVarAndFee;
     GMGetterDB public gmGetterDB;
-    HitsResolve public hitsResolve;
     Scheduler public scheduler;
     TimeFrame public timeFrame;
     GenericDB public genericDB;
@@ -29,7 +27,6 @@ contract GameStore is Proxied, Guard {
     function initialize() external onlyOwner {
         gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
-        hitsResolve = HitsResolve(proxy.getContract(CONTRACT_NAME_HITSRESOLVE));
         scheduler = Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER));
         timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         genericDB = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB));
@@ -247,45 +244,6 @@ contract GameStore is Proxied, Guard {
         }
     }
 
-    function calculateWinner
-    (
-        uint gameId, address playerBlack, address playerRed, uint random
-    )
-        external view
-        onlyContract(CONTRACT_NAME_GAMEMANAGER)
-        returns(address winner, address loser, uint pointsBlack, uint pointsRed)
-    {
-        pointsBlack = hitsResolve.calculateFinalPoints(gameId, playerBlack, random);
-        pointsRed = hitsResolve.calculateFinalPoints(gameId, playerRed, random);
-
-        //Added to make game more balanced
-        pointsBlack = (gmGetterDB.getTotalBet(gameId, playerBlack)).mul(pointsBlack);
-        pointsRed = (gmGetterDB.getTotalBet(gameId, playerRed)).mul(pointsRed);
-
-        if (pointsBlack > pointsRed)
-        {
-            winner = playerBlack;
-            loser = playerRed;
-        }
-        else if(pointsRed > pointsBlack)
-        {
-            winner = playerRed;
-            loser = playerBlack;
-        }
-        //If there is a tie in point, define by total eth bet
-        else
-        {
-            (,,,,uint[2] memory ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
-            if(ethByCorner[0] > ethByCorner[1] ){
-                winner = playerBlack;
-                loser = playerRed;
-            }
-            else{
-                winner = playerRed;
-                loser = playerBlack;
-            }
-        }
-    }
 
     // getters
     function getTopBettor(uint gameId, address player) public view returns(address){
