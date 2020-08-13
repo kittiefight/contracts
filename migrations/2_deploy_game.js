@@ -166,7 +166,7 @@ module.exports = (deployer, network, accounts) => {
         .then(() => deployer.deploy(HoneypotAllocationAlgo))
         .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
         //.then(() => deployer.deploy(EndowmentDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(GMGetterDB, GenericDB.address))
+        .then(() => deployer.deploy(GMGetterDB))
         //.then(() => deployer.deploy(GMGetterDB, GenericDB_rinkeby_ADDRESS))
         .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
         //.then(() => deployer.deploy(GMSetterDB, GenericDB_rinkeby_ADDRESS))
@@ -308,11 +308,11 @@ module.exports = (deployer, network, accounts) => {
             kittieHellDB = await KittieHellDB.deployed()
             console.log("kittieHellDB:", kittieHellDB.address)
             earningsTrackerDB = await EarningsTrackerDB.deployed()
-            console.log(earningsTrackerDB.address)
+            console.log("earningsTrackerDB:", earningsTrackerDB.address)
             businessInsight = await BusinessInsight.deployed()
-            console.log(businessInsight.address)
+            console.log("businessInsight:", businessInsight.address)
             accountingDB = await AccountingDB.deployed()
-            console.log(accountingDB.address)
+            console.log("accountingDB:", accountingDB.address)
 
             // CRONJOB
             cronJob = await CronJob.deployed()
@@ -374,13 +374,13 @@ module.exports = (deployer, network, accounts) => {
             gameManager = await GameManager.deployed()
             console.log("gameManager:", gameManager.address)
             gameManagerHelper = await GameManagerHelper.deployed()
-            console.log(gameManagerHelper.address)
+            console.log("gameManagerHelper:", gameManagerHelper.address)
             gameStore = await GameStore.deployed()
             console.log("gameStore:", gameStore.address)
             gameCreation = await GameCreation.deployed()
             console.log("gameCreation:", gameCreation.address)
             listKitties = await ListKitties.deployed()
-            console.log(listKitties.address)
+            console.log("listKitties:", listKitties.address)
             register = await Register.deployed()
             console.log("register:", register.address)
             dateTime = await DateTime.deployed()
@@ -398,15 +398,15 @@ module.exports = (deployer, network, accounts) => {
             rarityCalculator = await RarityCalculator.deployed()
             console.log("rarityCalculator:", rarityCalculator.address)
             distribution = await Distribution.deployed()
-            console.log(distribution.address)
+            console.log("distribution:", distribution.address)
             endowmentFund = await EndowmentFund.deployed()
             console.log("endowmentFund:", endowmentFund.address)
             kittieHELL = await KittieHELL.deployed()
             console.log("kittieHell:", kittieHELL.address)
             kittieHellDungeon = await KittieHellDungeon.deployed()
-            console.log(kittieHellDungeon.address)
+            console.log("kittieHellDungeon:", kittieHellDungeon.address)
             redeemKittie = await RedeemKittie.deployed()
-            console.log(redeemKittie.address)
+            console.log("redeemKittie:", redeemKittie.address)
             honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
             console.log("honeypotAllocationAlgo:", honeypotAllocationAlgo.address)
             earningsTracker = await EarningsTracker.deployed()
@@ -418,15 +418,15 @@ module.exports = (deployer, network, accounts) => {
             withdrawPool = await WithdrawPool.deployed()
             console.log("withdrawPool:", withdrawPool.address)
             withdrawPoolGetters = await WithdrawPoolGetters.deployed()
-            console.log(withdrawPoolGetters.address)
+            console.log("withdrawPoolGetters:", withdrawPoolGetters.address)
             withdrawPoolYields = await WithdrawPoolYields.deployed()
-            console.log(withdrawPoolYields.address)
+            console.log("withdrawPoolYields:", withdrawPoolYields.address)
 
             // staking - a mock contract of Aragon's staking contract
             superDaoStaking = await SuperDaoStaking.deployed()
-            console.log(superDaoStaking.address)
+            console.log("superDaoStaking", superDaoStaking.address)
             timeLockManager = await TimeLockManager.deployed()
-            console.log(timeLockManager.address)
+            console.log("timeLockManager:", timeLockManager.address)
 
             //ESCROW
             escrow = await Escrow.deployed()
@@ -434,7 +434,7 @@ module.exports = (deployer, network, accounts) => {
 
             // Multi-Sig
             multiSig = await MultiSig.deployed()
-            console.log(multiSig.address)
+            console.log("multiSig:", multiSig.address)
 
 
             console.log('\nSetting Proxy...');
