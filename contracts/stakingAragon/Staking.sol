@@ -176,29 +176,29 @@ contract Staking is Autopetrified, ERC900, IStakingLocking, IsContract, Owned {
     //     _unstake(_to, _amount, new bytes(0));
     // }
 
-    /**
-     * @notice Transfer `@tokenAmount(stakingToken: address, _transferAmount)` from `_from`'s lock by `msg.sender` to `_to`, and decrease `@tokenAmount(stakingToken: address, _decreaseAmount)` from that lock
-     * @param _from Owner of locked tokens
-     * @param _to Recipient of the tokens
-     * @param _unlockAmount Number of tokens to be unlocked
-     * @param _slashAmount Number of tokens to be transferred
-     */
-    function slashAndUnlock(
-        address _from,
-        address _to,
-        uint256 _unlockAmount,
-        uint256 _slashAmount
-    )
-        external
-        isInitialized
-    {
-        // No need to check that _slashAmount is positive, as _transfer will fail
-        // No need to check that have enough locked funds, as _unlockUnsafe will fail
-        require(_unlockAmount > 0, ERROR_AMOUNT_ZERO);
+    // /**
+    //  * @notice Transfer `@tokenAmount(stakingToken: address, _transferAmount)` from `_from`'s lock by `msg.sender` to `_to`, and decrease `@tokenAmount(stakingToken: address, _decreaseAmount)` from that lock
+    //  * @param _from Owner of locked tokens
+    //  * @param _to Recipient of the tokens
+    //  * @param _unlockAmount Number of tokens to be unlocked
+    //  * @param _slashAmount Number of tokens to be transferred
+    //  */
+    // function slashAndUnlock(
+    //     address _from,
+    //     address _to,
+    //     uint256 _unlockAmount,
+    //     uint256 _slashAmount
+    // )
+    //     external
+    //     isInitialized
+    // {
+    //     // No need to check that _slashAmount is positive, as _transfer will fail
+    //     // No need to check that have enough locked funds, as _unlockUnsafe will fail
+    //     require(_unlockAmount > 0, ERROR_AMOUNT_ZERO);
 
-        _unlockUnsafe(_from, msg.sender, _unlockAmount.add(_slashAmount));
-        _transfer(_from, _to, _slashAmount);
-    }
+    //     _unlockUnsafe(_from, msg.sender, _unlockAmount.add(_slashAmount));
+    //     _transfer(_from, _to, _slashAmount);
+    // }
 
     /**
      * @notice Increase allowance in `@tokenAmount(stakingToken: address, _allowance)` of lock manager `_lockManager` for user `msg.sender`
