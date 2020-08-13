@@ -521,7 +521,7 @@ module.exports = (deployer, network, accounts) => {
             // await register.addAdmin(accounts[0])
 
             console.log('\nUpgrading Escrow...');
-            await endowmentFund.initUpgradeEscrow(escrow.address)
+            await endowmentFund.initUpgradeEscrow(escrow.address, 0)
             //Transfer KTY
             await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
             await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
