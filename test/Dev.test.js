@@ -199,6 +199,7 @@ contract("GameManager", accounts => {
     gameManager = await GameManager.deployed();
     gameStore = await GameStore.deployed();
     gameCreation = await GameCreation.deployed();
+    listKitties = await ListKitties.deployed()
     register = await Register.deployed();
     dateTime = await DateTime.deployed();
     gameVarAndFee = await GameVarAndFee.deployed();
@@ -207,9 +208,11 @@ contract("GameManager", accounts => {
     betting = await Betting.deployed();
     hitsResolve = await HitsResolve.deployed();
     rarityCalculator = await RarityCalculator.deployed();
+    distribution = await Distribution.deployed()
     endowmentFund = await EndowmentFund.deployed();
     kittieHell = await KittieHELL.deployed();
     kittieHellDungeon = await KittieHellDungeon.deployed();
+    redeemKittie = await RedeemKittie.deployed()
     earningsTracker = await EarningsTracker.deployed();
 
     //ESCROW
@@ -217,10 +220,15 @@ contract("GameManager", accounts => {
 
     // WithdrawPool - Pool for SuperDao token stakers
     withdrawPool = await WithdrawPool.deployed();
+    withdrawPoolGetters = await WithdrawPoolGetters.deployed()
+    withdrawPoolYields = await WithdrawPoolYields.deployed()
 
     // staking - a mock contract of Aragon's staking contract
     superDaoStaking = await SuperDaoStaking.deployed();
     timeLockManager = await TimeLockManager.deployed();
+
+    // Multi-Sig
+    multiSig = await MultiSig.deployed()
   });
 
   it("set up uniswap environment", async () => {
@@ -1030,7 +1038,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.winner}
     ).should.be.fulfilled;
-    let withdrawalState = await endowmentFund.getWithdrawalState(
+    let withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.winner
     );
@@ -1077,7 +1085,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.topBettor}
     ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
+    withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.topBettor
     );
@@ -1124,7 +1132,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.secondTopBettor}
     ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
+    withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.secondTopBettor
     );
@@ -1191,7 +1199,7 @@ contract("GameManager", accounts => {
             setMessage(endowmentFund, "claim", [gameId]),
             {from: claimer}
           ).should.be.fulfilled;
-          withdrawalState = await endowmentFund.getWithdrawalState(
+          withdrawalState = await accountingDB.getWithdrawalState(
             gameId,
             claimer
           );

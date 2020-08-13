@@ -152,522 +152,522 @@ function setMessage(contract, funcName, argArray) {
 }
 
 module.exports = (deployer, network, accounts) => {
-    console.log(SUPERADMIN);
+    // console.log(SUPERADMIN);
 
-    let medianizer;
+    // let medianizer;
 
-    if ( network === 'mainnet' ) medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
-    else if ( network === 'rinkeby' ) medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
-    else medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan and other networks
+    // if ( network === 'mainnet' ) medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
+    // else if ( network === 'rinkeby' ) medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
+    // else medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan and other networks
 
-    deployer.deploy(GenericDB)
-        .then(() => deployer.deploy(ProfileDB, GenericDB.address))
-        //.then(() => deployer.deploy(ProfileDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(HoneypotAllocationAlgo))
-        .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
-        //.then(() => deployer.deploy(EndowmentDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(GMGetterDB))
-        //.then(() => deployer.deploy(GMGetterDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
-        //.then(() => deployer.deploy(GMSetterDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(GameVarAndFee, GenericDB.address, medianizer))
-        //.then(() => deployer.deploy(GameVarAndFee, GenericDB_rinkeby_ADDRESS, medianizer))
-        .then(() => deployer.deploy(KittieHellDB, GenericDB.address))
-        //.then(() => deployer.deploy(KittieHellDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(RoleDB, GenericDB.address))
-        //.then(() => deployer.deploy(RoleDB, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(CronJob, GenericDB.address))
-        //.then(() => deployer.deploy(CronJob, GenericDB_rinkeby_ADDRESS))
-        .then(() => deployer.deploy(FreezeInfo))
-        .then(() => deployer.deploy(CronJobTarget))
-        .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-        //.then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
-        //.then(() => deployer.deploy(WETH))
-        //.then(() => deployer.deploy(Factory, accounts[0]))
-        .then(() => deployer.deploy(KtyWethOracle))
-        .then(() => deployer.deploy(CryptoKitties))
-        .then(() => deployer.deploy(GameManager))
-        .then(() => deployer.deploy(GameManagerHelper))
-        .then(() => deployer.deploy(GameStore))
-        .then(() => deployer.deploy(GameCreation))
-        .then(() => deployer.deploy(Register))
-        .then(() => deployer.deploy(TimeFrame))
-        .then(() => deployer.deploy(DateTime))
-        .then(() => deployer.deploy(Forfeiter))
-        .then(() => deployer.deploy(Scheduler))
-        .then(() => deployer.deploy(Betting))
-        .then(() => deployer.deploy(HitsResolve))
-        .then(() => deployer.deploy(RarityCalculator))
-        .then(() => deployer.deploy(EndowmentFund))
-        .then(() => deployer.deploy(KittieHELL))
-        .then(() => deployer.deploy(KittieHellDungeon, CryptoKitties.address))
-        .then(() => deployer.deploy(RedeemKittie))
-        //.then(() => deployer.deploy(EthieToken))
-        .then(() => deployer.deploy(EarningsTracker))
-        .then(() => deployer.deploy(EarningsTrackerDB, GenericDB.address))
-        .then(() => deployer.deploy(SuperDaoStaking))
-        .then(() => deployer.deploy(TimeLockManager))
-        .then(() => deployer.deploy(WithdrawPool))
-        .then(() => deployer.deploy(WithdrawPoolGetters))
-        .then(() => deployer.deploy(WithdrawPoolYields))
-        .then(() => deployer.deploy(KtyUniswap))
-        //.then(() => deployer.deploy(Router))
-        //.then(() => deployer.deploy(Dai, 1))
-        .then(() => deployer.deploy(DaiWethOracle))
-        .then(() => deployer.deploy(MultiSig))
-        .then(() => deployer.deploy(BusinessInsight))
-        .then(() => deployer.deploy(AccountingDB, GenericDB.address))
-        .then(() => deployer.deploy(Distribution))
-        .then(() => deployer.deploy(ListKitties))
-        .then(() => deployer.deploy(Escrow))
-        .then(async(escrow) => {
-            await escrow.transferOwnership(EndowmentFund.address)
-        })
-        .then(() => deployer.deploy(KFProxy))
-        .then(async(proxy) => {
-            console.log('\nAdding contract names to proxy...');
-            await proxy.addContract('TimeContract', DateTime.address)
-            await proxy.addContract('GenericDB', GenericDB.address)
-            //await proxy.addContract('GenericDB', GenericDB_rinkeby_ADDRESS)
-            await proxy.addContract('CryptoKitties', CryptoKitties.address);
-            await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
-            //await proxy.addContract('KittieFightToken', KittieFightToken.address);
-            await proxy.addContract('KittieFightToken', KTY_ADDRESS);
-            await proxy.addContract('ProfileDB', ProfileDB.address);
-            await proxy.addContract('RoleDB', RoleDB.address);
-            await proxy.addContract('Register', Register.address)
-            await proxy.addContract('TimeFrame', TimeFrame.address)
-            await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
-            await proxy.addContract('EndowmentFund', EndowmentFund.address)
-            await proxy.addContract('EndowmentDB', EndowmentDB.address)
-            await proxy.addContract('Forfeiter', Forfeiter.address)
-            await proxy.addContract('Scheduler', Scheduler.address)
-            await proxy.addContract('Betting', Betting.address)
-            await proxy.addContract('HitsResolve', HitsResolve.address)
-            await proxy.addContract('RarityCalculator', RarityCalculator.address)
-            await proxy.addContract('GMSetterDB', GMSetterDB.address)
-            await proxy.addContract('GMGetterDB', GMGetterDB.address)
-            await proxy.addContract('GameManager', GameManager.address)
-            await proxy.addContract('GameManagerHelper', GameManagerHelper.address)
-            await proxy.addContract('GameStore', GameStore.address)
-            await proxy.addContract('GameCreation', GameCreation.address)
-            await proxy.addContract('CronJob', CronJob.address)
-            await proxy.addContract('FreezeInfo', FreezeInfo.address);
-            await proxy.addContract('CronJobTarget', CronJobTarget.address);
-            await proxy.addContract('KittieHell', KittieHELL.address)
-            await proxy.addContract('KittieHellDB', KittieHellDB.address)
-            await proxy.addContract('KittieHellDungeon', KittieHellDungeon.address)
-            await proxy.addContract('RedeemKittie', RedeemKittie.address)
-            await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
-            await proxy.addContract('EarningsTracker', EarningsTracker.address)
-            await proxy.addContract('EarningsTrackerDB', EarningsTrackerDB.address)
-            await proxy.addContract('WithdrawPool', WithdrawPool.address)
-            await proxy.addContract('WithdrawPoolGetters', WithdrawPoolGetters.address)
-            await proxy.addContract('WithdrawPoolYields', WithdrawPoolYields.address)
-            //await proxy.addContract('EthieToken', EthieToken.address)
-            await proxy.addContract('EthieToken', EthieToken_rinkeby_ADDRESS)
-            await proxy.addContract('KtyWethOracle', KtyWethOracle.address)
-            await proxy.addContract('KtyUniswap', KtyUniswap.address)
-            //await proxy.addContract('UniswapV2Router01', Router.address)
-            await proxy.addContract('UniswapV2Router01', Router_rinkeby_ADDRESS)
-            //await proxy.addContract('WETH9', WETH.address)
-            await proxy.addContract('WETH9', WETH_rinkeby_ADDRESS)
-            //await proxy.addContract('Dai', Dai.address)
-            await proxy.addContract('Dai', DAI_rinkeby_ADDRESS)
-            await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
-            await proxy.addContract('Multisig5of12', MultiSig.address)
-            await proxy.addContract('BusinessInsight', BusinessInsight.address)
-            await proxy.addContract('AccountingDB', AccountingDB.address)
-            await proxy.addContract('Distribution', Distribution.address)
-            await proxy.addContract('ListKitties', ListKitties.address)
-        })
-        .then(async() => {
-            console.log('\nGetting contract instances...');
-            // PROXY
-            proxy = await KFProxy.deployed()
-            console.log("proxy:", proxy.address)
+    // deployer.deploy(GenericDB)
+    //     .then(() => deployer.deploy(ProfileDB, GenericDB.address))
+    //     //.then(() => deployer.deploy(ProfileDB, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(HoneypotAllocationAlgo))
+    //     .then(() => deployer.deploy(EndowmentDB, GenericDB.address))
+    //     //.then(() => deployer.deploy(EndowmentDB, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(GMGetterDB))
+    //     //.then(() => deployer.deploy(GMGetterDB, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
+    //     //.then(() => deployer.deploy(GMSetterDB, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(GameVarAndFee, GenericDB.address, medianizer))
+    //     //.then(() => deployer.deploy(GameVarAndFee, GenericDB_rinkeby_ADDRESS, medianizer))
+    //     .then(() => deployer.deploy(KittieHellDB, GenericDB.address))
+    //     //.then(() => deployer.deploy(KittieHellDB, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(RoleDB, GenericDB.address))
+    //     //.then(() => deployer.deploy(RoleDB, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(CronJob, GenericDB.address))
+    //     //.then(() => deployer.deploy(CronJob, GenericDB_rinkeby_ADDRESS))
+    //     .then(() => deployer.deploy(FreezeInfo))
+    //     .then(() => deployer.deploy(CronJobTarget))
+    //     .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
+    //     //.then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+    //     //.then(() => deployer.deploy(WETH))
+    //     //.then(() => deployer.deploy(Factory, accounts[0]))
+    //     .then(() => deployer.deploy(KtyWethOracle))
+    //     .then(() => deployer.deploy(CryptoKitties))
+    //     .then(() => deployer.deploy(GameManager))
+    //     .then(() => deployer.deploy(GameManagerHelper))
+    //     .then(() => deployer.deploy(GameStore))
+    //     .then(() => deployer.deploy(GameCreation))
+    //     .then(() => deployer.deploy(Register))
+    //     .then(() => deployer.deploy(TimeFrame))
+    //     .then(() => deployer.deploy(DateTime))
+    //     .then(() => deployer.deploy(Forfeiter))
+    //     .then(() => deployer.deploy(Scheduler))
+    //     .then(() => deployer.deploy(Betting))
+    //     .then(() => deployer.deploy(HitsResolve))
+    //     .then(() => deployer.deploy(RarityCalculator))
+    //     .then(() => deployer.deploy(EndowmentFund))
+    //     .then(() => deployer.deploy(KittieHELL))
+    //     .then(() => deployer.deploy(KittieHellDungeon, CryptoKitties.address))
+    //     .then(() => deployer.deploy(RedeemKittie))
+    //     //.then(() => deployer.deploy(EthieToken))
+    //     .then(() => deployer.deploy(EarningsTracker))
+    //     .then(() => deployer.deploy(EarningsTrackerDB, GenericDB.address))
+    //     .then(() => deployer.deploy(SuperDaoStaking))
+    //     .then(() => deployer.deploy(TimeLockManager))
+    //     .then(() => deployer.deploy(WithdrawPool))
+    //     .then(() => deployer.deploy(WithdrawPoolGetters))
+    //     .then(() => deployer.deploy(WithdrawPoolYields))
+    //     .then(() => deployer.deploy(KtyUniswap))
+    //     //.then(() => deployer.deploy(Router))
+    //     //.then(() => deployer.deploy(Dai, 1))
+    //     .then(() => deployer.deploy(DaiWethOracle))
+    //     .then(() => deployer.deploy(MultiSig))
+    //     .then(() => deployer.deploy(BusinessInsight))
+    //     .then(() => deployer.deploy(AccountingDB, GenericDB.address))
+    //     .then(() => deployer.deploy(Distribution))
+    //     .then(() => deployer.deploy(ListKitties))
+    //     .then(() => deployer.deploy(Escrow))
+    //     .then(async(escrow) => {
+    //         await escrow.transferOwnership(EndowmentFund.address)
+    //     })
+    //     .then(() => deployer.deploy(KFProxy))
+    //     .then(async(proxy) => {
+    //         console.log('\nAdding contract names to proxy...');
+    //         await proxy.addContract('TimeContract', DateTime.address)
+    //         await proxy.addContract('GenericDB', GenericDB.address)
+    //         //await proxy.addContract('GenericDB', GenericDB_rinkeby_ADDRESS)
+    //         await proxy.addContract('CryptoKitties', CryptoKitties.address);
+    //         await proxy.addContract('SuperDAOToken', SuperDaoToken.address);
+    //         //await proxy.addContract('KittieFightToken', KittieFightToken.address);
+    //         await proxy.addContract('KittieFightToken', KTY_ADDRESS);
+    //         await proxy.addContract('ProfileDB', ProfileDB.address);
+    //         await proxy.addContract('RoleDB', RoleDB.address);
+    //         await proxy.addContract('Register', Register.address)
+    //         await proxy.addContract('TimeFrame', TimeFrame.address)
+    //         await proxy.addContract('GameVarAndFee', GameVarAndFee.address)
+    //         await proxy.addContract('EndowmentFund', EndowmentFund.address)
+    //         await proxy.addContract('EndowmentDB', EndowmentDB.address)
+    //         await proxy.addContract('Forfeiter', Forfeiter.address)
+    //         await proxy.addContract('Scheduler', Scheduler.address)
+    //         await proxy.addContract('Betting', Betting.address)
+    //         await proxy.addContract('HitsResolve', HitsResolve.address)
+    //         await proxy.addContract('RarityCalculator', RarityCalculator.address)
+    //         await proxy.addContract('GMSetterDB', GMSetterDB.address)
+    //         await proxy.addContract('GMGetterDB', GMGetterDB.address)
+    //         await proxy.addContract('GameManager', GameManager.address)
+    //         await proxy.addContract('GameManagerHelper', GameManagerHelper.address)
+    //         await proxy.addContract('GameStore', GameStore.address)
+    //         await proxy.addContract('GameCreation', GameCreation.address)
+    //         await proxy.addContract('CronJob', CronJob.address)
+    //         await proxy.addContract('FreezeInfo', FreezeInfo.address);
+    //         await proxy.addContract('CronJobTarget', CronJobTarget.address);
+    //         await proxy.addContract('KittieHell', KittieHELL.address)
+    //         await proxy.addContract('KittieHellDB', KittieHellDB.address)
+    //         await proxy.addContract('KittieHellDungeon', KittieHellDungeon.address)
+    //         await proxy.addContract('RedeemKittie', RedeemKittie.address)
+    //         await proxy.addContract('HoneypotAllocationAlgo', HoneypotAllocationAlgo.address)
+    //         await proxy.addContract('EarningsTracker', EarningsTracker.address)
+    //         await proxy.addContract('EarningsTrackerDB', EarningsTrackerDB.address)
+    //         await proxy.addContract('WithdrawPool', WithdrawPool.address)
+    //         await proxy.addContract('WithdrawPoolGetters', WithdrawPoolGetters.address)
+    //         await proxy.addContract('WithdrawPoolYields', WithdrawPoolYields.address)
+    //         //await proxy.addContract('EthieToken', EthieToken.address)
+    //         await proxy.addContract('EthieToken', EthieToken_rinkeby_ADDRESS)
+    //         await proxy.addContract('KtyWethOracle', KtyWethOracle.address)
+    //         await proxy.addContract('KtyUniswap', KtyUniswap.address)
+    //         //await proxy.addContract('UniswapV2Router01', Router.address)
+    //         await proxy.addContract('UniswapV2Router01', Router_rinkeby_ADDRESS)
+    //         //await proxy.addContract('WETH9', WETH.address)
+    //         await proxy.addContract('WETH9', WETH_rinkeby_ADDRESS)
+    //         //await proxy.addContract('Dai', Dai.address)
+    //         await proxy.addContract('Dai', DAI_rinkeby_ADDRESS)
+    //         await proxy.addContract('DaiWethOracle', DaiWethOracle.address)
+    //         await proxy.addContract('Multisig5of12', MultiSig.address)
+    //         await proxy.addContract('BusinessInsight', BusinessInsight.address)
+    //         await proxy.addContract('AccountingDB', AccountingDB.address)
+    //         await proxy.addContract('Distribution', Distribution.address)
+    //         await proxy.addContract('ListKitties', ListKitties.address)
+    //     })
+    //     .then(async() => {
+    //         console.log('\nGetting contract instances...');
+    //         // PROXY
+    //         proxy = await KFProxy.deployed()
+    //         console.log("proxy:", proxy.address)
 
-            //Time Frame
-            timeFrame = await TimeFrame.deployed()
-            console.log("timeFrame:", timeFrame.address)
+    //         //Time Frame
+    //         timeFrame = await TimeFrame.deployed()
+    //         console.log("timeFrame:", timeFrame.address)
 
-            // DATABASES
-            genericDB = await GenericDB.deployed()
-            //genericDB = await GenericDB.at(GenericDB_rinkeby_ADDRESS)
-            console.log("genericDB:", genericDB.address)
-            profileDB = await ProfileDB.deployed();
-            console.log("profileDB:", profileDB.address)
-            roleDB = await RoleDB.deployed();
-            console.log("roleDB:", roleDB.address)
-            endowmentDB = await EndowmentDB.deployed()
-            console.log("endowmentDB:", endowmentDB.address)
-            getterDB = await GMGetterDB.deployed()
-            console.log("getterDB:", getterDB.address)
-            setterDB = await GMSetterDB.deployed()
-            console.log("setterDB:", setterDB.address)
-            kittieHellDB = await KittieHellDB.deployed()
-            console.log("kittieHellDB:", kittieHellDB.address)
-            earningsTrackerDB = await EarningsTrackerDB.deployed()
-            console.log("earningsTrackerDB:", earningsTrackerDB.address)
-            businessInsight = await BusinessInsight.deployed()
-            console.log("businessInsight:", businessInsight.address)
-            accountingDB = await AccountingDB.deployed()
-            console.log("accountingDB:", accountingDB.address)
+    //         // DATABASES
+    //         genericDB = await GenericDB.deployed()
+    //         //genericDB = await GenericDB.at(GenericDB_rinkeby_ADDRESS)
+    //         console.log("genericDB:", genericDB.address)
+    //         profileDB = await ProfileDB.deployed();
+    //         console.log("profileDB:", profileDB.address)
+    //         roleDB = await RoleDB.deployed();
+    //         console.log("roleDB:", roleDB.address)
+    //         endowmentDB = await EndowmentDB.deployed()
+    //         console.log("endowmentDB:", endowmentDB.address)
+    //         getterDB = await GMGetterDB.deployed()
+    //         console.log("getterDB:", getterDB.address)
+    //         setterDB = await GMSetterDB.deployed()
+    //         console.log("setterDB:", setterDB.address)
+    //         kittieHellDB = await KittieHellDB.deployed()
+    //         console.log("kittieHellDB:", kittieHellDB.address)
+    //         earningsTrackerDB = await EarningsTrackerDB.deployed()
+    //         console.log("earningsTrackerDB:", earningsTrackerDB.address)
+    //         businessInsight = await BusinessInsight.deployed()
+    //         console.log("businessInsight:", businessInsight.address)
+    //         accountingDB = await AccountingDB.deployed()
+    //         console.log("accountingDB:", accountingDB.address)
 
-            // CRONJOB
-            cronJob = await CronJob.deployed()
-            console.log("cronJob:", cronJob.address)
-            freezeInfo = await FreezeInfo.deployed();
-            console.log("freezeInfo:", freezeInfo.address)
-            cronJobTarget= await CronJobTarget.deployed();
-            console.log("cronJobTarget:", cronJobTarget.address)
-
-
-            // TOKENS
-            superDaoToken = await SuperDaoToken.deployed();
-            console.log("superDaoToken:", superDaoToken.address)
-            //kittieFightToken = await KittieFightToken.deployed();
-            //console.log(kittieFightToken.address)
-            kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
-            console.log("kittieFightToken:", kittieFightToken.address)
-            cryptoKitties = await CryptoKitties.deployed();
-            console.log("crypttoKitties:", cryptoKitties.address)
-            //ethieToken = await EthieToken.deployed()
-            ethieToken = await EthieToken.at(EthieToken_rinkeby_ADDRESS)
-            console.log("ethieToken:", ethieToken.address)
-
-            // uniswap kty
-            //weth = await WETH.deployed()
-            weth = await WETH.at(WETH_rinkeby_ADDRESS)
-            console.log("weth:", weth.address)
-            //factory = await Factory.deployed()
-            factory = Factory.at(Factory_rinkeby_ADDRESS)
-            console.log("factory:", factory.address)
-
-            //await factory.createPair(weth.address, kittieFightToken.address)
-            //const ktyPairAddress = await factory.getPair(weth.address, kittieFightToken.address)
-            //console.log("ktyWethPair address", ktyPairAddress)
-            const ktyWethPair = await KtyWethPair.at(KtyWethPair_rinkeby_ADDRESS);
-            console.log("ktyWethPair:", ktyWethPair.address)
-            await proxy.addContract('UniswapV2Pair', ktyWethPair.address)
-            ktyWethOracle = await KtyWethOracle.deployed()
-            console.log("ktyWethOracle:", ktyWethOracle.address)
-
-            //dai = await Dai.deployed()
-            dai = await Dai.at(DAI_rinkeby_ADDRESS)
-            console.log("Dai:", dai.address)
-            //await factory.createPair(weth.address, dai.address)
-            //const daiPairAddress = await factory.getPair(weth.address, dai.address)
-            //console.log("daiWethPair address", daiPairAddress)
-            //const daiWethPair = await DaiWethPair.at(daiPairAddress);
-            const daiWethPair = await DaiWethPair.at(DaiWethPair_rinkeby_ADDRESS)
-            console.log("daiWethPair:", daiWethPair.address)
-            await proxy.addContract('IDaiWethPair', daiWethPair.address)
-            daiWethOracle = await DaiWethOracle.deployed()
-            console.log("daiWethOracle:", daiWethOracle.address)
-
-            //router = await Router.deployed()
-            router = await Router.at(Router_rinkeby_ADDRESS)
-            console.log("router:", router.address)
-
-            // MODULES
-            gameManager = await GameManager.deployed()
-            console.log("gameManager:", gameManager.address)
-            gameManagerHelper = await GameManagerHelper.deployed()
-            console.log("gameManagerHelper:", gameManagerHelper.address)
-            gameStore = await GameStore.deployed()
-            console.log("gameStore:", gameStore.address)
-            gameCreation = await GameCreation.deployed()
-            console.log("gameCreation:", gameCreation.address)
-            listKitties = await ListKitties.deployed()
-            console.log("listKitties:", listKitties.address)
-            register = await Register.deployed()
-            console.log("register:", register.address)
-            dateTime = await DateTime.deployed()
-            console.log("dateTime:", dateTime.address)
-            gameVarAndFee = await GameVarAndFee.deployed()            
-            console.log("gameVarAndFee:", gameVarAndFee.address)
-            forfeiter = await Forfeiter.deployed()
-            console.log("forfeiter:", forfeiter.address)
-            scheduler = await Scheduler.deployed()
-            console.log("scheduler:", scheduler.address)
-            betting = await Betting.deployed()
-            console.log("betting:", betting.address)
-            hitsResolve = await HitsResolve.deployed()
-            console.log("hitsResolve:", hitsResolve.address)
-            rarityCalculator = await RarityCalculator.deployed()
-            console.log("rarityCalculator:", rarityCalculator.address)
-            distribution = await Distribution.deployed()
-            console.log("distribution:", distribution.address)
-            endowmentFund = await EndowmentFund.deployed()
-            console.log("endowmentFund:", endowmentFund.address)
-            kittieHELL = await KittieHELL.deployed()
-            console.log("kittieHell:", kittieHELL.address)
-            kittieHellDungeon = await KittieHellDungeon.deployed()
-            console.log("kittieHellDungeon:", kittieHellDungeon.address)
-            redeemKittie = await RedeemKittie.deployed()
-            console.log("redeemKittie:", redeemKittie.address)
-            honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
-            console.log("honeypotAllocationAlgo:", honeypotAllocationAlgo.address)
-            earningsTracker = await EarningsTracker.deployed()
-            console.log("earningsTracker:", earningsTracker.address)
-            ktyUniswap = await KtyUniswap.deployed()
-            console.log("ktyUniswap:", ktyUniswap.address)
-
-            // WithdrawPool - Pool for SuperDao token stakers
-            withdrawPool = await WithdrawPool.deployed()
-            console.log("withdrawPool:", withdrawPool.address)
-            withdrawPoolGetters = await WithdrawPoolGetters.deployed()
-            console.log("withdrawPoolGetters:", withdrawPoolGetters.address)
-            withdrawPoolYields = await WithdrawPoolYields.deployed()
-            console.log("withdrawPoolYields:", withdrawPoolYields.address)
-
-            // staking - a mock contract of Aragon's staking contract
-            superDaoStaking = await SuperDaoStaking.deployed()
-            console.log("superDaoStaking", superDaoStaking.address)
-            timeLockManager = await TimeLockManager.deployed()
-            console.log("timeLockManager:", timeLockManager.address)
-
-            //ESCROW
-            escrow = await Escrow.deployed()
-            console.log("escrow:", escrow.address)
-
-            // Multi-Sig
-            multiSig = await MultiSig.deployed()
-            console.log("multiSig:", multiSig.address)
+    //         // CRONJOB
+    //         cronJob = await CronJob.deployed()
+    //         console.log("cronJob:", cronJob.address)
+    //         freezeInfo = await FreezeInfo.deployed();
+    //         console.log("freezeInfo:", freezeInfo.address)
+    //         cronJobTarget= await CronJobTarget.deployed();
+    //         console.log("cronJobTarget:", cronJobTarget.address)
 
 
-            console.log('\nSetting Proxy...');
-            await genericDB.setProxy(proxy.address)
-            await profileDB.setProxy(proxy.address);
-            await roleDB.setProxy(proxy.address);
-            await timeFrame.setProxy(proxy.address)
-            await setterDB.setProxy(proxy.address)
-            await getterDB.setProxy(proxy.address)
-            await endowmentFund.setProxy(proxy.address)
-            await endowmentDB.setProxy(proxy.address)
-            await gameVarAndFee.setProxy(proxy.address)
-            await forfeiter.setProxy(proxy.address)
-            await scheduler.setProxy(proxy.address)
-            await betting.setProxy(proxy.address)
-            await hitsResolve.setProxy(proxy.address)
-            await rarityCalculator.setProxy(proxy.address)
-            await register.setProxy(proxy.address)
-            await gameManager.setProxy(proxy.address)
-            await gameManagerHelper.setProxy(proxy.address)
-            await gameStore.setProxy(proxy.address)
-            await gameCreation.setProxy(proxy.address)
-            await cronJob.setProxy(proxy.address)
-            await kittieHELL.setProxy(proxy.address)
-            await kittieHellDB.setProxy(proxy.address)
-            await kittieHellDungeon.setProxy(proxy.address)
-            await redeemKittie.setProxy(proxy.address)
-            await cronJobTarget.setProxy(proxy.address);
-            await freezeInfo.setProxy(proxy.address);
-            await honeypotAllocationAlgo.setProxy(proxy.address)
-            await earningsTracker.setProxy(proxy.address)
-            await earningsTrackerDB.setProxy(proxy.address)
-            await withdrawPool.setProxy(proxy.address)
-            await withdrawPoolGetters.setProxy(proxy.address)
-            await withdrawPoolYields.setProxy(proxy.address)
-            await ktyWethOracle.setProxy(proxy.address)
-            await ktyUniswap.setProxy(proxy.address)
-            await daiWethOracle.setProxy(proxy.address)
-            await multiSig.setProxy(proxy.address)
-            await businessInsight.setProxy(proxy.address)
-            await accountingDB.setProxy(proxy.address)
-            await distribution.setProxy(proxy.address)
-            await listKitties.setProxy(proxy.address)
+    //         // TOKENS
+    //         superDaoToken = await SuperDaoToken.deployed();
+    //         console.log("superDaoToken:", superDaoToken.address)
+    //         //kittieFightToken = await KittieFightToken.deployed();
+    //         //console.log(kittieFightToken.address)
+    //         kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+    //         console.log("kittieFightToken:", kittieFightToken.address)
+    //         cryptoKitties = await CryptoKitties.deployed();
+    //         console.log("crypttoKitties:", cryptoKitties.address)
+    //         //ethieToken = await EthieToken.deployed()
+    //         ethieToken = await EthieToken.at(EthieToken_rinkeby_ADDRESS)
+    //         console.log("ethieToken:", ethieToken.address)
 
-            console.log("Proxy: ", proxy.address);
+    //         // uniswap kty
+    //         //weth = await WETH.deployed()
+    //         weth = await WETH.at(WETH_rinkeby_ADDRESS)
+    //         console.log("weth:", weth.address)
+    //         //factory = await Factory.deployed()
+    //         factory = Factory.at(Factory_rinkeby_ADDRESS)
+    //         console.log("factory:", factory.address)
 
+    //         //await factory.createPair(weth.address, kittieFightToken.address)
+    //         //const ktyPairAddress = await factory.getPair(weth.address, kittieFightToken.address)
+    //         //console.log("ktyWethPair address", ktyPairAddress)
+    //         const ktyWethPair = await KtyWethPair.at(KtyWethPair_rinkeby_ADDRESS);
+    //         console.log("ktyWethPair:", ktyWethPair.address)
+    //         await proxy.addContract('UniswapV2Pair', ktyWethPair.address)
+    //         ktyWethOracle = await KtyWethOracle.deployed()
+    //         console.log("ktyWethOracle:", ktyWethOracle.address)
 
-            console.log('\nInitializing contracts...');
-            await timeFrame.initialize()
-            await gameStore.initialize()
-            await gameCreation.initialize()
-            await forfeiter.initialize()
-            await scheduler.initialize()
-            await register.initialize()
-            await gameManager.initialize()
-            await gameManagerHelper.initialize()
-            await getterDB.initialize()
-            await setterDB.initialize()
-            await endowmentFund.initialize()
-            await kittieHellDB.initialize()
-            await kittieHELL.initialize()
-            await redeemKittie.initialize()
-            await hitsResolve.initialize()
-            await earningsTracker.initialize()
-            await earningsTrackerDB.initialize()
-            await withdrawPool.initialize()
-            await withdrawPoolYields.initialize(TimeLockManager.address, SuperDaoToken.address)
-            await withdrawPoolGetters.initialize()
-            await superDaoStaking.initialize(SuperDaoToken.address)
-            await timeLockManager.initialize(SuperDaoStaking.address, TimeFrame.address)
-            await ktyWethOracle.initialize()
-            //await router.initialize(Factory.address, WETH.address)
-            await ktyUniswap.initialize()
-            await daiWethOracle.initialize()
-            await businessInsight.initialize()
-            await accountingDB.initialize()
-            await distribution.initialize()
-            await listKitties.initialize()
+    //         //dai = await Dai.deployed()
+    //         dai = await Dai.at(DAI_rinkeby_ADDRESS)
+    //         console.log("Dai:", dai.address)
+    //         //await factory.createPair(weth.address, dai.address)
+    //         //const daiPairAddress = await factory.getPair(weth.address, dai.address)
+    //         //console.log("daiWethPair address", daiPairAddress)
+    //         //const daiWethPair = await DaiWethPair.at(daiPairAddress);
+    //         const daiWethPair = await DaiWethPair.at(DaiWethPair_rinkeby_ADDRESS)
+    //         console.log("daiWethPair:", daiWethPair.address)
+    //         await proxy.addContract('IDaiWethPair', daiWethPair.address)
+    //         daiWethOracle = await DaiWethOracle.deployed()
+    //         console.log("daiWethOracle:", daiWethOracle.address)
 
-            console.log('\nAdding Super Admin and Admin to Account 0...');
-            await register.addSuperAdmin(SUPERADMIN)
-            await register.addAdmin(SUPERADMIN)
-            // await register.addSuperAdmin(accounts[0])
-            // await register.addAdmin(accounts[0])
+    //         //router = await Router.deployed()
+    //         router = await Router.at(Router_rinkeby_ADDRESS)
+    //         console.log("router:", router.address)
 
-            console.log('\nUpgrading Escrow...');
-            await endowmentFund.initUpgradeEscrow(escrow.address, 0)
-            //Transfer KTY
-            await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
-            await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
-            //Transfer ETH
-            // await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+    //         // MODULES
+    //         gameManager = await GameManager.deployed()
+    //         console.log("gameManager:", gameManager.address)
+    //         gameManagerHelper = await GameManagerHelper.deployed()
+    //         console.log("gameManagerHelper:", gameManagerHelper.address)
+    //         gameStore = await GameStore.deployed()
+    //         console.log("gameStore:", gameStore.address)
+    //         gameCreation = await GameCreation.deployed()
+    //         console.log("gameCreation:", gameCreation.address)
+    //         listKitties = await ListKitties.deployed()
+    //         console.log("listKitties:", listKitties.address)
+    //         register = await Register.deployed()
+    //         console.log("register:", register.address)
+    //         dateTime = await DateTime.deployed()
+    //         console.log("dateTime:", dateTime.address)
+    //         gameVarAndFee = await GameVarAndFee.deployed()            
+    //         console.log("gameVarAndFee:", gameVarAndFee.address)
+    //         forfeiter = await Forfeiter.deployed()
+    //         console.log("forfeiter:", forfeiter.address)
+    //         scheduler = await Scheduler.deployed()
+    //         console.log("scheduler:", scheduler.address)
+    //         betting = await Betting.deployed()
+    //         console.log("betting:", betting.address)
+    //         hitsResolve = await HitsResolve.deployed()
+    //         console.log("hitsResolve:", hitsResolve.address)
+    //         rarityCalculator = await RarityCalculator.deployed()
+    //         console.log("rarityCalculator:", rarityCalculator.address)
+    //         distribution = await Distribution.deployed()
+    //         console.log("distribution:", distribution.address)
+    //         endowmentFund = await EndowmentFund.deployed()
+    //         console.log("endowmentFund:", endowmentFund.address)
+    //         kittieHELL = await KittieHELL.deployed()
+    //         console.log("kittieHell:", kittieHELL.address)
+    //         kittieHellDungeon = await KittieHellDungeon.deployed()
+    //         console.log("kittieHellDungeon:", kittieHellDungeon.address)
+    //         redeemKittie = await RedeemKittie.deployed()
+    //         console.log("redeemKittie:", redeemKittie.address)
+    //         honeypotAllocationAlgo = await HoneypotAllocationAlgo.deployed()
+    //         console.log("honeypotAllocationAlgo:", honeypotAllocationAlgo.address)
+    //         earningsTracker = await EarningsTracker.deployed()
+    //         console.log("earningsTracker:", earningsTracker.address)
+    //         ktyUniswap = await KtyUniswap.deployed()
+    //         console.log("ktyUniswap:", ktyUniswap.address)
 
-            console.log('\nSetting game vars and fees...');
-            let names = ['listingFee', 'gamePrestart', 'gameDuration',
-                'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
-                'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
-                'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
-                'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
-                'percentageForBettingFee', 'usdKTYPrice', 'requiredKittieSacrificeNum',
-                'percentageHoneypotAllocationKTY', 'interestEthie', 'percentageForPool',
-                'timeExtension', 'performanceTime', "percentageForBurnEthie"
-            ];
+    //         // WithdrawPool - Pool for SuperDao token stakers
+    //         withdrawPool = await WithdrawPool.deployed()
+    //         console.log("withdrawPool:", withdrawPool.address)
+    //         withdrawPoolGetters = await WithdrawPoolGetters.deployed()
+    //         console.log("withdrawPoolGetters:", withdrawPoolGetters.address)
+    //         withdrawPoolYields = await WithdrawPoolYields.deployed()
+    //         console.log("withdrawPoolYields:", withdrawPoolYields.address)
 
-            let bytesNames = [];
-            for (i = 0; i < names.length; i++) {
-                bytesNames.push(web3.utils.asciiToHex(names[i]));
-            }
+    //         // staking - a mock contract of Aragon's staking contract
+    //         superDaoStaking = await SuperDaoStaking.deployed()
+    //         console.log("superDaoStaking", superDaoStaking.address)
+    //         timeLockManager = await TimeLockManager.deployed()
+    //         console.log("timeLockManager:", timeLockManager.address)
 
-            let values = [LISTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
-                REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
-                HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
-                OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
-                PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM,
-                PERCENTAGE_HONEYPOT_ALLOCATION_KTY, INTEREST_ETHIE, PERCENTAGE_FOR_POOL,
-                TIME_EXTENSION, PERFORMANCE_TIME_CHECK, PERCENTAGE_FOR_BURN_ETHIE
-            ];
+    //         //ESCROW
+    //         escrow = await Escrow.deployed()
+    //         console.log("escrow:", escrow.address)
 
-            await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
-
-            console.log('\nSetting game vars and fees platform fees in dai...');
-            await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setPlatformFeeInDai', ["listingFee"]))
-            await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setPlatformFeeInDai', ["finalizeRewards"]))
-
-            console.log('\nRarity Calculator Setup...');
-            await rarityCalculator.fillKaiValue()
-
-            let list = [];
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
-            }
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
-            }
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
-            }
-
-            await rarityCalculator.updateCattributes(list, 3);
-
-            list = [];
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
-            }
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
-            }
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
-            }
-
-            await rarityCalculator.updateCattributes(list,3);
-
-            list = [];
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
-            }
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
-            }
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
-            }
-
-            for (let i=0; i<32; i++) {
-                list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
-            }
-
-            await rarityCalculator.updateCattributes(list,4);
-
-            let listDescription = [];
-            let listTotal = [];
-
-            for (let j=0; j<153; j++) {
-                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-                listTotal.push(Number(cattributesData[j].total))
-            }
-
-            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
-
-            listDescription = [];
-            listTotal = [];
-
-            for (let j=153; j<305; j++) {
-                listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
-                listTotal.push(Number(cattributesData[j].total))
-            }
-
-            await rarityCalculator.updateCattributesScores(listDescription, listTotal);
-
-            console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
-
-            let listFancyNames = [];
-            let listFancyNamesTotal = [];
-            let listFancyIds = [];
-
-            for (let m=0; m<3; m++) {
-                listFancyNamesTotal.push(FancyKitties[m].length-1)
-                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-                for (let n=1; n<FancyKitties[m].length; n++) {
-                    listFancyIds.push(FancyKitties[m][n])
-                }
-            }
-
-            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
-
-            listFancyIds=[];
-            listFancyNames=[];
-            listFancyNamesTotal=[];
-
-            for (let m=3; m<5; m++) {
-                listFancyNamesTotal.push(FancyKitties[m].length-1)
-                listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
-                for (let n=1; n<FancyKitties[m].length; n++) {
-                    listFancyIds.push(FancyKitties[m][n])
-                }
-            }
-
-            await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+    //         // Multi-Sig
+    //         multiSig = await MultiSig.deployed()
+    //         console.log("multiSig:", multiSig.address)
 
 
-            await rarityCalculator.updateTotalKitties(1600000)
-            await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
+    //         console.log('\nSetting Proxy...');
+    //         await genericDB.setProxy(proxy.address)
+    //         await profileDB.setProxy(proxy.address);
+    //         await roleDB.setProxy(proxy.address);
+    //         await timeFrame.setProxy(proxy.address)
+    //         await setterDB.setProxy(proxy.address)
+    //         await getterDB.setProxy(proxy.address)
+    //         await endowmentFund.setProxy(proxy.address)
+    //         await endowmentDB.setProxy(proxy.address)
+    //         await gameVarAndFee.setProxy(proxy.address)
+    //         await forfeiter.setProxy(proxy.address)
+    //         await scheduler.setProxy(proxy.address)
+    //         await betting.setProxy(proxy.address)
+    //         await hitsResolve.setProxy(proxy.address)
+    //         await rarityCalculator.setProxy(proxy.address)
+    //         await register.setProxy(proxy.address)
+    //         await gameManager.setProxy(proxy.address)
+    //         await gameManagerHelper.setProxy(proxy.address)
+    //         await gameStore.setProxy(proxy.address)
+    //         await gameCreation.setProxy(proxy.address)
+    //         await cronJob.setProxy(proxy.address)
+    //         await kittieHELL.setProxy(proxy.address)
+    //         await kittieHellDB.setProxy(proxy.address)
+    //         await kittieHellDungeon.setProxy(proxy.address)
+    //         await redeemKittie.setProxy(proxy.address)
+    //         await cronJobTarget.setProxy(proxy.address);
+    //         await freezeInfo.setProxy(proxy.address);
+    //         await honeypotAllocationAlgo.setProxy(proxy.address)
+    //         await earningsTracker.setProxy(proxy.address)
+    //         await earningsTrackerDB.setProxy(proxy.address)
+    //         await withdrawPool.setProxy(proxy.address)
+    //         await withdrawPoolGetters.setProxy(proxy.address)
+    //         await withdrawPoolYields.setProxy(proxy.address)
+    //         await ktyWethOracle.setProxy(proxy.address)
+    //         await ktyUniswap.setProxy(proxy.address)
+    //         await daiWethOracle.setProxy(proxy.address)
+    //         await multiSig.setProxy(proxy.address)
+    //         await businessInsight.setProxy(proxy.address)
+    //         await accountingDB.setProxy(proxy.address)
+    //         await distribution.setProxy(proxy.address)
+    //         await listKitties.setProxy(proxy.address)
 
-        })
+    //         console.log("Proxy: ", proxy.address);
+
+
+    //         console.log('\nInitializing contracts...');
+    //         await timeFrame.initialize()
+    //         await gameStore.initialize()
+    //         await gameCreation.initialize()
+    //         await forfeiter.initialize()
+    //         await scheduler.initialize()
+    //         await register.initialize()
+    //         await gameManager.initialize()
+    //         await gameManagerHelper.initialize()
+    //         await getterDB.initialize()
+    //         await setterDB.initialize()
+    //         await endowmentFund.initialize()
+    //         await kittieHellDB.initialize()
+    //         await kittieHELL.initialize()
+    //         await redeemKittie.initialize()
+    //         await hitsResolve.initialize()
+    //         await earningsTracker.initialize()
+    //         await earningsTrackerDB.initialize()
+    //         await withdrawPool.initialize()
+    //         await withdrawPoolYields.initialize(TimeLockManager.address, SuperDaoToken.address)
+    //         await withdrawPoolGetters.initialize()
+    //         await superDaoStaking.initialize(SuperDaoToken.address)
+    //         await timeLockManager.initialize(SuperDaoStaking.address, TimeFrame.address)
+    //         await ktyWethOracle.initialize()
+    //         //await router.initialize(Factory.address, WETH.address)
+    //         await ktyUniswap.initialize()
+    //         await daiWethOracle.initialize()
+    //         await businessInsight.initialize()
+    //         await accountingDB.initialize()
+    //         await distribution.initialize()
+    //         await listKitties.initialize()
+
+    //         console.log('\nAdding Super Admin and Admin to Account 0...');
+    //         await register.addSuperAdmin(SUPERADMIN)
+    //         await register.addAdmin(SUPERADMIN)
+    //         // await register.addSuperAdmin(accounts[0])
+    //         // await register.addAdmin(accounts[0])
+
+    //         console.log('\nUpgrading Escrow...');
+    //         await endowmentFund.initUpgradeEscrow(escrow.address, 0)
+    //         //Transfer KTY
+    //         await kittieFightToken.transfer(endowmentFund.address, INITIAL_KTY_ENDOWMENT)
+    //         await endowmentFund.sendKTYtoEscrow(INITIAL_KTY_ENDOWMENT);
+    //         //Transfer ETH
+    //         // await endowmentFund.sendETHtoEscrow({from: accounts[0], value:INITIAL_ETH_ENDOWMENT});
+
+    //         console.log('\nSetting game vars and fees...');
+    //         let names = ['listingFee', 'gamePrestart', 'gameDuration',
+    //             'minimumContributors', 'requiredNumberMatches', 'ethPerGame', 'tokensPerGame',
+    //             'gameTimes', 'kittieHellExpiration', 'honeypotExpiration', 'kittieRedemptionFee',
+    //             'winningKittie', 'topBettor', 'secondRunnerUp', 'otherBettors', 'endownment', 'finalizeRewards',
+    //             'percentageForKittieRedemptionFee', 'percentageForListingFee', 'percentageForTicketFee',
+    //             'percentageForBettingFee', 'usdKTYPrice', 'requiredKittieSacrificeNum',
+    //             'percentageHoneypotAllocationKTY', 'interestEthie', 'percentageForPool',
+    //             'timeExtension', 'performanceTime', "percentageForBurnEthie"
+    //         ];
+
+    //         let bytesNames = [];
+    //         for (i = 0; i < names.length; i++) {
+    //             bytesNames.push(web3.utils.asciiToHex(names[i]));
+    //         }
+
+    //         let values = [LISTING_FEE.toString(), GAME_PRESTART, GAME_DURATION, MIN_CONTRIBUTORS,
+    //             REQ_NUM_MATCHES, ETH_PER_GAME.toString(), TOKENS_PER_GAME.toString(), GAME_TIMES, KITTIE_HELL_EXPIRATION,
+    //             HONEY_POT_EXPIRATION, KITTIE_REDEMPTION_FEE.toString(), WINNING_KITTIE, TOP_BETTOR, SECOND_RUNNER_UP,
+    //             OTHER_BETTORS, ENDOWNMENT, FINALIZE_REWARDS.toString(), PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE, PERCENTAGE_FOR_LISTING_FEE,
+    //             PERCENTAGE_FOR_TICKET_FEE, PERCENTAGE_FOR_BETTING_FEE, USD_KTY_PRICE.toString(), REQUIRED_KITTIE_SACRIFICE_NUM,
+    //             PERCENTAGE_HONEYPOT_ALLOCATION_KTY, INTEREST_ETHIE, PERCENTAGE_FOR_POOL,
+    //             TIME_EXTENSION, PERFORMANCE_TIME_CHECK, PERCENTAGE_FOR_BURN_ETHIE
+    //         ];
+
+    //         await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setMultipleValues', [bytesNames, values]))
+
+    //         console.log('\nSetting game vars and fees platform fees in dai...');
+    //         await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setPlatformFeeInDai', ["listingFee"]))
+    //         await proxy.execute('GameVarAndFee', setMessage(gameVarAndFee, 'setPlatformFeeInDai', ["finalizeRewards"]))
+
+    //         console.log('\nRarity Calculator Setup...');
+    //         await rarityCalculator.fillKaiValue()
+
+    //         let list = [];
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[0].body.kai)[i]));
+    //         }
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[1].pattern.kai)[i]));
+    //         }
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[2].coloreyes.kai)[i]));
+    //         }
+
+    //         await rarityCalculator.updateCattributes(list, 3);
+
+    //         list = [];
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[3].eyes.kai)[i]));
+    //         }
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[4].color1.kai)[i]));
+    //         }
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[5].color2.kai)[i]));
+    //         }
+
+    //         await rarityCalculator.updateCattributes(list,3);
+
+    //         list = [];
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[6].color3.kai)[i]));
+    //         }
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[7].wild.kai)[i]));
+    //         }
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[8].mouth.kai)[i]));
+    //         }
+
+    //         for (let i=0; i<32; i++) {
+    //             list.push(web3.utils.fromAscii(Object.values(kaiToCattributesData[9].environment.kai)[i]));
+    //         }
+
+    //         await rarityCalculator.updateCattributes(list,4);
+
+    //         let listDescription = [];
+    //         let listTotal = [];
+
+    //         for (let j=0; j<153; j++) {
+    //             listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+    //             listTotal.push(Number(cattributesData[j].total))
+    //         }
+
+    //         await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+
+    //         listDescription = [];
+    //         listTotal = [];
+
+    //         for (let j=153; j<305; j++) {
+    //             listDescription.push(web3.utils.fromAscii(cattributesData[j].description))
+    //             listTotal.push(Number(cattributesData[j].total))
+    //         }
+
+    //         await rarityCalculator.updateCattributesScores(listDescription, listTotal);
+
+    //         console.log(cattributesData.length, FancyKitties.length, FancyKitties[0].length)
+
+    //         let listFancyNames = [];
+    //         let listFancyNamesTotal = [];
+    //         let listFancyIds = [];
+
+    //         for (let m=0; m<3; m++) {
+    //             listFancyNamesTotal.push(FancyKitties[m].length-1)
+    //             listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+    //             for (let n=1; n<FancyKitties[m].length; n++) {
+    //                 listFancyIds.push(FancyKitties[m][n])
+    //             }
+    //         }
+
+    //         await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+
+    //         listFancyIds=[];
+    //         listFancyNames=[];
+    //         listFancyNamesTotal=[];
+
+    //         for (let m=3; m<5; m++) {
+    //             listFancyNamesTotal.push(FancyKitties[m].length-1)
+    //             listFancyNames.push(web3.utils.fromAscii(FancyKitties[m][0]))
+    //             for (let n=1; n<FancyKitties[m].length; n++) {
+    //                 listFancyIds.push(FancyKitties[m][n])
+    //             }
+    //         }
+
+    //         await rarityCalculator.updateFancyKittiesList(listFancyIds, listFancyNames, listFancyNamesTotal);
+
+
+    //         await rarityCalculator.updateTotalKitties(1600000)
+    //         await rarityCalculator.setDefenseLevelLimit(1832353, 9175, 1600000)
+
+    //     })
 };
 
 

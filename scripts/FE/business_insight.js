@@ -4,6 +4,7 @@ const KittieFightToken = artifacts.require("KittieFightToken");
 const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
 const KittieHell = artifacts.require('KittieHell');
 const BusinessInsight = artifacts.require('BusinessInsight');
+const RedeemKittie = artifacts.require('RedeemKittie');
 
 const BigNumber = web3.utils.BN;
 
@@ -45,6 +46,7 @@ module.exports = async callback => {
     let kittieFightToken = await KittieFightToken.deployed();
     let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
     let kittieHell = await KittieHell.deployed();
+    let redeemKittie = await RedeemKittie.deployed();
   
     console.log("\n====== Total KTY supply ======") 
     let totalKtySupply = await kittieFightToken.totalSupply();
@@ -108,7 +110,7 @@ module.exports = async callback => {
     console.log("==============================")
 
     console.log("\n====== Total KTY Burned ======") 
-    let total_kty_burned = await kittieFightToken.balanceOf(kittieHell.address)
+    let total_kty_burned = await kittieFightToken.balanceOf(redeemKittie.address)
     console.log(weiToEther(total_kty_burned))
     console.log("==============================")
 
