@@ -80,8 +80,6 @@ const INITIAL_ETH_ENDOWMENT = new BigNumber(
 
 // ================ GAME VARS AND FEES ================ //
 const LISTING_FEE = new BigNumber(web3.utils.toWei("125", "ether"));
-//const TICKET_FEE = new BigNumber(web3.utils.toWei("37.5", "ether"));
-//const BETTING_FEE = new BigNumber(web3.utils.toWei("2.5", "ether"));
 const MIN_CONTRIBUTORS = 2
 const REQ_NUM_MATCHES = 10
 const GAME_PRESTART = 30 // 2 min
