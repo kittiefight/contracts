@@ -8,52 +8,61 @@ require("chai")
 const evm = require("./utils/evm.js");
 
 //ARTIFACTS
-const KFProxy = artifacts.require("KFProxy");
-const GenericDB = artifacts.require("GenericDB");
-const ProfileDB = artifacts.require("ProfileDB");
-const RoleDB = artifacts.require("RoleDB");
-const HoneypotAllocationAlgo = artifacts.require("HoneypotAllocationAlgo");
-const GMSetterDB = artifacts.require("GMSetterDB");
-const GMGetterDB = artifacts.require("GMGetterDB");
-const GameManager = artifacts.require("GameManager");
-const GameStore = artifacts.require("GameStore");
-const GameCreation = artifacts.require("GameCreation");
-const GameVarAndFee = artifacts.require("GameVarAndFee");
-const Forfeiter = artifacts.require("Forfeiter");
-const DateTime = artifacts.require("DateTime");
-const Scheduler = artifacts.require("Scheduler");
-const Betting = artifacts.require("Betting");
-const HitsResolve = artifacts.require("HitsResolve");
-const RarityCalculator = artifacts.require("RarityCalculator");
-const Register = artifacts.require("Register");
-const EndowmentFund = artifacts.require("EndowmentFund");
-const EndowmentDB = artifacts.require("EndowmentDB");
-const Escrow = artifacts.require("Escrow");
-const KittieHELL = artifacts.require("KittieHell");
-const KittieHellDungeon = artifacts.require("KittieHellDungeon");
-const KittieHellDB = artifacts.require("KittieHellDB");
-const SuperDaoToken = artifacts.require("MockERC20Token");
-const KittieFightToken = artifacts.require("KittieFightToken");
-const CryptoKitties = artifacts.require("MockERC721Token");
-const CronJob = artifacts.require("CronJob");
-const FreezeInfo = artifacts.require("FreezeInfo");
-const CronJobTarget = artifacts.require("CronJobTarget");
-const TimeFrame = artifacts.require("TimeFrame");
-const WithdrawPool = artifacts.require("WithdrawPool");
-const SuperDaoStaking = artifacts.require("SuperDaoStaking");
-const TimeLockManager = artifacts.require("TimeLockManager");
-const EthieToken = artifacts.require("EthieToken");
-const EarningsTracker = artifacts.require("EarningsTracker");
-const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
-const Factory = artifacts.require("UniswapV2Factory");
-const WETH = artifacts.require("WETH9");
-const KtyWethPair = artifacts.require("IUniswapV2Pair");
-const KtyWethOracle = artifacts.require("KtyWethOracle");
-const KtyUniswap = artifacts.require("KtyUniswap");
-const Router = artifacts.require("UniswapV2Router01");
-const Dai = artifacts.require("Dai");
-const DaiWethPair = artifacts.require("IDaiWethPair");
-const DaiWethOracle = artifacts.require("DaiWethOracle");
+const KFProxy = artifacts.require('KFProxy')
+const GenericDB = artifacts.require('GenericDB');
+const ProfileDB = artifacts.require('ProfileDB')
+const RoleDB = artifacts.require('RoleDB')
+const GMSetterDB = artifacts.require('GMSetterDB')
+const GMGetterDB = artifacts.require('GMGetterDB')
+const GameManager = artifacts.require('GameManager')
+const GameManagerHelper = artifacts.require('GameManagerHelper')
+const GameStore = artifacts.require('GameStore')
+const GameCreation = artifacts.require('GameCreation')
+const GameVarAndFee = artifacts.require('GameVarAndFee')
+const Forfeiter = artifacts.require('Forfeiter')
+const TimeFrame = artifacts.require('TimeFrame');
+const DateTime = artifacts.require('DateTime')
+const Scheduler = artifacts.require('Scheduler')
+const Betting = artifacts.require('Betting')
+const HitsResolve = artifacts.require('HitsResolve')
+const RarityCalculator = artifacts.require('RarityCalculator')
+const Register = artifacts.require('Register')
+const EndowmentFund = artifacts.require('EndowmentFund')
+const EndowmentDB = artifacts.require('EndowmentDB')
+const Escrow = artifacts.require('Escrow')
+const KittieHELL = artifacts.require('KittieHell')
+const KittieHellDB = artifacts.require('KittieHellDB')
+const KittieHellDungeon = artifacts.require('KittieHellDungeon')
+const RedeemKittie = artifacts.require('RedeemKittie')
+const SuperDaoToken = artifacts.require('MockERC20Token');
+const KittieFightToken = artifacts.require('KittieFightToken');
+const CryptoKitties = artifacts.require('MockERC721Token');
+const CronJob = artifacts.require('CronJob');
+const FreezeInfo = artifacts.require('FreezeInfo');
+const CronJobTarget = artifacts.require('CronJobTarget');
+const HoneypotAllocationAlgo = artifacts.require('HoneypotAllocationAlgo')
+const EthieToken = artifacts.require('EthieToken')
+const EarningsTracker = artifacts.require('EarningsTracker')
+const EarningsTrackerDB = artifacts.require('EarningsTrackerDB')
+const WithdrawPool = artifacts.require('WithdrawPool')
+const WithdrawPoolGetters = artifacts.require('WithdrawPoolGetters')
+const WithdrawPoolYields = artifacts.require('WithdrawPoolYields')
+const SuperDaoStaking = artifacts.require("SuperDaoStaking")
+const TimeLockManager = artifacts.require('TimeLockManager')
+const Factory = artifacts.require('UniswapV2Factory')
+const WETH = artifacts.require('WETH9')
+const KtyWethPair = artifacts.require('IUniswapV2Pair')
+const KtyWethOracle = artifacts.require('KtyWethOracle')
+const KtyUniswap = artifacts.require('KtyUniswap')
+const Router = artifacts.require('UniswapV2Router01')
+const Dai = artifacts.require('Dai')
+const DaiWethPair = artifacts.require('IDaiWethPair')
+const DaiWethOracle = artifacts.require('DaiWethOracle')
+const MultiSig = artifacts.require('Multisig5of12')
+const BusinessInsight = artifacts.require('BusinessInsight')
+const AccountingDB = artifacts.require('AccountingDB')
+const Distribution = artifacts.require('Distribution')
+const ListKitties = artifacts.require('ListKitties')
 
 const editJsonFile = require("edit-json-file");
 let file;
@@ -113,14 +122,18 @@ let proxy,
   kittieHell,
   kittieHellDB,
   kittieHellDungeon,
+  redeemKittie,
   getterDB,
   setterDB,
   gameManager,
+  gameManagerHelper,
   cronJob,
   escrow,
   honeypotAllocationAlgo,
   timeFrame,
   withdrawPool,
+  withdrawPoolGetters,
+  withdrawPoolYields,
   superDaoStaking,
   timeLockManager,
   earningsTracker,
@@ -134,7 +147,11 @@ let proxy,
   router,
   dai,
   daiWethPair,
-  daiWethOracle;
+  daiWethOracle,
+  multiSig,
+  businessInsight,
+  distribution,
+  listKitties;
 
 let initial_epoch_0_end_time,
   initial_pool_0_available_time,
@@ -160,6 +177,8 @@ contract("GameManager", accounts => {
     setterDB = await GMSetterDB.deployed();
     kittieHellDB = await KittieHellDB.deployed();
     earningsTrackerDB = await EarningsTrackerDB.deployed();
+    businessInsight = await BusinessInsight.deployed()
+    accountingDB = await AccountingDB.deployed()
 
     // CRONJOB
     cronJob = await CronJob.deployed();
@@ -473,27 +492,29 @@ contract("GameManager", accounts => {
     console.log("********************************************************\n");
 
     const numberOfPools = await timeFrame.getTotalEpochs();
-    const stakersClaimed = await withdrawPool.getAllClaimersForPool(0);
-    const availableDatePool0 = await timeFrame.restDayStartTime();
-    initial_pool_0_available_time = availableDatePool0;
+    const epochID = await timeFrame.getActiveEpochID()
+    const stakersClaimed = await withdrawPoolGetters.getAllClaimersForPool(epochID);
 
     console.log("\n******************* Pool 0 Created*******************");
     console.log("Number of pools:", numberOfPools.toNumber());
-    const epochID = await timeFrame.getActiveEpochID();
-    console.log("epoch ID associated with this pool", epochID.toString());
+    console.log(
+      "epoch ID associated with this pool",
+      epochID.toString()
+    );
     console.log(
       "initial ether available in this pool:",
-      weiToEther(await withdrawPool.getInitialETH(epochID))
+      weiToEther(await withdrawPoolGetters.getInitialETH(epochID))
     );
     console.log(
       "date available for claiming from this pool:",
-      formatDate(availableDatePool0)
+      formatDate(await timeFrame.restDayStartTime())
     );
     console.log(
       "Number of stakers who have claimed from this pool:",
       stakersClaimed.toString()
     );
     console.log("********************************************************\n");
+   
   });
 
   // ============================== EPOCH 0 ==============================
@@ -516,7 +537,7 @@ contract("GameManager", accounts => {
     console.log("PlayerBlack: ", playerBlack);
     console.log("PlayerRed: ", playerRed);
 
-    await proxy.execute('GameCreation', setMessage(gameCreation, 'manualMatchKitties',
+    await proxy.execute('ListKitties', setMessage(listKitties, 'manualMatchKitties',
       [playerRed, playerBlack, kittyRed, kittyBlack, gameStartTimeGiven]), { from: accounts[0] });
 
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {
@@ -554,7 +575,6 @@ contract("GameManager", accounts => {
 
     let supportersForRed = [];
     let supportersForBlack = [];
-    let ticketFee = await gameStore.getTicketFee(gameId);
 
     let KTY_escrow_before_swap = await kittieFightToken.balanceOf(
       escrow.address
@@ -593,7 +613,7 @@ contract("GameManager", accounts => {
     );
 
     for (let i = 10; i < blacks; i++) {
-      let participate_fee = await gameStore.getTicketFee(1);
+      let participate_fee = await accountingDB.getTicketFee(1);
       let ether_participate = participate_fee[0];
       let kty_participate = participate_fee[1];
       console.log(
@@ -627,7 +647,7 @@ contract("GameManager", accounts => {
           await timeout(3);
         }
       }
-      let participate_fee = await gameStore.getTicketFee(1);
+      let participate_fee = await accountingDB.getTicketFee(1);
       let ether_participate = participate_fee[0];
       let kty_participate = participate_fee[1];
       console.log(
@@ -765,6 +785,13 @@ contract("GameManager", accounts => {
     for (let i = 0; i < noOfBets; i++) {
       let randomPlayer = randomValue(2);
 
+      let betting_fee = await accountingDB.getBettingFee(1);
+      let kty_betting = betting_fee[1]
+      console.log("kty_betting_fee:", weiToEther(kty_betting))
+      let ether_betting = betting_fee[0]
+      ether_betting = Number(weiToEther(ether_betting))
+      console.log("ether for swapping kty_betting_fee:", ether_betting)
+
       if (i == Number(noOfBets) - 1) {
         let block = await dateTime.getBlockTimeStamp();
         console.log(
@@ -790,7 +817,7 @@ contract("GameManager", accounts => {
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting))}
         ).should.be.fulfilled;
 
         betsBlack.push(betAmount);
@@ -984,7 +1011,7 @@ contract("GameManager", accounts => {
     let incrementingNumber;
     let claimer;
 
-    let winnerShare = await endowmentFund.getWinnerShare(
+    let winnerShare = await distribution.getWinnerShare(
       gameId,
       winners.winner
     );
@@ -1031,7 +1058,7 @@ contract("GameManager", accounts => {
 
     await timeout(1);
 
-    let topBettorsShare = await endowmentFund.getWinnerShare(
+    let topBettorsShare = await distribution.getWinnerShare(
       gameId,
       winners.topBettor
     );
@@ -1078,7 +1105,7 @@ contract("GameManager", accounts => {
 
     await timeout(1);
 
-    let secondTopBettorsShare = await endowmentFund.getWinnerShare(
+    let secondTopBettorsShare = await distribution.getWinnerShare(
       gameId,
       winners.secondTopBettor
     );
@@ -1145,7 +1172,7 @@ contract("GameManager", accounts => {
       if (claimer === winners.topBettor) continue;
       else if (claimer === winners.secondTopBettor) continue;
       else {
-        share = await endowmentFund.getWinnerShare(gameId, claimer);
+        share = await distribution.getWinnerShare(gameId, claimer);
         console.log(
           "\nClaimer withdrawing ",
           String(web3.utils.fromWei(share.winningsETH.toString())),
@@ -1194,7 +1221,7 @@ contract("GameManager", accounts => {
         await timeout(1);
       }
 
-      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+      let endowmentShare = await distribution.getEndowmentShare(gameId);
       console.log(`\n==== ENDOWMENT INFO ==== `);
       console.log(
         "\nEndowmentShare: ",
@@ -1234,7 +1261,7 @@ contract("GameManager", accounts => {
 
     console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionFee = await gameStore.getKittieRedemptionFee(gameId);
+    let resurrectionFee = await accountingDB.getKittieRedemptionFee(gameId);
     let resurrectionCost = resurrectionFee[1];
 
     const sacrificeKitties = [1017555, 413830, 888];
@@ -1261,8 +1288,8 @@ contract("GameManager", accounts => {
     );
 
     await proxy.execute(
-      "KittieHell",
-      setMessage(kittieHell, "payForResurrection", [
+      "RedeemKittie",
+      setMessage(redeemKittie, "payForResurrection", [
         loserKitty,
         gameId,
         loser,
@@ -1272,10 +1299,6 @@ contract("GameManager", accounts => {
     );
 
     let owner = await cryptoKitties.ownerOf(loserKitty);
-
-    if (owner === kittieHellDB.address) {
-      console.log("Loser kitty became ghost in kittieHELL FOREVER :(");
-    }
 
     if (owner === loser) {
       console.log("Kitty Redeemed :)");
@@ -1376,7 +1399,7 @@ contract("GameManager", accounts => {
     console.log(formatDate(await timeFrame.restDayStartTime()));
     console.log(formatDate(await timeFrame.restDayEndTime()));
 
-    let boolean = await withdrawPool.getUnlocked(0);
+    let boolean = await withdrawPoolGetters.getUnlocked(0);
     console.log("Unlocked?", boolean);
     epochID = await timeFrame.getActiveEpochID();
     console.log("Current Epoch:", epochID.toString());
@@ -1384,17 +1407,17 @@ contract("GameManager", accounts => {
     console.log("Available for claiming...");
     for (let i = 1; i < 3; i++) {
       await proxy.execute(
-        "WithdrawPool",
-        setMessage(withdrawPool, "claimYield", [0]),
+        "WithdrawPoolYields",
+        setMessage(withdrawPoolYields, "claimYield", [0]),
         {
           from: accounts[i]
         }
       );
     }
-    const initialETHAvailable = await withdrawPool.getInitialETH(0);
+    const initialETHAvailable = await withdrawPoolGetters.getInitialETH(0);
     const ethAvailable = await endowmentDB.getETHinPool(0);
-    const numberOfClaimers = await withdrawPool.getAllClaimersForPool(0);
-    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
+    const numberOfClaimers = await withdrawPoolGetters.getAllClaimersForPool(0);
+    const etherPaidOutPool0 = await withdrawPoolGetters.getEthPaidOut();
     const dateAvailable = await timeFrame.restDayStartTime();
     const dateDissolved = await timeFrame.restDayEndTime();
     console.log(
