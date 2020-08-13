@@ -76,8 +76,13 @@ module.exports = async callback => {
     console.log("==============================")
 
     console.log("\n====== Total DAO Payouts (in ether) ======") 
-    let total_dao_payouts = await businessInsight.getEthPaidOut()
+    let total_dao_payouts = await businessInsight.viewTotalEthAllocatedToPools()
     console.log(weiToEther(total_dao_payouts))
+    console.log("==============================")
+
+    console.log("\n====== Total DAO Actually Claimed (in ether) ======") 
+    let total_dao_claimed = await businessInsight.getEthPaidOut()
+    console.log(weiToEther(total_dao_claimed))
     console.log("==============================")
 
     console.log("\n====== Last Weekly Lender Payouts (in ether) ======") 
