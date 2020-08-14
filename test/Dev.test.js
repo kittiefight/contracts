@@ -483,7 +483,7 @@ contract("GameManager", accounts => {
   });
 
   it("sets Epoch 0, Pool 0, and sets investment for Epoch 0", async () => {
-    await timeFrame.setTimes(215, 120, 120);
+    await timeFrame.setTimes(210, 120, 60);
 
     await withdrawPool.setPool_0();
 
@@ -818,7 +818,7 @@ contract("GameManager", accounts => {
       //PlayerBlack
       if (randomPlayer == 1) {
         randomSupporter = randomValue(supportersBlack - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(35);
         player = "playerBlack";
         supportedPlayer = accounts[Number(randomSupporter) + 10];
 
@@ -833,7 +833,7 @@ contract("GameManager", accounts => {
       //PlayerRed
       else {
         randomSupporter = randomValue(Number(supportersRed) - 1);
-        betAmount = randomValue(30);
+        betAmount = randomValue(35);
         player = "playerRed";
         supportedPlayer = accounts[Number(randomSupporter) + 30];
 
@@ -1245,145 +1245,6 @@ contract("GameManager", accounts => {
     }
   });
 
-  it("the loser can redeem his/her kitty, dynamic redemption fee is burnt to kittieHELL, replacement kitties become permanent ghosts in kittieHELL", async () => {
-    let gameId = 1;
-    let winners = await getterDB.getWinners(gameId);
-
-    let {
-      playerBlack,
-      playerRed,
-      kittyBlack,
-      kittyRed
-    } = await getterDB.getGamePlayers(gameId);
-
-    let loserKitty;
-    let loser;
-
-    if (winners.winner === playerRed) {
-      loser = playerBlack;
-      loserKitty = Number(kittyBlack);
-    } else {
-      loser = playerRed;
-      loserKitty = Number(kittyRed);
-    }
-
-    console.log("Loser's Kitty: " + loserKitty);
-
-    let resurrectionFee = await accountingDB.getKittieRedemptionFee(gameId);
-    let resurrectionCost = resurrectionFee[1];
-
-    const sacrificeKitties = [1017555, 413830, 888];
-
-    for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.mint(loser, sacrificeKitties[i]);
-    }
-
-    for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.approve(kittieHellDungeon.address, sacrificeKitties[i], {
-        from: loser
-      });
-    }
-
-    // await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
-    //   from: loser
-    // });
-
-    let ether_resurrection_cost = resurrectionFee[0];
-    console.log("KTY resurrection cost:", weiToEther(resurrectionCost));
-    console.log(
-      "ether needed for swap KTY resurrection:",
-      weiToEther(ether_resurrection_cost)
-    );
-
-    await proxy.execute(
-      "RedeemKittie",
-      setMessage(redeemKittie, "payForResurrection", [
-        loserKitty,
-        gameId,
-        loser,
-        sacrificeKitties
-      ]),
-      {from: loser, value: ether_resurrection_cost}
-    );
-
-    let owner = await cryptoKitties.ownerOf(loserKitty);
-
-    if (owner === loser) {
-      console.log("Kitty Redeemed :)");
-    }
-
-    let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(
-      loserKitty
-    );
-    console.log(
-      "Number of sacrificing kitties in kittieHELL for " +
-        loserKitty +
-        ": " +
-        numberOfSacrificeKitties.toNumber()
-    );
-
-    let KTYsLockedInKittieHell = await kittieHellDB.getTotalKTYsLockedInKittieHell();
-    const ktys = web3.utils.fromWei(KTYsLockedInKittieHell.toString(), "ether");
-    const ktysLocked = Math.round(parseFloat(ktys));
-    console.log("KTYs locked in kittieHELL: " + ktysLocked);
-
-    const isLoserKittyInHell = await kittieHellDB.isKittieGhost(loserKitty);
-    console.log("Is Loser's kitty in Hell? " + isLoserKittyInHell);
-
-    const isSacrificeKittyOneInHell = await kittieHellDB.isKittieGhost(
-      sacrificeKitties[0]
-    );
-    console.log("Is sacrificing kitty 1 in Hell? " + isSacrificeKittyOneInHell);
-
-    const isSacrificeKittyTwoInHell = await kittieHellDB.isKittieGhost(
-      sacrificeKitties[1]
-    );
-    console.log("Is sacrificing kitty 2 in Hell? " + isSacrificeKittyTwoInHell);
-
-    const isSacrificeKittyThreeInHell = await kittieHellDB.isKittieGhost(
-      sacrificeKitties[2]
-    );
-    console.log(
-      "Is sacrificing kitty 3 in Hell? " + isSacrificeKittyThreeInHell
-    );
-
-    // -- swap info--
-    console.log("\n==== UNISWAP RESERVE RATIO ===");
-    ktyReserve = await ktyUniswap.getReserveKTY();
-    ethReserve = await ktyUniswap.getReserveETH();
-    console.log("reserveKTY:", weiToEther(ktyReserve));
-    console.log("reserveETH:", weiToEther(ethReserve));
-
-    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
-    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
-    console.log(
-      "Ether to KTY ratio:",
-      "1 ether to",
-      weiToEther(ether_kty_ratio),
-      "KTY"
-    );
-    console.log(
-      "KTY to Ether ratio:",
-      "1 KTY to",
-      weiToEther(kty_ether_ratio),
-      "ether"
-    );
-
-    let ether_kty_price = await ktyUniswap.ETH_KTY_price();
-    let kty_ether_price = await ktyUniswap.KTY_ETH_price();
-    console.log(
-      "Ether to KTY price:",
-      "1 ether to",
-      weiToEther(ether_kty_price),
-      "KTY"
-    );
-    console.log(
-      "KTY to Ether price:",
-      "1 KTY to",
-      weiToEther(kty_ether_price),
-      "ether"
-    );
-  });
   it("extends the epoch end time depending on gaming delay", async () => {
     const epoch_0_end_unix_extended = await timeFrame._epochEndTime(0);
     console.log(
@@ -1393,7 +1254,7 @@ contract("GameManager", accounts => {
   });
 
   it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming();
+    let timeTillClaiming = await withdrawPoolGetters.timeUntilClaiming();
     console.log(
       "Time (in seconds) till claiming from the current pool:",
       timeTillClaiming.toNumber()
@@ -1633,6 +1494,146 @@ contract("GameManager", accounts => {
     }
   });
 
+  it("the loser can redeem his/her kitty, dynamic redemption fee is burnt to kittieHELL, replacement kitties become permanent ghosts in kittieHELL", async () => {
+    let gameId = 1;
+    let winners = await getterDB.getWinners(gameId);
+
+    let {
+      playerBlack,
+      playerRed,
+      kittyBlack,
+      kittyRed
+    } = await getterDB.getGamePlayers(gameId);
+
+    let loserKitty;
+    let loser;
+
+    if (winners.winner === playerRed) {
+      loser = playerBlack;
+      loserKitty = Number(kittyBlack);
+    } else {
+      loser = playerRed;
+      loserKitty = Number(kittyRed);
+    }
+
+    console.log("Loser's Kitty: " + loserKitty);
+
+    let resurrectionFee = await accountingDB.getKittieRedemptionFee(gameId);
+    let resurrectionCost = resurrectionFee[1];
+
+    const sacrificeKitties = [1017555, 413830, 888];
+
+    for (let i = 0; i < sacrificeKitties.length; i++) {
+      await cryptoKitties.mint(loser, sacrificeKitties[i]);
+    }
+
+    for (let i = 0; i < sacrificeKitties.length; i++) {
+      await cryptoKitties.approve(kittieHellDungeon.address, sacrificeKitties[i], {
+        from: loser
+      });
+    }
+
+    // await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
+    //   from: loser
+    // });
+
+    let ether_resurrection_cost = resurrectionFee[0];
+    console.log("KTY resurrection cost:", weiToEther(resurrectionCost));
+    console.log(
+      "ether needed for swap KTY resurrection:",
+      weiToEther(ether_resurrection_cost)
+    );
+
+    await proxy.execute(
+      "RedeemKittie",
+      setMessage(redeemKittie, "payForResurrection", [
+        loserKitty,
+        gameId,
+        loser,
+        sacrificeKitties
+      ]),
+      {from: loser, value: ether_resurrection_cost}
+    );
+
+    let owner = await cryptoKitties.ownerOf(loserKitty);
+
+    if (owner === loser) {
+      console.log("Kitty Redeemed :)");
+    }
+
+    let numberOfSacrificeKitties = await kittieHellDB.getNumberOfSacrificeKitties(
+      loserKitty
+    );
+    console.log(
+      "Number of sacrificing kitties in kittieHELL for " +
+        loserKitty +
+        ": " +
+        numberOfSacrificeKitties.toNumber()
+    );
+
+    let KTYsLockedInKittieHell = await kittieHellDB.getTotalKTYsLockedInKittieHell();
+    const ktys = web3.utils.fromWei(KTYsLockedInKittieHell.toString(), "ether");
+    const ktysLocked = Math.round(parseFloat(ktys));
+    console.log("KTYs locked in kittieHELL: " + ktysLocked);
+
+    const isLoserKittyInHell = await kittieHellDB.isKittieGhost(loserKitty);
+    console.log("Is Loser's kitty in Hell? " + isLoserKittyInHell);
+
+    const isSacrificeKittyOneInHell = await kittieHellDB.isKittieGhost(
+      sacrificeKitties[0]
+    );
+    console.log("Is sacrificing kitty 1 in Hell? " + isSacrificeKittyOneInHell);
+
+    const isSacrificeKittyTwoInHell = await kittieHellDB.isKittieGhost(
+      sacrificeKitties[1]
+    );
+    console.log("Is sacrificing kitty 2 in Hell? " + isSacrificeKittyTwoInHell);
+
+    const isSacrificeKittyThreeInHell = await kittieHellDB.isKittieGhost(
+      sacrificeKitties[2]
+    );
+    console.log(
+      "Is sacrificing kitty 3 in Hell? " + isSacrificeKittyThreeInHell
+    );
+
+    // -- swap info--
+    console.log("\n==== UNISWAP RESERVE RATIO ===");
+    ktyReserve = await ktyUniswap.getReserveKTY();
+    ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
+    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
+    console.log(
+      "Ether to KTY ratio:",
+      "1 ether to",
+      weiToEther(ether_kty_ratio),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether ratio:",
+      "1 KTY to",
+      weiToEther(kty_ether_ratio),
+      "ether"
+    );
+
+    let ether_kty_price = await ktyUniswap.ETH_KTY_price();
+    let kty_ether_price = await ktyUniswap.KTY_ETH_price();
+    console.log(
+      "Ether to KTY price:",
+      "1 ether to",
+      weiToEther(ether_kty_price),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether price:",
+      "1 KTY to",
+      weiToEther(kty_ether_price),
+      "ether"
+    );
+  });
+
   it("sets new epoch", async () => {
     let _wait = await timeFrame.timeUntilEpochEnd(0);
     _wait = _wait.toNumber();
@@ -1659,8 +1660,8 @@ contract("GameManager", accounts => {
 
   it("creates a new pool", async () => {
     let currentEpochId = await timeFrame.getActiveEpochID();
-    let timeUntilClaimingPool1 = await withdrawPool.timeUntilClaiming();
-    let timeUntilDissolvePool1 = await withdrawPool.timeUntilPoolDissolve();
+    let timeUntilClaimingPool1 = await withdrawPoolGetters.timeUntilClaiming();
+    let timeUntilDissolvePool1 = await withdrawPoolGetters.timeUntilPoolDissolve();
     console.log("************* Details of New Pool Created ************");
     console.log(
       "Current Epoch:",
@@ -1682,7 +1683,8 @@ contract("GameManager", accounts => {
   // ============================== Epoch 0 Ended ==============================
 
   // ============================== Epoch 1 Started ==============================
-  it("manual matches kitties", async () => {
+
+  it("manual matches kitties for game 2", async () => {
     console.log(
       "\n============================== EPOCH 1 =============================="
     );
@@ -1700,7 +1702,7 @@ contract("GameManager", accounts => {
     console.log("PlayerBlack: ", playerBlack);
     console.log("PlayerRed: ", playerRed);
 
-    await proxy.execute('GameCreation', setMessage(gameCreation, 'manualMatchKitties',
+    await proxy.execute('ListKitties', setMessage(listKitties, 'manualMatchKitties',
       [playerRed, playerBlack, kittyRed, kittyBlack, gameStartTimeGiven]), { from: accounts[0] });
 
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {
@@ -1728,7 +1730,7 @@ contract("GameManager", accounts => {
 
     if(gameId3 == gameId4) console.log(`\nGame ${gameId3} created successfully!`);
     
-  });
+  }); 
 
   it("participates users for game 2", async () => {
     let gameId = 2;
@@ -1738,7 +1740,6 @@ contract("GameManager", accounts => {
 
     let supportersForRed = [];
     let supportersForBlack = [];
-    let ticketFee = await gameStore.getTicketFee(gameId);
 
     let KTY_escrow_before_swap = await kittieFightToken.balanceOf(
       escrow.address
@@ -1777,7 +1778,7 @@ contract("GameManager", accounts => {
     );
 
     for (let i = 10; i < blacks; i++) {
-      let participate_fee = await gameStore.getTicketFee(gameId);
+      let participate_fee = await accountingDB.getTicketFee(gameId);
       let ether_participate = participate_fee[0];
       let kty_participate = participate_fee[1];
       console.log(
@@ -1811,7 +1812,7 @@ contract("GameManager", accounts => {
           await timeout(3);
         }
       }
-      let participate_fee = await gameStore.getTicketFee(gameId);
+      let participate_fee = await accountingDB.getTicketFee(gameId);
       let ether_participate = participate_fee[0];
       let kty_participate = participate_fee[1];
       console.log(
@@ -1949,6 +1950,13 @@ contract("GameManager", accounts => {
     for (let i = 0; i < noOfBets; i++) {
       let randomPlayer = randomValue(2);
 
+      let betting_fee = await accountingDB.getBettingFee(gameId);
+      let kty_betting = betting_fee[1]
+      console.log("kty_betting_fee:", weiToEther(kty_betting))
+      let ether_betting = betting_fee[0]
+      ether_betting = Number(weiToEther(ether_betting))
+      console.log("ether for swapping kty_betting_fee:", ether_betting)
+
       if (i == Number(noOfBets) - 1) {
         let block = await dateTime.getBlockTimeStamp();
         console.log(
@@ -1967,14 +1975,14 @@ contract("GameManager", accounts => {
       //PlayerBlack
       if (randomPlayer == 1) {
         randomSupporter = randomValue(supportersBlack - 1);
-        betAmount = randomValue(47);
+        betAmount = randomValue(55);
         player = "playerBlack";
         supportedPlayer = accounts[Number(randomSupporter) + 10];
 
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting))}
         ).should.be.fulfilled;
 
         betsBlack.push(betAmount);
@@ -1982,14 +1990,14 @@ contract("GameManager", accounts => {
       //PlayerRed
       else {
         randomSupporter = randomValue(Number(supportersRed) - 1);
-        betAmount = randomValue(47);
+        betAmount = randomValue(55);
         player = "playerRed";
         supportedPlayer = accounts[Number(randomSupporter) + 30];
 
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting))}
         ).should.be.fulfilled;
 
         betsRed.push(betAmount);
@@ -2168,7 +2176,7 @@ contract("GameManager", accounts => {
     let incrementingNumber;
     let claimer;
 
-    let winnerShare = await endowmentFund.getWinnerShare(
+    let winnerShare = await distribution.getWinnerShare(
       gameId,
       winners.winner
     );
@@ -2187,7 +2195,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.winner}
     ).should.be.fulfilled;
-    let withdrawalState = await endowmentFund.getWithdrawalState(
+    let withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.winner
     );
@@ -2215,7 +2223,7 @@ contract("GameManager", accounts => {
 
     await timeout(1);
 
-    let topBettorsShare = await endowmentFund.getWinnerShare(
+    let topBettorsShare = await distribution.getWinnerShare(
       gameId,
       winners.topBettor
     );
@@ -2234,7 +2242,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.topBettor}
     ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
+    withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.topBettor
     );
@@ -2262,7 +2270,7 @@ contract("GameManager", accounts => {
 
     await timeout(1);
 
-    let secondTopBettorsShare = await endowmentFund.getWinnerShare(
+    let secondTopBettorsShare = await distribution.getWinnerShare(
       gameId,
       winners.secondTopBettor
     );
@@ -2281,7 +2289,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.secondTopBettor}
     ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
+    withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.secondTopBettor
     );
@@ -2329,7 +2337,7 @@ contract("GameManager", accounts => {
       if (claimer === winners.topBettor) continue;
       else if (claimer === winners.secondTopBettor) continue;
       else {
-        share = await endowmentFund.getWinnerShare(gameId, claimer);
+        share = await distribution.getWinnerShare(gameId, claimer);
         console.log(
           "\nClaimer withdrawing ",
           String(web3.utils.fromWei(share.winningsETH.toString())),
@@ -2348,7 +2356,7 @@ contract("GameManager", accounts => {
             setMessage(endowmentFund, "claim", [gameId]),
             {from: claimer}
           ).should.be.fulfilled;
-          withdrawalState = await endowmentFund.getWithdrawalState(
+          withdrawalState = await accountingDB.getWithdrawalState(
             gameId,
             claimer
           );
@@ -2378,7 +2386,7 @@ contract("GameManager", accounts => {
         await timeout(1);
       }
 
-      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+      let endowmentShare = await distribution.getEndowmentShare(gameId);
       console.log(`\n==== ENDOWMENT INFO ==== `);
       console.log(
         "\nEndowmentShare: ",
@@ -2418,7 +2426,7 @@ contract("GameManager", accounts => {
 
     console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionFee = await gameStore.getKittieRedemptionFee(gameId);
+    let resurrectionFee = await accountingDB.getKittieRedemptionFee(gameId);
     let resurrectionCost = resurrectionFee[1];
 
     const sacrificeKitties = [1017556, 413831, 889];
@@ -2445,8 +2453,8 @@ contract("GameManager", accounts => {
     );
 
     await proxy.execute(
-      "KittieHell",
-      setMessage(kittieHell, "payForResurrection", [
+      "RedeemKittie",
+      setMessage(redeemKittie, "payForResurrection", [
         loserKitty,
         gameId,
         loser,
@@ -2456,10 +2464,6 @@ contract("GameManager", accounts => {
     );
 
     let owner = await cryptoKitties.ownerOf(loserKitty);
-
-    if (owner === kittieHellDB.address) {
-      console.log("Loser kitty became ghost in kittieHELL FOREVER :(");
-    }
 
     if (owner === loser) {
       console.log("Kitty Redeemed :)");
@@ -2537,6 +2541,7 @@ contract("GameManager", accounts => {
       "ether"
     );
   });
+
   it("extends the epoch end time depending on gaming delay", async () => {
     const epoch_1_end_unix_extended = await timeFrame._epochEndTime(1);
     console.log(
@@ -2546,7 +2551,7 @@ contract("GameManager", accounts => {
   });
 
   it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming();
+    let timeTillClaiming = await withdrawPoolGetters.timeUntilClaiming();
     console.log(
       "Time (in seconds) till claiming from the current pool:",
       timeTillClaiming.toNumber()
@@ -2558,7 +2563,7 @@ contract("GameManager", accounts => {
     console.log(formatDate(await timeFrame.restDayStartTime()));
     console.log(formatDate(await timeFrame.restDayEndTime()));
 
-    let boolean = await withdrawPool.getUnlocked(1);
+    let boolean = await withdrawPoolGetters.getUnlocked(1);
     console.log("Unlocked?", boolean);
     epochID = await timeFrame.getActiveEpochID();
     console.log("Current Epoch:", epochID.toString());
@@ -2568,17 +2573,17 @@ contract("GameManager", accounts => {
     console.log("Available for claiming...");
     for (let i = 5; i < 8; i++) {
       await proxy.execute(
-        "WithdrawPool",
-        setMessage(withdrawPool, "claimYield", [1]),
+        "WithdrawPoolYields",
+        setMessage(withdrawPoolYields, "claimYield", [1]),
         {
           from: accounts[i]
         }
       );
     }
-    const initialETHAvailable = await withdrawPool.getInitialETH(1);
+    const initialETHAvailable = await withdrawPoolGetters.getInitialETH(1);
     const ethAvailable = await endowmentDB.getETHinPool(1);
-    const numberOfClaimers = await withdrawPool.getAllClaimersForPool(1);
-    const totalEtherPaidOut = await withdrawPool.getEthPaidOut();
+    const numberOfClaimers = await withdrawPoolGetters.getAllClaimersForPool(1);
+    const totalEtherPaidOut = await withdrawPoolGetters.getEthPaidOut();
     const dateAvailable = await timeFrame.restDayStartTime();
     const dateDissolved = await timeFrame.restDayEndTime();
     console.log(
@@ -2812,8 +2817,8 @@ contract("GameManager", accounts => {
 
   it("creates a new pool", async () => {
     currentEpochId = await timeFrame.getActiveEpochID();
-    let timeUntilClaimingPool2 = await withdrawPool.timeUntilClaiming();
-    let timeUntilDissolvePool2 = await withdrawPool.timeUntilPoolDissolve();
+    let timeUntilClaimingPool2 = await withdrawPoolGetters.timeUntilClaiming();
+    let timeUntilDissolvePool2 = await withdrawPoolGetters.timeUntilPoolDissolve();
     console.log("************* Details of New Pool Created ************");
     console.log(
       "Current Epoch:",
@@ -2853,7 +2858,7 @@ contract("GameManager", accounts => {
     console.log("PlayerBlack: ", playerBlack);
     console.log("PlayerRed: ", playerRed);
 
-    await proxy.execute('GameCreation', setMessage(gameCreation, 'manualMatchKitties',
+    await proxy.execute('ListKitties', setMessage(listKitties, 'manualMatchKitties',
       [playerRed, playerBlack, kittyRed, kittyBlack, gameStartTimeGiven]), { from: accounts[0] });
 
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {
@@ -2891,7 +2896,6 @@ contract("GameManager", accounts => {
 
     let supportersForRed = [];
     let supportersForBlack = [];
-    let ticketFee = await gameStore.getTicketFee(gameId);
 
     let KTY_escrow_before_swap = await kittieFightToken.balanceOf(
       escrow.address
@@ -2930,7 +2934,7 @@ contract("GameManager", accounts => {
     );
 
     for (let i = 10; i < blacks; i++) {
-      let participate_fee = await gameStore.getTicketFee(gameId);
+      let participate_fee = await accountingDB.getTicketFee(gameId);
       let ether_participate = participate_fee[0];
       let kty_participate = participate_fee[1];
       console.log(
@@ -2964,7 +2968,7 @@ contract("GameManager", accounts => {
           await timeout(3);
         }
       }
-      let participate_fee = await gameStore.getTicketFee(gameId);
+      let participate_fee = await accountingDB.getTicketFee(gameId);
       let ether_participate = participate_fee[0];
       let kty_participate = participate_fee[1];
       console.log(
@@ -3037,7 +3041,7 @@ contract("GameManager", accounts => {
     );
   });
 
-  it("players press start for game 3", async () => {
+  it("players press start for game 2", async () => {
     let gameId = 3;
 
     let {
@@ -3074,6 +3078,7 @@ contract("GameManager", accounts => {
     console.log("\nPlayerRed: ", playerRed);
   });
 
+
   it("players bet for game 3", async () => {
     let gameId = 3;
     let noOfBets = 100;
@@ -3102,6 +3107,13 @@ contract("GameManager", accounts => {
     for (let i = 0; i < noOfBets; i++) {
       let randomPlayer = randomValue(2);
 
+      let betting_fee = await accountingDB.getBettingFee(gameId);
+      let kty_betting = betting_fee[1]
+      console.log("kty_betting_fee:", weiToEther(kty_betting))
+      let ether_betting = betting_fee[0]
+      ether_betting = Number(weiToEther(ether_betting))
+      console.log("ether for swapping kty_betting_fee:", ether_betting)
+
       if (i == Number(noOfBets) - 1) {
         let block = await dateTime.getBlockTimeStamp();
         console.log(
@@ -3120,14 +3132,14 @@ contract("GameManager", accounts => {
       //PlayerBlack
       if (randomPlayer == 1) {
         randomSupporter = randomValue(supportersBlack - 1);
-        betAmount = randomValue(60);
+        betAmount = randomValue(55);
         player = "playerBlack";
         supportedPlayer = accounts[Number(randomSupporter) + 10];
 
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting))}
         ).should.be.fulfilled;
 
         betsBlack.push(betAmount);
@@ -3135,14 +3147,14 @@ contract("GameManager", accounts => {
       //PlayerRed
       else {
         randomSupporter = randomValue(Number(supportersRed) - 1);
-        betAmount = randomValue(60);
+        betAmount = randomValue(55);
         player = "playerRed";
         supportedPlayer = accounts[Number(randomSupporter) + 30];
 
         await proxy.execute(
           "GameManager",
           setMessage(gameManager, "bet", [gameId, randomValue(98)]),
-          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount))}
+          {from: supportedPlayer, value: web3.utils.toWei(String(betAmount+ether_betting))}
         ).should.be.fulfilled;
 
         betsRed.push(betAmount);
@@ -3321,7 +3333,7 @@ contract("GameManager", accounts => {
   });
 
   it("an eligible staker of superDao tokens can claim yield from the active pool", async () => {
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming();
+    let timeTillClaiming = await withdrawPoolGetters.timeUntilClaiming();
     console.log(
       "Time (in seconds) till claiming from the current pool:",
       timeTillClaiming.toNumber()
@@ -3333,7 +3345,7 @@ contract("GameManager", accounts => {
     console.log(formatDate(await timeFrame.restDayStartTime()));
     console.log(formatDate(await timeFrame.restDayEndTime()));
 
-    let boolean = await withdrawPool.getUnlocked(2);
+    let boolean = await withdrawPoolGetters.getUnlocked(2);
     console.log("Unlocked?", boolean);
     epochID = await timeFrame.getActiveEpochID();
     console.log("Current Epoch:", epochID.toString());
@@ -3343,17 +3355,17 @@ contract("GameManager", accounts => {
     console.log("Available for claiming...");
     for (let i = 8; i < 9; i++) {
       await proxy.execute(
-        "WithdrawPool",
-        setMessage(withdrawPool, "claimYield", [2]),
+        "WithdrawPoolYields",
+        setMessage(withdrawPoolYields, "claimYield", [2]),
         {
           from: accounts[i]
         }
       );
     }
-    const initialETHAvailable = await withdrawPool.getInitialETH(2);
+    const initialETHAvailable = await withdrawPoolGetters.getInitialETH(2);
     const ethAvailable = await endowmentDB.getETHinPool(2);
-    const numberOfClaimers = await withdrawPool.getAllClaimersForPool(2);
-    const totalEtherPaidOut = await withdrawPool.getEthPaidOut();
+    const numberOfClaimers = await withdrawPoolGetters.getAllClaimersForPool(2);
+    const totalEtherPaidOut = await withdrawPoolGetters.getEthPaidOut();
     const dateAvailable = await timeFrame.restDayStartTime();
     const dateDissolved = await timeFrame.restDayEndTime();
     console.log(
@@ -3481,7 +3493,7 @@ contract("GameManager", accounts => {
     let incrementingNumber;
     let claimer;
 
-    let winnerShare = await endowmentFund.getWinnerShare(
+    let winnerShare = await distribution.getWinnerShare(
       gameId,
       winners.winner
     );
@@ -3500,7 +3512,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.winner}
     ).should.be.fulfilled;
-    let withdrawalState = await endowmentFund.getWithdrawalState(
+    let withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.winner
     );
@@ -3528,7 +3540,7 @@ contract("GameManager", accounts => {
 
     await timeout(1);
 
-    let topBettorsShare = await endowmentFund.getWinnerShare(
+    let topBettorsShare = await distribution.getWinnerShare(
       gameId,
       winners.topBettor
     );
@@ -3547,7 +3559,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.topBettor}
     ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
+    withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.topBettor
     );
@@ -3575,7 +3587,7 @@ contract("GameManager", accounts => {
 
     await timeout(1);
 
-    let secondTopBettorsShare = await endowmentFund.getWinnerShare(
+    let secondTopBettorsShare = await distribution.getWinnerShare(
       gameId,
       winners.secondTopBettor
     );
@@ -3594,7 +3606,7 @@ contract("GameManager", accounts => {
       setMessage(endowmentFund, "claim", [gameId]),
       {from: winners.secondTopBettor}
     ).should.be.fulfilled;
-    withdrawalState = await endowmentFund.getWithdrawalState(
+    withdrawalState = await accountingDB.getWithdrawalState(
       gameId,
       winners.secondTopBettor
     );
@@ -3642,7 +3654,7 @@ contract("GameManager", accounts => {
       if (claimer === winners.topBettor) continue;
       else if (claimer === winners.secondTopBettor) continue;
       else {
-        share = await endowmentFund.getWinnerShare(gameId, claimer);
+        share = await distribution.getWinnerShare(gameId, claimer);
         console.log(
           "\nClaimer withdrawing ",
           String(web3.utils.fromWei(share.winningsETH.toString())),
@@ -3661,7 +3673,7 @@ contract("GameManager", accounts => {
             setMessage(endowmentFund, "claim", [gameId]),
             {from: claimer}
           ).should.be.fulfilled;
-          withdrawalState = await endowmentFund.getWithdrawalState(
+          withdrawalState = await accountingDB.getWithdrawalState(
             gameId,
             claimer
           );
@@ -3691,7 +3703,7 @@ contract("GameManager", accounts => {
         await timeout(1);
       }
 
-      let endowmentShare = await endowmentFund.getEndowmentShare(gameId);
+      let endowmentShare = await distribution.getEndowmentShare(gameId);
       console.log(`\n==== ENDOWMENT INFO ==== `);
       console.log(
         "\nEndowmentShare: ",
@@ -3822,8 +3834,8 @@ contract("GameManager", accounts => {
 
   it("creates a new pool", async () => {
     currentEpochId = await timeFrame.getActiveEpochID();
-    let timeUntilClaimingPool3 = await withdrawPool.timeUntilClaiming();
-    let timeUntilDissolvePool3 = await withdrawPool.timeUntilPoolDissolve();
+    let timeUntilClaimingPool3 = await withdrawPoolGetters.timeUntilClaiming();
+    let timeUntilDissolvePool3 = await withdrawPoolGetters.timeUntilPoolDissolve();
     console.log("************* Details of New Pool Created ************");
     console.log(
       "Current Epoch:",
@@ -3866,7 +3878,7 @@ contract("GameManager", accounts => {
 
     console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionFee = await gameStore.getKittieRedemptionFee(gameId);
+    let resurrectionFee = await accountingDB.getKittieRedemptionFee(gameId);
     let resurrectionCost = resurrectionFee[1];
 
     const sacrificeKitties = [1017557, 413832, 899];
@@ -3889,8 +3901,8 @@ contract("GameManager", accounts => {
     );
 
     await proxy.execute(
-      "KittieHell",
-      setMessage(kittieHell, "payForResurrection", [
+      "RedeemKittie",
+      setMessage(redeemKittie, "payForResurrection", [
         loserKitty,
         gameId,
         loser,
