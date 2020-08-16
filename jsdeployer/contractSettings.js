@@ -61,8 +61,6 @@ window.contractSettings = function() {
         {"name":'DaiWethOracle'},
         {"name":'SuperDaoStaking'},
         {"name":'EthieToken'},
-        {"name":'UniswapV2Router01', "contract":"Router"},
-        {"name":'Multisig5of12', "contract":"MultiSig"},
         {"name":'BusinessInsight'},
         {"name":'AccountingDB'},
         {"name":'Distribution'},
