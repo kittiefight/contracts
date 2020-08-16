@@ -205,47 +205,84 @@ contract BusinessInsight is Proxied {
     }
 
     // ========= getters about ethie tokens =========
-    function getEthieStaringEpoch(uint256 _ethieTokenID) public view returns (uint256) {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_EARNINGS_TRACKER,
-            keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID"))
-            );
-    }
-
-    function getEthieEtherValue(uint256 _ethieTokenID) public view returns (uint256) {
-        return genericDB.getUintStorage(
+    function getEthieInfo(uint256 _ethieTokenID)
+        public view
+        returns (
+            uint256 etherValue,
+            uint256 startingEpoch,
+            uint256 generation,
+            uint256 lockedAt,
+            uint256 lockTime,
+            bool isBurnt
+        )
+    {
+        etherValue = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "ethValue"))
             );
-    }
+        startingEpoch = genericDB.getUintStorage(
+            CONTRACT_NAME_EARNINGS_TRACKER,
+            keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID"))
+            );
 
-    function getEthieGeneration(uint256 _ethieTokenID) public view returns (uint256) {
-        return genericDB.getUintStorage(
+        generation = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "generation"))
             );
-    }
-
-    function isEthieBurnt(uint256 _ethieTokenID) public view returns (bool) {
-        return genericDB.getBoolStorage(
+        lockedAt = genericDB.getUintStorage(
+            CONTRACT_NAME_EARNINGS_TRACKER,
+            keccak256(abi.encodePacked(_ethieTokenID, "lockedAt"))
+            );
+        lockTime = genericDB.getUintStorage(
+            CONTRACT_NAME_EARNINGS_TRACKER,
+            keccak256(abi.encodePacked(_ethieTokenID, "lockTime"))
+            );
+        isBurnt = genericDB.getBoolStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt"))
             );
     }
+    // function getEthieStaringEpoch(uint256 _ethieTokenID) public view returns (uint256) {
+    //     return genericDB.getUintStorage(
+    //         CONTRACT_NAME_EARNINGS_TRACKER,
+    //         keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID"))
+    //         );
+    // }
 
-    function getEthieLockedAt(uint256 _ethieTokenID) public view returns (uint256) {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_EARNINGS_TRACKER,
-            keccak256(abi.encodePacked(_ethieTokenID, "lockedAt"))
-            );
-    }
+    // function getEthieEtherValue(uint256 _ethieTokenID) public view returns (uint256) {
+    //     return genericDB.getUintStorage(
+    //         CONTRACT_NAME_EARNINGS_TRACKER,
+    //         keccak256(abi.encodePacked(_ethieTokenID, "ethValue"))
+    //         );
+    // }
 
-    function getEthieLockTime(uint256 _ethieTokenID) public view returns (uint256) {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_EARNINGS_TRACKER,
-            keccak256(abi.encodePacked(_ethieTokenID, "lockTime"))
-            );
-    }
+    // function getEthieGeneration(uint256 _ethieTokenID) public view returns (uint256) {
+    //     return genericDB.getUintStorage(
+    //         CONTRACT_NAME_EARNINGS_TRACKER,
+    //         keccak256(abi.encodePacked(_ethieTokenID, "generation"))
+    //         );
+    // }
+
+    // function isEthieBurnt(uint256 _ethieTokenID) public view returns (bool) {
+    //     return genericDB.getBoolStorage(
+    //         CONTRACT_NAME_EARNINGS_TRACKER,
+    //         keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt"))
+    //         );
+    // }
+
+    // function getEthieLockedAt(uint256 _ethieTokenID) public view returns (uint256) {
+    //     return genericDB.getUintStorage(
+    //         CONTRACT_NAME_EARNINGS_TRACKER,
+    //         keccak256(abi.encodePacked(_ethieTokenID, "lockedAt"))
+    //         );
+    // }
+
+    // function getEthieLockTime(uint256 _ethieTokenID) public view returns (uint256) {
+    //     return genericDB.getUintStorage(
+    //         CONTRACT_NAME_EARNINGS_TRACKER,
+    //         keccak256(abi.encodePacked(_ethieTokenID, "lockTime"))
+    //         );
+    // }
 
 
     // ========= other getters =========

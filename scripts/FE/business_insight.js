@@ -145,34 +145,9 @@ module.exports = async callback => {
     console.log("==============================")
 
     // ethie token
-    console.log("\n====== Ether Value locked in an Ethie ======") 
-    let eth_value_ethie = await businessInsight.getEthieEtherValue(3)
-    console.log(weiToEther(eth_value_ethie))
-    console.log("==============================")
-
-    console.log("\n====== Ethie's Starting Epoch ======") 
-    let starting_epoch_ethie = await businessInsight.getEthieStaringEpoch(3)
-    console.log(starting_epoch_ethie.toString())
-    console.log("==============================")
-
-    console.log("\n====== Ethie's Locked At Time ======") 
-    let locked_at_ethie = await businessInsight.getEthieLockedAt(3)
-    console.log(locked_at_ethie.toString())
-    console.log("==============================")
-
-    console.log("\n====== Ethie's LockTime ======") 
-    let lock_time_ethie = await businessInsight.getEthieLockTime(3)
-    console.log(lock_time_ethie.toString())
-    console.log("==============================")
-
-    console.log("\n====== Ethie's Generation ======") 
-    let generation_ethie = await businessInsight.getEthieGeneration(3)
-    console.log(generation_ethie.toString())
-    console.log("==============================")
-
-    console.log("\n====== Is Ethie Burnt ? ======") 
-    let is_burnt_ethie = await businessInsight.isEthieBurnt(3)
-    console.log(is_burnt_ethie)
+    console.log("\n====== Get Info for an Ethie ======") 
+    let res_ethie = await businessInsight.getEthieInfo(3)
+    console.log(res_ethie)
     console.log("==============================")
 
     callback();
