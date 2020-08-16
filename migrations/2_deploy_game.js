@@ -154,12 +154,6 @@ function setMessage(contract, funcName, argArray) {
 module.exports = (deployer, network, accounts) => {
     // console.log(SUPERADMIN);
 
-    // let medianizer;
-
-    // if ( network === 'mainnet' ) medianizer = '0x729D19f657BD0614b4985Cf1D82531c67569197B'
-    // else if ( network === 'rinkeby' ) medianizer = '0xbfFf80B73F081Cc159534d922712551C5Ed8B3D3'
-    // else medianizer = '0xA944bd4b25C9F186A846fd5668941AA3d3B8425F' //Kovan and other networks
-
     // deployer.deploy(GenericDB)
     //     .then(() => deployer.deploy(ProfileDB, GenericDB.address))
     //     //.then(() => deployer.deploy(ProfileDB, GenericDB_rinkeby_ADDRESS))
@@ -170,7 +164,7 @@ module.exports = (deployer, network, accounts) => {
     //     //.then(() => deployer.deploy(GMGetterDB, GenericDB_rinkeby_ADDRESS))
     //     .then(() => deployer.deploy(GMSetterDB, GenericDB.address))
     //     //.then(() => deployer.deploy(GMSetterDB, GenericDB_rinkeby_ADDRESS))
-    //     .then(() => deployer.deploy(GameVarAndFee, GenericDB.address, medianizer))
+    //     .then(() => deployer.deploy(GameVarAndFee, GenericDB.address))
     //     //.then(() => deployer.deploy(GameVarAndFee, GenericDB_rinkeby_ADDRESS, medianizer))
     //     .then(() => deployer.deploy(KittieHellDB, GenericDB.address))
     //     //.then(() => deployer.deploy(KittieHellDB, GenericDB_rinkeby_ADDRESS))

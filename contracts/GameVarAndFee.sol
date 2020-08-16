@@ -31,11 +31,6 @@ import './misc/VarAndFeeNames.sol';
 import './modules/endowment/KtyUniswap.sol';
 import './libs/SafeMath.sol';
 
-/// @dev MakerDao eth-usd price medianizer
-contract Medianizer {
-    function read() external view returns (bytes32);
-}
-
 /**
  * @title Contract that moderates the various fees, timing limits, expiry date/time,
  * schedules, eth allocation per game, token allocation per game, kittiehell
@@ -104,15 +99,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
 
     // ----- GETTERS ------
-
-    // Stale function - what is this getter for and where is it used?
-    /// @notice FrontEnd Global Getter
-   // function getGlobalSettings() public view    
-     //   returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
-    //{
-      //  return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
-        //    getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
-    //}
 
     function convertEthToDai(uint _ethAmount) public view returns(uint) {
         return _ethAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_DAI_price()).div(1000000000000000000);
