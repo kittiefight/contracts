@@ -139,8 +139,6 @@ contract HoneypotAllocationAlgo is Proxied {
         returns (uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
     {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
-        uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
         uint256 actualFundsETH = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB))
                                  .getUintStorage(
                                      CONTRACT_NAME_ENDOWMENT_DB,
@@ -154,9 +152,9 @@ contract HoneypotAllocationAlgo is Proxied {
             (percentageETH, honeypotClass) = _honeypotAllocationETH_great(actualFundsUSD);
         }
         ethAllocated = percentageETH.mul(actualFundsETH).div(1000000);
-        ktyAllocated = gameVarAndFee.getPercentageHoneypotAllocationKTY()
-                                    .mul(ethAllocated).mul(ethUsdPrice)
-                                    .div(usdKTYPrice).div(1000000);// 1,000,000 is the percentage base
+        uint256 ktyAllocatedInEther = gameVarAndFee.getPercentageHoneypotAllocationKTY()
+                                    .mul(ethAllocated).div(1000000);// 1,000,000 is the percentage base
+        ktyAllocated = gameVarAndFee.convertEthToKty(ktyAllocatedInEther);
     }
 
     /**
@@ -202,7 +200,7 @@ contract HoneypotAllocationAlgo is Proxied {
     function convertETHtoUSD(uint256 _eth)
         public view returns(uint256 _usd) {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        _usd = _eth.mul(gameVarAndFee.getEthUsdPrice()).div(1000000000000000000).div(1000000000000000000);
+        _usd = gameVarAndFee.convertEthToDai(_eth).div(1000000000000000000);
     }
 
     /**

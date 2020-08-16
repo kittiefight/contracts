@@ -50,19 +50,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     // Declare DB type variable
     GenericDB public genericDB;
-    Medianizer medianizer;
 
     /// @notice Function called when deployed
     /// @param _genericDB Address of deployed GeneriDB contract
-    constructor (GenericDB _genericDB, Medianizer _medianizer) public {
+    constructor (GenericDB _genericDB) public {
         setGenericDB(_genericDB);
-        setMedianizer(_medianizer);
-    }
-
-    // kovanMedianizer = 0xA944bd4b25C9F186A846fd5668941AA3d3B8425F
-    // mainnetMedianizer = 0x729D19f657BD0614b4985Cf1D82531c67569197B
-    function setMedianizer(Medianizer _medianizer) public onlyOwner{
-       medianizer = Medianizer(_medianizer);
     }
 
     /// @notice Set genericDB variable to store data in contract
@@ -121,14 +113,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
       //  return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
         //    getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
     //}
-
-    /// @notice get eth/usd current price
-    // temporarily hard code EthUsdPrice for truffle testing of BurnTokens.test.js
-    // Please remove hardcoding and uncomment line 124 once testing is done
-    function getEthUsdPrice() public pure returns(uint){
-        //return uint256(medianizer.read());
-        return uint256(0x00000000000000000000000000000000000000000000000b49bcb0036fa6c000);
-    }
 
     function convertEthToDai(uint _ethAmount) public view returns(uint) {
         return _ethAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_DAI_price()).div(1000000000000000000);
@@ -235,13 +219,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     function getPercentageForKittieRedemptionFee()
     public view returns(uint) {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE);
-    }
-
-    // stale function
-    /// @notice Gets USD to KTY ratio
-    function getUsdKTYPrice()
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
     }
 
     /// @notice Gets fee in Ether and in KTY for players to list kitties for matching in fights
