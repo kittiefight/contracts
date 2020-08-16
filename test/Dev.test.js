@@ -3132,7 +3132,7 @@ contract("GameManager", accounts => {
       //PlayerBlack
       if (randomPlayer == 1) {
         randomSupporter = randomValue(supportersBlack - 1);
-        betAmount = randomValue(55);
+        betAmount = randomValue(80);
         player = "playerBlack";
         supportedPlayer = accounts[Number(randomSupporter) + 10];
 
@@ -3147,7 +3147,7 @@ contract("GameManager", accounts => {
       //PlayerRed
       else {
         randomSupporter = randomValue(Number(supportersRed) - 1);
-        betAmount = randomValue(55);
+        betAmount = randomValue(80);
         player = "playerRed";
         supportedPlayer = accounts[Number(randomSupporter) + 30];
 
