@@ -145,9 +145,24 @@ module.exports = async callback => {
     console.log("==============================")
 
     // ethie token
-    console.log("\n====== Get Info for an Ethie ======") 
-    let res_ethie = await businessInsight.getEthieInfo(3)
-    console.log(res_ethie)
+    console.log("\n====== Get Info for an Ethie (ethieTokenID: 1) ======") 
+    let res_ethie = await businessInsight.getEthieInfo(1)
+    console.log("etherValue:", weiToEther(res_ethie.etherValue))
+    console.log("startingEpoch:", res_ethie.startingEpoch.toString())
+    console.log("generation:", res_ethie.generation.toString())
+    console.log("lockedAt:", res_ethie.lockedAt.toString())
+    console.log("lockTime:", res_ethie.lockTime.toString())
+    console.log("is burnt?", res_ethie.isBurnt)
+    console.log("==============================")
+    
+    console.log("\n====== Get Info for an Ethie (ethieTokenID: 3) ======") 
+    res_ethie = await businessInsight.getEthieInfo(3)
+    console.log("etherValue:", weiToEther(res_ethie.etherValue))
+    console.log("startingEpoch:", res_ethie.startingEpoch.toString())
+    console.log("generation:", res_ethie.generation.toString())
+    console.log("lockedAt:", res_ethie.lockedAt.toString())
+    console.log("lockTime:", res_ethie.lockTime.toString())
+    console.log("is burnt?", res_ethie.isBurnt)
     console.log("==============================")
 
     callback();
