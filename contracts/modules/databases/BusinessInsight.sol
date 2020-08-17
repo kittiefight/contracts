@@ -342,9 +342,9 @@ contract BusinessInsight is Proxied {
     returns (uint[6] memory honeypotInfo, uint[2] memory ethByCorner, uint[2] memory finalHoneypot)
     {
         // honeypot 
-        (uint honeypotId, uint status, uint initialEth,
+        (uint status, uint initialKty, uint initialEth,
          uint ethTotal,,uint ktyTotal, uint expTime) = gmGetterDB.getHoneypotInfo(gameId);
-        honeypotInfo[0] = honeypotId;
+        honeypotInfo[0] = initialKty;
         honeypotInfo[1] = status;
         honeypotInfo[2] = initialEth;
         honeypotInfo[3] = ethTotal;

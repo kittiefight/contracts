@@ -222,10 +222,11 @@ contract GMGetterDB is Proxied {
 
   function getHoneypotInfo(uint256 gameId)
     public view
-    returns(uint honeypotId, uint status, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal, uint expTime)
+    returns(uint status, uint initialKty, uint initialEth, uint ethTotal, uint[2] memory ethByCorner, uint ktyTotal, uint expTime)
   {
     (address playerBlack, address playerRed,,) = getGamePlayers(gameId);
-    honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+    // honeypotId = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "honeypotId")));
+    initialKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
     initialEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
     (ktyTotal, ethTotal) = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)).getHoneyPotBalance(gameId);
     ethByCorner[0] = getTotalBet(gameId, playerBlack);
