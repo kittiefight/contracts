@@ -5,6 +5,7 @@ const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
 const KittieHell = artifacts.require('KittieHell');
 const BusinessInsight = artifacts.require('BusinessInsight');
 const RedeemKittie = artifacts.require('RedeemKittie');
+const GenericDB = artifacts.require('GenericDB');
 
 const BigNumber = web3.utils.BN;
 
@@ -47,6 +48,7 @@ module.exports = async callback => {
     let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
     let kittieHell = await KittieHell.deployed();
     let redeemKittie = await RedeemKittie.deployed();
+    let genericDB = await GenericDB.deployed();
   
     console.log("\n====== Total KTY supply ======") 
     let totalKtySupply = await kittieFightToken.totalSupply();
@@ -164,6 +166,36 @@ module.exports = async callback => {
     console.log("lockTime:", res_ethie.lockTime.toString())
     console.log("is burnt?", res_ethie.isBurnt)
     console.log("==============================")
+
+    // alternative method for getting any info from genericDB directly
+    // let eth_value_generic = await genericDB.getUintStorage("EarningsTracker", web3.utils.soliditySha3(3, "ethValue"))
+    // console.log(weiToEther(eth_value_generic))
+    // let is_burnt_generic = await genericDB.getBoolStorage("EarningsTracker", web3.utils.soliditySha3(3, "tokenBurnt"))
+    // console.log(is_burnt_generic)
+
+    console.log("\n====== Get Static Values In One Getter ======") 
+    res_static = await businessInsight.getStaticValues(1)
+    console.log(res_static)
+    let shares = res_static.shares
+    console.log("bettingFeeEtherSwap:", weiToEther(res_static.bettingFeeEtherSwap))
+    console.log("bettingFeeKTY:", weiToEther(res_static.bettingFeeKTY))
+    console.log("ticketFeeEtherSwap:", weiToEther(res_static.ticketFeeEtherSwap))
+    console.log("ticketFeeKTY:", weiToEther(res_static.ticketFeeKTY))
+    console.log("redemptionFeeEtherSwap:", weiToEther(res_static.redemptionFeeEtherSwap))
+    console.log("redemptionFeeKTY:", weiToEther(res_static.redemptionFeeKTY))
+    console.log("kittieHellExpirationTime:", res_static.kittieHellExpirationTime.toString())
+    console.log("honeypotExpirationTime:", res_static.honeypotExpirationTime.toString())
+    console.log("minimumContributors:", res_static.minimumContributors.toString())
+    console.log("shareWinner:", shares[0].toString())
+    console.log("shareTopSupporter:", shares[1].toString())
+    console.log("shareSecondSupporter:", shares[2].toString())
+    console.log("shareRemainingSupporter:", shares[3].toString())
+    console.log("shareEndowmentFund:", shares[4].toString())
+    console.log("==============================")
+
+
+
+
 
     callback();
   } catch (e) {

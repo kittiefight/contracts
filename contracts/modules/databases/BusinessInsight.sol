@@ -9,6 +9,7 @@ import "../gamemanager/GameStore.sol";
 import "../gamemanager/GameManagerHelper.sol";
 import '../endowment/KtyUniswap.sol';
 import "../datetime/TimeFrame.sol";
+import "./AccountingDB.sol";
 
 /**
  * @title BusinessInsight
@@ -25,6 +26,7 @@ contract BusinessInsight is Proxied {
     GameManagerHelper public gameManagerHelper;
     EarningsTrackerDB public earningsTrackerDB;
     KtyUniswap public ktyUniswap;
+    AccountingDB public accountingDB;
 
     bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
     string internal constant TABLE_NAME_BETTOR = "BettorTable";
@@ -37,6 +39,7 @@ contract BusinessInsight is Proxied {
         gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
         earningsTrackerDB = EarningsTrackerDB(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER_DB));
         ktyUniswap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP));
+        accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
     }
 
     // ===================== FRONTEND GETTERS =====================
@@ -242,48 +245,45 @@ contract BusinessInsight is Proxied {
             keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt"))
             );
     }
-    // function getEthieStaringEpoch(uint256 _ethieTokenID) public view returns (uint256) {
-    //     return genericDB.getUintStorage(
-    //         CONTRACT_NAME_EARNINGS_TRACKER,
-    //         keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID"))
-    //         );
-    // }
+    
+    // ========= getters for static values =========
+    /** returns following values:
+        bettingFee((1)ether for swap, (2)KTY)
+        ticketFee((1)ether for swap, (2)KTY)
+        redemptionFee ((1)ether for swap, (2)KTY)
+        kittieHellExpirationTime
+        honeypotExpirationTime
+        minimumContributors
 
-    // function getEthieEtherValue(uint256 _ethieTokenID) public view returns (uint256) {
-    //     return genericDB.getUintStorage(
-    //         CONTRACT_NAME_EARNINGS_TRACKER,
-    //         keccak256(abi.encodePacked(_ethieTokenID, "ethValue"))
-    //         );
-    // }
-
-    // function getEthieGeneration(uint256 _ethieTokenID) public view returns (uint256) {
-    //     return genericDB.getUintStorage(
-    //         CONTRACT_NAME_EARNINGS_TRACKER,
-    //         keccak256(abi.encodePacked(_ethieTokenID, "generation"))
-    //         );
-    // }
-
-    // function isEthieBurnt(uint256 _ethieTokenID) public view returns (bool) {
-    //     return genericDB.getBoolStorage(
-    //         CONTRACT_NAME_EARNINGS_TRACKER,
-    //         keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt"))
-    //         );
-    // }
-
-    // function getEthieLockedAt(uint256 _ethieTokenID) public view returns (uint256) {
-    //     return genericDB.getUintStorage(
-    //         CONTRACT_NAME_EARNINGS_TRACKER,
-    //         keccak256(abi.encodePacked(_ethieTokenID, "lockedAt"))
-    //         );
-    // }
-
-    // function getEthieLockTime(uint256 _ethieTokenID) public view returns (uint256) {
-    //     return genericDB.getUintStorage(
-    //         CONTRACT_NAME_EARNINGS_TRACKER,
-    //         keccak256(abi.encodePacked(_ethieTokenID, "lockTime"))
-    //         );
-    // }
-
+        shareWinner
+        shareTopSupporter
+        shareSecondSupporter
+        shareRemainingSupporter
+        shareEndowmentFund
+     */
+     function getStaticValues(uint256 gameId)
+     public view
+     returns (
+         uint256 bettingFeeEtherSwap,
+         uint256 bettingFeeKTY,
+         uint256 ticketFeeEtherSwap,
+         uint256 ticketFeeKTY,
+         uint256 redemptionFeeEtherSwap,
+         uint256 redemptionFeeKTY,
+         uint256 kittieHellExpirationTime,
+         uint256 honeypotExpirationTime,
+         uint256 minimumContributors,
+         uint256[5] memory shares
+     )
+     {
+         (bettingFeeEtherSwap, bettingFeeKTY) = accountingDB.getBettingFee(gameId);
+         (ticketFeeEtherSwap, ticketFeeKTY) = accountingDB.getTicketFee(gameId);
+         (redemptionFeeEtherSwap, redemptionFeeKTY) = accountingDB.getKittieRedemptionFee(gameId);
+         kittieHellExpirationTime = accountingDB.getKittieExpirationTime(gameId);
+         honeypotExpirationTime = accountingDB.getHoneypotExpiration(gameId);
+         minimumContributors = gameManagerHelper.getMinimumContributors(gameId);
+         shares = gameManagerHelper.getDistributionRates(gameId);
+     }
 
     // ========= other getters =========
     function getMyInfo(uint256 gameId, address sender)
