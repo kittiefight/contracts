@@ -174,8 +174,8 @@ module.exports = async callback => {
     // console.log(is_burnt_generic)
 
     console.log("\n====== Get Static Values In One Getter ======") 
-    res_static = await businessInsight.getStaticValues(1)
-    console.log(res_static)
+    let res_static = await businessInsight.getGameStaticInfo(1)
+    // console.log(res_static)
     let shares = res_static.shares
     console.log("bettingFeeEtherSwap:", weiToEther(res_static.bettingFeeEtherSwap))
     console.log("bettingFeeKTY:", weiToEther(res_static.bettingFeeKTY))
@@ -193,9 +193,32 @@ module.exports = async callback => {
     console.log("shareEndowmentFund:", shares[4].toString())
     console.log("==============================")
 
+    console.log("\n====== Get Dynaicm Values In One Getter ======") 
+    let res_dynamic = await businessInsight.getGameDynamicInfo(1)
+    // console.log(res_dynamic)
+    let gameTimes = res_dynamic.gameTimes
+    let honeypotInfo = res_dynamic.honeypotInfo
+    let ethByCorner = res_dynamic.ethByCorner
+    let finalHoneypot = res_dynamic.finalHoneypot
+    let winners = res_dynamic.winners
 
-
-
+    console.log("startTime:", gameTimes[0].toString())
+    console.log("preStartTime:", gameTimes[1].toString())
+    console.log("endTime:", gameTimes[2].toString())
+    console.log("honeypotID:", honeypotInfo[0].toString())
+    console.log("status:", honeypotInfo[1].toString())
+    console.log("initialEth:", weiToEther(honeypotInfo[2]))
+    console.log("ethTotal:", weiToEther(honeypotInfo[3]))
+    console.log("ktyTotal:", weiToEther(honeypotInfo[4]))
+    console.log("expTime:", honeypotInfo[5].toString())
+    console.log("ethByCorner[0]:", weiToEther(ethByCorner[0]))
+    console.log("ethByCorner[1]:", weiToEther(ethByCorner[1]))
+    console.log("finalEthTotal:", weiToEther(finalHoneypot[0]))
+    console.log("finalKtyTotal:", weiToEther(finalHoneypot[1]))
+    console.log("winner:", winners[0])
+    console.log("topBettor:", winners[1])
+    console.log("secondTopBettor:", winners[2])
+    console.log("==============================")
 
     callback();
   } catch (e) {

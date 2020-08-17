@@ -248,20 +248,23 @@ contract BusinessInsight is Proxied {
     
     // ========= getters for static values =========
     /** returns following values:
-        bettingFee((1)ether for swap, (2)KTY)
-        ticketFee((1)ether for swap, (2)KTY)
-        redemptionFee ((1)ether for swap, (2)KTY)
-        kittieHellExpirationTime
-        honeypotExpirationTime
-        minimumContributors
+     *   bettingFee((1)ether for swap, (2)KTY)
+     *   ticketFee((1)ether for swap, (2)KTY)
+     *   redemptionFee ((1)ether for swap, (2)KTY)
+     *   kittieHellExpirationTime
+     *   honeypotExpirationTime
+     *   minimumContributors
 
-        shareWinner
-        shareTopSupporter
-        shareSecondSupporter
-        shareRemainingSupporter
-        shareEndowmentFund
+     *   an array for all share distribution rates:
+        [
+            shareWinner,
+            shareTopSupporter,
+            shareSecondSupporter,
+            shareRemainingSupporter,
+            shareEndowmentFund,
+        ]
      */
-     function getStaticValues(uint256 gameId)
+     function getGameStaticInfo(uint256 gameId)
      public view
      returns (
          uint256 bettingFeeEtherSwap,
@@ -285,7 +288,75 @@ contract BusinessInsight is Proxied {
          shares = gameManagerHelper.getDistributionRates(gameId);
      }
 
+     /**
+      * getter for dynamic values which are called periodically (every block) in FE
+      * returns:
+      * time info         (GMGetterDB.getGameTimes)
+      * honeypot info     (GMGetterDB.getHoneypotInfo, getFinalHoneypot)
+      * winner info       (GMGetterDB.getWinners)
+      */
+    function getGameDynamicInfo(uint gameId)
+    public view
+    returns (
+        uint[3] memory gameTimes,
+        uint[6] memory honeypotInfo,
+        uint[2] memory ethByCorner,
+        uint[2] memory finalHoneypot,
+        address[3] memory winners
+    )
+    {
+        // get game times
+        gameTimes = getGameTimes(gameId);
+        // get honeypot info
+        (honeypotInfo, ethByCorner, finalHoneypot) = getHoneypot(gameId);
+        // get winner info
+        winners = getWinners(gameId);
+    }
+
+    function getAccountInfo(address account)
+    public view
+    returns(bool isRegistered, bool isVerified, uint256 civicId)
+    {
+        isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
+        civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
+        isVerified = civicId > 0;
+    }
+
     // ========= other getters =========
+    function getWinners(uint gameId) public view returns (address[3] memory winners) {
+        (address winner, address topBettor, address secondTopBettor) = gmGetterDB.getWinners(gameId);
+        winners[0] = winner;
+        winners[1] = topBettor;
+        winners[2] = secondTopBettor;
+    }
+
+    function getGameTimes(uint gameId) public view returns (uint[3] memory gameTimes) {
+        (uint startTime, uint preStartTime, uint endTime) = gmGetterDB.getGameTimes(gameId);
+        gameTimes[0] = startTime;
+        gameTimes[1] = preStartTime;
+        gameTimes[2] = endTime;
+    }
+
+    function getHoneypot(uint gameId)
+    public view
+    returns (uint[6] memory honeypotInfo, uint[2] memory ethByCorner, uint[2] memory finalHoneypot)
+    {
+        // honeypot 
+        (uint honeypotId, uint status, uint initialEth,
+         uint ethTotal,,uint ktyTotal, uint expTime) = gmGetterDB.getHoneypotInfo(gameId);
+        honeypotInfo[0] = honeypotId;
+        honeypotInfo[1] = status;
+        honeypotInfo[2] = initialEth;
+        honeypotInfo[3] = ethTotal;
+        honeypotInfo[4] = ktyTotal;
+        honeypotInfo[5] = expTime;
+        (,,,,ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
+        // final honey pot
+        (uint totalEthFinal, uint totalKtyFinal) = gmGetterDB.getFinalHoneypot(gameId);
+        finalHoneypot[0] = totalEthFinal;
+        finalHoneypot[1] = totalKtyFinal;
+    }
+
     function getMyInfo(uint256 gameId, address sender)
     public view
     returns(bool isSupporter, uint supportedCorner, bool isPlayerInGame, uint corner)
@@ -306,14 +377,5 @@ contract BusinessInsight is Proxied {
         kittieId = gmGetterDB.getKittieInGame(gameId, player);
         corner = gameManagerHelper.getCorner(gameId, player);
         betsTotalEth = gmGetterDB.getTotalBet(gameId, player);
-    }
-
-    function getAccountInfo(address account)
-    public view
-    returns(bool isRegistered, bool isVerified)
-    {
-        isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
-        uint civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
-        isVerified = civicId > 0;
     }
 }
