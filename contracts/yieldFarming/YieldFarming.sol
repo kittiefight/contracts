@@ -54,11 +54,11 @@ contract YieldFarming is Owned {
     
     /*                                                   CONSTRUCTOR                                                  */
     /* ============================================================================================================== */
-    constructor(address _liquidityToken, address _kittieFightToken, address _superDaoToken) public {
+    constructor(IUniswapV2ERC20 _liquidityToken, ERC20Standard _kittieFightToken, ERC20Standard _superDaoToken) public {
         // Set token contracts
-        LP = IUniswapV2ERC20(_liquidityToken);
-        kittieFightToken = ERC20Standard(_kittieFightToken);
-        superDaoToken = ERC20Standard(_superDaoToken);
+        setLP(_liquidityToken);
+        setKittieFightToken(_kittieFightToken);
+        setSuperDaoToken(_superDaoToken);
 
         // Set reward unlock rate for KittieFightToken for the program duration
         KTYunlockRates[0] = 300000;
@@ -162,6 +162,31 @@ contract YieldFarming is Owned {
 
     /*                                                 SETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
+
+    /**
+     * @dev Set Uniswap Liquidity token contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setLP(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP = _liquidityToken;
+    }
+
+    /**
+     * @dev Set KittieFightToken contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setKittieFightToken(ERC20Standard _kittieFightToken) public onlyOwner {
+        kittieFightToken = _kittieFightToken;
+    }
+
+    /**
+     * @dev Set SuperDaoToken contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setSuperDaoToken(ERC20Standard _superDaoToken) public onlyOwner {
+        superDaoToken = _superDaoToken;
+    }
+
     /**
      * @notice Modify Reward Unlock Rate for KittieFightToken and SuperDaoToken for any month (from 0 to 5)
      *         within the program duration (a period of 6 months)
@@ -368,10 +393,18 @@ contract YieldFarming is Owned {
      * @return uint256 the Reward Unlock Rate for KittieFightToken for the _month
      * @return uint256 the Reward Unlock Rate for SuperDaoToken for the _month
      */
-    function getRewardUnlockRate(uint256 _month) public view returns (uint256, uint256) {
+    function getRewardUnlockRateByMonth(uint256 _month) public view returns (uint256, uint256) {
         uint256 _KTYunlockRate = KTYunlockRates[_month];
         uint256 _SDAOunlockRate = SDAOunlockRates[_month];
         return (_KTYunlockRate, _SDAOunlockRate);
+    }
+
+    /**
+     * @return uint256 the Reward Unlock Rate for KittieFightToken for each month in the entire program duration
+     * @return uint256 the Reward Unlock Rate for SuperDaoToken for each month in the entire program duration
+     */
+    function getRewardUnlockRate() public view returns (uint256[6] memory, uint256[6] memory) {
+        return (KTYunlockRates, SDAOunlockRates);
     }
 
     /*                                                 INTERNAL FUNCTIONS                                             */
