@@ -109,7 +109,8 @@ contract YieldFarming is Owned {
      * @notice Deposit Uniswap Liquidity tokens
      * @param _amountLP the amount of Uniswap Liquidity tokens to be deposited
      * @return bool true if the deposit is successful
-     * @dev    Each new deposit of a staker makes a new batch for this staker
+     * @dev    Each new deposit of a staker makes a new batch for this staker. Batch Number for each staker 
+     *         starts from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
     function deposit(uint256 _amountLP) public returns (bool) {
         require(_amountLP > 0, "Cannot deposit 0 tokens");
@@ -122,15 +123,14 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @notice Withdraw Uniswap Liquidity tokens deposited previously
+     * @notice Withdraw Uniswap Liquidity tokens by amount specified by the staker
      * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
      *         to the user upon successful withdraw
      * @param _LPamount the amount of Uniswap Liquidity tokens to be withdrawn
      * @dev    FIFO (First in, First out) is used to allocate the _LPamount to the user's deposit batches.
      *         For example, _LPamount is allocated to batch 0 first, and if _LPamount is bigger than the amount
      *         locked in batch 0, then the rest is allocated to batch 1, and so forth.
-     * @dev    Batch Number for each staker starts from 0, and increment by 1 for subsequent batches each.
-     * @return true if the withdraw is successful
+     * @return bool true if the withdraw is successful
      */
     function withdrawByAmount(uint256 _LPamount) public returns (bool) {
         require(_LPamount <= stakers[msg.sender].totalLPLocked, "Insuffient liquidity tokens locked");
@@ -148,7 +148,7 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @notice Withdraw Uniswap Liquidity tokens
+     * @notice Withdraw Uniswap Liquidity tokens locked in a batch with _batchNumber specified by the staker
      * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
      *         to the user upon successful withdraw
      * @param _batchNumber the batch number of which deposit the user wishes to withdraw the Uniswap Liquidity tokens locked in it
@@ -161,6 +161,7 @@ contract YieldFarming is Owned {
         (uint256 _KTY, uint256 _SDAO) = calculateRewardsByBatchNumber(msg.sender, _batchNumber);
         deposits[msg.sender][_batchNumber].amountLP = 0;
         deposits[msg.sender][_batchNumber].lockedAt = 0;
+        stakers[msg.sender].allBatches[_batchNumber] = 0;
 
         _withdraw (msg.sender, _amountLP, _KTY, _SDAO);
 
