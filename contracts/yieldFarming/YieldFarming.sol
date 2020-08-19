@@ -90,8 +90,8 @@ contract YieldFarming is Owned {
         uint256 KTYamount,
         uint256 SDAOamount,
         uint256 LPamount,
-        uint256 startDepositNumber,
-        uint256 endDepositNumber, 
+        uint256 startBatchNumber,
+        uint256 endBatchNumber, 
         uint256 withdrawTime
     );
 
@@ -107,25 +107,37 @@ contract YieldFarming is Owned {
         return true;
     }
 
-    function withDraw(uint256 _LP) public returns (bool) {
-        require(_LP <= stakers[msg.sender].totalLPLocked, "Insuffient liquidity tokens locked");
+    function withdrawByAmount(uint256 _LPamount) public returns (bool) {
+        require(_LPamount <= stakers[msg.sender].totalLPLocked, "Insuffient liquidity tokens locked");
 
-        (uint256 _KTY, uint256 _SDAO, uint256 _startDepositNumber, uint256 _endDepositNumber) = estimateRewards(msg.sender, _LP);
+        (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = estimateRewardsByAmount(msg.sender, _LPamount);
         require(_KTY > 0 && _SDAO > 0, "Rewards cannot be 0");
-        require(_startDepositNumber > 0 && _endDepositNumber > 0, "Invalid deposit number");
+        require(_startBatchNumber > 0 && _endBatchNumber > 0, "Invalid batch number");
 
         // deduct _LP from mapping deposits storage
-        _deductDeposits(msg.sender, _LP, _startDepositNumber, _endDepositNumber);
+        _deductDeposits(msg.sender, _LPamount, _startBatchNumber, _endBatchNumber);
 
         // update _KTY, _SDAO, _LP in mapping stakers storage and public variables
-        _updateWithdraw (_KTY, _SDAO, _LP);
+        _updateWithdraw (_KTY, _SDAO, _LPamount);
 
-        // transfer liquidity tokens, KTY and SDAO to the staker
-        require(LP.transfer(msg.sender, _LP), "Fail to transfer liquidity token");
-        require(kittieFightToken.transfer(msg.sender, _KTY), "Fail to transfer KTY");
-        require(superDaoToken.transfer(msg.sender, _SDAO), "Fail to transfer SDAO");
+        _transferTokens(msg.sender, _LPamount, _KTY, _SDAO);
 
-        emit WithDrawn(msg.sender, _KTY, _SDAO, _LP, _startDepositNumber, _endDepositNumber, block.timestamp);
+        emit WithDrawn(msg.sender, _KTY, _SDAO, _LPamount, _startBatchNumber, _endBatchNumber, block.timestamp);
+        return true;
+    }
+
+    function withdrawByBatchNumber(uint256 _batchNumber) public returns (bool) {
+        uint256 _amountLP = deposits[msg.sender][_batchNumber].amountLP;
+        require(_amountLP > 0, "This batch number doesn't havey any liquidity token locked");
+
+        (uint256 _KTY, uint256 _SDAO) = estimateRewardsByBatchNumber(msg.sender, _batchNumber);
+        deposits[msg.sender][_batchNumber].amountLP = 0;
+        deposits[msg.sender][_batchNumber].lockedAt = 0;
+
+        _updateWithdraw (_KTY, _SDAO, _amountLP);
+        _transferTokens(msg.sender, _amountLP, _KTY, _SDAO);
+
+        emit WithDrawn(msg.sender, _KTY, _SDAO, _amountLP, _batchNumber, _batchNumber, block.timestamp);
         return true;
     }
 
@@ -159,9 +171,16 @@ contract YieldFarming is Owned {
         return LP.balanceOf(msg.sender);
     }
 
-    function estimateRewards(address _sender, uint256 _amountLP)
+    function estimateRewardsByAmount(address _sender, uint256 _amountLP)
         public view
-        returns (uint256 rewardKTY, uint256 rewardSDAO, uint256 startDepositNumber, uint256 endDepositNumber)
+        returns (uint256 rewardKTY, uint256 rewardSDAO, uint256 startBatchNumber, uint256 endBatchNumber)
+    {
+        // to do
+    }
+
+    function estimateRewardsByBatchNumber(address _sender, uint256 _batchNumber)
+        public view
+        returns (uint256 rewardKTY, uint256 rewardSDAO)
     {
         // to do
     }
@@ -247,19 +266,19 @@ contract YieldFarming is Owned {
     (
         address _sender,
         uint256 _amount,
-        uint256 _startDepositNumber,
-        uint256 _endDepositNumber
+        uint256 _startBatchNumber,
+        uint256 _endBatchNumber
     ) 
         internal 
     {
         uint256 withdrawAmount = 0;
-        for (uint256 i = _startDepositNumber; i < _endDepositNumber; i++) {
+        for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
             withdrawAmount = withdrawAmount.add(deposits[_sender][i].amountLP);
             deposits[_sender][i].amountLP = 0;
             deposits[_sender][i].lockedAt = 0;
         }
         uint256 leftAmountLP = _amount.sub(withdrawAmount);
-        deposits[_sender][_endDepositNumber].amountLP = deposits[_sender][_endDepositNumber].amountLP.sub(leftAmountLP);
+        deposits[_sender][_endBatchNumber].amountLP = deposits[_sender][_endBatchNumber].amountLP.sub(leftAmountLP);
     }
 
     function _updateWithdraw (uint256 _KTY, uint256 _SDAO, uint256 _LP) internal {
@@ -271,6 +290,15 @@ contract YieldFarming is Owned {
         totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
         totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
         totalLockedLP = totalLockedLP.sub(_LP);
+    }
+
+    function _transferTokens(address _user, uint256 _amountLP, uint256 _amountKTY, uint256 _amountSDAO)
+        internal
+    {
+        // transfer liquidity tokens, KTY and SDAO to the staker
+        require(LP.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
+        require(superDaoToken.transfer(_user, _amountSDAO), "Fail to transfer SDAO");
     }
 
 }
