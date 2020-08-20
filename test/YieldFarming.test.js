@@ -14,7 +14,7 @@ const KittieFightToken = artifacts.require("KittieFightToken");
 const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("IUniswapV2Pair");
-const KtyWethOracle = artifacts.require("KtyWethOracle");
+const KtyUniswapOracle = artifacts.require("KtyUniswapOracle");
 
 const editJsonFile = require("edit-json-file");
 let file;
@@ -51,7 +51,7 @@ let yieldFarming,
   factory,
   weth,
   ktyWethPair,
-  ktyWethOracle;
+  ktyUniswapOracle;
 
 contract("YieldFarming", accounts => {
   it("instantiate contracts", async () => {
@@ -60,15 +60,12 @@ contract("YieldFarming", accounts => {
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
     kittieFightToken = await KittieFightToken.deployed();
+    ktyUniswapOracle = await KtyUniswapOracle.deployed();
+    weth = await WETH.deployed();
+    factory = await Factory.deployed();
   });
 
   it("set up uniswap environment", async () => {
-    weth = await WETH.deployed();
-    console.log("Wrapped ether address:", weth.address);
-
-    factory = await Factory.deployed();
-    console.log("factory address:", factory.address);
-    ktyWethOracle = await KtyWethOracle.deployed();
     const pairAddress = await factory.getPair(
       weth.address,
       kittieFightToken.address
@@ -77,48 +74,61 @@ contract("YieldFarming", accounts => {
     ktyWethPair = await KtyWethPair.at(pairAddress);
     console.log("ktyWethPair:", ktyWethPair.address);
 
-    // let ktyReserve = await ktyUniswap.getReserveKTY();
-    // let ethReserve = await ktyUniswap.getReserveETH();
-    // console.log("reserveKTY:", weiToEther(ktyReserve));
-    // console.log("reserveETH:", weiToEther(ethReserve));
+    let ktyReserve = await ktyUniswapOracle.getReserveKTY();
+    let ethReserve = await ktyUniswapOracle.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
 
-    // let ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
-    // let kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
-    // console.log(
-    //   "Ether to KTY ratio:",
-    //   "1 ether to",
-    //   weiToEther(ether_kty_ratio),
-    //   "KTY"
-    // );
-    // console.log(
-    //   "KTY to Ether ratio:",
-    //   "1 KTY to",
-    //   weiToEther(kty_ether_ratio),
-    //   "ether"
-    // );
+    let ether_kty_price = await ktyUniswapOracle.ETH_KTY_price();
+    let kty_ether_price = await ktyUniswapOracle.KTY_ETH_price();
+    console.log(
+      "Ether to KTY price:",
+      "1 ether to",
+      weiToEther(ether_kty_price),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether price:",
+      "1 KTY to",
+      weiToEther(kty_ether_price),
+      "ether"
+    );
 
-    // let ether_kty_price = await ktyUniswap.ETH_KTY_price();
-    // let kty_ether_price = await ktyUniswap.KTY_ETH_price();
-    // console.log(
-    //   "Ether to KTY price:",
-    //   "1 ether to",
-    //   weiToEther(ether_kty_price),
-    //   "KTY"
-    // );
-    // console.log(
-    //   "KTY to Ether price:",
-    //   "1 KTY to",
-    //   weiToEther(kty_ether_price),
-    //   "ether"
-    // );
+    // daiWethPair info
+    let daiReserve = await ktyUniswapOracle.getReserveDAI();
+    let ethReserveFromDai = await ktyUniswapOracle.getReserveETHfromDAI();
+    console.log("reserveDAI:", weiToEther(daiReserve));
+    console.log("reserveETH:", weiToEther(ethReserveFromDai));
 
-    // let etherNeeded = await ktyUniswap.etherFor(ktyAmount);
-    // console.log(
-    //   "Ethers needed to swap ",
-    //   weiToEther(ktyAmount),
-    //   "KTY:",
-    //   weiToEther(etherNeeded)
-    // );
+    let ether_dai_price = await ktyUniswapOracle.ETH_DAI_price();
+    let dai_ether_price = await ktyUniswapOracle.DAI_ETH_price();
+    console.log(
+      "Ether to DAI price:",
+      "1 ether to",
+      weiToEther(ether_dai_price),
+      "DAI"
+    );
+    console.log(
+      "DAI to Ether ratio:",
+      "1 DAI to",
+      weiToEther(dai_ether_price),
+      "ether"
+    );
+
+    let kty_dai_price = await ktyUniswapOracle.KTY_DAI_price();
+    let dai_kty_price = await ktyUniswapOracle.DAI_KTY_price();
+    console.log(
+      "KTY to DAI price:",
+      "1 KTY to",
+      weiToEther(kty_dai_price),
+      "DAI"
+    );
+    console.log(
+      "DAI to KTY price:",
+      "1 DAI to",
+      weiToEther(dai_kty_price),
+      "KTY"
+    );
 
     // check balance of pair contract
     let ktyBalance = await kittieFightToken.balanceOf(ktyWethPair.address);

@@ -13,6 +13,7 @@ import "../libs/SafeMath.sol";
 import "../authority/Owned.sol";
 import "../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/ERC20Standard.sol";
+import "./KtyUniSwapOracle.sol";
 
 contract YieldFarming is Owned {
     using SafeMath for uint256;
@@ -20,38 +21,39 @@ contract YieldFarming is Owned {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
  
-    IUniswapV2ERC20 public LP;              // Uniswap Liquidity token contract variable
-    ERC20Standard public kittieFightToken;  // KittieFightToken contract variable
-    ERC20Standard public superDaoToken;     // SuperDaoToken contract variable
+    IUniswapV2ERC20 public LP;                  // Uniswap Liquidity token contract variable
+    ERC20Standard public kittieFightToken;      // KittieFightToken contract variable
+    ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
+    KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
 
     
-    uint256 public totalDepositedLP;        // Total Uniswap Liquidity tokens deposited
-    uint256 public totalLockedLP;           // Total Uniswap Liquidity tokens locked
-    uint256 public totalRewardsKTY;         // Total KittieFightToken rewards
-    uint256 public totalRewardsSDAO;        // Total SuperDaoToken rewards
-    uint256 public lockedRewardsKTY;        // KittieFightToken rewards to be distributed
-    uint256 public lockedRewardsSDAO;       // SuperDaoToken rewards to be distributed
-    uint256 public totalRewardsKTYclaimed;  // KittieFightToken rewards already claimed
-    uint256 public totalRewardsSDAOclaimed; // SuperDaoToken rewards already claimed
+    uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
+    uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
+    uint256 public totalRewardsKTY;             // Total KittieFightToken rewards
+    uint256 public totalRewardsSDAO;            // Total SuperDaoToken rewards
+    uint256 public lockedRewardsKTY;            // KittieFightToken rewards to be distributed
+    uint256 public lockedRewardsSDAO;           // SuperDaoToken rewards to be distributed
+    uint256 public totalRewardsKTYclaimed;      // KittieFightToken rewards already claimed
+    uint256 public totalRewardsSDAOclaimed;     // SuperDaoToken rewards already claimed
 
-    uint256 programDuration;                // Total time duration for Yield Farming Program
+    uint256 programDuration;                    // Total time duration for Yield Farming Program
 
-    uint256[6] KTYunlockRates;              // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
-    uint256[6] SDAOunlockRates;             // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+    uint256[6] KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+    uint256[6] SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
 
     // Properties of a Deposit
     struct Deposit {
-        uint256 amountLP;                   // Amount of Liquidity tokens locked in this Deposit
-        uint256 lockedAt;                   // Time when this Deposit is made
+        uint256 amountLP;                       // Amount of Liquidity tokens locked in this Deposit
+        uint256 lockedAt;                       // Time when this Deposit is made
     }
 
     // Properties of a Staker
     struct Staker {
-        uint256 totalDepositTimes;          // Total number of deposits made by this Staker
-        uint256 totalLPLocked;              // Total amount of Liquidity tokens locked by this Staker (deposited but not withdrawn yet)
-        uint256 rewardsKTYclaimed;          // Total amount of KittieFightToken rewards already claimed by this Staker
-        uint256 rewardsSDAOclaimed;         // Total amount of SuperDaoToken rewards already claimed by this Staker
-        uint256[] allBatches;               // An array of the amount of Liquidity tokens in each batch of this Staker
+        uint256 totalDepositTimes;              // Total number of deposits made by this Staker
+        uint256 totalLPLocked;                  // Total amount of Liquidity tokens locked by this Staker (deposited but not withdrawn yet)
+        uint256 rewardsKTYclaimed;              // Total amount of KittieFightToken rewards already claimed by this Staker
+        uint256 rewardsSDAOclaimed;             // Total amount of SuperDaoToken rewards already claimed by this Staker
+        uint256[] allBatches;                   // An array of the amount of Liquidity tokens in each batch of this Staker
     }
 
     // a mapping of every staker to all his/her deposits: staker => ( batchNumber => Deposit )
@@ -64,12 +66,13 @@ contract YieldFarming is Owned {
     // We can use constructor in place of function initialize(...) here. However, in local test, it's hard to get
     // the address of the _liquidityToken (which is the KtyWeth pair address created from factory), although there
     // would be no problem in Rinkeby or Mainnet. Therefore, function initialzie(...) can be replaced by a constructor
-    // in Rinkeby or Mainnet deployment.
+    // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
         IUniswapV2ERC20 _liquidityToken,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
+        KtyUniswapOracle _ktyUniswapOracle,
         uint256 _totalKTYrewards,
         uint256 _totalSDAOrewards
     )
@@ -79,6 +82,7 @@ contract YieldFarming is Owned {
         setLP(_liquidityToken);
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
+        setKtyUniswapOracle(_ktyUniswapOracle);
 
         // Set total rewards in KittieFightToken and SuperDaoToken
         setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
@@ -210,6 +214,14 @@ contract YieldFarming is Owned {
      */
     function setSuperDaoToken(ERC20Standard _superDaoToken) public onlyOwner {
         superDaoToken = _superDaoToken;
+    }
+
+    /**
+     * @dev Set KtyUniswapOracle contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setKtyUniswapOracle(KtyUniswapOracle _ktyUniswapOracle) public onlyOwner {
+        ktyUniswapOracle = _ktyUniswapOracle;
     }
 
     /**
@@ -352,8 +364,8 @@ contract YieldFarming is Owned {
      * @return uint256 USD value representation of ETH in uniswap KTY - ETH pool, according to 
      *         all Liquidity tokens locked in this contract.
      */
-    function getTotalLiquidityTokenLockedInUSD() public view returns (uint256) {
-        // to do
+    function getTotalLiquidityTokenLockedInDAI() public view returns (uint256) {
+        return totalLockedLP.mul(ktyUniswapOracle.ETH_DAI_price()).div(1000000000000000000);
     }
 
     /**
