@@ -148,29 +148,15 @@ module.exports = async (callback) => {
     );
 
     // -- swap info--
-    console.log('\n==== UNISWAP RESERVE RATIO ===');
+    console.log('\n==== UNISWAP PRICE ===');
+    // uniswap price 
     ktyReserve = await ktyUniswap.getReserveKTY();
     ethReserve = await ktyUniswap.getReserveETH();
     console.log("reserveKTY:", weiToEther(ktyReserve));
     console.log("reserveETH:", weiToEther(ethReserve));
 
-    ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
-    kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
-    console.log(
-      "Ether to KTY ratio:",
-      "1 ether to",
-      weiToEther(ether_kty_ratio),
-      "KTY"
-    );
-    console.log(
-      "KTY to Ether ratio:",
-      "1 KTY to",
-      weiToEther(kty_ether_ratio),
-      "ether"
-    );
-
-    let ether_kty_price = await ktyUniswap.ETH_KTY_price();
-    let kty_ether_price = await ktyUniswap.KTY_ETH_price();
+    ether_kty_price = await ktyUniswap.ETH_KTY_price();
+    kty_ether_price = await ktyUniswap.KTY_ETH_price();
     console.log(
       "Ether to KTY price:",
       "1 ether to",
@@ -183,7 +169,7 @@ module.exports = async (callback) => {
       weiToEther(kty_ether_price),
       "ether"
     );
-    
+
     callback()
   }
   catch(e){callback(e)}

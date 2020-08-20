@@ -43,12 +43,10 @@ contract ProxyBase is ContractManager, ContractNames {
      function addressOfEthieToken() public view returns(address)     {return getContract(CONTRACT_NAME_ETHIETOKEN);}
      function addressOfUniswapV2Pair() public view returns(address)     {return getContract(CONTRACT_NAME_UNISWAPV2_PAIR);}
      function addressOfUniswapV2Router() public view returns(address)     {return getContract(CONTRACT_NAME_UNISWAPV2_ROUTER);}
-     function addressOfKtyWethOracle() public view returns(address)     {return getContract(CONTRACT_NAME_KTY_WETH_ORACLE);}
      function addressOfKtyUniswap() public view returns(address)     {return getContract(CONTRACT_NAME_KTY_UNISWAP);}
      function addressOfWETH() public view returns(address)     {return getContract(CONTRACT_NAME_WETH);}
      function addressOfDAI() public view returns(address)     {return getContract(CONTRACT_NAME_DAI);}
      function addressOfDaiWethPair() public view returns(address)     {return getContract(CONTRACT_NAME_DAI_WETH_PAIR);}
-     function addressOfDaiWethOracle() public view returns(address)     {return getContract(CONTRACT_NAME_DAI_WETH_ORACLE);}
      function addressOfMultiSig() public view returns(address)     {return getContract(CONTRACT_NAME_MULTISIG);}
      function addressOfBusinessInsight() public view returns(address)     {return getContract(CONTRACT_NAME_BUSINESS_INSIGHT);}
      function addressOfAccountingDB() public view returns(address)     {return getContract(CONTRACT_NAME_ACCOUNTING_DB);}

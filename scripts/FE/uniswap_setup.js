@@ -124,21 +124,6 @@ module.exports = async callback => {
     console.log("reserveKTY:", weiToEther(ktyReserve));
     console.log("reserveETH:", weiToEther(ethReserve));
 
-    let ether_kty_ratio = await ktyUniswap.ETH_KTY_ratio();
-    let kty_ether_ratio = await ktyUniswap.KTY_ETH_ratio();
-    console.log(
-      "Ether to KTY ratio:",
-      "1 ether to",
-      weiToEther(ether_kty_ratio),
-      "KTY"
-    );
-    console.log(
-      "KTY to Ether ratio:",
-      "1 KTY to",
-      weiToEther(kty_ether_ratio),
-      "ether"
-    );
-
     let ether_kty_price = await ktyUniswap.ETH_KTY_price();
     let kty_ether_price = await ktyUniswap.KTY_ETH_price();
     console.log(
@@ -168,33 +153,33 @@ module.exports = async callback => {
     console.log("reserveDAI:", weiToEther(daiReserve));
     console.log("reserveETH:", weiToEther(ethReserveFromDai));
 
-    let ether_dai_ratio = await ktyUniswap.ETH_DAI_ratio();
-    let dai_ether_ratio = await ktyUniswap.DAI_ETH_ratio();
+    let ether_dai_price = await ktyUniswap.ETH_DAI_price();
+    let dai_ether_price = await ktyUniswap.DAI_ETH_price();
     console.log(
-      "Ether to DAI ratio:",
+      "Ether to DAI price:",
       "1 ether to",
-      weiToEther(ether_dai_ratio),
+      weiToEther(ether_dai_price),
       "DAI"
     );
     console.log(
-      "DAI to Ether ratio:",
+      "DAI to Ether price:",
       "1 DAI to",
-      weiToEther(dai_ether_ratio),
+      weiToEther(dai_ether_price),
       "ether"
     );
 
-    let kty_dai_ratio = await ktyUniswap.KTY_DAI_ratio();
-    let dai_kty_ratio = await ktyUniswap.DAI_KTY_ratio();
+    let kty_dai_price = await ktyUniswap.KTY_DAI_price();
+    let dai_kty_price = await ktyUniswap.DAI_KTY_price();
     console.log(
-      "KTY to DAI ratio:",
+      "KTY to DAI price:",
       "1 KTY to",
-      weiToEther(kty_dai_ratio),
+      weiToEther(kty_dai_price),
       "DAI"
     );
     console.log(
-      "DAI to KTY ratio:",
+      "DAI to KTY price:",
       "1 DAI to",
-      weiToEther(dai_kty_ratio),
+      weiToEther(dai_kty_price),
       "KTY"
     );
 

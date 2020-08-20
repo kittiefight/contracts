@@ -31,94 +31,94 @@ const TOTAL_SDAO_REWARDS = new BigNumber(
 );
 
 module.exports = (deployer, network, accounts) => {
-  deployer
-    .deploy(YieldFarming)
-    .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
-    .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
-    .then(() => deployer.deploy(WETH))
-    .then(() => deployer.deploy(Factory, accounts[0]))
-    .then(() => deployer.deploy(KtyUniswapOracle))
-    .then(() => deployer.deploy(Dai, 1))
-    .then(async () => {
-      console.log("\nGetting contract instances...");
+  // deployer
+  //   .deploy(YieldFarming)
+  //   .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
+  //   .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
+  //   .then(() => deployer.deploy(WETH))
+  //   .then(() => deployer.deploy(Factory, accounts[0]))
+  //   .then(() => deployer.deploy(KtyUniswapOracle))
+  //   .then(() => deployer.deploy(Dai, 1))
+  //   .then(async () => {
+  //     console.log("\nGetting contract instances...");
 
-      // YieldFarming
-      yieldFarming = await YieldFarming.deployed();
-      console.log("YieldFarming:", yieldFarming.address);
+  //     // YieldFarming
+  //     yieldFarming = await YieldFarming.deployed();
+  //     console.log("YieldFarming:", yieldFarming.address);
 
-      // TOKENS
-      superDaoToken = await SuperDaoToken.deployed();
-      console.log(superDaoToken.address);
-      kittieFightToken = await KittieFightToken.deployed();
-      console.log(kittieFightToken.address);
-      //kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
-      //console.log(kittieFightToken.address)
+  //     // TOKENS
+  //     superDaoToken = await SuperDaoToken.deployed();
+  //     console.log(superDaoToken.address);
+  //     kittieFightToken = await KittieFightToken.deployed();
+  //     console.log(kittieFightToken.address);
+  //     //kittieFightToken = await KittieFightToken.at(KTY_ADDRESS);
+  //     //console.log(kittieFightToken.address)
 
-      // uniswap kty
-      weth = await WETH.deployed();
-      console.log("weth:", weth.address);
-      factory = await Factory.deployed();
-      console.log("factory:", factory.address);
-      dai = await Dai.deployed();
-      console.log("DAI:", dai.address);
+  //     // uniswap kty
+  //     weth = await WETH.deployed();
+  //     console.log("weth:", weth.address);
+  //     factory = await Factory.deployed();
+  //     console.log("factory:", factory.address);
+  //     dai = await Dai.deployed();
+  //     console.log("DAI:", dai.address);
 
-      await factory.createPair(weth.address, kittieFightToken.address);
-      const ktyPairAddress = await factory.getPair(
-        weth.address,
-        kittieFightToken.address
-      );
-      console.log("ktyWethPair address", ktyPairAddress);
-      const ktyWethPair = await KtyWethPair.at(ktyPairAddress);
-      console.log("ktyWethPair:", ktyWethPair.address);
+  //     await factory.createPair(weth.address, kittieFightToken.address);
+  //     const ktyPairAddress = await factory.getPair(
+  //       weth.address,
+  //       kittieFightToken.address
+  //     );
+  //     console.log("ktyWethPair address", ktyPairAddress);
+  //     const ktyWethPair = await KtyWethPair.at(ktyPairAddress);
+  //     console.log("ktyWethPair:", ktyWethPair.address);
 
-      await factory.createPair(weth.address, dai.address);
-      const daiPairAddress = await factory.getPair(weth.address, dai.address);
-      console.log("daiWethPair address", daiPairAddress);
-      const daiWethPair = await DaiWethPair.at(daiPairAddress);
-      console.log("daiWethPair:", daiWethPair.address);
+  //     await factory.createPair(weth.address, dai.address);
+  //     const daiPairAddress = await factory.getPair(weth.address, dai.address);
+  //     console.log("daiWethPair address", daiPairAddress);
+  //     const daiWethPair = await DaiWethPair.at(daiPairAddress);
+  //     console.log("daiWethPair:", daiWethPair.address);
 
-      ktyUniswapOracle = await KtyUniswapOracle.deployed();
-      console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
+  //     ktyUniswapOracle = await KtyUniswapOracle.deployed();
+  //     console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
 
-      console.log("\nInitializing contracts...");
-      await yieldFarming.initialize(
-        ktyWethPair.address,
-        kittieFightToken.address,
-        superDaoToken.address,
-        ktyUniswapOracle.address,
-        TOTAL_KTY_REWARDS,
-        TOTAL_SDAO_REWARDS
-      );
-      await ktyUniswapOracle.initialize(
-        ktyWethPair.address,
-        daiWethPair.address,
-        kittieFightToken.address,
-        weth.address,
-        dai.address
-      );
+  //     console.log("\nInitializing contracts...");
+  //     await yieldFarming.initialize(
+  //       ktyWethPair.address,
+  //       kittieFightToken.address,
+  //       superDaoToken.address,
+  //       ktyUniswapOracle.address,
+  //       TOTAL_KTY_REWARDS,
+  //       TOTAL_SDAO_REWARDS
+  //     );
+  //     await ktyUniswapOracle.initialize(
+  //       ktyWethPair.address,
+  //       daiWethPair.address,
+  //       kittieFightToken.address,
+  //       weth.address,
+  //       dai.address
+  //     );
 
-      // set up uniswap - only needed in truffle local test, not needed in rinkeby or mainnet
-      const ethAmount = new BigNumber(
-        web3.utils.toWei("100", "ether") //100 ethers
-      );
+  //     // set up uniswap - only needed in truffle local test, not needed in rinkeby or mainnet
+  //     const ethAmount = new BigNumber(
+  //       web3.utils.toWei("100", "ether") //100 ethers
+  //     );
 
-      const ktyAmount = new BigNumber(
-        web3.utils.toWei("50000", "ether") //100 ethers * 500 = 50,000 kty
-      );
+  //     const ktyAmount = new BigNumber(
+  //       web3.utils.toWei("50000", "ether") //100 ethers * 500 = 50,000 kty
+  //     );
 
-      const daiAmount = new BigNumber(
-        web3.utils.toWei("24191.54", "ether") //100 ethers * 241.9154 dai/ether = 24191.54 kty
-      );
+  //     const daiAmount = new BigNumber(
+  //       web3.utils.toWei("24191.54", "ether") //100 ethers * 241.9154 dai/ether = 24191.54 kty
+  //     );
 
-      await dai.mint(accounts[0], daiAmount);
-      await dai.transfer(daiWethPair.address, daiAmount);
-      await weth.deposit({value: ethAmount});
-      await weth.transfer(daiWethPair.address, ethAmount);
-      await daiWethPair.mint(accounts[0]);
+  //     await dai.mint(accounts[0], daiAmount);
+  //     await dai.transfer(daiWethPair.address, daiAmount);
+  //     await weth.deposit({value: ethAmount});
+  //     await weth.transfer(daiWethPair.address, ethAmount);
+  //     await daiWethPair.mint(accounts[0]);
 
-      await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
-      await weth.deposit({value: ethAmount});
-      await weth.transfer(ktyWethPair.address, ethAmount);
-      await ktyWethPair.mint(accounts[0]);
-    });
+  //     await kittieFightToken.transfer(ktyWethPair.address, ktyAmount);
+  //     await weth.deposit({value: ethAmount});
+  //     await weth.transfer(ktyWethPair.address, ethAmount);
+  //     await ktyWethPair.mint(accounts[0]);
+  //   });
 };

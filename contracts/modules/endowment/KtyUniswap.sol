@@ -9,25 +9,26 @@ import '../../authority/Guard.sol';
 import '../../libs/SafeMath.sol';
 import '../../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import '../../uniswapKTY/uniswap-v2-core/interfaces/IDaiWethPair.sol';
-import '../../uniswapKTY/uniswap-v2-periphery/KtyWethOracle.sol';
-import '../../uniswapKTY/uniswap-v2-periphery/DaiWethOracle.sol';
+import '../../uniswapKTY/uniswap-v2-periphery/libraries/UniswapV2Library.sol';
 
 contract KtyUniswap is Proxied, Guard {
     using SafeMath for uint256;
 
     IUniswapV2Pair public ktyWethPair;
-    KtyWethOracle public ktyWethOracle;
-
     IDaiWethPair public daiWethPair;
-    DaiWethOracle public daiWethOracle;
+
+    address public kittieFightTokenAddr;
+    address public wethAddr;
+    address public daiAddr;
+   
 
     //===================== Initializer ===================
     function initialize() public onlyOwner {
         ktyWethPair = IUniswapV2Pair(proxy.getContract(CONTRACT_NAME_UNISWAPV2_PAIR));
-        ktyWethOracle = KtyWethOracle(proxy.getContract(CONTRACT_NAME_KTY_WETH_ORACLE));
-
         daiWethPair = IDaiWethPair(proxy.getContract(CONTRACT_NAME_DAI_WETH_PAIR));
-        daiWethOracle = DaiWethOracle(proxy.getContract(CONTRACT_NAME_DAI_WETH_ORACLE));
+        kittieFightTokenAddr = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
+        wethAddr = proxy.getContract(CONTRACT_NAME_WETH);
+        daiAddr = proxy.getContract(CONTRACT_NAME_DAI);
     }
 
     //===================== Getters ===================
@@ -37,16 +38,13 @@ contract KtyUniswap is Proxied, Guard {
         address token0;
         address token1;
 
-        address kittieFightToken = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
-        address weth = proxy.getContract(CONTRACT_NAME_WETH);
+        (token0, token1) = UniswapV2Library.sortTokens(kittieFightTokenAddr, wethAddr);
 
-        (token0, token1) = ktyWethOracle.sortTokens(kittieFightToken, weth);
-
-        if (token0 == kittieFightToken) {
+        if (token0 == kittieFightTokenAddr) {
             return true;
-        } else if (token0 == weth) {
-            return false;
-        }
+        } 
+        
+        return false;
     }
 
     function isDaiToken0()
@@ -55,16 +53,13 @@ contract KtyUniswap is Proxied, Guard {
         address token0;
         address token1;
 
-        address dai = proxy.getContract(CONTRACT_NAME_DAI);
-        address weth = proxy.getContract(CONTRACT_NAME_WETH);
+        (token0, token1) = UniswapV2Library.sortTokens(daiAddr, wethAddr);
 
-        (token0, token1) = daiWethOracle.sortTokens(dai, weth);
-
-        if (token0 == dai) {
+        if (token0 == daiAddr) {
             return true;
-        } else if (token0 == weth) {
-            return false;
-        }
+        } 
+        
+        return false;
     }
 
     /**
@@ -101,23 +96,6 @@ contract KtyUniswap is Proxied, Guard {
         return uint256(_reserveETH);
     }
 
-    // function etherFor(uint256 _ktyAmount) public view returns (uint256) {
-    //     uint256 _reserveKTY = getReserveKTY();
-    //     uint256 _reserveETH = getReserveETH();
-    //     uint256 ether_needed = ktyWethOracle.quote(_ktyAmount, _reserveKTY, _reserveETH);
-    //     return ether_needed;
-    // }
-
-    /**
-     * @dev returns the amount of ktys swapped for the ethers of _ethAmount
-     */
-    function ktyFor(uint256 _ethAmount) public view returns (uint256) {
-        uint256 _reserveKTY = getReserveKTY();
-        uint256 _reserveETH = getReserveETH();
-        uint256 kty_for = ktyWethOracle.quote(_ethAmount, _reserveETH, _reserveKTY);
-        return kty_for;
-    }
-
     /**
      * @dev returns the KTY to ether price on uniswap, that is, how many ether for 1 KTY
      */
@@ -125,7 +103,7 @@ contract KtyUniswap is Proxied, Guard {
         uint256 _amountKTY = 1e18;  // 1 KTY
         uint256 _reserveKTY = getReserveKTY();
         uint256 _reserveETH = getReserveETH();
-        return ktyWethOracle.getAmountIn(_amountKTY, _reserveETH, _reserveKTY);
+        return UniswapV2Library.getAmountIn(_amountKTY, _reserveETH, _reserveKTY);
     }
 
     /**
@@ -143,28 +121,7 @@ contract KtyUniswap is Proxied, Guard {
         uint256 _amountETH = 1e18;  // 1 KTY
         uint256 _reserveKTY = getReserveKTY();
         uint256 _reserveETH = getReserveETH();
-        return ktyWethOracle.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
-    }
-
-
-    /**
-     * @dev returns the KTY to ether ratio on uniswap, that is, how many ether for 1 KTY
-     */
-    function KTY_ETH_ratio() public view returns (uint256) {
-        uint256 _amountKTY = 1e18;  // 1 KTY
-        uint256 _reserveKTY = getReserveKTY();
-        uint256 _reserveETH = getReserveETH();
-        return ktyWethOracle.quote(_amountKTY, _reserveKTY, _reserveETH);
-    }
-
-    /**
-     * @dev returns the ether to KTY ratio on uniswap, that is, how many KTY for 1 ether
-     */
-    function ETH_KTY_ratio() public view returns (uint256) {
-        uint256 _amountETH = 1e18; // 1 ether
-        uint256 _reserveKTY = getReserveKTY();
-        uint256 _reserveETH = getReserveETH();
-        return ktyWethOracle.quote(_amountETH, _reserveETH, _reserveKTY);
+        return UniswapV2Library.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
     }
 
     /**
@@ -208,7 +165,7 @@ contract KtyUniswap is Proxied, Guard {
         uint256 _amountDAI = 1e18;  // 1 KTY
         uint256 _reserveDAI = getReserveDAI();
         uint256 _reserveETHfromDAI = getReserveETHfromDAI();
-        return ktyWethOracle.getAmountIn(_amountDAI, _reserveETHfromDAI, _reserveDAI);
+        return UniswapV2Library.getAmountIn(_amountDAI, _reserveETHfromDAI, _reserveDAI);
     }
 
     /**
@@ -218,50 +175,30 @@ contract KtyUniswap is Proxied, Guard {
         uint256 _amountETH = 1e18;  // 1 KTY
         uint256 _reserveDAI = getReserveDAI();
         uint256 _reserveETHfromDAI = getReserveETHfromDAI();
-        return ktyWethOracle.getAmountIn(_amountETH, _reserveDAI, _reserveETHfromDAI);
+        return UniswapV2Library.getAmountIn(_amountETH, _reserveDAI, _reserveETHfromDAI);
     }
 
     /**
-     * @dev returns the DAI to ether ratio on uniswap, that is, how many ether for 1 DAI
+     * @dev returns the KTY to DAI price derived from uniswap price in pair contracts, that is, how many DAI for 1 KTY
      */
-    function DAI_ETH_ratio() public view returns (uint256) {
-        uint256 _amountDAI = 1e18;  // 1 DAI
-        uint256 _reserveDAI = getReserveDAI();
-        uint256 _reserveETHfromDAI = getReserveETHfromDAI();
-        return daiWethOracle.quote(_amountDAI, _reserveDAI, _reserveETHfromDAI);
-    }
-
-    /**
-     * @dev returns the ether to DAI ratio on uniswap, that is, how many DAI for 1 ether
-     */
-    function ETH_DAI_ratio() public view returns (uint256) {
-        uint256 _amountETH = 1e18; // 1 ether
-        uint256 _reserveDAI = getReserveDAI();
-        uint256 _reserveETHfromDAI = getReserveETHfromDAI();
-        return daiWethOracle.quote(_amountETH, _reserveETHfromDAI, _reserveDAI);
-    }
-
-    /**
-     * @dev returns the KTY to DAI ratio on uniswap, that is, how many DAI for 1 KTY
-     */
-    function KTY_DAI_ratio() public view returns (uint256) {
+    function KTY_DAI_price() public view returns (uint256) {
         // get the amount of ethers for 1 KTY
-        uint256 etherPerKTY = KTY_ETH_ratio();
+        uint256 etherPerKTY = KTY_ETH_price();
         // get the amount of DAI for 1 ether
-        uint256 daiPerEther = ETH_DAI_ratio();
+        uint256 daiPerEther = ETH_DAI_price();
         // get the amount of DAI for 1 KTY
         uint256 daiPerKTY = etherPerKTY.mul(daiPerEther).div(1000000000000000000);
         return daiPerKTY;
     }
 
     /**
-     * @dev returns the DAI to KTY ratio on uniswap, that is, how many KTY for 1 DAI
+     * @dev returns the DAI to KTY price derived from uniswap price in pair contracts, that is, how many KTY for 1 DAI
      */
-    function DAI_KTY_ratio() public view returns (uint256) {
+    function DAI_KTY_price() public view returns (uint256) {
         // get the amount of ethers for 1 DAI
-        uint256 etherPerDAI = DAI_ETH_ratio();
+        uint256 etherPerDAI = DAI_ETH_price();
         // get the amount of KTY for 1 ether
-        uint256 ktyPerEther = ETH_KTY_ratio();
+        uint256 ktyPerEther = ETH_KTY_price();
         // get the amount of KTY for 1 DAI
         uint256 ktyPerDAI = etherPerDAI.mul(ktyPerEther).div(1000000000000000000);
         return ktyPerDAI;
