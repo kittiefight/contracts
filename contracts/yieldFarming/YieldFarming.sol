@@ -59,13 +59,29 @@ contract YieldFarming is Owned {
 
     mapping(address => Staker) public stakers;
     
-    /*                                                   CONSTRUCTOR                                                  */
+    /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
-    constructor(IUniswapV2ERC20 _liquidityToken, ERC20Standard _kittieFightToken, ERC20Standard _superDaoToken) public {
+    // We can use constructor in place of function initialize(...) here. However, in local test, it's hard to get
+    // the address of the _liquidityToken (which is the KtyWeth pair address created from factory), although there
+    // would be no problem in Rinkeby or Mainnet. Therefore, function initialzie(...) can be replaced by a constructor
+    // in Rinkeby or Mainnet deployment.
+    function initialize
+    (
+        IUniswapV2ERC20 _liquidityToken,
+        ERC20Standard _kittieFightToken,
+        ERC20Standard _superDaoToken,
+        uint256 _totalKTYrewards,
+        uint256 _totalSDAOrewards
+    )
+        public onlyOwner
+    {
         // Set token contracts
         setLP(_liquidityToken);
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
+
+        // Set total rewards in KittieFightToken and SuperDaoToken
+        setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
 
         // Set reward unlock rate for KittieFightToken for the program duration
         KTYunlockRates[0] = 300000;
@@ -219,6 +235,17 @@ contract YieldFarming is Owned {
      */
     function setProgramDuration(uint256 _time) public onlyOwner {
         programDuration = _time;
+    }
+
+    /**
+     * @notice Set total KittieFightToken rewards and total SuperDaoToken rewards for the entire program duration
+     * @param _rewardsKTY uint256 total KittieFightToken rewards for the entire program duration
+     * @param _rewardsSDAO uint256 total SuperDaoToken rewards for the entire program duration
+     * @dev    This function can only be carreid out by the owner of this contract.
+     */
+    function setTotalRewards(uint256 _rewardsKTY, uint256 _rewardsSDAO) public onlyOwner {
+        totalRewardsKTY = _rewardsKTY;
+        totalRewardsSDAO = _rewardsSDAO;
     }
 
     /*                                                 GETTER FUNCTIONS                                               */
