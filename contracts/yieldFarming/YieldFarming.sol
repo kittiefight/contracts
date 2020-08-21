@@ -13,7 +13,7 @@ import "../libs/SafeMath.sol";
 import "../authority/Owned.sol";
 import "../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/ERC20Standard.sol";
-import "./KtyUniSwapOracle.sol";
+import "./KtyUniswapOracle.sol";
 import '../uniswapKTY/uniswap-v2-periphery/WETH9.sol';
 
 contract YieldFarming is Owned {
@@ -305,7 +305,7 @@ contract YieldFarming is Owned {
     function getLastBatchNumber(address _staker)
         public view returns (uint)
     {
-        return stakers[_staker].totalDepositTimes.sub(1);
+        return stakers[_staker].allBatches.length.sub(1);
     }
 
     /**
@@ -369,7 +369,7 @@ contract YieldFarming is Owned {
      * @return uint256 the total amount of Uniswap Liquidity tokens locked in this contract
      */
     function getTotalLiquidityTokenLocked() public view returns (uint256) {
-        return totalLockedLP;
+        return LP.balanceOf(address(this));
     }
 
     /**
@@ -377,8 +377,7 @@ contract YieldFarming is Owned {
      *         all Liquidity tokens locked in this contract.
      */
     function getTotalLiquidityTokenLockedInDAI() public view returns (uint256) {
-        uint256 totalSupplyLP = LP.totalSupply();
-        uint256 percentLPinYieldFarm = totalLockedLP.mul(1000000).div(totalSupplyLP);
+        uint256 percentLPinYieldFarm = LP.balanceOf(address(this)).mul(1000000).div(LP.totalSupply());
         uint256 totalEthInPairPool = weth.balanceOf(address(LP));
         return totalEthInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.ETH_DAI_price())
                .div(1000000000000000000).div(1000000);

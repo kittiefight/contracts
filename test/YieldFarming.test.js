@@ -19,6 +19,7 @@ const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 
 const editJsonFile = require("edit-json-file");
+const { assert } = require("chai");
 let file;
 
 function timeout(s) {
@@ -225,5 +226,66 @@ contract("YieldFarming", accounts => {
     );
   });
 
-  it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {});
+  it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
+    // make first deposit
+    let deposit_LP_amount = new BigNumber(
+      web3.utils.toWei("30", "ether") //30 Uniswap Liquidity tokens
+    );
+    let LP_locked;
+    for (let i = 1; i < 9; i++) {
+      await ktyWethPair.approve(yieldFarming.address, deposit_LP_amount, { from: accounts[i] }).should.be.fulfilled;
+      await yieldFarming.deposit(deposit_LP_amount, { from: accounts[i] }).should.be.fulfilled;
+      LP_locked = await yieldFarming.getLiquidityTokenLocked(accounts[i]);
+      console.log("Uniswap Liquidity tokens locked by user", i, ":", weiToEther(LP_locked));
+      assert.equal(weiToEther(LP_locked), 30);
+    }
+
+    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    console.log("Total Uniswap Liquidity tokens locked in Yield Farming:", weiToEther(total_LP_locked));
+    assert.equal(weiToEther(total_LP_locked), 240);
+
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI();
+    console.log("Total Uniswap Liquidity tokens locked in Dai value:", weiToEther(totalLiquidityTokenLockedInDAI))
+  });
+
+  it("show batches of deposit of a staker", async () => {
+    // make 2nd deposit
+    let deposit_LP_amount = new BigNumber(
+      web3.utils.toWei("40", "ether") //40 Uniswap Liquidity tokens
+    );
+    let LP_locked;
+    for (let i = 1; i < 9; i++) {
+      await ktyWethPair.approve(yieldFarming.address, deposit_LP_amount, { from: accounts[i] }).should.be.fulfilled;
+      await yieldFarming.deposit(deposit_LP_amount, { from: accounts[i] }).should.be.fulfilled;
+    }
+
+    // make 3rd deposit
+    deposit_LP_amount = new BigNumber(
+      web3.utils.toWei("50", "ether") //50 Uniswap Liquidity tokens
+    );
+
+    for (let i = 1; i < 9; i++) {
+      await ktyWethPair.approve(yieldFarming.address, deposit_LP_amount, { from: accounts[i] }).should.be.fulfilled;
+      await yieldFarming.deposit(deposit_LP_amount, { from: accounts[i] }).should.be.fulfilled;
+    }
+
+    // get info on all batches of each staker
+    console.log(`\n======== Batches Info ======== `);
+    let allBatches;
+    let lastBatchNumber;
+    for (let i = 1; i < 9; i++) {
+      console.log("User", i)
+      allBatches = await yieldFarming.getAllBatches(accounts[i]);
+      lastBatchNumber = await yieldFarming.getLastBatchNumber(accounts[i]);
+      for (let j = 0; j < allBatches.length; j++) {
+        console.log("Batch Number:", j)
+        console.log("Liquidity Locked:", weiToEther(allBatches[j]))
+      }
+      console.log("Last number of batches:", lastBatchNumber.toString())
+      console.log("Total number of batches:", allBatches.length)
+      console.log("****************************\n")
+   
+    }
+    console.log("===============================\n");
+  })
 });
