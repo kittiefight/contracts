@@ -29,6 +29,10 @@ contract YieldFarming is Owned {
     WETH9 public weth;                          // WETH contract variable
 
     uint256 constant MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
+    uint256 constant DAY = 24 * 60 * 60; 
+
+    // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
+    uint256 constant DAILY_PORTION_IN_MONTH = 33333;
     
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
     uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
@@ -41,18 +45,19 @@ contract YieldFarming is Owned {
 
     uint256 programDuration;                    // Total time duration for Yield Farming Program
     uint256 programStartAt;                     // Start Time of Yield Farming Program 
-    uint256 currentMonth;
     uint256[6] public monthsStartAt;            // an array of the start time of each month.
   
     uint256[6] KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
     uint256[6] SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
 
-    // enum Months { FirstMonth, SecondMonth, ThirdMonth, FourthMonth, FifthMonth, SixthMonth }
+    enum Months { FirstMonth, SecondMonth, ThirdMonth, FourthMonth, FifthMonth, SixthMonth }
 
     // Properties of a Deposit
     struct Deposit {
         uint256 amountLP;                       // Amount of Liquidity tokens locked in this Deposit
         uint256 lockedAt;                       // Time when this Deposit is made
+        uint256 startingMonth;
+        uint256 startingDay;
     }
 
     // Properties of a Staker
@@ -68,6 +73,10 @@ contract YieldFarming is Owned {
     mapping(address => mapping(uint256 => Deposit)) public deposits;
 
     mapping(address => Staker) public stakers;
+
+    // a mapping of every month to the deposits made during that month: 
+    // month => total amount of Uniswap Liquidity tokens deposted in this month
+    mapping(uint256 => uint256) public monthlyDeposits;
 
     /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
@@ -115,7 +124,6 @@ contract YieldFarming is Owned {
 
         // Set program duration (for a period of 6 months). Month starts at time of program deployment/initialization
         setProgramDuration(6, block.timestamp);
-        currentMonth = 0;
     }
 
     /*                                                      EVENTS                                                    */
@@ -149,8 +157,6 @@ contract YieldFarming is Owned {
 
         _addDeposit(msg.sender, _amountLP, block.timestamp);
 
-        _timeProceed();
-
         return true;
     }
 
@@ -167,10 +173,7 @@ contract YieldFarming is Owned {
     function withdrawByAmount(uint256 _LPamount) public returns (bool) {
         require(_LPamount <= stakers[msg.sender].totalLPLocked, "Insuffient liquidity tokens locked");
 
-        _timeProceed();
-
         (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _LPamount);
-        require(_KTY > 0 && _SDAO > 0, "Rewards cannot be 0");
 
         // deduct _LP from mapping deposits storage
         _deductDeposits(msg.sender, _LPamount, _startBatchNumber, _endBatchNumber);
@@ -191,8 +194,6 @@ contract YieldFarming is Owned {
     function withdrawByBatchNumber(uint256 _batchNumber) public returns (bool) {
         uint256 _amountLP = deposits[msg.sender][_batchNumber].amountLP;
         require(_amountLP > 0, "This batch number doesn't havey any liquidity token locked");
-
-        _timeProceed();
 
         (uint256 _KTY, uint256 _SDAO) = calculateRewardsByBatchNumber(msg.sender, _batchNumber);
         deposits[msg.sender][_batchNumber].amountLP = 0;
@@ -287,10 +288,6 @@ contract YieldFarming is Owned {
         for (uint256 i = 1; i < _totalNumberOfMonths; i++) {
             monthsStartAt[i] = monthsStartAt[0].add(MONTH.mul(i)); 
         }
-    }
-
-    function timeProceed() public onlyOwner {
-        _timeProceed();
     }
 
     /**
@@ -390,12 +387,76 @@ contract YieldFarming is Owned {
         public view
         returns (uint256 rewardKTY, uint256 rewardSDAO, uint256 startBatchNumber, uint256 endBatchNumber)
     {
-        // to do
-        // temporarily hard-coded for truffle testing purpose
-        rewardKTY = 500000000000000000000;
-        rewardSDAO = 300000000000000000000;
-        startBatchNumber = 0;
-        endBatchNumber = 2;
+        uint256 _startingMonth;
+        uint256 _endingMonth;
+        uint256 _daysInStartMonth;
+        uint256 lockedLP;
+        bool hasResidual;
+
+        // allocate _amountLP per FIFO
+        (startBatchNumber, endBatchNumber, hasResidual) = allocateLP(_staker, _amountLP);
+
+        if (startBatchNumber == endBatchNumber) {
+            ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber);
+            rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+            rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+        }
+
+        if (startBatchNumber < endBatchNumber && !hasResidual) {
+            for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
+                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
+                lockedLP = deposits[_staker][i].amountLP;
+                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+            }
+        }
+
+        if (startBatchNumber < endBatchNumber && hasResidual) {
+            for (uint256 i = startBatchNumber; i < endBatchNumber; i++) {
+                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
+                lockedLP = deposits[_staker][i].amountLP;
+                _amountLP = _amountLP.sub(lockedLP);
+                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+            }
+
+            ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber);
+
+            rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+            rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+        }
+        
+    }
+
+    function allocateLP(address _staker, uint256 _amountLP)
+        public view returns (uint256, uint256, bool)
+    {
+        uint256 startBatchNumber;
+        uint256 endBatchNumber;
+        uint256[] memory allBatches = stakers[_staker].allBatches;
+        bool hasResidual;
+
+        for (uint256 m = 0; m < allBatches.length; m++) {
+            if (allBatches[m] > 0) {
+                startBatchNumber = m;
+            }
+        }
+        
+        for (uint256 i = startBatchNumber; i < allBatches.length; i++) {
+            if (_amountLP <= allBatches[i]) {
+                if (_amountLP == allBatches[i]) {
+                    hasResidual = false;
+                } else {
+                    hasResidual = true;
+                }
+                endBatchNumber = i;
+                break;
+            } else {
+                _amountLP = _amountLP.sub(allBatches[i]);
+            }
+        }
+
+        return (startBatchNumber, endBatchNumber, hasResidual);
     }
 
     /**
@@ -410,10 +471,100 @@ contract YieldFarming is Owned {
         public view
         returns (uint256 rewardKTY, uint256 rewardSDAO)
     {
-        // to do
-        // temporarily hard-coded for truffle testing purpose
-        rewardKTY = 200000000000000000000;
-        rewardSDAO = 120000000000000000000;
+        // get locked time
+        uint256 lockedAt = deposits[_staker][_batchNumber].lockedAt;
+        // get total locked duration
+        uint256 lockedPeriod = block.timestamp.sub(lockedAt);
+        // 30 days of staking is required to get rewards
+        uint256 currentMonth = getCurrentMonth();
+
+        if (lockedPeriod < MONTH || currentMonth == 0) {
+            rewardKTY = 0;
+            rewardSDAO = 0;
+        }
+
+        (
+            uint256 _startingMonth,
+            uint256 _endingMonth,
+            uint256 _daysInStartMonth
+        ) = getLockedPeriod(_staker, _batchNumber);
+
+        // get the locked Liquidity token amount in this batch
+        uint256 lockedLP = deposits[_staker][_batchNumber].amountLP;
+
+        // calculate KittieFightToken rewards
+        rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
+        rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
+    }
+
+    function calculateYieldsKTY(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
+        public view
+        returns (uint256 yieldsKTY)
+    {
+        uint256 yieldsKTY_part_1 = calculateYieldsKTY_part_1(startMonth, daysInStartMonth, lockedLP);
+        uint256 yieldsKTY_part_2 = calculateYieldsKTY_part_2(startMonth, endMonth, lockedLP);
+  
+        yieldsKTY = yieldsKTY_part_1.add(yieldsKTY_part_2);
+    }
+
+    function calculateYieldsKTY_part_1(uint256 startMonth, uint256 daysInStartMonth, uint256 lockedLP)
+        public view
+        returns (uint256 yieldsKTY_part_1)
+    {
+        // yields KTY in startMonth
+        uint256 rewardsKTYstartMonth = KTYunlockRates[startMonth].mul(totalRewardsKTY);
+        yieldsKTY_part_1 = rewardsKTYstartMonth.mul(lockedLP).div(monthlyDeposits[startMonth])
+                    .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000).div(1000000);
+       
+    }
+
+    function calculateYieldsKTY_part_2(uint256 startMonth, uint256 endMonth, uint256 lockedLP)
+        public view
+        returns (uint256 yieldsKTY_part_2)
+    {
+        // yields KTY in endMonth and other month between startMonth and endMonth
+        if (endMonth == startMonth) {
+            yieldsKTY_part_2 = 0;
+        } else {
+            for (uint256 i = startMonth.add(1); i <= endMonth; i ++) {
+                yieldsKTY_part_2 = yieldsKTY_part_2
+                    .add(KTYunlockRates[i].mul(totalRewardsKTY).mul(lockedLP).div(monthlyDeposits[i]).div(1000000));
+            }
+        } 
+    }
+
+    function calculateYieldsSDAO(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
+        public view
+        returns (uint256 yieldsSDAO)
+    {
+        uint256 yieldsSDAO_part_1 = calculateYieldsSDAO_part_1(startMonth, daysInStartMonth, lockedLP);
+        uint256 yieldsSDAO_part_2 = calculateYieldsSDAO_part_2(startMonth, endMonth, lockedLP);
+        yieldsSDAO = yieldsSDAO_part_1.add(yieldsSDAO_part_2);
+    }
+
+    function calculateYieldsSDAO_part_1(uint256 startMonth, uint256 daysInStartMonth, uint256 lockedLP)
+        public view
+        returns (uint256 yieldsSDAO_part_1)
+    {
+        // yields SDAO in startMonth
+        uint256 rewardsSDAOstartMonth = SDAOunlockRates[startMonth].mul(totalRewardsSDAO);
+        yieldsSDAO_part_1 = rewardsSDAOstartMonth.mul(lockedLP).div(monthlyDeposits[startMonth])
+                .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000).div(1000000);
+    }
+
+    function calculateYieldsSDAO_part_2(uint256 startMonth, uint256 endMonth, uint256 lockedLP)
+        public view
+        returns (uint256 yieldsSDAO_part_2)
+    {
+        // yields SDAO in endMonth and in other months (between startMonth and endMonth)
+        if (endMonth == startMonth) {
+            yieldsSDAO_part_2 = 0;
+        } else {
+            for (uint256 i = startMonth.add(1); i <= endMonth; i ++) {
+                yieldsSDAO_part_2 = yieldsSDAO_part_2
+                    .add(SDAOunlockRates[i].mul(totalRewardsSDAO).mul(lockedLP).div(monthlyDeposits[i]).div(1000000));
+            }
+        } 
     }
 
     /**
@@ -501,6 +652,42 @@ contract YieldFarming is Owned {
         return (unlockedKTY, unlockedSDAO);
     }
 
+    function getLockedPeriod(address _staker, uint256 _batchNumber)
+        public view
+        returns (
+            uint256 _startingMonth,
+            uint256 _endingMonth,
+            uint256 _daysInStartMonth
+        )
+    {
+        uint256 _currentMonth = getCurrentMonth();
+        uint256 _startingDay = deposits[_staker][_batchNumber].startingDay;
+        // get starting month
+        _startingMonth = deposits[_staker][_batchNumber].startingMonth; 
+        _endingMonth = _currentMonth == 0 ? 0 : _currentMonth.sub(1);
+        _daysInStartMonth = 30 - getElapsedDaysInMonth(_startingDay, _startingMonth);
+    }
+
+    function getCurrentDay() public view returns (uint256) {
+        uint256 elapsedTime = block.timestamp.sub(programStartAt);
+        uint256 currentDay = elapsedTime.div(DAY);
+        return currentDay;
+    }
+
+    function getCurrentMonth() public view returns (uint256) {
+        uint256 currentMonth;
+        for (uint256 i = 5; i >= 0; i--) {
+            if (block.timestamp >= monthsStartAt[i]) {
+                currentMonth = i;
+            }
+        }
+        return currentMonth;
+    }
+
+    function getElapsedDaysInMonth(uint256 _days, uint256 _month) public pure returns (uint256 _elapsedDaysInMonth) {
+        _elapsedDaysInMonth = _month == 0 ? _days : _days.mod(_month);
+    }
+
     /**
      * @return uint256 the entire program duration
      * @return uint256 the total period in month
@@ -518,6 +705,7 @@ contract YieldFarming is Owned {
         uint256[6] memory allMonthsStartTime
     ) 
     {
+        uint256 currentMonth = getCurrentMonth();
         entireProgramDuration = programDuration;
         monthDuration = MONTH;
         startMonth = 0;
@@ -546,6 +734,14 @@ contract YieldFarming is Owned {
         return (KTYunlockRates, SDAOunlockRates);
     }
 
+    function getTotalRewardsByMonth(uint256 _month)
+        public view 
+        returns (uint256 rewardKTYbyMonth, uint256 rewardSDAObyMonth)
+    {
+        rewardKTYbyMonth = totalRewardsKTY.mul(KTYunlockRates[_month]);
+        rewardSDAObyMonth = totalRewardsSDAO.mul(SDAOunlockRates[_month]);
+    }
+
     /*                                                 INTERNAL FUNCTIONS                                             */
     /* ============================================================================================================== */
 
@@ -565,6 +761,13 @@ contract YieldFarming is Owned {
         uint256 batchNumber = depositTimes.sub(1);
         deposits[_sender][batchNumber].amountLP = _amount;
         deposits[_sender][batchNumber].lockedAt = block.timestamp;
+
+        // get current month
+        uint256 _currentMonth = getCurrentDay();
+        deposits[_sender][batchNumber].startingMonth = _currentMonth;
+        deposits[_sender][batchNumber].startingDay = getCurrentDay();
+
+        monthlyDeposits[_currentMonth] = monthlyDeposits[_currentMonth].add(_amount);
 
         totalDepositedLP = totalDepositedLP.add(_amount);
         totalLockedLP = totalLockedLP.add(_amount);
@@ -651,14 +854,6 @@ contract YieldFarming is Owned {
         require(LP.transfer(_user, _amountLP), "Fail to transfer liquidity token");
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
         require(superDaoToken.transfer(_user, _amountSDAO), "Fail to transfer SDAO");
-    }
-
-    function _timeProceed() internal {
-        for (uint256 i = 5; i > 0; i--) {
-            if (block.timestamp > monthsStartAt[i]) {
-                currentMonth = i;
-            }
-        }
     }
 
 }
