@@ -26,8 +26,9 @@ contract YieldFarming is Owned {
     ERC20Standard public kittieFightToken;      // KittieFightToken contract variable
     ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
     KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
-    WETH9 public weth;                          // KtyUniswapOracle contract variable
+    WETH9 public weth;                          // WETH contract variable
 
+    uint256 constant MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
     
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
     uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
@@ -39,9 +40,14 @@ contract YieldFarming is Owned {
     uint256 public totalRewardsSDAOclaimed;     // SuperDaoToken rewards already claimed
 
     uint256 programDuration;                    // Total time duration for Yield Farming Program
-
+    uint256 programStartAt;                     // Start Time of Yield Farming Program 
+    uint256 currentMonth;
+    uint256[6] public monthsStartAt;            // an array of the start time of each month.
+  
     uint256[6] KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
     uint256[6] SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+
+    // enum Months { FirstMonth, SecondMonth, ThirdMonth, FourthMonth, FifthMonth, SixthMonth }
 
     // Properties of a Deposit
     struct Deposit {
@@ -62,7 +68,7 @@ contract YieldFarming is Owned {
     mapping(address => mapping(uint256 => Deposit)) public deposits;
 
     mapping(address => Staker) public stakers;
-    
+
     /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
     // We can use constructor in place of function initialize(...) here. However, in local test, it's hard to get
@@ -107,9 +113,9 @@ contract YieldFarming is Owned {
         SDAOunlockRates[4] = 250000;
         SDAOunlockRates[5] = 300000;
 
-        // Set program duration (for a period of 6 months)
-        uint256 duration = 180 * 24 * 60 * 60; // to do
-        setProgramDuration(duration);
+        // Set program duration (for a period of 6 months). Month starts at time of program deployment/initialization
+        setProgramDuration(6, block.timestamp);
+        currentMonth = 0;
     }
 
     /*                                                      EVENTS                                                    */
@@ -143,6 +149,8 @@ contract YieldFarming is Owned {
 
         _addDeposit(msg.sender, _amountLP, block.timestamp);
 
+        _timeProceed();
+
         return true;
     }
 
@@ -158,6 +166,8 @@ contract YieldFarming is Owned {
      */
     function withdrawByAmount(uint256 _LPamount) public returns (bool) {
         require(_LPamount <= stakers[msg.sender].totalLPLocked, "Insuffient liquidity tokens locked");
+
+        _timeProceed();
 
         (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _LPamount);
         require(_KTY > 0 && _SDAO > 0, "Rewards cannot be 0");
@@ -181,6 +191,8 @@ contract YieldFarming is Owned {
     function withdrawByBatchNumber(uint256 _batchNumber) public returns (bool) {
         uint256 _amountLP = deposits[msg.sender][_batchNumber].amountLP;
         require(_amountLP > 0, "This batch number doesn't havey any liquidity token locked");
+
+        _timeProceed();
 
         (uint256 _KTY, uint256 _SDAO) = calculateRewardsByBatchNumber(msg.sender, _batchNumber);
         deposits[msg.sender][_batchNumber].amountLP = 0;
@@ -253,12 +265,32 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @notice Set yield farming program time duration (for a period of 6 months)
-     * @param _time uint256 the time duration of the program
+     * @notice Set Yield Farming Program time duration
+     * @param _totalNumberOfMonths uint256 total number of months in the entire program duration
+     * @param _programStartAt uint256 time when Yield Farming Program starts
      * @dev    This function can only be carreid out by the owner of this contract.
      */
-    function setProgramDuration(uint256 _time) public onlyOwner {
-        programDuration = _time;
+    function setProgramDuration(uint256 _totalNumberOfMonths, uint256 _programStartAt) public onlyOwner {
+        programDuration = _totalNumberOfMonths.mul(MONTH);
+        programStartAt = _programStartAt;
+        setMonth(_totalNumberOfMonths, _programStartAt);
+    }
+
+    /**
+     * @notice Set start time for each month in Yield Farming Program 
+     * @param _totalNumberOfMonths uint256 total number of months in the entire program duration
+     * @param _programStartAt uint256 time when Yield Farming Program starts
+     * @dev    This function can only be carreid out by the owner of this contract.
+     */
+    function setMonth(uint256 _totalNumberOfMonths, uint256 _programStartAt) public onlyOwner {
+        monthsStartAt[0] = _programStartAt;
+        for (uint256 i = 1; i < _totalNumberOfMonths; i++) {
+            monthsStartAt[i] = monthsStartAt[0].add(MONTH.mul(i)); 
+        }
+    }
+
+    function timeProceed() public onlyOwner {
+        _timeProceed();
     }
 
     /**
@@ -333,6 +365,17 @@ contract YieldFarming is Owned {
     }
 
     /**
+     * @param _staker address the staker who has received the rewards
+     * @return uint256 the total amount of KittieFightToken that have been claimed by this _staker
+     * @return uint256 the total amount of SuperDaoToken that have been claimed by this _staker
+     */
+    function getTotalRewardsClaimedByStaker(address _staker) public view returns (uint256, uint256) {
+        uint256 totalKTYclaimedByStaker = stakers[_staker].rewardsKTYclaimed;
+        uint256 totalSDAOclaimedByStaker = stakers[_staker].rewardsSDAOclaimed;
+        return (totalKTYclaimedByStaker, totalSDAOclaimedByStaker);
+    }
+
+    /**
      * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the amount of Uniswap Liquidity tokens 
      *         locked by a staker
      * @param _staker address the address of the staker for whom the rewards are calculated
@@ -348,6 +391,11 @@ contract YieldFarming is Owned {
         returns (uint256 rewardKTY, uint256 rewardSDAO, uint256 startBatchNumber, uint256 endBatchNumber)
     {
         // to do
+        // temporarily hard-coded for truffle testing purpose
+        rewardKTY = 500000000000000000000;
+        rewardSDAO = 300000000000000000000;
+        startBatchNumber = 0;
+        endBatchNumber = 2;
     }
 
     /**
@@ -363,6 +411,9 @@ contract YieldFarming is Owned {
         returns (uint256 rewardKTY, uint256 rewardSDAO)
     {
         // to do
+        // temporarily hard-coded for truffle testing purpose
+        rewardKTY = 200000000000000000000;
+        rewardSDAO = 120000000000000000000;
     }
 
     /**
@@ -451,12 +502,29 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @return uint256 the entire param duration
-     * @return uint256 the entire param duration in Months
-     * @return uint256 the param duration elapsed in Months
+     * @return uint256 the entire program duration
+     * @return uint256 the total period in month
+     * @return uint256 elapsed months
      */
-    function getProgramDuration() public view returns (uint256, uint256, uint256) {
-        // to do
+    function getProgramDuration() public view 
+    returns
+    (
+        uint256 entireProgramDuration,
+        uint256 monthDuration,
+        uint256 startMonth,
+        uint256 endMonth,
+        uint256 activeMonth,
+        uint256 elapsedMonths,
+        uint256[6] memory allMonthsStartTime
+    ) 
+    {
+        entireProgramDuration = programDuration;
+        monthDuration = MONTH;
+        startMonth = 0;
+        endMonth = 5;
+        activeMonth = currentMonth;
+        elapsedMonths = currentMonth == 0 ? 0 : currentMonth.sub(1);
+        allMonthsStartTime = monthsStartAt;
     }
 
     /**
@@ -583,6 +651,14 @@ contract YieldFarming is Owned {
         require(LP.transfer(_user, _amountLP), "Fail to transfer liquidity token");
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
         require(superDaoToken.transfer(_user, _amountSDAO), "Fail to transfer SDAO");
+    }
+
+    function _timeProceed() internal {
+        for (uint256 i = 5; i > 0; i--) {
+            if (block.timestamp > monthsStartAt[i]) {
+                currentMonth = i;
+            }
+        }
     }
 
 }
