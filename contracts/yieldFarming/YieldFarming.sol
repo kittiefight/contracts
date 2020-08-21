@@ -14,6 +14,7 @@ import "../authority/Owned.sol";
 import "../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/ERC20Standard.sol";
 import "./KtyUniSwapOracle.sol";
+import '../uniswapKTY/uniswap-v2-periphery/WETH9.sol';
 
 contract YieldFarming is Owned {
     using SafeMath for uint256;
@@ -25,6 +26,7 @@ contract YieldFarming is Owned {
     ERC20Standard public kittieFightToken;      // KittieFightToken contract variable
     ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
     KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
+    WETH9 public weth;                          // KtyUniswapOracle contract variable
 
     
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
@@ -73,6 +75,7 @@ contract YieldFarming is Owned {
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
+        WETH9 _weth,
         uint256 _totalKTYrewards,
         uint256 _totalSDAOrewards
     )
@@ -83,6 +86,7 @@ contract YieldFarming is Owned {
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
         setKtyUniswapOracle(_ktyUniswapOracle);
+        setWETH(_weth);
 
         // Set total rewards in KittieFightToken and SuperDaoToken
         setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
@@ -225,6 +229,14 @@ contract YieldFarming is Owned {
     }
 
     /**
+     * @dev Set WETH contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setWETH(WETH9 _weth) public onlyOwner {
+        weth = _weth;
+    }
+
+    /**
      * @notice Modify Reward Unlock Rate for KittieFightToken and SuperDaoToken for any month (from 0 to 5)
      *         within the program duration (a period of 6 months)
      * @param _month uint256 the month (from 0 to 5) for which the unlock rate is to be modified
@@ -361,11 +373,15 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @return uint256 USD value representation of ETH in uniswap KTY - ETH pool, according to 
+     * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
      *         all Liquidity tokens locked in this contract.
      */
     function getTotalLiquidityTokenLockedInDAI() public view returns (uint256) {
-        return totalLockedLP.mul(ktyUniswapOracle.ETH_DAI_price()).div(1000000000000000000);
+        uint256 totalSupplyLP = LP.totalSupply();
+        uint256 percentLPinYieldFarm = totalLockedLP.mul(1000000).div(totalSupplyLP);
+        uint256 totalEthInPairPool = weth.balanceOf(address(LP));
+        return totalEthInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.ETH_DAI_price())
+               .div(1000000000000000000).div(1000000);
     }
 
     /**

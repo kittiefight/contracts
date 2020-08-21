@@ -15,13 +15,11 @@ const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("IUniswapV2Pair");
 const KtyUniswapOracle = artifacts.require("KtyUniswapOracle");
+const Dai = artifacts.require("Dai");
+const DaiWethPair = artifacts.require("IDaiWethPair");
 
 const editJsonFile = require("edit-json-file");
 let file;
-
-const ktyAmount = new BigNumber(
-  web3.utils.toWei("50000", "ether") //100 ethers * 500 = 50,000 kty
-);
 
 function timeout(s) {
   // console.log(`~~~ Timeout for ${s} seconds`);
@@ -51,7 +49,9 @@ let yieldFarming,
   factory,
   weth,
   ktyWethPair,
-  ktyUniswapOracle;
+  ktyUniswapOracle,
+  dai,
+  daiWethPair;
 
 contract("YieldFarming", accounts => {
   it("instantiate contracts", async () => {
@@ -63,16 +63,98 @@ contract("YieldFarming", accounts => {
     ktyUniswapOracle = await KtyUniswapOracle.deployed();
     weth = await WETH.deployed();
     factory = await Factory.deployed();
-  });
+    dai = await Dai.deployed();
 
-  it("set up uniswap environment", async () => {
-    const pairAddress = await factory.getPair(
+    const ktyPairAddress = await factory.getPair(
       weth.address,
       kittieFightToken.address
     );
-    console.log("pair address", pairAddress);
-    ktyWethPair = await KtyWethPair.at(pairAddress);
-    console.log("ktyWethPair:", ktyWethPair.address);
+    ktyWethPair = await KtyWethPair.at(ktyPairAddress);
+
+    const daiPairAddress = await factory.getPair(weth.address, dai.address);
+    const daiWethPair = await DaiWethPair.at(daiPairAddress);
+    console.log("daiWethPair:", daiWethPair.address);
+  });
+
+  it("sets Rewards Unlock Rate for KittieFightToken and SuperDaoToken", async () => {
+    let unlockRates = await yieldFarming.getRewardUnlockRate();
+    let KTYunlockRates = unlockRates[0];
+    let SDAOunlockRates = unlockRates[1];
+    console.log(`\n======== KTY Rewards Unlock Rate ======== `);
+    for (let i = 0; i < 6; i++) {
+      console.log(
+        "KTY rewards unlock rate in",
+        "Month",
+        i,
+        ":",
+        KTYunlockRates[i].toString()
+      );
+    }
+
+    console.log(`\n======== SDAO Rewards Unlock Rate ======== `);
+    for (let j = 0; j < 6; j++) {
+      console.log(
+        "SDAO rewards unlock rate in",
+        "Month",
+        j,
+        ":",
+        SDAOunlockRates[j].toString()
+      );
+    }
+
+    console.log("===============================\n");
+
+    let unlockRatesByMonth0 = await yieldFarming.getRewardUnlockRateByMonth(0);
+    let unlockRatesByMonth1 = await yieldFarming.getRewardUnlockRateByMonth(1);
+    console.log(unlockRatesByMonth0[0].toString());
+    console.log(unlockRatesByMonth0[1].toString());
+    console.log(unlockRatesByMonth1[0].toString());
+    console.log(unlockRatesByMonth1[1].toString());
+  });
+
+  it("sets total KittieFightToken and SuperDaoToken rewards for the entire program duration", async () => {
+    let totalRewards = await yieldFarming.getTotalRewards();
+    console.log("Total KittieFightToken rewards:", weiToEther(totalRewards[0]));
+    console.log("Total SuperDaoToken rewards:", weiToEther(totalRewards[1]));
+  });
+
+  it("users provides liquidity to Uniswap KTY-Weth pool", async () => {
+    const weth_amount = new BigNumber(
+      web3.utils.toWei("10", "ether") //10 ethers
+    );
+
+    const kty_amount = new BigNumber(
+      web3.utils.toWei("5000", "ether") //10 ethers * 500 = 5,000 kty
+    );
+
+    let balanceLP;
+
+    for (let i = 1; i < 19; i++) {
+      await kittieFightToken.transfer(accounts[i], kty_amount);
+      await kittieFightToken.transfer(ktyWethPair.address, kty_amount, {
+        from: accounts[i]
+      });
+      await weth.deposit({from: accounts[i], value: weth_amount});
+      await weth.transfer(ktyWethPair.address, weth_amount, {
+        from: accounts[i]
+      });
+      await ktyWethPair.mint(accounts[i], {from: accounts[i]});
+
+      balanceLP = await ktyWethPair.balanceOf(accounts[i]);
+
+      console.log(
+        "User",
+        i,
+        ": Balance of Uniswap Liquidity tokens:",
+        weiToEther(balanceLP)
+      );
+    }
+
+    let totalSupplyLP = await ktyWethPair.totalSupply();
+    console.log(
+      "Total Supply of Uniswap Liquidity tokens:",
+      weiToEther(totalSupplyLP)
+    );
 
     let ktyReserve = await ktyUniswapOracle.getReserveKTY();
     let ethReserve = await ktyUniswapOracle.getReserveETH();
@@ -143,33 +225,5 @@ contract("YieldFarming", accounts => {
     );
   });
 
-  it("sets Rewards Unlock Rate for KittieFightToken and SuperDaoToken", async () => {
-    let unlockRates = await yieldFarming.getRewardUnlockRate();
-    let KTYunlockRates = unlockRates[0]
-    let SDAOunlockRates = unlockRates[1]
-    console.log(`\n======== KTY Rewards Unlock Rate ======== `);
-    for (let i = 0; i < 6; i++) {
-        console.log("KTY rewards unlock rate in", "Month", i, ":", KTYunlockRates[i].toString())
-    }
-
-    console.log(`\n======== SDAO Rewards Unlock Rate ======== `);
-    for (let j = 0; j < 6; j++) {
-        console.log("SDAO rewards unlock rate in", "Month", j, ":", SDAOunlockRates[j].toString())
-    }
-
-    console.log("===============================\n");
-
-    let unlockRatesByMonth0 = await yieldFarming.getRewardUnlockRateByMonth(0);
-    let unlockRatesByMonth1 = await yieldFarming.getRewardUnlockRateByMonth(1);
-    console.log(unlockRatesByMonth0[0].toString());
-    console.log(unlockRatesByMonth0[1].toString());
-    console.log(unlockRatesByMonth1[0].toString());
-    console.log(unlockRatesByMonth1[1].toString());
-  });
-
-  it("sets total KittieFightToken and SuperDaoToken rewards for the entire program duration", async () => {
-      let totalRewards = await yieldFarming.getTotalRewards()
-      console.log("Total KittieFightToken rewards:", weiToEther(totalRewards[0]))
-      console.log("Total SuperDaoToken rewards:", weiToEther(totalRewards[1]))
-  })
+  it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {});
 });
