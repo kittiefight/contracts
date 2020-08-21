@@ -1,6 +1,7 @@
 const KFProxy = artifacts.require('KFProxy')
 const Register = artifacts.require('Register')
 const KittieHell = artifacts.require('KittieHell')
+const KittieHellDungeon = artifacts.require('KittieHellDungeon')
 const CryptoKitties = artifacts.require('MockERC721Token');
 
 function setMessage(contract, funcName, argArray) {
@@ -18,6 +19,7 @@ module.exports = async (callback) => {
     let proxy = await KFProxy.deployed();
     let register = await Register.deployed();
     let kittieHell = await KittieHell.deployed();
+    let kittieHellDungeon = await KittieHellDungeon.deployed();
     let cryptoKitties = await CryptoKitties.deployed()
 
     accounts = await web3.eth.getAccounts();
@@ -29,7 +31,7 @@ module.exports = async (callback) => {
 
     for (let i = 0; i < noOfPlayers; i++) {
       await cryptoKitties.mint(accounts[i + 1], kitties[i]);
-      await cryptoKitties.approve(kittieHell.address, kitties[i], { from: accounts[i + 1] });
+      await cryptoKitties.approve(kittieHellDungeon.address, kitties[i], { from: accounts[i + 1] });
       await proxy.execute('Register', setMessage(register, 'verifyAccount', [cividIds[i]]), { from: accounts[i + 1]});
 
       console.log(`New Player ${accounts[i + 1]} with Kitty ${kitties[i]}`);

@@ -11,9 +11,15 @@ import '../proxy/Proxied.sol';
 import '../../libs/SafeMath.sol';
 import '../../GameVarAndFee.sol';
 import '../databases/GenericDB.sol';
+import "../../uniswapKTY/uniswap-v2-periphery/interfaces/IUniswapV2Router01.sol";
+import "./KtyUniswap.sol";
+import "../databases/EndowmentDB.sol";
 
 contract HoneypotAllocationAlgo is Proxied {
     using SafeMath for uint256;
+
+    address[] public path;
+    EndowmentDB public endowmentDB;
 
     /// @dev game honeypot classfication (based on actual funds in USD)
     string constant VERY_TINY_GAME = "veryTinyGame"; // <= $500
@@ -92,6 +98,33 @@ contract HoneypotAllocationAlgo is Proxied {
         INCREDIBLE_GAME_36
     ];
 
+    function initialize()
+    public
+    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    {
+        delete path;
+        address _WETH = proxy.getContract(CONTRACT_NAME_WETH);
+        path.push(_WETH);
+        address _KTY = proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN);
+        path.push(_KTY);
+        endowmentDB = EndowmentDB(proxy.getContract(CONTRACT_NAME_ENDOWMENT_DB));
+    }
+
+    /**
+    * @dev check if enough funds present and maintains balance of tokens in DB
+    */
+    function generateHoneyPot(uint256 gameId)
+    external
+    onlyContract(CONTRACT_NAME_GAMECREATION)
+    returns (uint, uint) {
+        (
+          uint ktyAllocated,
+          uint ethAllocated,
+          string memory honeypotClass
+        ) = calculateAllocationToHoneypot();
+        return (endowmentDB.generateHoneyPot(gameId, ktyAllocated, ethAllocated, honeypotClass));
+    }
+
     /**
      * @dev calculates the amount of initial ethers and KTYs allocated to a new honeypot
      * upon its generations, based on the amount of available funds in USD
@@ -102,12 +135,10 @@ contract HoneypotAllocationAlgo is Proxied {
     function calculateAllocationToHoneypot()
         public
         view
-        onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
+        // onlyContract(CONTRACT_NAME_ENDOWMENT_DB)
         returns (uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
     {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        uint256 ethUsdPrice = gameVarAndFee.getEthUsdPrice();
-        uint256 usdKTYPrice = gameVarAndFee.getUsdKTYPrice();
         uint256 actualFundsETH = GenericDB(proxy.getContract(CONTRACT_NAME_GENERIC_DB))
                                  .getUintStorage(
                                      CONTRACT_NAME_ENDOWMENT_DB,
@@ -121,9 +152,44 @@ contract HoneypotAllocationAlgo is Proxied {
             (percentageETH, honeypotClass) = _honeypotAllocationETH_great(actualFundsUSD);
         }
         ethAllocated = percentageETH.mul(actualFundsETH).div(1000000);
-        ktyAllocated = gameVarAndFee.getPercentageHoneypotAllocationKTY()
-                                    .mul(ethAllocated).mul(ethUsdPrice)
-                                    .div(usdKTYPrice).div(1000000);// 1,000,000 is the percentage base
+        uint256 ktyAllocatedInEther = gameVarAndFee.getPercentageHoneypotAllocationKTY()
+                                    .mul(ethAllocated).div(1000000);// 1,000,000 is the percentage base
+        ktyAllocated = gameVarAndFee.convertEthToKty(ktyAllocatedInEther);
+    }
+
+    /**
+    * @dev send reward to the user that pressed finalize button
+    */
+    // function getFinalizeRewards()
+    //     external
+    //     view
+    //     onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    //     returns(uint256)
+    // {
+    //     GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
+    //     // get reward amount in KTY
+    //     (, uint rewardsKTY) = gameVarAndFee.getFinalizeRewards();
+    //     return rewardsKTY;
+    // }
+
+    /**
+    * @dev exchange ether for KTY
+    */
+    function swapEtherForKTY(uint256 _etherForSwap, address _escrow)
+        external
+        payable
+        onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+        returns(uint256)
+    {
+        // allow an error within 0.0001 ether range, which is around $0.002 USD, that is, 0.2 cents.
+        require(msg.value >= _etherForSwap.sub(10000000000000), "Insufficient ether for swap KTY");
+        // exchange KTY on uniswap
+        IUniswapV2Router01(proxy.getContract(CONTRACT_NAME_UNISWAPV2_ROUTER)).swapExactETHForTokens.value(msg.value)(
+            0,
+            path,
+            _escrow,
+            2**255
+        );
     }
 
     /**
@@ -134,7 +200,7 @@ contract HoneypotAllocationAlgo is Proxied {
     function convertETHtoUSD(uint256 _eth)
         public view returns(uint256 _usd) {
         GameVarAndFee gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
-        _usd = _eth.mul(gameVarAndFee.getEthUsdPrice()).div(1000000000000000000).div(1000000000000000000);
+        _usd = gameVarAndFee.convertEthToDai(_eth).div(1000000000000000000);
     }
 
     /**

@@ -53,7 +53,7 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
      */
     function getDefenseLevel(uint256 kittieId, uint256 gene)
       public
-      // onlyContract(CONTRACT_NAME_GAMEMANAGER)
+      onlyContract(CONTRACT_NAME_GAMEMANAGER)
       returns (uint256) {
       getDominantGeneBinary(kittieId, gene);
       binaryToKai(kittieId);
@@ -96,8 +96,7 @@ contract RarityCalculator is Proxied, Guard, Rarity, DefenseLevel, FancyKitties 
      * @dev determine whether a kittie with a specific kittieId is a valuable fancy kittie
      */
     function isFancy(uint256 _kittieId)
-        public // temporarily set as public just for truffle test purpose
-        // internal
+        internal
         view
         returns(bool)
     {

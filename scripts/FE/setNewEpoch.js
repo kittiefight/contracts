@@ -1,6 +1,8 @@
 const WithdrawPool = artifacts.require("WithdrawPool");
+const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
 const EarningsTracker = artifacts.require("EarningsTracker");
-const TimeFrame = artifacts.require("TimeFrame")
+const TimeFrame = artifacts.require("TimeFrame");
+const GenericDB = artifacts.require("GenericDB");
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -15,21 +17,30 @@ function formatDate(timestamp) {
   return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
 }
 
+function weiToEther(w) {
+  let eth = web3.utils.fromWei(w.toString(), "ether");
+  return Math.round(parseFloat(eth));
+}
+
 //truffle exec scripts/FE/setNewEpoch.js
 
 module.exports = async (callback) => {    
 
   try{
     let withdrawPool = await WithdrawPool.deployed();
+    let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
     let earningsTracker = await EarningsTracker.deployed();
-    let timeFrame = await TimeFrame.deployed()
+    let timeFrame = await TimeFrame.deployed();
+    let genericDB = await GenericDB.deployed();
 
     accounts = await web3.eth.getAccounts();
 
+    await timeFrame.setTimes(205, 50, 50);
+
     await withdrawPool.setPool_0();
 
-    const epoch_0_start_unix = await timeFrame._epochStartTime(0);
-    const epoch_0_end_unix = await timeFrame._epochEndTime(0);
+    const epoch_0_start_unix = await timeFrame.workingDayStartTime();
+    const epoch_0_end_unix = await timeFrame.restDayEndTime();
  
     console.log("\n******************* Epoch 0 *****************");
     console.log(
@@ -42,46 +53,27 @@ module.exports = async (callback) => {
     );
     console.log("********************************************************\n");
 
-    let amounts = await earningsTracker.amountsPerEpoch(0);
-    const numberOfPools = await withdrawPool.getTotalNumberOfPools();
-    console.log("Number of pools:", numberOfPools.toNumber());
+    const numberOfPools = await timeFrame.getTotalEpochs();
+    const epochID = await timeFrame.getActiveEpochID()
+    const stakersClaimed = await withdrawPoolGetters.getAllClaimersForPool(epochID);
+
     console.log("\n******************* Pool 0 Created*******************");
-    const pool_0_details = await withdrawPool.weeklyPools(0);
+    console.log("Number of pools:", numberOfPools.toNumber());
     console.log(
       "epoch ID associated with this pool",
-      pool_0_details.epochID.toString()
-    );
-    console.log(
-      "block number when this pool was created",
-      pool_0_details.blockNumber.toString()
+      epochID.toString()
     );
     console.log(
       "initial ether available in this pool:",
-      pool_0_details.initialETHAvailable.toString()
-    );
-    console.log(
-      "ether available in this pool:",
-      pool_0_details.ETHAvailable.toString()
+      weiToEther(await withdrawPoolGetters.getInitialETH(epochID))
     );
     console.log(
       "date available for claiming from this pool:",
-      formatDate(pool_0_details.dateAvailable)
+      formatDate(await timeFrame.restDayStartTime())
     );
     console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_0_details.initialETHadded
-    );
-    console.log(
-      "time when this pool is dissolved:",
-      formatDate(pool_0_details.dateDissolved)
-    );
-    console.log(
-      "stakers who have claimed from this pool:",
-      pool_0_details.stakersClaimed[0]
-    );
-    console.log(
-      "Investments in Pool:",
-      amounts.investment.toString()
+      "Number of stakers who have claimed from this pool:",
+      stakersClaimed.toString()
     );
     console.log("********************************************************\n");
     callback()

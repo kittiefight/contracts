@@ -39,7 +39,7 @@ contract GMSetterDB is Proxied {
   GameStore public gameStore;
   GameCreation public gameCreation;
 
-  bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
+  bytes32 internal constant TABLE_KEY_GAME = keccak256(abi.encodePacked("GameTable"));
   string internal constant TABLE_NAME_BETTOR = "BettorTable";
 
   modifier onlyExistentGame(uint256 gameId) {
@@ -228,7 +228,7 @@ contract GMSetterDB is Proxied {
    */
   function updateGameState(uint256 gameId, uint256 state)
     external
-    onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    only2Contracts(CONTRACT_NAME_GAMEMANAGER, CONTRACT_NAME_GAMEMANAGER_HELPER)
     onlyExistentGame(gameId)
   {
     gameCreation.scheduleJobs(gameId, state);
@@ -236,6 +236,11 @@ contract GMSetterDB is Proxied {
   }
 
   // ==== CRONJOBS FUNCTIONS
+
+  function setCronJobForGame(uint256 gameId, uint256 jobId) external onlyContract(CONTRACT_NAME_GAMECREATION) {
+    return genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "cronJobForGame")), jobId);
+  }
+
   function updateGameStateCron(uint256 gameId)
     external
     onlyContract(CONTRACT_NAME_GAMECREATION)
@@ -249,17 +254,6 @@ contract GMSetterDB is Proxied {
     onlyExistentGame(gameId){
       gameCreation.scheduleJobs(gameId, 0);
       genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "state")), 0);
-  }
-
-  /**
-   * @dev Update kittie playing game Id
-   */
-  function updateKittiesGame(uint kittyBlack, uint kittyRed, uint gameId)
-    external
-    onlyContract(CONTRACT_NAME_GAMECREATION)
-  {
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyBlack, "playingGame")), gameId);
-    genericDB.setUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(kittyRed, "playingGame")), gameId);
   }
 
   /**

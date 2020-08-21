@@ -17,6 +17,7 @@ module.exports = {
       },
     }
   },
+  plugins: ["truffle-contract-size"],
   networks: {
     mainnet: {
       provider: providerFactory("mainnet"),
@@ -33,8 +34,8 @@ module.exports = {
     rinkeby: {
       provider: providerFactory("rinkeby"),
       network_id: 4,
-      gas: 6950000,
-      gasPrice: 10000000000 // 10 Gwei
+      gas: 8950000,
+      gasPrice: 50000000000 // 50 Gwei
     },
     kovan: {
       provider: providerFactory("kovan"),
@@ -46,7 +47,7 @@ module.exports = {
       host: "127.0.0.1",
       port: 8544,
       network_id: 999,
-      gas: 7000000
+      gas: 20000000
     },
     live: {
       host: "127.0.0.1",

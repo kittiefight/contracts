@@ -16,7 +16,9 @@ contract ContractNames {
     string constant CONTRACT_NAME_KITTIEFIGHTOKEN   = "KittieFightToken";
     string constant CONTRACT_NAME_KITTIEHELL        = "KittieHell";
     string constant CONTRACT_NAME_KITTIEHELL_DB     = "KittieHellDB";
+    string constant CONTRACT_NAME_KITTIEHELL_DUNGEON     = "KittieHellDungeon";
     string constant CONTRACT_NAME_GAMEMANAGER       = "GameManager";
+    string constant CONTRACT_NAME_GAMEMANAGER_HELPER     = "GameManagerHelper";
     string constant CONTRACT_NAME_GAMESTORE         = "GameStore";
     string constant CONTRACT_NAME_GAMECREATION      = "GameCreation";
     string constant CONTRACT_NAME_GM_SETTER_DB      = "GMSetterDB";
@@ -35,9 +37,23 @@ contract ContractNames {
     string constant CONTRACT_NAME_HITSRESOLVE       = "HitsResolve";
     string constant CONTRACT_NAME_RARITYCALCULATOR  = "RarityCalculator";
     string constant CONTRACT_NAME_CRYPTOKITTIES     = "CryptoKitties";
-    string constant CONTRACT_NAME_WITHDRAWAL_POOL   = "WithdrawalPool";
     string constant CONTRACT_NAME_TIMEFRAME         = "TimeFrame";
     string constant CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO = "HoneypotAllocationAlgo";
     string constant CONTRACT_NAME_EARNINGS_TRACKER  = "EarningsTracker";
+    string constant CONTRACT_NAME_EARNINGS_TRACKER_DB  = "EarningsTrackerDB";
     string constant CONTRACT_NAME_WITHDRAW_POOL   = "WithdrawPool";
+    string constant CONTRACT_NAME_WITHDRAW_POOL_GETTERS   = "WithdrawPoolGetters";
+    string constant CONTRACT_NAME_WITHDRAW_POOL_YIELDS   = "WithdrawPoolYields";
+    string constant CONTRACT_NAME_ETHIETOKEN   = "EthieToken";
+    string constant CONTRACT_NAME_UNISWAPV2_PAIR   = "UniswapV2Pair";
+    string constant CONTRACT_NAME_UNISWAPV2_ROUTER   = "UniswapV2Router01";
+    string constant CONTRACT_NAME_KTY_UNISWAP   = "KtyUniswap";
+    string constant CONTRACT_NAME_WETH = "WETH9";
+    string constant CONTRACT_NAME_DAI = "Dai";
+    string constant CONTRACT_NAME_DAI_WETH_PAIR = "IDaiWethPair";
+    string constant CONTRACT_NAME_MULTISIG = "Multisig5of12";
+    string constant CONTRACT_NAME_BUSINESS_INSIGHT = "BusinessInsight";
+    string constant CONTRACT_NAME_ACCOUNTING_DB = "AccountingDB";
+    string constant CONTRACT_NAME_REDEEM_KITTIE = "RedeemKittie";
+    string constant CONTRACT_NAME_LIST_KITTIES = "ListKitties";
 }

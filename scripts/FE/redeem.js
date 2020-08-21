@@ -2,15 +2,28 @@ const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const KittieHell = artifacts.require('KittieHell')
 const KittieHellDB = artifacts.require("KittieHellDB");
+const KittieHellDungeon = artifacts.require("KittieHellDungeon");
 const EndowmentFund = artifacts.require('EndowmentFund')
 const KittieFightToken = artifacts.require('KittieFightToken')
 const CryptoKitties = artifacts.require('MockERC721Token');
+const KtyUniswap = artifacts.require("KtyUniswap");
+const Escrow = artifacts.require("Escrow");
+const GameStore = artifacts.require('GameStore')
+const GameManagerHelper = artifacts.require('GameManagerHelper')
+const AccountingDB = artifacts.require('AccountingDB')
+const RedeemKittie = artifacts.require('RedeemKittie')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
     contract.abi.find((f) => { return f.name == funcName; }),
     argArray
   );
+}
+
+function weiToEther(w) {
+  //let eth = web3.utils.fromWei(w.toString(), "ether");
+  //return Math.round(parseFloat(eth));
+  return web3.utils.fromWei(w.toString(), "ether");
 }
 
 //truffle exec scripts/FE/redeem.js gameId(uint)
@@ -22,9 +35,16 @@ module.exports = async (callback) => {
     let getterDB = await GMGetterDB.deployed();
     let kittieHell = await KittieHell.deployed();
     let kittieHellDB = await KittieHellDB.deployed();
+    let kittieHellDungeon = await KittieHellDungeon.deployed();
     let endowmentFund = await EndowmentFund.deployed();
     let kittieFightToken = await KittieFightToken.deployed();
     let cryptoKitties = await CryptoKitties.deployed();
+    let ktyUniswap = await KtyUniswap.deployed();
+    let escrow = await Escrow.deployed()
+    let gameStore = await GameStore.deployed()
+    let gameManagerHelper = await GameManagerHelper.deployed()
+    let accountingDB = await AccountingDB.deployed()
+    let redeemKittie = await RedeemKittie.deployed()
 
     accounts = await web3.eth.getAccounts();
 
@@ -52,17 +72,9 @@ module.exports = async (callback) => {
 
     console.log("Loser's Kitty: " + loserKitty);
 
-    let resurrectionCost = await kittieHell.getResurrectionCost(
-      loserKitty,
-      gameId
-    );
-    const redemptionFee = web3.utils.fromWei(
-      resurrectionCost.toString(),
-      "ether"
-    );
-    const kittieRedemptionFee = parseFloat(redemptionFee);
-    console.log("Loser's Kitty redemption fee in KTY: " + kittieRedemptionFee);
-
+    let resurrectionFee = await accountingDB.getKittieRedemptionFee(gameId);
+    let resurrectionCost = resurrectionFee[1]
+  
     const sacrificeKitties = [1017555, 413830, 888];
 
     for (let i = 0; i < sacrificeKitties.length; i++) {
@@ -70,31 +82,31 @@ module.exports = async (callback) => {
     }
 
     for (let i = 0; i < sacrificeKitties.length; i++) {
-      await cryptoKitties.approve(kittieHellDB.address, sacrificeKitties[i], {
+      await cryptoKitties.approve(kittieHellDungeon.address, sacrificeKitties[i], {
         from: loser
       });
     }
 
-    await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
-      from: loser
-    });
+    // await kittieFightToken.approve(kittieHell.address, resurrectionCost, {
+    //   from: loser
+    // });
+
+    let ether_resurrection_cost = resurrectionFee[0]
+    console.log("KTY resurrection cost:", weiToEther(resurrectionCost))
+    console.log("ether needed for swap KTY resurrection:", weiToEther(ether_resurrection_cost))
 
     await proxy.execute(
-      "KittieHell",
-      setMessage(kittieHell, "payForResurrection", [
+      "RedeemKittie",
+      setMessage(redeemKittie, "payForResurrection", [
         loserKitty,
         gameId,
         loser,
         sacrificeKitties
       ]),
-      {from: loser}
+      {from: loser, value: ether_resurrection_cost}
     );
 
     let owner = await cryptoKitties.ownerOf(loserKitty);
-
-    if (owner === kittieHellDB.address) {
-      console.log("Loser kitty became ghost in kittieHELL FOREVER :(");
-    }
 
     if (owner === loser) {
       console.log("Kitty Redeemed :)");
@@ -134,7 +146,30 @@ module.exports = async (callback) => {
     console.log(
       "Is sacrificing kitty 3 in Hell? " + isSacrificeKittyThreeInHell
     );
-    
+
+    // -- swap info--
+    console.log('\n==== UNISWAP PRICE ===');
+    // uniswap price 
+    ktyReserve = await ktyUniswap.getReserveKTY();
+    ethReserve = await ktyUniswap.getReserveETH();
+    console.log("reserveKTY:", weiToEther(ktyReserve));
+    console.log("reserveETH:", weiToEther(ethReserve));
+
+    ether_kty_price = await ktyUniswap.ETH_KTY_price();
+    kty_ether_price = await ktyUniswap.KTY_ETH_price();
+    console.log(
+      "Ether to KTY price:",
+      "1 ether to",
+      weiToEther(ether_kty_price),
+      "KTY"
+    );
+    console.log(
+      "KTY to Ether price:",
+      "1 KTY to",
+      weiToEther(kty_ether_price),
+      "ether"
+    );
+
     callback()
   }
   catch(e){callback(e)}

@@ -26,7 +26,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice converts kai notation to its corresponding cattribute
      */
     function kaiToCattribute(uint256 kittieId)
-      public
+      internal
     {
        kittiesDominantCattributes[kittieId].push(cattributes['body'][kittiesDominantGeneKai[kittieId][0]]);
        kittiesDominantCattributes[kittieId].push(cattributes['pattern'][kittiesDominantGeneKai[kittieId][1]]);
@@ -46,8 +46,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
    function binaryToKai(uint256 kittieId)
-     public  // temporarily set as public just for truffle test purpose
-     //internal
+     internal
      {
        kittiesDominantGeneKai[kittieId].push(kaiValue[kittiesDominantGeneBinary[kittieId][0]]);
        kittiesDominantGeneKai[kittieId].push(kaiValue[kittiesDominantGeneBinary[kittieId][1]]);
@@ -85,7 +84,7 @@ contract KittiesCattributesDB is Proxied, Guard, KaiToCattributesDB, KaiValueDB 
      * @notice only dominant genes are kept since kitties only demonstrate cattributes from dominant genes.
      */
     function getDominantGeneBinary(uint256 kittieId, uint256 gene)
-      public
+      internal
      {
         string memory geneBinary = toBinaryString(gene);
         kittiesDominantGeneBinary[kittieId].push(getSlice(236, 240, geneBinary));

@@ -19,7 +19,8 @@ import "./GameManager.sol";
 import "../../GameVarAndFee.sol";
 import "../../interfaces/ERC721.sol";
 import '../kittieHELL/KittieHell.sol';
-
+import '../kittieHELL/KittieHellDungeon.sol';
+import "./GameManagerHelper.sol";
 
 /**
  * @title Forfeiter
@@ -34,6 +35,8 @@ contract Forfeiter is Proxied {
   GameVarAndFee public gameVarAndFee;
   ERC721 public ckc;
   KittieHell public kittieHELL;
+  KittieHellDungeon public kittieHellDungeon;
+  GameManagerHelper public gameManagerHelper;
 
   uint256 public constant UNDERSUPPORTED = 0;
   uint256 public constant KITTIE_LEFT = 1;
@@ -52,6 +55,8 @@ contract Forfeiter is Proxied {
     gameVarAndFee = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE));
     ckc = ERC721(proxy.getContract(CONTRACT_NAME_CRYPTOKITTIES));
     kittieHELL = KittieHell(proxy.getContract(CONTRACT_NAME_KITTIEHELL));
+    kittieHellDungeon = KittieHellDungeon(proxy.getContract(CONTRACT_NAME_KITTIEHELL_DUNGEON));
+    gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
   }
 
   /**
@@ -79,8 +84,8 @@ contract Forfeiter is Proxied {
     // GAME_PRESTART
     if (gameState == 1) {
       (uint256 gameStartTime,,) = gmGetterDB.getGameTimes(gameId);
-      bool redStarted = gameStore.didHitStart(gameId, playerRed);
-      bool blackStarted = gameStore.didHitStart(gameId, playerBlack);
+      bool redStarted = gameManagerHelper.didHitStart(gameId, playerRed);
+      bool blackStarted = gameManagerHelper.didHitStart(gameId, playerBlack);
 
       bool check = checkPlayersKitties(gameId, kittyBlack, kittyRed, playerBlack, playerRed); // TODO check why it fails here
       //if previous check passes, check players start
@@ -97,9 +102,9 @@ contract Forfeiter is Proxied {
   function forfeitGame(uint256 gameId, string memory reason) internal {
     (/*address playerBlack*/, /*address playerRed*/, uint256 kittyBlack,
       uint256 kittyRed) = gmGetterDB.getGamePlayers(gameId);
-    if(ckc.ownerOf(kittyBlack) == address(kittieHELL)) kittieHELL.releaseKittyForfeiter(kittyBlack);
-    if(ckc.ownerOf(kittyRed) == address(kittieHELL)) kittieHELL.releaseKittyForfeiter(kittyRed);
-    gameManager.cancelGame(gameId);
+    if(ckc.ownerOf(kittyBlack) == address(kittieHellDungeon)) kittieHELL.releaseKittyGameManager(kittyBlack);
+    if(ckc.ownerOf(kittyRed) == address(kittieHellDungeon)) kittieHELL.releaseKittyGameManager(kittyRed);
+    gameManagerHelper.cancelGame(gameId);
     emit GameCancelled(gameId, reason);
   }
 
@@ -137,17 +142,18 @@ contract Forfeiter is Proxied {
     uint gameId, uint kittieIdBlack, uint kittieIdRed,
     address playerBlack, address playerRed
   )
-    public returns(bool)
+    internal
+    returns(bool)
   {
     bool checkBlack;
     bool checkRed;
 
     //When one player hits start, that kittie is owned by kittieHELL
-    if (ckc.ownerOf(kittieIdBlack) == address(kittieHELL)) checkBlack = true;
+    if (ckc.ownerOf(kittieIdBlack) == address(kittieHellDungeon)) checkBlack = true;
     else if(ckc.ownerOf(kittieIdBlack) == playerBlack) checkBlack = true;
     else checkBlack = false;
 
-    if(ckc.ownerOf(kittieIdRed) == address(kittieHELL)) checkRed = true;
+    if(ckc.ownerOf(kittieIdRed) == address(kittieHellDungeon)) checkRed = true;
     else if(ckc.ownerOf(kittieIdRed) == playerRed) checkRed = true;
     else checkRed = false;
 
@@ -166,10 +172,11 @@ contract Forfeiter is Proxied {
    * @param gamePreStartTime uint256 time when game starts 2 min countdown
    */
   function checkAmountSupporters(uint gameId, uint supportersBlack, uint supportersRed, uint gamePreStartTime)
-    public  returns(bool)
+    internal
+    returns(bool)
   {
     if (gamePreStartTime <= now) {
-      uint minSupporters = gameStore.getMinimumContributors(gameId); //TODO: should call getterDB as vars and fees are locked
+      uint minSupporters = gameManagerHelper.getMinimumContributors(gameId); //TODO: should call getterDB as vars and fees are locked
       if(supportersBlack < minSupporters || supportersRed < minSupporters){
         forfeitGame(gameId, "Undersupported");
         return false;

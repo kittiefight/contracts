@@ -4,6 +4,7 @@ const GameStore = artifacts.require('GameStore')
 const GameManager = artifacts.require('GameManager')
 const Register = artifacts.require('Register')
 const DateTime = artifacts.require('DateTime')
+const GameManagerHelper = artifacts.require('GameManagerHelper')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -37,12 +38,13 @@ module.exports = async (callback) => {
     let gameStore = await GameStore.deployed();
     let register = await Register.deployed();
     let dateTime = await DateTime.deployed();
+    let gameManagerHelper = await GameManagerHelper.deployed()
 
     accounts = await web3.eth.getAccounts();
 
     let gameId = process.argv[4];
 
-    let extension = await gameStore.getTimeExtension(1);
+    let extension = await gameManagerHelper.getTimeExtension(1);
     console.log(extension);
     let {preStartTime, startTime, endTime} = await getterDB.getGameTimes(gameId);
 

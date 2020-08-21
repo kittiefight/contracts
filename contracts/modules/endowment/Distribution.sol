@@ -17,12 +17,16 @@ pragma solidity ^0.5.5;
 
 import '../../GameVarAndFee.sol';
 import '../proxy/Proxied.sol';
+import "../../authority/Guard.sol";
 import '../../libs/SafeMath.sol';
 import '../databases/GMGetterDB.sol';
 import "../databases/EndowmentDB.sol";
 import "../../interfaces/ERC20Standard.sol";
 import "./Escrow.sol";
 import "../gamemanager/GameStore.sol";
+import "../endowment/HoneypotAllocationAlgo.sol";
+import "../databases/AccountingDB.sol";
+import "../gamemanager/GameManagerHelper.sol";
 
 /**
  * @title Distribution Contract
@@ -31,7 +35,7 @@ import "../gamemanager/GameStore.sol";
  * to the scheduled percentage.
  * @author @wafflemakr @hamaad
  */
-contract Distribution is Proxied {
+contract Distribution is Proxied, Guard {
 
     using SafeMath for uint256;
 
@@ -40,6 +44,14 @@ contract Distribution is Proxied {
     EndowmentDB public endowmentDB;
     ERC20Standard public kittieFightToken;
     GameStore public gameStore;
+    GameManagerHelper public gameManagerHelper;
+
+    // modifier multiSigFundsMovement(uint256 _transferNum, address _newEscrow) {
+    //     (uint256 _lastTransferNumber,) = multiSig.getLastTransfer();
+    //     require(multiSig.isTransferApproved(_transferNum, _newEscrow), "Transfer is not approved");
+    //     require(_transferNum >= _lastTransferNumber, "Transer number should be bigger than previous transfer number");
+    //     _;
+    // }
 
     /**
     * @dev Sets related contracts
@@ -51,6 +63,7 @@ contract Distribution is Proxied {
         kittieFightToken = ERC20Standard(proxy.getContract(CONTRACT_NAME_KITTIEFIGHTOKEN));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
+        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
     }
 
     /**
@@ -60,7 +73,7 @@ contract Distribution is Proxied {
         public view
         returns(uint256 winningsETH, uint256 winningsKTY)
     {
-        (address winner, /*address loser*/, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+        (address winner, /*address loser*/, uint256 totalBetsForLosingCorner) = gameManagerHelper.getWinnerLoser(gameId);
 
         require(winner != address(0));
 
@@ -78,10 +91,10 @@ contract Distribution is Proxied {
     }
 
     function calculator(uint256 totalBetsForLosingCorner, uint256 winningCategory, uint256 bet, uint256 gameId)
-        internal view
+        public view
         returns(uint256, uint256)
     {
-        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
+        uint256[5] memory rates = gameManagerHelper.getDistributionRates(gameId);
         (, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
         uint256 winningsETH = (totalBetsForLosingCorner.mul(rates[winningCategory])).div(1000000); //1,000,000 is the percentage base
@@ -98,7 +111,7 @@ contract Distribution is Proxied {
 
     function getOtherWinnersShare(uint256 winningsKTY, uint256 winningsETH, uint256 bet,
         uint256 gameId)
-        internal view
+        public view
         returns(uint256, uint256)
     {
         address[3] memory winners;
@@ -122,14 +135,13 @@ contract Distribution is Proxied {
         return (bet.add(winningsETH), winningsKTY);
     }
 
-
     function getEndowmentShare(uint gameId) public view returns(uint256 winningsETH, uint256 winningsKTY){
         (/*uint256 totalEthFunds*/, uint256 totalKTYFunds) = gmGetterDB.getFinalHoneypot(gameId);
 
-        uint256[5] memory rates = gameStore.getDistributionRates(gameId);
+        uint256[5] memory rates = gameManagerHelper.getDistributionRates(gameId);
         (,, uint initialEth,,,,) = gmGetterDB.getHoneypotInfo(gameId);
 
-        (/*address winner*/, /*address loser*/, uint256 totalBetsForLosingCorner) = getWinnerLoser(gameId);
+        (/*address winner*/, /*address loser*/, uint256 totalBetsForLosingCorner) = gameManagerHelper.getWinnerLoser(gameId);
 
         winningsETH = initialEth.add(totalBetsForLosingCorner.mul(rates[4]).div(1000000)); //1,000,000 is the percentage base
         winningsKTY = (totalKTYFunds.mul(rates[4])).div(1000000); //1,000,000 is the percentage base
@@ -154,14 +166,5 @@ contract Distribution is Proxied {
 
         // Winning Other Bettors List
         return 3;
-    }
-
-    function getWinnerLoser(uint256 gameId)
-        public view
-        returns(address winner, address loser, uint256 totalBetsForLosingCorner)
-    {
-        (winner,,) = gmGetterDB.getWinners(gameId);
-        loser = gameStore.getOpponent(gameId, winner);
-        totalBetsForLosingCorner = gmGetterDB.getTotalBet(gameId, loser);
     }
 }

@@ -1,7 +1,9 @@
+const KFProxy = artifacts.require('KFProxy')
 const SuperDaoToken = artifacts.require("MockERC20Token");
-const KittieFightToken = artifacts.require('KittieFightToken');
-const MockStaking = artifacts.require("MockStaking");
+const SuperDaoStaking = artifacts.require("SuperDaoStaking");
+const TimeLockManager = artifacts.require("TimeLockManager");
 const EarningsTracker = artifacts.require("EarningsTracker");
+const EarningsTrackerDB = artifacts.require("EarningsTrackerDB");
 const EthieToken = artifacts.require("EthieToken");
 const BigNumber = web3.utils.BN;
 require("chai")
@@ -27,9 +29,12 @@ function setMessage(contract, funcName, argArray) {
 module.exports = async (callback) => {    
 
   try{
+    let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
-    let staking = await MockStaking.deployed();
+    let superDaoStaking = await SuperDaoStaking.deployed();
+    let timeLockManager = await TimeLockManager.deployed();
     let earningsTracker = await EarningsTracker.deployed();
+    let earningsTrackerDB = await EarningsTrackerDB.deployed();
     let ethieToken = await EthieToken.deployed();
 
     accounts = await web3.eth.getAccounts();
@@ -48,13 +53,13 @@ module.exports = async (callback) => {
         weiToEther(balBefore)
       );
 
-      await superDaoToken.approve(staking.address, stakedTokens, {
+      await superDaoToken.approve(superDaoStaking.address, stakedTokens, {
         from: accounts[i]
       });
 
-      await staking.stake(stakedTokens, {from: accounts[i]});
+      await superDaoStaking.stake(stakedTokens, '0x', {from: accounts[i]});
 
-      let balStaking = await superDaoToken.balanceOf(staking.address);
+      let balStaking = await superDaoToken.balanceOf(superDaoStaking.address);
       console.log(
         "Balance of staking contract after staking:",
         weiToEther(balStaking)
@@ -65,16 +70,45 @@ module.exports = async (callback) => {
         `Balance of staker ${i} after staking:`,
         weiToEther(balAfter)
       );
+
+      await superDaoStaking.allowManager(timeLockManager.address, stakedTokens, '0x', { from: accounts[i] })
+
+      await timeLockManager.lock(stakedTokens, { from: accounts[i] });
     }
 
+    let lockEvents = await timeLockManager.getPastEvents('SuperDaoTokensLocked', {
+      fromBlock: 0,
+      toBlock: "latest"
+    })
+
+    lockEvents.map(async (e) => {
+      console.log('\n==== SuperDao Tokens Locked ===');
+      console.log('    staker ', e.returnValues.user)
+      console.log('    for Epoch ', e.returnValues.nextEpochId)
+      console.log('    locked amount ', weiToEther(e.returnValues.amount))
+      console.log('    totla locked amount ', weiToEther(e.returnValues.totalAmount))
+      console.log('========================\n')
+    })
+
+
+
     await ethieToken.addMinter(earningsTracker.address);
-    await earningsTracker.setCurrentFundingLimit();
+    await earningsTrackerDB.setCurrentFundingLimit();
 
     for (let i = 0; i < 6; i++) {
-      let ethAmount = new BigNumber(web3.utils.toWei('5'));
+      let ethAmount = new BigNumber(web3.utils.toWei('10'));
       console.log(ethAmount.toString());
       console.log(accounts[i]);
-      await earningsTracker.lockETH({gas: 900000, from: accounts[i], value: ethAmount.toString()});
+      //await earningsTracker.lockETH({gas: 900000, from: accounts[i], value: ethAmount.toString()});
+      await proxy.execute(
+        "EarningsTracker",
+        setMessage(earningsTracker, "lockETH", []),
+        {
+          gas: 900000,
+          from: accounts[i],
+          value: ethAmount.toString()
+        }
+      )
       let number_ethieToken = await ethieToken.balanceOf(accounts[i]);
       let ethieTokenID = await ethieToken.tokenOfOwnerByIndex(accounts[i], 0);
       ethieTokenID = ethieTokenID.toNumber();

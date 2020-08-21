@@ -3,8 +3,8 @@ pragma solidity ^0.5.5;
 import "./GenericDB.sol";
 import "../proxy/Proxied.sol";
 import "../../libs/SafeMath.sol";
-import "../endowment/EndowmentFund.sol";
-import "../endowment/HoneypotAllocationAlgo.sol";
+import '../../GameVarAndFee.sol';
+import './GMGetterDB.sol';
 
 contract EndowmentDB is Proxied {
   using SafeMath for uint256;
@@ -35,8 +35,6 @@ contract EndowmentDB is Proxied {
   string internal constant ERROR_ALREADY_EXIST = "Already exists";
   string internal constant ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
 
-  uint256 investmentForNext;
-
   constructor(GenericDB _genericDB) public {
     setGenericDB(_genericDB);
   }
@@ -45,17 +43,11 @@ contract EndowmentDB is Proxied {
     genericDB = _genericDB;
   }
 
-  function getHoneyPotBalance(uint256 _gameId) public view
-  returns (uint256 honeyPotBalanceKTY, uint256 honeyPotBalanceETH)  {
-    honeyPotBalanceKTY = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
-    honeyPotBalanceETH = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
-  }
-
   function updateHoneyPotFund(
     uint256 _gameId, uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
   )
     external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool)
   {
     uint honeyPotKtyTotal;
@@ -105,21 +97,23 @@ contract EndowmentDB is Proxied {
   external
   onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
   {
-    investmentForNext = investmentForNext.add(_investment);
+    uint currentInvestment = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext", currentInvestment.add(_investment));
   }
 
   function subInvestment(uint256 _investment)
   external
   onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
   {
-    investmentForNext = investmentForNext.sub(_investment);
+    uint currentInvestment = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext", currentInvestment.sub(_investment));
   }
 
   function updateEndowmentFund(
     uint256 _kty_amount, uint256 _eth_amount, bool deductFunds
   )
     external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+    only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
     returns (bool)
   {
     return (_updateEndowmentFund(_kty_amount, _eth_amount, deductFunds));
@@ -190,21 +184,9 @@ contract EndowmentDB is Proxied {
     genericDB.setStringStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "honeypotClass")), honeypotClass);
   }
 
-  function getHoneypotState(
-    uint gameId
-  )
-    external
-    view returns (uint state, uint256 claimTime)
-  {
-    return(
-      genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "state"))),
-      genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(gameId, "claimTime")))
-    );
-  }
-
   function setHoneypotState( uint _gameId, uint state)
   external
-  onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+  only2Contracts(CONTRACT_NAME_ENDOWMENT_FUND, CONTRACT_NAME_GAMEMANAGER_HELPER)
   {
     genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "state")), state);
     // if (claimTime > 0){
@@ -215,25 +197,13 @@ contract EndowmentDB is Proxied {
     // }
   }
 
-
-  function getHoneypotTotal(uint _gameId) external view returns (uint256 totalEth, uint256 totalKty) {
-      totalEth = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ethTotal")));
-      totalKty = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, keccak256(abi.encodePacked(_gameId, "ktyTotal")));
-  }
-
   /**
   * @dev check if enough funds present and maintains balance of tokens in DB
   */
-  function generateHoneyPot(uint256 gameId)
-    external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+  function generateHoneyPot(uint256 gameId, uint256 ktyAllocated, uint256 ethAllocated, string memory honeypotClass)
+    public
+    onlyContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)
     returns (uint, uint) {
-
-    (
-      uint ktyAllocated,
-      uint ethAllocated,
-      string memory honeypotClass
-    ) = HoneypotAllocationAlgo(proxy.getContract(CONTRACT_NAME_HONEYPOT_ALLOCATION_ALGO)).calculateAllocationToHoneypot();
 
     // + adds amount to honeypot
     createHoneypot(
@@ -251,35 +221,6 @@ contract EndowmentDB is Proxied {
     return (ktyAllocated, ethAllocated);
   }
 
-/**
- * @dev store the total debit by an a/c per game
- */
-  function setTotalDebit(
-    uint _gameId, address _account, uint _eth_amount, uint _kty_amount
-  ) external
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    onlyExistingHoneypot(_gameId)
-    returns (bool) {
-
-    if (_eth_amount > 0) {
-
-      bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
-      uint ethTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey, ethTotal.add(_eth_amount));
-
-    }
-
-    if (_kty_amount > 0) {
-
-      bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
-      uint ktyTotal = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
-      genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey, ktyTotal.add(_kty_amount));
-
-    }
-
-  return true;
-  }
-
   function setPoolIDinGame(uint _gameId, uint _poolId)
       external
       onlyContract(CONTRACT_NAME_GAMECREATION)
@@ -291,9 +232,20 @@ contract EndowmentDB is Proxied {
     );
   }
 
-  function addETHtoPool(uint _gameId, uint _eth)
-      external
-      onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
+  function addETHtoPool(uint256 gameId, address loser)
+        external
+        onlyContract(CONTRACT_NAME_GAMEMANAGER)
+    {
+        uint256 totalEthForLoser = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB)).getTotalBet(gameId, loser);
+        uint256 percentageForPool = GameVarAndFee(proxy.getContract(CONTRACT_NAME_GAMEVARANDFEE)).getPercentageForPool();
+        uint256 ETHtoPool = totalEthForLoser.mul(percentageForPool).div(1000000);
+        _addETHtoPool(gameId, ETHtoPool);
+    }
+
+  function _addETHtoPool(uint _gameId, uint _eth)
+      internal
+      // external
+      // onlyContract(CONTRACT_NAME_ACCOUNTING_DB)
   {
     // get _pool_id of the pool associated with the game with _gameId
     uint _pool_id = getPoolID(_gameId);
@@ -302,6 +254,14 @@ contract EndowmentDB is Proxied {
       CONTRACT_NAME_ENDOWMENT_DB,
       keccak256(abi.encodePacked(_pool_id, "ETHinPool"))
     );
+
+    // record initial ether amount added to this pool
+    genericDB.setUintStorage(
+      CONTRACT_NAME_ENDOWMENT_DB,
+      keccak256(abi.encodePacked(_pool_id, "InitialETHinPool")),
+      prevETH.add(_eth)
+    );
+
     // add _eth to the previous amount of ether in this pool
     genericDB.setUintStorage(
       CONTRACT_NAME_ENDOWMENT_DB,
@@ -360,38 +320,34 @@ contract EndowmentDB is Proxied {
       );
     }
 
-    _updateEndowmentFund(0, investmentForNext, false);
+    _updateEndowmentFund(0, genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext"), false);
 
     uint256 actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
-    investmentForNext = 0;
+    genericDB.setUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext", 0);
     return actualFunds.sub(remainingFundsPool);
   }
 
-  function checkTotalForEpoch(uint256 pool_id)
+  function getInvestment()
   external
   view
-  onlyContract(CONTRACT_NAME_GAMESTORE)
   returns(uint256)
   {
-    uint256 fundsForPool = getETHinPool(pool_id);
-    uint256 actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
-    return actualFunds.sub(fundsForPool);
+    return genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, "investmentForNext");
   }
 
-/**
- * @dev get total debit by an a/c per game
- */
-  function getTotalDebit(
-    uint _gameId, address _account
-  ) external view
-    onlyContract(CONTRACT_NAME_ENDOWMENT_FUND)
-    //onlyExistingProfile(_account)
-    onlyExistingHoneypot(_gameId)
-    returns (uint256 ethTotalDebit, uint256 ktyTotalDebit) {
-      bytes32 ethTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ethDebit"));
-      bytes32 ktyTotalDebitPerGamePerAcKey = keccak256(abi.encodePacked(_gameId, _account, "ktyDebit"));
-      ethTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ethTotalDebitPerGamePerAcKey);
-      ktyTotalDebit = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, ktyTotalDebitPerGamePerAcKey);
+  function getTotalForEpoch(uint256 pool_id)
+  external
+  onlyContract(CONTRACT_NAME_WITHDRAW_POOL)
+  returns(uint256, uint256)
+  {
+    uint256 fundsForPool = getETHinPool(pool_id);
+    genericDB.setUintStorage(
+        CONTRACT_NAME_ENDOWMENT_DB,
+        keccak256(abi.encodePacked(pool_id, "InitialETHinPool")),
+        fundsForPool
+      );
+    uint256 actualFunds = genericDB.getUintStorage(CONTRACT_NAME_ENDOWMENT_DB, VAR_KEY_ACTUAL_FUNDS_ETH);
+    return (actualFunds.sub(fundsForPool), fundsForPool);
   }
 
   // get pool ID of the pool associated with a honey pot

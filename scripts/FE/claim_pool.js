@@ -1,10 +1,15 @@
+const KFProxy = artifacts.require("KFProxy");
 const SuperDaoToken = artifacts.require("MockERC20Token");
 const KittieFightToken = artifacts.require('KittieFightToken');
-const MockStaking = artifacts.require("MockStaking");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
+const WithdrawPoolGetters = artifacts.require("WithdrawPoolGetters");
+const WithdrawPoolYields = artifacts.require("WithdrawPoolYields");
 const BigNumber = web3.utils.BN;
+const Register = artifacts.require("Register");
+const TimeFrame = artifacts.require("TimeFrame");
+const EndowmentDB = artifacts.require('EndowmentDB');
 require("chai")
   .use(require("chai-shallow-deep-equal"))
   .use(require("chai-bignumber")(BigNumber))
@@ -21,6 +26,12 @@ function timeout(s) {
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
+function formatDate(timestamp) {
+  let date = new Date(null);
+  date.setSeconds(timestamp);
+  return date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+}
+
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
     contract.abi.find((f) => { return f.name == funcName; }),
@@ -28,25 +39,61 @@ function setMessage(contract, funcName, argArray) {
   );
 }
 
+function increaseTime(addSeconds, web3Instance = web3) {
+  const id = Date.now();
+
+  return new Promise((resolve, reject) => {
+    web3Instance.currentProvider.send(
+      {
+        jsonrpc: '2.0',
+        method: 'evm_increaseTime',
+        params: [addSeconds],
+        id,
+      },
+      (err1) => {
+        if (err1) return reject(err1);
+
+        return web3Instance.currentProvider.send(
+          {
+            jsonrpc: '2.0',
+            method: 'evm_mine',
+            id: id + 1,
+          },
+          (err2, res) => (err2 ? reject(err2) : resolve(res)),
+        );
+      },
+    );
+  });
+}
+
 //truffle exec scripts/FE/claim_pool.js poolID
 
 module.exports = async (callback) => {    
 
   try{
+    let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
-    let staking = await MockStaking.deployed();
     let earningsTracker = await EarningsTracker.deployed();
     let ethieToken = await EthieToken.deployed();
     let withdrawPool = await WithdrawPool.deployed();
+    let withdrawPoolGetters = await WithdrawPoolGetters.deployed();
+    let withdrawPoolYields = await WithdrawPoolYields.deployed();
+    let register = await Register.deployed();
+    let timeFrame = await TimeFrame.deployed();
+    let endowmentDB = await EndowmentDB.deployed();
 
     accounts = await web3.eth.getAccounts();
 
     let poolId = process.argv[4]
+    let user = process.argv[5] === null ? 45 : process.argv[5];
     const stakedTokens = new BigNumber(
       web3.utils.toWei("5", "ether")
     );
 
-    let timeTillClaiming = await withdrawPool.timeUntilClaiming();
+    let epochID = await timeFrame.getActiveEpochID();
+    console.log(epochID.toString());
+
+    let timeTillClaiming = await withdrawPoolGetters.timeUntilClaiming();
     console.log(
       "Time (in seconds) till claiming from the current pool:",
       timeTillClaiming.toNumber()
@@ -54,57 +101,72 @@ module.exports = async (callback) => {
     if (timeTillClaiming.toNumber() > 0) {
       await timeout(timeTillClaiming.toNumber());
     }
+
+    await proxy.executeScheduledJobs();
+
+    console.log(formatDate(await timeFrame.restDayStartTime()));
+    console.log(formatDate(await timeFrame.restDayEndTime()));
     
+    // await proxy.execute(
+    //     "Register",
+    //     setMessage(register, "register", []),
+    //     {
+    //       from: accounts[user]
+    //     }
+    //   )
     console.log("Available for claiming...");
 
-    for (let i = 1; i < 4; i++) {
-      await withdrawPool.claimYield(poolId, {from: accounts[i]});
+    let boolean = await withdrawPoolGetters.getUnlocked(0);
+    console.log(boolean);
+    epochID = await timeFrame.getActiveEpochID();
+    console.log("Current Epoch:", epochID.toString());
+
+    for (let i = 1; i < 3; i++) {
+      //await withdrawPool.claimYield(poolId, {from: accounts[i]});
+      await proxy.execute(
+        "WithdrawPoolYields",
+        setMessage(withdrawPoolYields, "claimYield", [0]),
+        {
+          from: accounts[i]
+        }
+      )
     }
 
-    const pool_0_details = await withdrawPool.weeklyPools(0);
-    const numberOfClaimers = pool_0_details.stakersClaimed.toNumber();
-    const etherPaidOutPool0 = await withdrawPool.getEthPaidOut();
+    const initialETHAvailable = await withdrawPoolGetters.getInitialETH(0);
+    const ethAvailable = await endowmentDB.getETHinPool(0);
+    const numberOfClaimers = await withdrawPoolGetters.getAllClaimersForPool(0);
+    const etherPaidOutPool0 = await withdrawPoolGetters.getEthPaidOut();
+    const dateAvailable = await timeFrame.restDayStartTime();
+    const dateDissolved = await timeFrame.restDayEndTime();
     console.log(
       "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
     );
-    console.log(
-      "epoch ID associated with this pool",
-      pool_0_details.epochID.toString()
-    );
-    console.log(
-      "block number when this pool was created",
-      pool_0_details.blockNumber.toString()
-    );
+    
     console.log(
       "initial ether available in this pool:",
-      weiToEther(pool_0_details.initialETHAvailable)
+      weiToEther(initialETHAvailable)
     );
     console.log(
       "ether available in this pool:",
-      weiToEther(pool_0_details.ETHAvailable)
+      weiToEther(ethAvailable)
     );
     console.log(
       "date available for claiming from this pool:",
-      pool_0_details.dateAvailable.toString()
+      dateAvailable.toString()
     );
-    console.log(
-      "whether initial ether has been distributed to this pool:",
-      pool_0_details.initialETHadded
-    );
+    // console.log(
+    //   "whether initial ether has been distributed to this pool:",
+    //   pool_0_details.initialETHadded
+    // );
     console.log(
       "time when this pool is dissolved:",
-      pool_0_details.dateDissolved.toString()
+      dateDissolved.toString()
     );
     console.log(
       "Number of stakers who have claimed from this pool:",
-      numberOfClaimers
+      numberOfClaimers.toString()
     );
     console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
-    console.log("-------- Stakers who have claimed from this pool ------");
-
-    let claimers = await withdrawPool.getAllClaimersForPool(0);
-    console.log(claimers);
-
     console.log("********************************************************\n");
 
     callback()

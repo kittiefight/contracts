@@ -2,6 +2,7 @@ const KFProxy = artifacts.require('KFProxy')
 const GMGetterDB = artifacts.require('GMGetterDB')
 const GameCreation = artifacts.require('GameCreation')
 const CryptoKitties = artifacts.require('MockERC721Token')
+const ListKitties = artifacts.require('ListKitties')
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
@@ -28,10 +29,11 @@ module.exports = async (callback) => {
     let getterDB = await GMGetterDB.deployed();
     let gameCreation = await GameCreation.deployed();
     let cryptoKitties = await CryptoKitties.deployed();
+    let listKitties = await ListKitties.deployed();
 
     let kittyRed = process.argv[4];
     let kittyBlack = process.argv[5];
-    let gameStartTime = Math.floor(Date.now() / 1000) + 100 + 250 //process.argv[6];
+    let gameStartTime = Math.floor(Date.now() / 1000) + 70 //process.argv[6];
 
     accounts = await web3.eth.getAccounts();
 
@@ -42,7 +44,7 @@ module.exports = async (callback) => {
     console.log('PlayerBlack: ', playerBlack);
     console.log('PlayerRed: ', playerRed);
 
-    await proxy.execute('GameCreation', setMessage(gameCreation, 'manualMatchKitties',
+    await proxy.execute('ListKitties', setMessage(listKitties, 'manualMatchKitties',
       [playerRed, playerBlack, kittyRed, kittyBlack, gameStartTime]), { from: accounts[0] });
 
     let newGameEvents = await gameCreation.getPastEvents("NewGame", {

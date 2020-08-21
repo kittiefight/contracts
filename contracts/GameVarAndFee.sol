@@ -28,11 +28,8 @@ import './modules/databases/GenericDB.sol';
 import "./modules/proxy/Proxied.sol";
 import "./authority/Guard.sol";
 import './misc/VarAndFeeNames.sol';
-
-/// @dev MakerDao eth-usd price medianizer
-contract Medianizer {
-    function read() external view returns (bytes32);
-}
+import './modules/endowment/KtyUniswap.sol';
+import './libs/SafeMath.sol';
 
 /**
  * @title Contract that moderates the various fees, timing limits, expiry date/time,
@@ -42,24 +39,17 @@ contract Medianizer {
  * @dev One setter that is called from GameVarAndFeeProxy contract setters
  */
 contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
+    using SafeMath for uint256;
 
     string constant TABLE_NAME = "GameVarAndFeeTable";
 
     // Declare DB type variable
     GenericDB public genericDB;
-    Medianizer medianizer;
 
     /// @notice Function called when deployed
     /// @param _genericDB Address of deployed GeneriDB contract
-    constructor (GenericDB _genericDB, Medianizer _medianizer) public {
+    constructor (GenericDB _genericDB) public {
         setGenericDB(_genericDB);
-        setMedianizer(_medianizer);
-    }
-
-    // kovanMedianizer = 0xA944bd4b25C9F186A846fd5668941AA3d3B8425F
-    // mainnetMedianizer = 0x729D19f657BD0614b4985Cf1D82531c67569197B
-    function setMedianizer(Medianizer _medianizer) public onlyOwner{
-       medianizer = Medianizer(_medianizer);
     }
 
     /// @notice Set genericDB variable to store data in contract
@@ -68,14 +58,6 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
     }
 
     // ----- SETTERS ------
-
-    /// @dev set one variable at a time
-    function setVarAndFee(string calldata varName, uint value)
-        external onlyProxy onlySuperAdmin
-    {
-        bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, varName));
-        genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, value);
-    }
 
     /// @dev set multiple variables
     function setMultipleValues(bytes32[] calldata names, uint[] calldata values)
@@ -87,6 +69,15 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
             key = keccak256(abi.encodePacked(TABLE_NAME, bytes32ToString(names[i])));
             genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, values[i]);
         }
+    }
+
+    function setPlatformFeeInDai(string calldata feeName) external onlyProxy onlySuperAdmin {
+        bytes32 key = keccak256(abi.encodePacked(TABLE_NAME, feeName));
+        uint valKTY = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key);
+        // convert from kty to dai
+        uint valETH = convertKtyToEth(valKTY);
+        uint valDAI = convertEthToDai(valETH);
+        genericDB.setUintStorage(CONTRACT_NAME_GAMEVARANDFEE, key, valDAI);
     }
 
     function bytes32ToString(bytes32 x) internal pure returns (string memory) {
@@ -109,21 +100,20 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
 
     // ----- GETTERS ------
 
-    // Stale function - what is this getter for and where is it used?
-    /// @notice FrontEnd Global Getter
-   // function getGlobalSettings() public view    
-     //   returns(uint[5] memory, uint, uint, uint, uint, uint, uint, uint)
-    //{
-      //  return(getDistributionRates(),getListingFee(),getTicketFee(), getBettingFee(),
-        //    getKittieRedemptionFee(), getGamePrestart(), getGameDuration(), getKittieExpiry());
-    //}
+    function convertEthToDai(uint _ethAmount) public view returns(uint) {
+        return _ethAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_DAI_price()).div(1000000000000000000);
+    }
 
-    /// @notice get eth/usd current price
-    // temporarily hard code EthUsdPrice for truffle testing of BurnTokens.test.js
-    // Please remove hardcoding and uncomment line 124 once testing is done
-    function getEthUsdPrice() public view returns(uint){
-        //return uint256(medianizer.read());
-        return uint256(0x00000000000000000000000000000000000000000000000b49bcb0036fa6c000);
+    function convertDaiToEth(uint _daiAmount) public view returns(uint) {
+        return _daiAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).DAI_ETH_price()).div(1000000000000000000);
+    }
+
+    function convertKtyToEth(uint _ktyAmount) public view returns(uint) {
+        return _ktyAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
+    }
+
+    function convertEthToKty(uint _ethAmount) public view returns(uint) {
+        return _ethAmount.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).ETH_KTY_price()).div(1000000000000000000);
     }
         
     /// @notice Gets the number of matches that are set by Scheduler every time (i.e. 20 kitties, 10 matches)
@@ -217,37 +207,14 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_KITTIE_REDEMPTION_FEE);
     }
 
-    /// @notice Gets USD to KTY ratio
-    function getUsdKTYPrice()
-    public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, USD_KTY_PRICE);
+    /// @notice Gets fee in Ether and in KTY for players to list kitties for matching in fights
+    function getListingFee() public view returns(uint, uint) {
+        uint listingFeeDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
+        uint listingFeeETH = convertDaiToEth(listingFeeDAI);
+        uint listingFeeKTY = convertEthToKty(listingFeeETH);
+        uint etherForListingFeeSwap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).etherFor(listingFeeKTY);
+        return (etherForListingFeeSwap, listingFeeKTY);
     }
-
-    /// @notice Gets fee for players to list kitties for matching in fights
-    function getListingFee() public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, LISTING_FEE);
-    }
-
-    // Stale function
-    /// @notice Gets ticket fee in KTY for betting participators
-    //function getTicketFee() 
-    //public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, TICKET_FEE);
-    //}
-
-    // Stale function
-    /// @notice Gets betting fee in KTY for betting participators
-    //function getBettingFee() 
-    //public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, BETTING_FEE);
-    //}
-
-    //stale function
-    /// @notice Gets kittieHELL redemption fee in KTY for redeeming kitties
-    //function getKittieRedemptionFee()
-    //public view returns(uint) {
-      //  return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KITTIE_REDEMPTION_FEE);
-    //}
 
     /// @notice Gets minimum contributors needed for the game to continue
     function getMinimumContributors() 
@@ -255,10 +222,13 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, MINIMUM_CONTRIBUTORS);
     }
 
-    /// @notice Gets the amount of KTY rewarded to the user that hits finalize button
-    function getFinalizeRewards() 
+    /// @notice Gets the amount of KTY rewarded to the user that hits finalize button. Return amount in Dai.
+    function getFinalizeRewards()
     public view returns(uint) {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
+        uint rewardsDAI = genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, FINALIZE_REWARDS);
+        uint rewardsETH = convertDaiToEth(rewardsDAI);
+        uint rewardsKTY = convertEthToKty(rewardsETH);
+        return rewardsKTY;
     }
 
     /// @notice Gets the time before a game ends that the check performance should act
@@ -280,10 +250,11 @@ contract GameVarAndFee is Proxied, Guard, VarAndFeeNames {
         return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, REQUIRED_KITTIE_SACRIFICE_NUM);
     }
 
-    function getKTYforBurnEthie()
+    function getPercentageforBurnEthie()
         public view returns(uint)
     {
-        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, KTY_FOR_BURN_ETHIE);
+        return genericDB.getUintStorage(CONTRACT_NAME_GAMEVARANDFEE, PERCENTAGE_FOR_BURN_ETHIE);
+       
     }
 
     /// @notice Gets the weekly interest rate for EthieToken NFT
