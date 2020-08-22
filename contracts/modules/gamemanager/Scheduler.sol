@@ -117,13 +117,13 @@ contract Scheduler is Proxied, SchedulerDB {
      * @dev Changes mode of game creation.
      */
     function changeMode() public onlyOwner {
-        // require(
-        //     genericDB.getBoolStorage(
-        //         CONTRACT_NAME_WITHDRAW_POOL,
-        //         keccak256(abi.encodePacked("rest_day"))
-        //     ),
-        //     "Can change mode only in Rest Day"
-        // );
+        require(
+            genericDB.getBoolStorage(
+                CONTRACT_NAME_WITHDRAW_POOL,
+                keccak256(abi.encodePacked("rest_day"))
+            ),
+            "Can change mode only in Rest Day"
+        );
 
         if (
             genericDB.getBoolStorage(
