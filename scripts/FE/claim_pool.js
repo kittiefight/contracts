@@ -1,6 +1,6 @@
 const KFProxy = artifacts.require("KFProxy");
 const SuperDaoToken = artifacts.require("MockERC20Token");
-const KittieFightToken = artifacts.require('KittieFightToken');
+const KittieFightToken = artifacts.require("KittieFightToken");
 const EarningsTracker = artifacts.require("EarningsTracker");
 const EthieToken = artifacts.require("EthieToken");
 const WithdrawPool = artifacts.require("WithdrawPool");
@@ -9,7 +9,7 @@ const WithdrawPoolYields = artifacts.require("WithdrawPoolYields");
 const BigNumber = web3.utils.BN;
 const Register = artifacts.require("Register");
 const TimeFrame = artifacts.require("TimeFrame");
-const EndowmentDB = artifacts.require('EndowmentDB');
+const EndowmentDB = artifacts.require("EndowmentDB");
 require("chai")
   .use(require("chai-shallow-deep-equal"))
   .use(require("chai-bignumber")(BigNumber))
@@ -34,7 +34,9 @@ function formatDate(timestamp) {
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
-    contract.abi.find((f) => { return f.name == funcName; }),
+    contract.abi.find(f => {
+      return f.name == funcName;
+    }),
     argArray
   );
 }
@@ -45,32 +47,31 @@ function increaseTime(addSeconds, web3Instance = web3) {
   return new Promise((resolve, reject) => {
     web3Instance.currentProvider.send(
       {
-        jsonrpc: '2.0',
-        method: 'evm_increaseTime',
+        jsonrpc: "2.0",
+        method: "evm_increaseTime",
         params: [addSeconds],
-        id,
+        id
       },
-      (err1) => {
+      err1 => {
         if (err1) return reject(err1);
 
         return web3Instance.currentProvider.send(
           {
-            jsonrpc: '2.0',
-            method: 'evm_mine',
-            id: id + 1,
+            jsonrpc: "2.0",
+            method: "evm_mine",
+            id: id + 1
           },
-          (err2, res) => (err2 ? reject(err2) : resolve(res)),
+          (err2, res) => (err2 ? reject(err2) : resolve(res))
         );
-      },
+      }
     );
   });
 }
 
 //truffle exec scripts/FE/claim_pool.js poolID
 
-module.exports = async (callback) => {    
-
-  try{
+module.exports = async callback => {
+  try {
     let proxy = await KFProxy.deployed();
     let superDaoToken = await SuperDaoToken.deployed();
     let earningsTracker = await EarningsTracker.deployed();
@@ -84,11 +85,9 @@ module.exports = async (callback) => {
 
     accounts = await web3.eth.getAccounts();
 
-    let poolId = process.argv[4]
-    let user = process.argv[5] === null ? 45 : process.argv[5];
-    const stakedTokens = new BigNumber(
-      web3.utils.toWei("5", "ether")
-    );
+    let poolId = process.argv[4];
+    let user = process.argv[5] === null ? 46 : process.argv[5];
+    const stakedTokens = new BigNumber(web3.utils.toWei("5", "ether"));
 
     let epochID = await timeFrame.getActiveEpochID();
     console.log(epochID.toString());
@@ -106,17 +105,13 @@ module.exports = async (callback) => {
 
     console.log(formatDate(await timeFrame.restDayStartTime()));
     console.log(formatDate(await timeFrame.restDayEndTime()));
-    
-    // await proxy.execute(
-    //     "Register",
-    //     setMessage(register, "register", []),
-    //     {
-    //       from: accounts[user]
-    //     }
-    //   )
+
+    // await proxy.execute("Register", setMessage(register, "register", []), {
+    //   from: accounts[user]
+    // });
     console.log("Available for claiming...");
 
-    let boolean = await withdrawPoolGetters.getUnlocked(0);
+    let boolean = await withdrawPoolGetters.getUnlocked(poolId);
     console.log(boolean);
     epochID = await timeFrame.getActiveEpochID();
     console.log("Current Epoch:", epochID.toString());
@@ -129,7 +124,7 @@ module.exports = async (callback) => {
         {
           from: accounts[i]
         }
-      )
+      );
     }
 
     const initialETHAvailable = await withdrawPoolGetters.getInitialETH(0);
@@ -141,15 +136,12 @@ module.exports = async (callback) => {
     console.log(
       "\n******************* SuperDao Tokens Stakers Claim from Pool 0 *******************"
     );
-    
+
     console.log(
       "initial ether available in this pool:",
       weiToEther(initialETHAvailable)
     );
-    console.log(
-      "ether available in this pool:",
-      weiToEther(ethAvailable)
-    );
+    console.log("ether available in this pool:", weiToEther(ethAvailable));
     console.log(
       "date available for claiming from this pool:",
       dateAvailable.toString()
@@ -158,10 +150,7 @@ module.exports = async (callback) => {
     //   "whether initial ether has been distributed to this pool:",
     //   pool_0_details.initialETHadded
     // );
-    console.log(
-      "time when this pool is dissolved:",
-      dateDissolved.toString()
-    );
+    console.log("time when this pool is dissolved:", dateDissolved.toString());
     console.log(
       "Number of stakers who have claimed from this pool:",
       numberOfClaimers.toString()
@@ -169,9 +158,8 @@ module.exports = async (callback) => {
     console.log("ether paid out by pool 0:", weiToEther(etherPaidOutPool0));
     console.log("********************************************************\n");
 
-    callback()
+    callback();
+  } catch (e) {
+    callback(e);
   }
-  catch(e){
-    callback(e)
-  }
-}
+};
