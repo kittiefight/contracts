@@ -194,7 +194,7 @@ contract Scheduler is Proxied, SchedulerDB {
     function startGame()
         external
         only2Contracts(
-            CONTRACT_NAME_GAMESTORE,
+            CONTRACT_NAME_WITHDRAW_POOL,
             CONTRACT_NAME_GAMEMANAGER_HELPER
         )
     {
