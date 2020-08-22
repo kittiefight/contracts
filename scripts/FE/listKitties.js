@@ -31,6 +31,9 @@ module.exports = async callback => {
     let owner1 = await cryptoKitties.ownerOf(kittieId1);
     let owner2 = await cryptoKitties.ownerOf(kittieId2);
 
+    console.log(owner1);
+    console.log(owner2);
+
     const value = await gameVarAndFee.getListingFee();
     console.log(value[0].toString());
 
@@ -47,6 +50,9 @@ module.exports = async callback => {
     );
 
     let isListed = await scheduler.isKittyListedForMatching(kittieId1);
+
+    let noOfKitties = await scheduler.getNoOfKittiesListed();
+    console.log("NoOfKittiesListed: ", noOfKitties.toString());
 
     if (isListed) console.log(`\nListed kittie ${kittieId1}!`);
     else console.log(`\nError listing kittie`);
