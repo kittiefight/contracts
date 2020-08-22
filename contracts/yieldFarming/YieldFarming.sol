@@ -679,6 +679,7 @@ contract YieldFarming is Owned {
         for (uint256 i = 5; i >= 0; i--) {
             if (block.timestamp >= monthsStartAt[i]) {
                 currentMonth = i;
+                break;
             }
         }
         return currentMonth;
@@ -738,8 +739,8 @@ contract YieldFarming is Owned {
         public view 
         returns (uint256 rewardKTYbyMonth, uint256 rewardSDAObyMonth)
     {
-        rewardKTYbyMonth = totalRewardsKTY.mul(KTYunlockRates[_month]);
-        rewardSDAObyMonth = totalRewardsSDAO.mul(SDAOunlockRates[_month]);
+        rewardKTYbyMonth = totalRewardsKTY.mul(KTYunlockRates[_month]).div(1000000);
+        rewardSDAObyMonth = totalRewardsSDAO.mul(SDAOunlockRates[_month]).div(1000000);
     }
 
     /*                                                 INTERNAL FUNCTIONS                                             */
