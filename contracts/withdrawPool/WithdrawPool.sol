@@ -206,7 +206,7 @@ contract WithdrawPool is Proxied, Guard {
             genericDB.getUintStorage(
                 CONTRACT_NAME_GM_SETTER_DB,
                 keccak256(abi.encodePacked(gameId, "state"))
-            ) > 3
+            ) <= 3
         ) {
             uint256 newTime = block.timestamp.add(HALF_HOUR);
 
