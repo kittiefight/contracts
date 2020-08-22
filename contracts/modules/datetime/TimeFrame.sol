@@ -99,7 +99,7 @@ pragma solidity ^0.5.5;
      function getActiveEpochID() public view returns (uint) {
          return genericDB.getUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encode("activeEpoch")));
+            keccak256(abi.encodePacked("activeEpoch")));
      }
 
      /**
@@ -339,7 +339,7 @@ pragma solidity ^0.5.5;
 
          genericDB.setUintStorage(
             CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encode("activeEpoch")),
+            keccak256(abi.encodePacked("activeEpoch")),
             _newEpochId);
 
          genericDB.setUintStorage(

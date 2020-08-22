@@ -114,7 +114,7 @@ contract EarningsTracker is Proxied, Guard {
         if(genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER_DB, keccak256(abi.encodePacked("0", "investment"))) == 0)
             genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID")), 0);
         else {
-            uint256 nextEpoch = genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))).add(1);
+            uint256 nextEpoch = genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked("activeEpoch"))).add(1);
             genericDB.setUintStorage(CONTRACT_NAME_EARNINGS_TRACKER, keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID")), nextEpoch);
         }
 
@@ -138,7 +138,7 @@ contract EarningsTracker is Proxied, Guard {
         external onlyProxy payable returns(bool)
     {
         // Ethie Tokens can only be burnt on a Rest Day in the current epoch
-        require(genericDB.getBoolStorage(CONTRACT_NAME_WITHDRAW_POOL, keccak256(abi.encode("rest_day"))), "Can only burn on Rest Day");
+        require(genericDB.getBoolStorage(CONTRACT_NAME_WITHDRAW_POOL, keccak256(abi.encodePacked("rest_day"))), "Can only burn on Rest Day");
 
         // the token may be sold to another person, therefore,
         // current owner may not be necessarily the original owner of
@@ -173,7 +173,7 @@ contract EarningsTracker is Proxied, Guard {
         _updateFunder_burn(msgSender, _ethieTokenID, interest);
         // update burntTokens
         // release ETH and accumulative interest to the current owner
-        uint256 activeEpochID = genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch")));
+        uint256 activeEpochID = genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked("activeEpoch")));
         if(startingEpochID > activeEpochID)
             _returnEther(msgSender, totalEth, false);
         else
