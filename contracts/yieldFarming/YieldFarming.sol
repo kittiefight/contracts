@@ -470,8 +470,10 @@ contract YieldFarming is Owned {
      */
     function calculateRewardsByBatchNumber(address _staker, uint256 _batchNumber)
         public view
-        returns (uint256 rewardKTY, uint256 rewardSDAO)
+        returns (uint256, uint256)
     {
+        uint256 rewardKTY;
+        uint256 rewardSDAO;
         // get locked time
         uint256 lockedAt = deposits[_staker][_batchNumber].lockedAt;
         // get total locked duration
@@ -480,8 +482,7 @@ contract YieldFarming is Owned {
         uint256 currentMonth = getCurrentMonth();
 
         if (lockedPeriod < MONTH || currentMonth == 0) {
-            rewardKTY = 0;
-            rewardSDAO = 0;
+            return(0, 0);
         }
 
         (
@@ -496,6 +497,7 @@ contract YieldFarming is Owned {
         // calculate KittieFightToken rewards
         rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
         rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
+        return (rewardKTY, rewardSDAO);
     }
 
     function calculateYieldsKTY(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
