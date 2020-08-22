@@ -7,7 +7,9 @@ const Register = artifacts.require("Register");
 
 function setMessage(contract, funcName, argArray) {
   return web3.eth.abi.encodeFunctionCall(
-    contract.abi.find((f) => { return f.name == funcName; }),
+    contract.abi.find(f => {
+      return f.name == funcName;
+    }),
     argArray
   );
 }
@@ -23,43 +25,15 @@ function weiToEther(w) {
   return Math.round(parseFloat(eth));
 }
 
-function increaseTime(addSeconds, web3Instance = web3) {
-  const id = Date.now();
-
-  return new Promise((resolve, reject) => {
-    web3Instance.currentProvider.send(
-      {
-        jsonrpc: '2.0',
-        method: 'evm_increaseTime',
-        params: [addSeconds],
-        id,
-      },
-      (err1) => {
-        if (err1) return reject(err1);
-
-        return web3Instance.currentProvider.send(
-          {
-            jsonrpc: '2.0',
-            method: 'evm_mine',
-            id: id + 1,
-          },
-          (err2, res) => (err2 ? reject(err2) : resolve(res)),
-        );
-      },
-    );
-  });
-}
-
 function timeout(s) {
   // console.log(`~~~ Timeout for ${s} seconds`);
   return new Promise(resolve => setTimeout(resolve, s * 1000));
 }
 
-//truffle exec scripts/FE/setNewEpoch.js
+//truffle exec scripts/FE/setEpoch.js 41
 
-module.exports = async (callback) => {    
-
-  try{
+module.exports = async callback => {
+  try {
     let proxy = await KFProxy.deployed();
     let withdrawPool = await WithdrawPool.deployed();
     let earningsTracker = await EarningsTracker.deployed();
@@ -67,51 +41,33 @@ module.exports = async (callback) => {
     let genericDB = await GenericDB.deployed();
     let register = await Register.deployed();
 
-    accounts = await web3.eth.getAccounts();    
+    let accountId = process.argv[4];
+
+    accounts = await web3.eth.getAccounts();
     const oldEpochID = await timeFrame.getActiveEpochID();
-    const timeTillStartTime = await timeFrame.timeUntilEpochEnd(oldEpochID);
- 
+    const timeTillStartTime = await timeFrame.restDayEndTime();
+
     console.log("\n******************* Epoch 0 *****************");
-    console.log(
-      "Time till start time:",
-      formatDate(timeTillStartTime)
-    );
+    console.log("Time till start time:", formatDate(timeTillStartTime));
     console.log("********************************************************\n");
 
     if (timeTillStartTime.toNumber() > 0) {
       await timeout(timeTillStartTime.toNumber());
     }
 
-    await proxy.execute(
-        "Register",
-        setMessage(register, "register", []),
-        {
-          from: accounts[48]
-        }
-      )
+    await proxy.execute("Register", setMessage(register, "register", []), {
+      from: accounts[accountId]
+    });
     console.log("New pool available...");
 
     const numberOfPools = await timeFrame.getTotalEpochs();
 
-    console.log("\n******************* Pool 0 Created*******************");
+    console.log(
+      `\n******************* Pool ${numberOfPools.toString()} Created*******************`
+    );
     console.log("Number of pools:", numberOfPools.toNumber());
-    const epochID = await timeFrame.getActiveEpochID();
-    console.log(
-      "epoch ID associated with this pool",
-      epochID.toString()
-    );
-    console.log(
-      "initial ether available in this pool:",
-      weiToEther(await withdrawPool.getInitialETH(epochID))
-    );
-    console.log(
-      "date available for claiming from this pool:",
-      formatDate(await timeFrame.restDayStartTime())
-    );
-    console.log("********************************************************\n");
-    callback()
+    callback();
+  } catch (e) {
+    callback(e);
   }
-  catch(e){
-    callback(e)
-  }
-}
+};
