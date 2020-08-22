@@ -439,6 +439,7 @@ contract YieldFarming is Owned {
         for (uint256 m = 0; m < allBatches.length; m++) {
             if (allBatches[m] > 0) {
                 startBatchNumber = m;
+                break;
             }
         }
         
