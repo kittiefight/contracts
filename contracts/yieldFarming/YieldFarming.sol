@@ -28,8 +28,8 @@ contract YieldFarming is Owned {
     KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
     WETH9 public weth;                          // WETH contract variable
 
-    uint256 constant MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
-    uint256 constant DAY = 24 * 60 * 60; 
+    uint256 public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
+    uint256 public DAY = 24 * 60 * 60; 
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
@@ -301,6 +301,12 @@ contract YieldFarming is Owned {
         totalRewardsSDAO = _rewardsSDAO;
     }
 
+    // This is a temporary function just for truffle testing purpose
+    function setMonthAndDay(uint256 _monthDuration, uint256 _dayDuration) public onlyOwner {
+        MONTH = _monthDuration;
+        DAY = _dayDuration;
+    }
+
     /*                                                 GETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
 
@@ -362,6 +368,27 @@ contract YieldFarming is Owned {
     }
 
     /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @return bool true if the batch with the _batchNumber of the _staker is eligible for claiming yields, false if it is not eligible.
+     * @dev    A batch needs to be locked for at least 30 days to be eligible for claiming yields.
+     * @dev    A batch locked for less than 30 days has 0 rewards, although the locked Liquidity tokens can be withdrawn at any time.
+     */
+    function isBatchEligibleForRewards(address _staker, uint256 _batchNumber)
+        public view returns (bool)
+    {
+        // get locked time
+        uint256 lockedAt = deposits[_staker][_batchNumber].lockedAt;
+        // get total locked duration
+        uint256 lockedPeriod = block.timestamp.sub(lockedAt);
+        // a minimum of 30 days of staking is required to be eligible for claiming rewards
+        if (lockedPeriod >= MONTH) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param _staker address the staker who has received the rewards
      * @return uint256 the total amount of KittieFightToken that have been claimed by this _staker
      * @return uint256 the total amount of SuperDaoToken that have been claimed by this _staker
@@ -385,8 +412,14 @@ contract YieldFarming is Owned {
      */
     function calculateRewardsByAmount(address _staker, uint256 _amountLP)
         public view
-        returns (uint256 rewardKTY, uint256 rewardSDAO, uint256 startBatchNumber, uint256 endBatchNumber)
+        returns (
+            uint256 rewardKTY,
+            uint256 rewardSDAO,
+            uint256 startBatchNumber,
+            uint256 endBatchNumber
+        )
     {
+        
         uint256 _startingMonth;
         uint256 _endingMonth;
         uint256 _daysInStartMonth;
@@ -397,35 +430,45 @@ contract YieldFarming is Owned {
         (startBatchNumber, endBatchNumber, hasResidual) = allocateLP(_staker, _amountLP);
 
         if (startBatchNumber == endBatchNumber) {
-            ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber);
-            rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
-            rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+            if (!isBatchEligibleForRewards(_staker, startBatchNumber)) {
+                rewardKTY = 0;
+                rewardSDAO = 0;
+            } else {
+                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber);
+                rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+                rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+            }
         }
 
         if (startBatchNumber < endBatchNumber && !hasResidual) {
             for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
-                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
-                lockedLP = deposits[_staker][i].amountLP;
-                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
-                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
+                if(isBatchEligibleForRewards(_staker, i)) {
+                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
+                    lockedLP = deposits[_staker][i].amountLP;
+                    rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                    rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                } 
             }
         }
 
         if (startBatchNumber < endBatchNumber && hasResidual) {
             for (uint256 i = startBatchNumber; i < endBatchNumber; i++) {
-                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
-                lockedLP = deposits[_staker][i].amountLP;
-                _amountLP = _amountLP.sub(lockedLP);
-                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
-                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                if(isBatchEligibleForRewards(_staker, i)) {
+                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
+                    lockedLP = deposits[_staker][i].amountLP;
+                    _amountLP = _amountLP.sub(lockedLP);
+                    rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                    rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                }       
             }
-
-            ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber);
-
-            rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
-            rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+            // add rewards for end Batch from which only part of the locked amount is to be withdrawn
+            if(isBatchEligibleForRewards(_staker, endBatchNumber)) {
+                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber);
+                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+            }    
         }
-        
     }
 
     function allocateLP(address _staker, uint256 _amountLP)
@@ -470,18 +513,14 @@ contract YieldFarming is Owned {
      */
     function calculateRewardsByBatchNumber(address _staker, uint256 _batchNumber)
         public view
-        returns (uint256 rewardKTY, uint256 rewardSDAO)
+        returns (uint256, uint256)
     {
-        // get locked time
-        uint256 lockedAt = deposits[_staker][_batchNumber].lockedAt;
-        // get total locked duration
-        uint256 lockedPeriod = block.timestamp.sub(lockedAt);
-        // 30 days of staking is required to get rewards
-        uint256 currentMonth = getCurrentMonth();
+        uint256 rewardKTY;
+        uint256 rewardSDAO;
 
-        if (lockedPeriod < MONTH || currentMonth == 0) {
-            rewardKTY = 0;
-            rewardSDAO = 0;
+        // If the batch is locked less than 30 days, rewards are 0.
+        if (!isBatchEligibleForRewards(_staker, _batchNumber)) {
+            return(0, 0);
         }
 
         (
@@ -496,6 +535,7 @@ contract YieldFarming is Owned {
         // calculate KittieFightToken rewards
         rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
         rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
+        return (rewardKTY, rewardSDAO);
     }
 
     function calculateYieldsKTY(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
