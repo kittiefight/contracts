@@ -709,12 +709,20 @@ contract YieldFarming is Owned {
         _daysInStartMonth = 30 - getElapsedDaysInMonth(_startingDay, _startingMonth);
     }
 
+    /**
+     * @return unit256 the current day
+     * @dev    There are 180 days in this program in total, starting from day 0 to day 179.
+     */
     function getCurrentDay() public view returns (uint256) {
         uint256 elapsedTime = block.timestamp.sub(programStartAt);
         uint256 currentDay = elapsedTime.div(DAY);
         return currentDay;
     }
 
+    /**
+     * @return unit256 the current month 
+     * @dev    There are 6 months in this program in total, starting from month 0 to month 5.
+     */
     function getCurrentMonth() public view returns (uint256) {
         uint256 currentMonth;
         for (uint256 i = 5; i >= 0; i--) {
@@ -726,8 +734,35 @@ contract YieldFarming is Owned {
         return currentMonth;
     }
 
-    function getElapsedDaysInMonth(uint256 _days, uint256 _month) public pure returns (uint256 _elapsedDaysInMonth) {
-        _elapsedDaysInMonth = _month == 0 ? _days : _days.mod(_month);
+    /**
+     * @param _days uint256 which day since this program starts
+     * @param _month uint256 which month since this program starts
+     * @return unit256 the number of days that have elapsed in this _month
+     */
+    function getElapsedDaysInMonth(uint256 _days, uint256 _month) public view returns (uint256) {
+        // In the first month
+        if (_month == 0) {
+            return _days;
+        }
+
+        // In the other months
+        // Get the unix time for _days
+        uint256 dayInUnix = _days.mul(DAY).add(monthsStartAt[0]);
+        // If _days are before the start of _month, then no day has been elapsed
+        if (dayInUnix <= monthsStartAt[_month]) {
+            return 0;
+        }
+        // get time elapsed in seconds
+        uint256 timeElapsed = dayInUnix.sub(monthsStartAt[_month]);
+        return timeElapsed.div(DAY);
+    }
+
+    /**
+     * @return unit256 time in seconds until the current month ends
+     */
+    function timeUntilCurrentMonthEnd() public view returns (uint) {
+        uint256 nextMonth = getCurrentMonth().add(1);
+        return monthsStartAt[nextMonth].sub(block.timestamp);
     }
 
     /**
