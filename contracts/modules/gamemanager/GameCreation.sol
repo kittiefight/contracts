@@ -294,7 +294,7 @@ contract GameCreation is Proxied, Guard {
         uint256 jobId = gmGetterDB.getCronJobForGame(gameId);
         (,,uint endTime) = gmGetterDB.getGameTimes(gameId);
         uint newJobId = cronJob.rescheduleCronJob(CONTRACT_NAME_GAMECREATION, jobId, endTime);
-        uint activeEpoch = genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch")));
+        uint activeEpoch = genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked("activeEpoch")));
         if(endTime > genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(activeEpoch,"restDayStart")))) {
             withdrawPool.addGamingDelay(endTime);
         }

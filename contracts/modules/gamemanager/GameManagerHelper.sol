@@ -133,7 +133,7 @@ contract GameManagerHelper is Proxied, Guard {
         //Kill losers's Kittie
         kittieHELL.killKitty(gmGetterDB.getKittieInGame(gameId, loser), gameId);
 
-        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked("schedulerMode"))))
             scheduler.startGame();
     }
 
@@ -169,6 +169,13 @@ contract GameManagerHelper is Proxied, Guard {
         _removeKitties(gameId);
 
         gameCreation.deleteCronjob(gameId);
+
+        bool schedulerMode = genericDB.getBoolStorage(
+            CONTRACT_NAME_SCHEDULER,
+            keccak256(abi.encodePacked("schedulerMode"))
+        );
+
+        if(schedulerMode) scheduler.startGame();
     }
 
     // getters
@@ -281,7 +288,6 @@ contract GameManagerHelper is Proxied, Guard {
     }
 
     function _updateHoneyPotState(uint256 _gameId, uint _state) internal {
-        uint256 claimTime;
         if (_state == uint(HoneypotState.claiming)){
             //Send immediately initialEth+15%oflosing and 15%ofKTY to endowment
             (uint256 winningsETH, uint256 winningsKTY) = distribution.getEndowmentShare(_gameId);
