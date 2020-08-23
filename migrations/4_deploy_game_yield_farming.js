@@ -34,11 +34,11 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
 );
 
 const TOTAL_KTY_REWARDS = new BigNumber(
-  web3.utils.toWei("100000", "ether") //100,000 KTY
+  web3.utils.toWei("7000000", "ether") //7,000,000 KTY
 );
 
 const TOTAL_SDAO_REWARDS = new BigNumber(
-  web3.utils.toWei("100000", "ether") //100,000 SDAO
+  web3.utils.toWei("7000000", "ether") //7,000,000 SDAO
 );
 
 module.exports = (deployer, network, accounts) => {

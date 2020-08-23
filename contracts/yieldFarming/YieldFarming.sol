@@ -135,7 +135,7 @@ contract YieldFarming is Owned {
         setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
 
         // Set early mining bonus
-        EARLY_MINING_BONUS = 70000;
+        EARLY_MINING_BONUS = 700000;
 
         // Set reward unlock rate for KittieFightToken for the program duration
         KTYunlockRates[0] = 300000;
@@ -354,6 +354,7 @@ contract YieldFarming is Owned {
     function setProgramDuration(uint256 _totalNumberOfMonths, uint256 _programStartAt) public onlyOwner {
         programDuration = _totalNumberOfMonths.mul(MONTH);
         programStartAt = _programStartAt;
+        programEndAt = programStartAt.add(MONTH.mul(6));
         setMonth(_totalNumberOfMonths, _programStartAt);
     }
 
