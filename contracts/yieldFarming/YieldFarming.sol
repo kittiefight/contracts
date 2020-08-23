@@ -24,7 +24,8 @@ contract YieldFarming is Owned {
  
     IUniswapV2ERC20 public LP_KTY_WETH;         // Uniswap Liquidity token contract variable - KTY_WETH pool
     IUniswapV2ERC20 public LP_KTY_ANT;          // Uniswap Liquidity token contract variable - KTY_ANT pool
-    IUniswapV2ERC20 public LP_KTY_DAI;          // Uniswap Liquidity token contract variable - KTY_DAI pool
+    IUniswapV2ERC20 public LP_KTY_yDAI;          // Uniswap Liquidity token contract variable - KTY_yDAI pool
+    IUniswapV2ERC20 public LP_KTY_yYFI;          // Uniswap Liquidity token contract variable - KTY_yYFI pool
     IUniswapV2ERC20 public LP_KTY_yyCRV;        // Uniswap Liquidity token contract variable - KTY_yyCRV pool
     IUniswapV2ERC20 public LP_KTY_yaLINK;       // Uniswap Liquidity token contract variable - KTY_yaLINK pool
     IUniswapV2ERC20 public LP_KTY_LEND;         // Uniswap Liquidity token contract variable - KTY_LEND pool
@@ -43,10 +44,11 @@ contract YieldFarming is Owned {
     // Uniswap pair contract code
     uint256 constant LP_KTY_WETH_CODE = 0;
     uint256 constant LP_KTY_ANT_CODE = 1;
-    uint256 constant LP_KTY_DAI_CODE = 2;
-    uint256 constant LP_KTY_YYCRV_CODE = 3;
-    uint256 constant LP_KTY_YALINK_CODE = 4;
-    uint256 constant LP_KTY_LEND_CODE = 5;
+    uint256 constant LP_KTY_YDAI_CODE = 2;
+    uint256 constant LP_KTY_YYFI_CODE = 3;
+    uint256 constant LP_KTY_YYCRV_CODE = 4;
+    uint256 constant LP_KTY_YALINK_CODE = 5;
+    uint256 constant LP_KTY_LEND_CODE = 6;
 
 
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
@@ -98,7 +100,8 @@ contract YieldFarming is Owned {
     (
         IUniswapV2ERC20 _kty_weth,
         IUniswapV2ERC20 _kty_ant,
-        IUniswapV2ERC20 _kty_dai,
+        IUniswapV2ERC20 _kty_ydai,
+        IUniswapV2ERC20 _kty_yyfi,
         IUniswapV2ERC20 _kty_yycrv,
         IUniswapV2ERC20 _kty_yalink,
         IUniswapV2ERC20 _kty_lend,
@@ -114,7 +117,8 @@ contract YieldFarming is Owned {
         // Set token contracts
         setLP_KTY_WETH(_kty_weth);
         setLP_KTY_ANT(_kty_ant);
-        setLP_KTY_DAI(_kty_dai);
+        setLP_KTY_yDAI(_kty_ydai);
+        setLP_KTY_yYFI(_kty_yyfi);
         setLP_KTY_yyCRV(_kty_yycrv);
         setLP_KTY_yaLINK(_kty_yalink);
         setLP_KTY_LEND(_kty_lend);
@@ -181,19 +185,21 @@ contract YieldFarming is Owned {
      */
     function deposit(uint256 _amountLP, uint256 _pairCode) public returns (bool) {
         require(_amountLP > 0, "Cannot deposit 0 tokens");
-
-        if (_pairCode == 1) {
+        
+        if (_pairCode == 0) {
             require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        } else if (_pairCode == 1) {
+            require(LP_KTY_ANT.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         } else if (_pairCode == 2) {
-            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+            require(LP_KTY_yDAI.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         } else if (_pairCode == 3) {
-            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+            require(LP_KTY_yYFI.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         } else if (_pairCode == 4) {
-            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+            require(LP_KTY_yyCRV.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         } else if (_pairCode == 5) {
-            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+            require(LP_KTY_yaLINK.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         } else if (_pairCode == 6) {
-            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+            require(LP_KTY_LEND.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         }
 
         _addDeposit(msg.sender, _pairCode, _amountLP, block.timestamp);
@@ -260,8 +266,12 @@ contract YieldFarming is Owned {
         LP_KTY_ANT = _liquidityToken;
     }
 
-    function setLP_KTY_DAI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_DAI = _liquidityToken;
+    function setLP_KTY_yDAI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_yDAI = _liquidityToken;
+    }
+
+    function setLP_KTY_yYFI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_yYFI = _liquidityToken;
     }
 
     function setLP_KTY_yyCRV(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
@@ -1024,12 +1034,14 @@ contract YieldFarming is Owned {
         internal
     {
         // transfer liquidity tokens
-        if (_pairCode == 1) {
+        if (_pairCode == 0) {
             require(LP_KTY_WETH.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 2) {
+        } else if (_pairCode == 1) {
             require(LP_KTY_ANT.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        } else if (_pairCode == 2) {
+            require(LP_KTY_yDAI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
         } else if (_pairCode == 3) {
-            require(LP_KTY_DAI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+            require(LP_KTY_yYFI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
         } else if (_pairCode == 4) {
             require(LP_KTY_yyCRV.transfer(_user, _amountLP), "Fail to transfer liquidity token");
         } else if (_pairCode == 5) {

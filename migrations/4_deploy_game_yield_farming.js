@@ -14,11 +14,14 @@ const KtyUniswapOracle = artifacts.require("KtyUniswapOracle");
 const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const ANT = artifacts.require("MockANT");
+const YDAI = artifacts.require("MockyDAI");
+const YYFI = artifacts.require("MockyYFI");
 const YYCRV = artifacts.require("MockyyCRV");
 const YALINK = artifacts.require("MockyaLINK");
 const LEND = artifacts.require("MockLEND");
 const KtyAntPair = artifacts.require("UniswapV2Pair");
-const KtyDaiPair = artifacts.require("UniswapV2Pair");
+const KtyYDAIPair = artifacts.require("UniswapV2Pair");
+const KtyYYFIPair = artifacts.require("UniswapV2Pair");
 const KtyYYCRVPair = artifacts.require("UniswapV2Pair");
 const KtyYALINKPair = artifacts.require("UniswapV2Pair");
 const KtyLendPair = artifacts.require("UniswapV2Pair");
@@ -48,6 +51,8 @@ module.exports = (deployer, network, accounts) => {
     .then(() => deployer.deploy(KtyUniswapOracle))
     .then(() => deployer.deploy(Dai, 1))
     .then(() => deployer.deploy(ANT, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(YDAI, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(YYFI, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YYCRV, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YALINK, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(LEND, ERC20_TOKEN_SUPPLY))
@@ -75,6 +80,10 @@ module.exports = (deployer, network, accounts) => {
       console.log("DAI:", dai.address);
       ant = await ANT.deployed();
       console.log("ANT:", ant.address)
+      yDAI = await YDAI.deployed();
+      console.log("yDAI:", yDAI.address);
+      yYFI = await YYFI.deployed();
+      console.log("yYFI:", yYFI.address);
       yyCRV = await YYCRV.deployed();
       console.log("yyCRV:", yyCRV.address)
       yaLINK = await YALINK.deployed()
@@ -106,14 +115,23 @@ module.exports = (deployer, network, accounts) => {
       const ktyAntPair = await KtyAntPair.at(ktyAntPairAddress);
       console.log("ktyAntPair:", ktyAntPair.address);
 
-      await factory.createPair(dai.address, kittieFightToken.address);
-      const ktyDaiPairAddress = await factory.getPair(
-        dai.address,
+      await factory.createPair(yDAI.address, kittieFightToken.address);
+      const ktyYDAIPairAddress = await factory.getPair(
+        yDAI.address,
         kittieFightToken.address
       );
-      console.log("ktyDaiPair address", ktyDaiPairAddress);
-      const ktyDaiPair = await KtyDaiPair.at(ktyDaiPairAddress);
-      console.log("ktyDaiPair:", ktyDaiPair.address);
+      console.log("ktyYDAIPair address", ktyYDAIPairAddress);
+      const ktyYDAIPair = await KtyYDAIPair.at(ktyYDAIPairAddress);
+      console.log("ktyyDAIPair:", ktyYDAIPair.address);
+
+      await factory.createPair(yYFI.address, kittieFightToken.address);
+      const ktyYYFIPairAddress = await factory.getPair(
+        yYFI.address,
+        kittieFightToken.address
+      );
+      console.log("ktyYYFIIPair address", ktyYYFIPairAddress);
+      const ktyYYFIPair = await KtyYYFIPair.at(ktyYYFIPairAddress);
+      console.log("ktyyYFIIPair:", ktyYYFIPair.address);
 
       await factory.createPair(yyCRV.address, kittieFightToken.address);
       const ktyYYCRVPairAddress = await factory.getPair(
@@ -149,7 +167,8 @@ module.exports = (deployer, network, accounts) => {
       await yieldFarming.initialize(
         ktyWethPair.address,
         ktyAntPair.address,
-        ktyDaiPair.address,
+        ktyYDAIPair.address,
+        ktyYYFIPair.address,
         ktyYYCRVPair.address,
         ktyYALINKPair.address,
         ktyLendPair.address,
