@@ -50,6 +50,8 @@ contract YieldFarming is Owned {
     uint256 constant LP_KTY_YALINK_CODE = 5;
     uint256 constant LP_KTY_LEND_CODE = 6;
 
+    uint256 public EARLY_MINING_BONUS;
+    uint256 public totalLockedLPinEarlyMining;
 
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
     uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
@@ -62,6 +64,7 @@ contract YieldFarming is Owned {
 
     uint256 programDuration;                    // Total time duration for Yield Farming Program
     uint256 programStartAt;                     // Start Time of Yield Farming Program 
+    uint256 programEndAt;                       // End Time of Yield Farming Program 
     uint256[6] public monthsStartAt;            // an array of the start time of each month.
   
     uint256[6] KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
@@ -130,6 +133,9 @@ contract YieldFarming is Owned {
 
         // Set total rewards in KittieFightToken and SuperDaoToken
         setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
+
+        // Set early mining bonus
+        EARLY_MINING_BONUS = 70000;
 
         // Set reward unlock rate for KittieFightToken for the program duration
         KTYunlockRates[0] = 300000;
@@ -234,10 +240,15 @@ contract YieldFarming is Owned {
      * @notice Withdraw Uniswap Liquidity tokens locked in a batch with _batchNumber specified by the staker
      * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
      *         to the user upon successful withdraw
-     * @param _batchNumber the batch number of which deposit the user wishes to withdraw the Uniswap Liquidity tokens locked in it
+     * @param _depositNumber the deposit number of the deposit from which the user wishes to withdraw the Uniswap Liquidity tokens locked 
      * @return bool true if the withdraw is successful
      */
-    function withdrawByBatchNumber(uint256 _batchNumber, uint256 _pairCode) public returns (bool) {
+    function withdrawByDepositNumber(uint256 _depositNumber) public returns (bool) {
+
+        uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
+        uint256 _batchNumber = stakers[msg.sender].totalDeposits[_depositNumber][1];
+
+        // get the locked Liquidity token amount in this batch
         uint256 _amountLP = stakers[msg.sender].batchLockedLPamount[_pairCode][_batchNumber];
         require(_amountLP > 0, "This batch number doesn't havey any liquidity token locked");
 
@@ -457,6 +468,25 @@ contract YieldFarming is Owned {
         return false;
     }
 
+    function isBatchEligibleForEarlyBonus(address _staker, uint256 _batchNumber, uint256 _pairCode)
+        public view returns (bool)
+    {
+        // get locked time
+        uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
+        if (lockedAt != 0 && lockedAt <= programStartAt.add(DAY.mul(7))) {
+            return true;
+        }
+        return false;
+    }
+
+    function getEarlyBonusForBatch(address _staker, uint256 _batchNumber, uint256 _pairCode)
+        public view returns (uint256)
+    {
+        uint256 lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
+        uint256 bonus = lockedLP.mul(EARLY_MINING_BONUS.div(totalLockedLPinEarlyMining));
+        return bonus;
+    }
+
     /**
      * @param _staker address the staker who has received the rewards
      * @return uint256 the total amount of KittieFightToken that have been claimed by this _staker
@@ -503,9 +533,15 @@ contract YieldFarming is Owned {
                 rewardKTY = 0;
                 rewardSDAO = 0;
             } else {
-                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
-                rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
-                rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+                // check if early mining bonus applies here
+                if (isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode) && block.timestamp > programEndAt) {
+                    rewardKTY = getEarlyBonusForBatch(_staker, startBatchNumber, _pairCode);
+                    rewardSDAO = rewardKTY;
+                } else {
+                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
+                    rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+                    rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
+                }
             }
         }
 
@@ -513,10 +549,15 @@ contract YieldFarming is Owned {
             for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
                 // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
                 if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
-                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
-                    lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
-                    rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
-                    rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                    if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                        rewardKTY = rewardKTY.add(getEarlyBonusForBatch(_staker, i, _pairCode));
+                        rewardSDAO = rewardSDAO.add(rewardKTY);
+                    } else {
+                        ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
+                        lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
+                        rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                        rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                    } 
                 } 
             }
         }
@@ -524,18 +565,28 @@ contract YieldFarming is Owned {
         if (startBatchNumber < endBatchNumber && hasResidual) {
             for (uint256 i = startBatchNumber; i < endBatchNumber; i++) {
                 if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
-                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
                     lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     _amountLP = _amountLP.sub(lockedLP);
-                    rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
-                    rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                    if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                        rewardKTY = rewardKTY.add(getEarlyBonusForBatch(_staker, i, _pairCode));
+                        rewardSDAO = rewardSDAO.add(rewardKTY);
+                    } else {
+                        ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
+                        rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                        rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
+                    }
                 }       
             }
             // add rewards for end Batch from which only part of the locked amount is to be withdrawn
             if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
-                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
-                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
-                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+                if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
+                    rewardKTY = rewardKTY.add(getEarlyBonusForBatch(_staker, endBatchNumber, _pairCode));
+                    rewardSDAO = rewardSDAO.add(rewardKTY);
+                } else {
+                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
+                    rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+                    rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
+                }
             }    
         }
     }
@@ -576,7 +627,7 @@ contract YieldFarming is Owned {
      * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the batch number of deposits
      *         made by a staker
      * @param _staker address the address of the staker for whom the rewards are calculated
-     * @param _batchNumber the batch number of the deposits made by _staker
+     * @param _batchNumber the deposit number of the deposits made by _staker
      * @return unit256 the amount of KittieFightToken rewards associated with the _batchNumber of this _staker
      * @return unit256 the amount of SuperDaoToken rewards associated with the _batchNumber of this _staker
      */
@@ -590,6 +641,15 @@ contract YieldFarming is Owned {
         // If the batch is locked less than 30 days, rewards are 0.
         if (!isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
             return(0, 0);
+        }
+
+        // If the program ends
+        if (block.timestamp > programEndAt) {
+            // Check if eligible for Early Mining Bonus
+            if (isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
+                rewardKTY = getEarlyBonusForBatch(_staker, _batchNumber, _pairCode);
+                return (rewardKTY, rewardKTY);
+            }
         }
 
         (
