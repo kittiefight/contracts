@@ -39,7 +39,16 @@ contract YieldFarming is Owned {
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
-    
+
+    // Uniswap pair contract code
+    uint256 constant LP_KTY_WETH_CODE = 0;
+    uint256 constant LP_KTY_ANT_CODE = 1;
+    uint256 constant LP_KTY_DAI_CODE = 2;
+    uint256 constant LP_KTY_YYCRV_CODE = 3;
+    uint256 constant LP_KTY_YALINK_CODE = 4;
+    uint256 constant LP_KTY_LEND_CODE = 5;
+
+
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
     uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
     uint256 public totalRewardsKTY;             // Total KittieFightToken rewards
@@ -58,31 +67,26 @@ contract YieldFarming is Owned {
 
     enum Months { FirstMonth, SecondMonth, ThirdMonth, FourthMonth, FifthMonth, SixthMonth }
 
-    // Properties of a Deposit
-    struct Deposit {
-        uint256 amountLP;                       // Amount of Liquidity tokens locked in this Deposit
-        uint256 lockedAt;                       // Time when this Deposit is made
-        uint256 startingMonth;
-        uint256 startingDay;
-    }
-
     // Properties of a Staker
     struct Staker {
-        uint256 totalDepositTimes;              // Total number of deposits made by this Staker
-        uint256 totalLPLocked;                  // Total amount of Liquidity tokens locked by this Staker (deposited but not withdrawn yet)
-        uint256 rewardsKTYclaimed;              // Total amount of KittieFightToken rewards already claimed by this Staker
-        uint256 rewardsSDAOclaimed;             // Total amount of SuperDaoToken rewards already claimed by this Staker
-        uint256[] allBatches;                   // An array of the amount of Liquidity tokens in each batch of this Staker
+        uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
+        uint256[][7] batchLockedLPamount;
+        uint256[][7] batchLockedAt;
+        uint256[7] totalLPlockedbyPairCode;              // Total amount of Liquidity tokens locked by this stader from all pair pools
+        uint256 totalLPlocked;
+        uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
+        uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
     }
-
-    // a mapping of every staker to all his/her deposits: staker => ( batchNumber => Deposit )
-    mapping(address => mapping(uint256 => Deposit)) public deposits;
 
     mapping(address => Staker) public stakers;
 
     // a mapping of every month to the deposits made during that month: 
     // month => total amount of Uniswap Liquidity tokens deposted in this month
     mapping(uint256 => uint256) public monthlyDeposits;
+
+    // Total Uniswap Liquidity tokens locked from each uniswap pair pool
+    // pair code => total locked LP from the pair pool with this pair code
+    mapping(uint256 => uint256) public totalLockedLPbyPairCode;               
 
     /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
@@ -145,10 +149,18 @@ contract YieldFarming is Owned {
 
     /*                                                      EVENTS                                                    */
     /* ============================================================================================================== */
-    event Deposited(address indexed sender, uint256 indexed batchNumber, uint256 depositAmount, uint256 depositTime);
+    event Deposited(
+        address indexed sender,
+        uint256 indexed depositNumber,
+        uint256 indexed pairCode,
+        uint256 batchNumber,
+        uint256 depositAmount,
+        uint256 depositTime
+    );
 
     event WithDrawn(
         address indexed sender,
+        uint256 indexed pairCode,
         uint256 KTYamount,
         uint256 SDAOamount,
         uint256 LPamount,
@@ -167,12 +179,24 @@ contract YieldFarming is Owned {
      * @dev    Each new deposit of a staker makes a new batch for this staker. Batch Number for each staker 
      *         starts from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
-    function deposit(uint256 _amountLP) public returns (bool) {
+    function deposit(uint256 _amountLP, uint256 _pairCode) public returns (bool) {
         require(_amountLP > 0, "Cannot deposit 0 tokens");
-         
-        require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
 
-        _addDeposit(msg.sender, _amountLP, block.timestamp);
+        if (_pairCode == 1) {
+            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        } else if (_pairCode == 2) {
+            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        } else if (_pairCode == 3) {
+            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        } else if (_pairCode == 4) {
+            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        } else if (_pairCode == 5) {
+            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        } else if (_pairCode == 6) {
+            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        }
+
+        _addDeposit(msg.sender, _pairCode, _amountLP, block.timestamp);
 
         return true;
     }
@@ -187,17 +211,16 @@ contract YieldFarming is Owned {
      *         locked in batch 0, then the rest is allocated to batch 1, and so forth.
      * @return bool true if the withdraw is successful
      */
-    function withdrawByAmount(uint256 _LPamount) public returns (bool) {
-        require(_LPamount <= stakers[msg.sender].totalLPLocked, "Insuffient liquidity tokens locked");
+    function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) public returns (bool) {
+        require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient liquidity tokens locked");
 
-        (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _LPamount);
+        (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _pairCode, _LPamount);
 
-        // deduct _LP from mapping deposits storage
-        _deductDeposits(msg.sender, _LPamount, _startBatchNumber, _endBatchNumber);
+        _updateWithDrawByAmount(msg.sender, _pairCode, _startBatchNumber, _endBatchNumber, _LPamount, _KTY, _SDAO); 
+        _transferTokens(msg.sender, _pairCode, _LPamount, _KTY, _SDAO);
 
-        _withdraw (msg.sender, _LPamount, _KTY, _SDAO);
+        emit WithDrawn(msg.sender, _pairCode, _KTY, _SDAO, _LPamount, _startBatchNumber, _endBatchNumber, block.timestamp);
 
-        emit WithDrawn(msg.sender, _KTY, _SDAO, _LPamount, _startBatchNumber, _endBatchNumber, block.timestamp);
         return true;
     }
 
@@ -208,18 +231,17 @@ contract YieldFarming is Owned {
      * @param _batchNumber the batch number of which deposit the user wishes to withdraw the Uniswap Liquidity tokens locked in it
      * @return bool true if the withdraw is successful
      */
-    function withdrawByBatchNumber(uint256 _batchNumber) public returns (bool) {
-        uint256 _amountLP = deposits[msg.sender][_batchNumber].amountLP;
+    function withdrawByBatchNumber(uint256 _batchNumber, uint256 _pairCode) public returns (bool) {
+        uint256 _amountLP = stakers[msg.sender].batchLockedLPamount[_pairCode][_batchNumber];
         require(_amountLP > 0, "This batch number doesn't havey any liquidity token locked");
 
-        (uint256 _KTY, uint256 _SDAO) = calculateRewardsByBatchNumber(msg.sender, _batchNumber);
-        deposits[msg.sender][_batchNumber].amountLP = 0;
-        deposits[msg.sender][_batchNumber].lockedAt = 0;
-        stakers[msg.sender].allBatches[_batchNumber] = 0;
+        (uint256 _KTY, uint256 _SDAO) = calculateRewardsByBatchNumber(msg.sender, _batchNumber, _pairCode);
 
-        _withdraw (msg.sender, _amountLP, _KTY, _SDAO);
+        _updateWithdrawByBatchNumber(msg.sender, _pairCode, _batchNumber, _amountLP, _KTY, _SDAO);
 
-        emit WithDrawn(msg.sender, _KTY, _SDAO, _amountLP, _batchNumber, _batchNumber, block.timestamp);
+        _transferTokens(msg.sender, _pairCode, _amountLP, _KTY, _SDAO);
+
+        emit WithDrawn(msg.sender, _pairCode, _KTY, _SDAO, _amountLP, _batchNumber, _batchNumber, block.timestamp);
         return true;
     }
 
@@ -352,20 +374,20 @@ contract YieldFarming is Owned {
      * @return uint256 the amount of Uniswap Liquidity tokens locked by the staker in this contract
      */
     function getLiquidityTokenLocked(address _staker) public view returns (uint256) {
-        return stakers[_staker].totalLPLocked;
+        return stakers[_staker].totalLPlocked;
     }
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @return uint256[] an array of the amount of locked Lquidity tokens in every batch of the _staker. 
+     * @return uint256[][] an array of the amount of locked Lquidity tokens in every batch of the _staker. 
      *         The index of the array is the batch number associated, since batch for a stakder
      *         starts from batch 0, and increment by 1 for subsequent batches each.
      * @dev    Each new deposit of a staker makes a new batch.
      */
-    function getAllBatches(address _staker)
+    function getAllBatchesPerPairPool(address _staker, uint256 _pairCode)
         public view returns (uint256[] memory)
     {
-        return stakers[_staker].allBatches;
+        return stakers[_staker].batchLockedLPamount[_pairCode];
     }
 
     /**
@@ -374,10 +396,10 @@ contract YieldFarming is Owned {
      *         The batch number of the first batch of a staker is always 0, and increments by 1 for 
      *         subsequent batches each.
      */
-    function getLastBatchNumber(address _staker)
+    function getLastBatchNumber(address _staker, uint256 _pairCode)
         public view returns (uint)
     {
-        return stakers[_staker].allBatches.length.sub(1);
+        return stakers[_staker].batchLockedLPamount[_pairCode].length.sub(1);
     }
 
     /**
@@ -385,10 +407,10 @@ contract YieldFarming is Owned {
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
      * @return uint256 the amount of Uniswap Liquidity tokens locked in the batch with _batchNumber by the staker 
      */
-    function getLiquidityTokenLockedPerBatch(address _staker, uint256 _batchNumber)
+    function getLiquidityTokenLockedPerBatch(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (uint256)
     {
-        return deposits[_staker][_batchNumber].amountLP;
+        return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
     }
 
     /**
@@ -398,10 +420,10 @@ contract YieldFarming is Owned {
      * @dev    A valid batch is a batch which has locked Liquidity tokens in it. 
      * @dev    A non-valid batch is an empty batch which has no Liquidity tokens in it.
      */
-    function isBatchValid(address _staker, uint256 _batchNumber)
+    function isBatchValid(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (bool)
     {
-        return deposits[_staker][_batchNumber].amountLP > 0;
+        return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber] > 0;
     }
 
     /**
@@ -411,11 +433,11 @@ contract YieldFarming is Owned {
      * @dev    A batch needs to be locked for at least 30 days to be eligible for claiming yields.
      * @dev    A batch locked for less than 30 days has 0 rewards, although the locked Liquidity tokens can be withdrawn at any time.
      */
-    function isBatchEligibleForRewards(address _staker, uint256 _batchNumber)
+    function isBatchEligibleForRewards(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (bool)
     {
         // get locked time
-        uint256 lockedAt = deposits[_staker][_batchNumber].lockedAt;
+        uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
         // get total locked duration
         uint256 lockedPeriod = block.timestamp.sub(lockedAt);
         // a minimum of 30 days of staking is required to be eligible for claiming rewards
@@ -447,7 +469,7 @@ contract YieldFarming is Owned {
      * @return uint256 the ending batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
      * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
      */
-    function calculateRewardsByAmount(address _staker, uint256 _amountLP)
+    function calculateRewardsByAmount(address _staker, uint256 _pairCode, uint256 _amountLP)
         public view
         returns (
             uint256 rewardKTY,
@@ -464,14 +486,14 @@ contract YieldFarming is Owned {
         bool hasResidual;
 
         // allocate _amountLP per FIFO
-        (startBatchNumber, endBatchNumber, hasResidual) = allocateLP(_staker, _amountLP);
+        (startBatchNumber, endBatchNumber, hasResidual) = allocateLP(_staker, _pairCode, _amountLP);
 
         if (startBatchNumber == endBatchNumber) {
-            if (!isBatchEligibleForRewards(_staker, startBatchNumber)) {
+            if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
                 rewardKTY = 0;
                 rewardSDAO = 0;
             } else {
-                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber);
+                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
                 rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
                 rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
             }
@@ -480,9 +502,9 @@ contract YieldFarming is Owned {
         if (startBatchNumber < endBatchNumber && !hasResidual) {
             for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
                 // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
-                if(isBatchEligibleForRewards(_staker, i)) {
-                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
-                    lockedLP = deposits[_staker][i].amountLP;
+                if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
+                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
+                    lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
                     rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
                 } 
@@ -491,29 +513,29 @@ contract YieldFarming is Owned {
 
         if (startBatchNumber < endBatchNumber && hasResidual) {
             for (uint256 i = startBatchNumber; i < endBatchNumber; i++) {
-                if(isBatchEligibleForRewards(_staker, i)) {
-                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i);
-                    lockedLP = deposits[_staker][i].amountLP;
+                if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
+                    ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
+                    lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     _amountLP = _amountLP.sub(lockedLP);
                     rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
                     rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
                 }       
             }
             // add rewards for end Batch from which only part of the locked amount is to be withdrawn
-            if(isBatchEligibleForRewards(_staker, endBatchNumber)) {
-                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber);
+            if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
+                ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
                 rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
                 rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
             }    
         }
     }
 
-    function allocateLP(address _staker, uint256 _amountLP)
+    function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
         public view returns (uint256, uint256, bool)
     {
         uint256 startBatchNumber;
         uint256 endBatchNumber;
-        uint256[] memory allBatches = stakers[_staker].allBatches;
+        uint256[] memory allBatches = stakers[_staker].batchLockedLPamount[_pairCode];
         bool hasResidual;
 
         for (uint256 m = 0; m < allBatches.length; m++) {
@@ -548,7 +570,7 @@ contract YieldFarming is Owned {
      * @return unit256 the amount of KittieFightToken rewards associated with the _batchNumber of this _staker
      * @return unit256 the amount of SuperDaoToken rewards associated with the _batchNumber of this _staker
      */
-    function calculateRewardsByBatchNumber(address _staker, uint256 _batchNumber)
+    function calculateRewardsByBatchNumber(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view
         returns (uint256, uint256)
     {
@@ -556,7 +578,7 @@ contract YieldFarming is Owned {
         uint256 rewardSDAO;
 
         // If the batch is locked less than 30 days, rewards are 0.
-        if (!isBatchEligibleForRewards(_staker, _batchNumber)) {
+        if (!isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
             return(0, 0);
         }
 
@@ -564,10 +586,10 @@ contract YieldFarming is Owned {
             uint256 _startingMonth,
             uint256 _endingMonth,
             uint256 _daysInStartMonth
-        ) = getLockedPeriod(_staker, _batchNumber);
+        ) = getLockedPeriod(_staker, _batchNumber, _pairCode);
 
         // get the locked Liquidity token amount in this batch
-        uint256 lockedLP = deposits[_staker][_batchNumber].amountLP;
+        uint256 lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
 
         // calculate KittieFightToken rewards
         rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP);
@@ -649,7 +671,7 @@ contract YieldFarming is Owned {
      * @return uint256 the total amount of Uniswap Liquidity tokens locked in this contract
      */
     function getTotalLiquidityTokenLocked() public view returns (uint256) {
-        return LP_KTY_WETH.balanceOf(address(this));
+        return totalLockedLP;
     }
 
     /**
@@ -657,10 +679,12 @@ contract YieldFarming is Owned {
      *         all Liquidity tokens locked in this contract.
      */
     function getTotalLiquidityTokenLockedInDAI() public view returns (uint256) {
-        uint256 percentLPinYieldFarm = LP_KTY_WETH.balanceOf(address(this)).mul(1000000).div(LP_KTY_WETH.totalSupply());
-        uint256 totalEthInPairPool = weth.balanceOf(address(LP_KTY_WETH));
-        return totalEthInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.ETH_DAI_price())
-               .div(1000000000000000000).div(1000000);
+        // to do
+
+        // uint256 percentLPinYieldFarm = LP_KTY_WETH.balanceOf(address(this)).mul(1000000).div(LP_KTY_WETH.totalSupply());
+        // uint256 totalEthInPairPool = weth.balanceOf(address(LP_KTY_WETH));
+        // return totalEthInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.ETH_DAI_price())
+        //        .div(1000000000000000000).div(1000000);
     }
 
     /**
@@ -730,7 +754,26 @@ contract YieldFarming is Owned {
         return (unlockedKTY, unlockedSDAO);
     }
 
-    function getLockedPeriod(address _staker, uint256 _batchNumber)
+    function getMonth(uint256 _time) public view returns (uint256) {
+        uint256 month;
+        for (uint256 i = 5; i >= 0; i--) {
+            if (_time >= monthsStartAt[i]) {
+                month = i;
+                break;
+            }
+        }
+        return month;
+    }
+
+    function getDay(uint256 _time) public view returns (uint256) {
+        if (_time <= programStartAt) {
+            return 0;
+        }
+        uint256 elapsedTime = _time.sub(programStartAt);
+        return elapsedTime.div(DAY);
+    }
+
+    function getLockedPeriod(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view
         returns (
             uint256 _startingMonth,
@@ -739,9 +782,10 @@ contract YieldFarming is Owned {
         )
     {
         uint256 _currentMonth = getCurrentMonth();
-        uint256 _startingDay = deposits[_staker][_batchNumber].startingDay;
+        uint256 _lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
+        uint256 _startingDay = getDay(_lockedAt);
         // get starting month
-        _startingMonth = deposits[_staker][_batchNumber].startingMonth; 
+        _startingMonth = getMonth(_lockedAt); 
         _endingMonth = _currentMonth == 0 ? 0 : _currentMonth.sub(1);
         _daysInStartMonth = 30 - getElapsedDaysInMonth(_startingDay, _startingMonth);
     }
@@ -825,7 +869,7 @@ contract YieldFarming is Owned {
         startMonth = 0;
         endMonth = 5;
         activeMonth = currentMonth;
-        elapsedMonths = currentMonth == 0 ? 0 : currentMonth.sub(1);
+        elapsedMonths = currentMonth == 0 ? 0 : currentMonth;
         allMonthsStartTime = monthsStartAt;
     }
 
@@ -865,77 +909,76 @@ contract YieldFarming is Owned {
      * @param _amount uint256 the amount of Uniswap Liquidity tokens to be deposited
      * @param _lockedAt uint256 the time when this depoist is made
      */
-    function _addDeposit(address _sender, uint256 _amount, uint256 _lockedAt) internal {
-        // get total deposit times for msgSender
-        uint256 depositTimes = stakers[_sender].totalDepositTimes.add(1);
-        stakers[_sender].totalDepositTimes = depositTimes;
-        stakers[_sender].totalLPLocked = stakers[_sender].totalLPLocked.add(_amount);
-        stakers[_sender].allBatches.push(_amount);
+    function _addDeposit(address _sender, uint256 _pairCode, uint256 _amount, uint256 _lockedAt) internal {
+        uint256 _depositNumber = stakers[_sender].totalDeposits.length;
+        uint256 _batchNumber = stakers[_sender].batchLockedLPamount[_pairCode].length;
+        uint256 _currentMonth = getCurrentMonth();
 
-        uint256 batchNumber = depositTimes.sub(1);
-        deposits[_sender][batchNumber].amountLP = _amount;
-        deposits[_sender][batchNumber].lockedAt = block.timestamp;
-
-        // get current month
-        uint256 _currentMonth = getCurrentDay();
-        deposits[_sender][batchNumber].startingMonth = _currentMonth;
-        deposits[_sender][batchNumber].startingDay = getCurrentDay();
+        stakers[_sender].totalDeposits.push([_pairCode, _batchNumber]);
+        stakers[_sender].batchLockedLPamount[_pairCode].push(_amount);
+        stakers[_sender].batchLockedAt[_pairCode].push(_lockedAt);
+        stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
+        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.add(_amount);
 
         monthlyDeposits[_currentMonth] = monthlyDeposits[_currentMonth].add(_amount);
 
         totalDepositedLP = totalDepositedLP.add(_amount);
         totalLockedLP = totalLockedLP.add(_amount);
 
-        emit Deposited(msg.sender, batchNumber, _amount, _lockedAt);
+        emit Deposited(msg.sender, _depositNumber, _pairCode, _batchNumber, _amount, _lockedAt);
     }
 
     /**
      * @dev Internal functions used in function withdrawByAmount(), to deduct deposits from mapping deposits storage
      * @param _sender address the address of the sender
-     * @param _amount uint256 the amount of Uniswap Liquidity tokens to be deposited
+     * @param _LP uint256 the amount of Uniswap Liquidity tokens to be deposited
      * @param _startBatchNumber uint256 the starting batch number from which the _amount of Liquidity tokens 
                                 of the _sender is allocated
      * @param _endBatchNumber uint256 the ending batch number until which the _amount of Liquidity tokens 
                                 of the _sender is allocated
      */
-    function _deductDeposits
+    function _updateWithDrawByAmount
     (
-        address _sender,
-        uint256 _amount,
-        uint256 _startBatchNumber,
-        uint256 _endBatchNumber
+        address _sender, uint256 _pairCode,
+        uint256 _startBatchNumber, uint256 _endBatchNumber,
+        uint256 _LP, uint256 _KTY, uint256 _SDAO
     ) 
         internal 
     {
+        // ========= update staker info =========
+        // batch info
         uint256 withdrawAmount = 0;
+       // all batches except the last batch
         for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
-            withdrawAmount = withdrawAmount.add(deposits[_sender][i].amountLP);
-            deposits[_sender][i].amountLP = 0;
-            deposits[_sender][i].lockedAt = 0;
-            stakers[_sender].allBatches[i] = 0;
-        }
-        uint256 leftAmountLP = _amount.sub(withdrawAmount);
-        if (leftAmountLP >= deposits[_sender][_endBatchNumber].amountLP) {
-            deposits[_sender][_endBatchNumber].amountLP = 0;
-            deposits[_sender][_endBatchNumber].lockedAt = 0;
-            stakers[_sender].allBatches[_endBatchNumber] = 0;
-        } else {
-            deposits[_sender][_endBatchNumber].amountLP = deposits[_sender][_endBatchNumber].amountLP.sub(leftAmountLP);
-            stakers[_sender].allBatches[_endBatchNumber] = deposits[_sender][_endBatchNumber].amountLP;
-        }  
-    }
+            withdrawAmount = withdrawAmount
+                             .add(stakers[_sender].batchLockedLPamount[_pairCode][i]);
 
-    /**
-     * @param _sender address the address of the _sender to whom the tokens are transferred
-     * @param _amountLP uint256 the amount of Uniswap Liquidity tokens to be transferred to the _user
-     * @param _amountKTY uint256 the amount of KittieFightToken to be transferred to the _user
-     * @param _amountSDAO uint256 the amount of SuperDaoToken to be transferred to the _user
-     */
-    function _withdraw (address _sender, uint256 _amountLP, uint256 _amountKTY, uint256 _amountSDAO)
-        internal
-    {
-        _updateWithdraw(_sender, _amountLP, _amountKTY, _amountSDAO);
-        _transferTokens(_sender, _amountLP, _amountKTY, _amountSDAO);
+            stakers[_sender].batchLockedLPamount[_pairCode][i] = 0;
+            stakers[_sender].batchLockedAt[_pairCode][i] = 0;
+        }
+        // the amount left after allocating to all batches except the last batch
+        uint256 leftAmountLP = _LP.sub(withdrawAmount);
+        // last batch
+        if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
+            stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = 0;
+            stakers[_sender].batchLockedAt[_pairCode][_endBatchNumber] = 0;
+        } else {
+            stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]
+                                                                   .sub(leftAmountLP);
+        }  
+
+        // all batches in pair code info
+        stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
+        
+        // general staker info
+        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.sub(_LP);
+        stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
+        stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
+
+        // ========= update public variables =========
+        totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
+        totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
+        totalLockedLP = totalLockedLP.sub(_LP);
     }
 
     /**
@@ -944,15 +987,31 @@ contract YieldFarming is Owned {
      * @param _SDAO uint256 the amount of SuperDaoToken
      * @param _LP uint256 the amount of Uniswap Liquidity tokens
      */
-    function _updateWithdraw (address _sender, uint256 _LP, uint256 _KTY, uint256 _SDAO) internal {
-        // update staker info
-        stakers[_sender].totalLPLocked = stakers[_sender].totalLPLocked.sub(_LP);
-        stakers[_sender].rewardsKTYclaimed = stakers[msg.sender].rewardsKTYclaimed.add(_KTY);
+    function _updateWithdrawByBatchNumber
+    (
+        address _sender, uint256 _pairCode, uint256 _batchNumber,
+        uint256 _LP, uint256 _KTY, uint256 _SDAO
+    ) 
+        internal
+    {
+        // ========= update staker info =========
+        // batch info
+        stakers[_sender].batchLockedLPamount[_pairCode][_batchNumber] = 0;
+        stakers[_sender].batchLockedAt[_pairCode][_batchNumber] = 0;
+
+        // all batches in pair code info
+        stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
+        
+        // general staker info
+        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.sub(_LP);
+        stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
         stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
-        // update public variables
+
+        // ========= update public variables =========
         totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
         totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
         totalLockedLP = totalLockedLP.sub(_LP);
+        
     }
 
     /**
@@ -961,11 +1020,25 @@ contract YieldFarming is Owned {
      * @param _amountKTY uint256 the amount of KittieFightToken to be transferred to the _user
      * @param _amountSDAO uint256 the amount of SuperDaoToken to be transferred to the _user
      */
-    function _transferTokens(address _user, uint256 _amountLP, uint256 _amountKTY, uint256 _amountSDAO)
+    function _transferTokens(address _user, uint256 _pairCode, uint256 _amountLP, uint256 _amountKTY, uint256 _amountSDAO)
         internal
     {
-        // transfer liquidity tokens, KTY and SDAO to the staker
-        require(LP_KTY_WETH.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // transfer liquidity tokens
+        if (_pairCode == 1) {
+            require(LP_KTY_WETH.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        } else if (_pairCode == 2) {
+            require(LP_KTY_ANT.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        } else if (_pairCode == 3) {
+            require(LP_KTY_DAI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        } else if (_pairCode == 4) {
+            require(LP_KTY_yyCRV.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        } else if (_pairCode == 5) {
+            require(LP_KTY_yaLINK.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        } else if (_pairCode == 6) {
+            require(LP_KTY_LEND.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        }
+
+        // transfer rewards
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
         require(superDaoToken.transfer(_user, _amountSDAO), "Fail to transfer SDAO");
     }
