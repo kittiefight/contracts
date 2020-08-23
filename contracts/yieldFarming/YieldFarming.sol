@@ -22,7 +22,13 @@ contract YieldFarming is Owned {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
  
-    IUniswapV2ERC20 public LP;                  // Uniswap Liquidity token contract variable
+    IUniswapV2ERC20 public LP_KTY_WETH;         // Uniswap Liquidity token contract variable - KTY_WETH pool
+    IUniswapV2ERC20 public LP_KTY_ANT;          // Uniswap Liquidity token contract variable - KTY_ANT pool
+    IUniswapV2ERC20 public LP_KTY_DAI;          // Uniswap Liquidity token contract variable - KTY_DAI pool
+    IUniswapV2ERC20 public LP_KTY_yyCRV;        // Uniswap Liquidity token contract variable - KTY_yyCRV pool
+    IUniswapV2ERC20 public LP_KTY_yaLINK;       // Uniswap Liquidity token contract variable - KTY_yaLINK pool
+    IUniswapV2ERC20 public LP_KTY_LEND;         // Uniswap Liquidity token contract variable - KTY_LEND pool
+
     ERC20Standard public kittieFightToken;      // KittieFightToken contract variable
     ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
     KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
@@ -86,7 +92,12 @@ contract YieldFarming is Owned {
     // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
-        IUniswapV2ERC20 _liquidityToken,
+        IUniswapV2ERC20 _kty_weth,
+        IUniswapV2ERC20 _kty_ant,
+        IUniswapV2ERC20 _kty_dai,
+        IUniswapV2ERC20 _kty_yycrv,
+        IUniswapV2ERC20 _kty_yalink,
+        IUniswapV2ERC20 _kty_lend,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
@@ -97,7 +108,13 @@ contract YieldFarming is Owned {
         public onlyOwner
     {
         // Set token contracts
-        setLP(_liquidityToken);
+        setLP_KTY_WETH(_kty_weth);
+        setLP_KTY_ANT(_kty_ant);
+        setLP_KTY_DAI(_kty_dai);
+        setLP_KTY_yyCRV(_kty_yycrv);
+        setLP_KTY_yaLINK(_kty_yalink);
+        setLP_KTY_LEND(_kty_lend);
+
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
         setKtyUniswapOracle(_ktyUniswapOracle);
@@ -153,7 +170,7 @@ contract YieldFarming is Owned {
     function deposit(uint256 _amountLP) public returns (bool) {
         require(_amountLP > 0, "Cannot deposit 0 tokens");
          
-        require(LP.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
 
         _addDeposit(msg.sender, _amountLP, block.timestamp);
 
@@ -213,8 +230,28 @@ contract YieldFarming is Owned {
      * @dev Set Uniswap Liquidity token contract
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setLP(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP = _liquidityToken;
+    function setLP_KTY_WETH(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_WETH = _liquidityToken;
+    }
+
+    function setLP_KTY_ANT(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_ANT = _liquidityToken;
+    }
+
+    function setLP_KTY_DAI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_DAI = _liquidityToken;
+    }
+
+    function setLP_KTY_yyCRV(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_yyCRV = _liquidityToken;
+    }
+
+    function setLP_KTY_yaLINK(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_yaLINK = _liquidityToken;
+    }
+
+    function setLP_KTY_LEND(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+        LP_KTY_LEND = _liquidityToken;
     }
 
     /**
@@ -302,7 +339,7 @@ contract YieldFarming is Owned {
     }
 
     // This is a temporary function just for truffle testing purpose
-    function setMonthAndDay(uint256 _monthDuration, uint256 _dayDuration) public onlyOwner {
+    function setMonthAndDayForTest(uint256 _monthDuration, uint256 _dayDuration) public onlyOwner {
         MONTH = _monthDuration;
         DAY = _dayDuration;
     }
@@ -612,7 +649,7 @@ contract YieldFarming is Owned {
      * @return uint256 the total amount of Uniswap Liquidity tokens locked in this contract
      */
     function getTotalLiquidityTokenLocked() public view returns (uint256) {
-        return LP.balanceOf(address(this));
+        return LP_KTY_WETH.balanceOf(address(this));
     }
 
     /**
@@ -620,8 +657,8 @@ contract YieldFarming is Owned {
      *         all Liquidity tokens locked in this contract.
      */
     function getTotalLiquidityTokenLockedInDAI() public view returns (uint256) {
-        uint256 percentLPinYieldFarm = LP.balanceOf(address(this)).mul(1000000).div(LP.totalSupply());
-        uint256 totalEthInPairPool = weth.balanceOf(address(LP));
+        uint256 percentLPinYieldFarm = LP_KTY_WETH.balanceOf(address(this)).mul(1000000).div(LP_KTY_WETH.totalSupply());
+        uint256 totalEthInPairPool = weth.balanceOf(address(LP_KTY_WETH));
         return totalEthInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.ETH_DAI_price())
                .div(1000000000000000000).div(1000000);
     }
@@ -928,7 +965,7 @@ contract YieldFarming is Owned {
         internal
     {
         // transfer liquidity tokens, KTY and SDAO to the staker
-        require(LP.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        require(LP_KTY_WETH.transfer(_user, _amountLP), "Fail to transfer liquidity token");
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
         require(superDaoToken.transfer(_user, _amountSDAO), "Fail to transfer SDAO");
     }
