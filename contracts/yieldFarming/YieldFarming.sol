@@ -460,6 +460,9 @@ contract YieldFarming is Owned {
     {
         // get locked time
         uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
+        if (lockedAt == 0) {
+            return false;
+        }
         // get total locked duration
         uint256 lockedPeriod = block.timestamp.sub(lockedAt);
         // a minimum of 30 days of staking is required to be eligible for claiming rewards
@@ -527,7 +530,7 @@ contract YieldFarming is Owned {
         bool hasResidual;
 
         // allocate _amountLP per FIFO
-        (startBatchNumber, endBatchNumber, hasResidual) = allocateLP(_staker, _pairCode, _amountLP);
+        (startBatchNumber, endBatchNumber, hasResidual) = allocateLP(_staker, _amountLP, _pairCode);
 
         if (startBatchNumber == endBatchNumber) {
             if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
