@@ -190,6 +190,8 @@ contract YieldFarming is Owned {
      *         starts from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
     function deposit(uint256 _amountLP, uint256 _pairCode) public returns (bool) {
+        require(block.timestamp <= programEndAt, "Yield Farming Program has already ended");
+        
         require(_amountLP > 0, "Cannot deposit 0 tokens");
         
         if (_pairCode == 0) {
