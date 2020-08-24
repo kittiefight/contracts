@@ -30,7 +30,7 @@ contract ERC721Metadata is Context, ERC165, ERC721, IERC721Metadata {
     /**
      * @dev Constructor function
      */
-    constructor (string memory name, string memory symbol) public {
+    constructor(string memory name, string memory symbol) public {
         _name = name;
         _symbol = symbol;
 
@@ -63,7 +63,10 @@ contract ERC721Metadata is Context, ERC165, ERC721, IERC721Metadata {
      * Reverts if the token ID does not exist.
      */
     function tokenURI(uint256 tokenId) external view returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
 
         string memory _tokenURI = _tokenURIs[tokenId];
 
@@ -72,7 +75,7 @@ contract ERC721Metadata is Context, ERC165, ERC721, IERC721Metadata {
             return "";
         } else {
             // abi.encodePacked is being used to concatenate strings
-            return string(abi.encodePacked(_baseURI, _tokenURI));
+            return string(abi.encode(_baseURI, _tokenURI));
         }
     }
 
@@ -86,7 +89,10 @@ contract ERC721Metadata is Context, ERC165, ERC721, IERC721Metadata {
      * it and save gas.
      */
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) internal {
-        require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI set of nonexistent token"
+        );
         _tokenURIs[tokenId] = _tokenURI;
     }
 
@@ -101,12 +107,12 @@ contract ERC721Metadata is Context, ERC165, ERC721, IERC721Metadata {
     }
 
     /**
-    * @dev Returns the base URI set via {_setBaseURI}. This will be
-    * automatically added as a preffix in {tokenURI} to each token's URI, when
-    * they are non-empty.
-    *
-    * _Available since v2.5.0._
-    */
+     * @dev Returns the base URI set via {_setBaseURI}. This will be
+     * automatically added as a preffix in {tokenURI} to each token's URI, when
+     * they are non-empty.
+     *
+     * _Available since v2.5.0._
+     */
     function baseURI() external view returns (string memory) {
         return _baseURI;
     }

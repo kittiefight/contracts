@@ -1,10 +1,10 @@
 const HDWalletProvider = require("truffle-hdwallet-provider");
-require('dotenv').config()
+require("dotenv").config();
 
 const providerFactory = network =>
   new HDWalletProvider(
     process.env.MNEMONICS || "", // Mnemonics of the deployer
-    `https://${network}.infura.io/v3/${process.env.INFURA_KEY}`, // Provider URL => web3.HttpProvider
+    `https://${network}.infura.io/v3/${process.env.INFURA_KEY}` // Provider URL => web3.HttpProvider
   );
 
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
       optimizer: {
         enabled: true,
         runs: 200
-      },
+      }
     }
   },
   plugins: ["truffle-contract-size"],
@@ -47,7 +47,7 @@ module.exports = {
       host: "127.0.0.1",
       port: 8544,
       network_id: 999,
-      gas: 20000000
+      gas: 7000000
     },
     live: {
       host: "127.0.0.1",
