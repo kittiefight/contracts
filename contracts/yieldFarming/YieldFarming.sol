@@ -49,7 +49,7 @@ contract YieldFarming is Owned {
     uint256 constant LP_KTY_YALINK_CODE = 5;
     uint256 constant LP_KTY_LEND_CODE = 6;
 
-    address[7] pairPools;
+    address[7] pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -76,10 +76,10 @@ contract YieldFarming is Owned {
     // Properties of a Staker
     struct Staker {
         uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
-        uint256[][7] batchLockedLPamount;
-        uint256[][7] batchLockedAt;
-        uint256[7] totalLPlockedbyPairCode;              // Total amount of Liquidity tokens locked by this stader from all pair pools
-        uint256 totalLPlocked;
+        uint256[][7] batchLockedLPamount;               // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
+        uint256[][7] batchLockedAt;                     // A 2d array showing the locked time of each batch in each Pair Pool
+        uint256[7] totalLPlockedbyPairCode;             // Total amount of Liquidity tokens locked by this stader from all pair pools
+        uint256 totalLPlocked;                          // Total Uniswap Liquidity tokens locked by this staker
         uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
     }
@@ -118,15 +118,6 @@ contract YieldFarming is Owned {
     )
         public onlyOwner
     {
-        // Set token contracts
-        // setLP_KTY_WETH(_kty_weth);
-        // setLP_KTY_ANT(_kty_ant);
-        // setLP_KTY_yDAI(_kty_ydai);
-        // setLP_KTY_yYFI(_kty_yyfi);
-        // setLP_KTY_yyCRV(_kty_yycrv);
-        // setLP_KTY_yaLINK(_kty_yalink);
-        // setLP_KTY_LEND(_kty_lend);
-
         LP_KTY_WETH = _kty_weth;
         LP_KTY_ANT = _kty_ant;
         LP_KTY_yDAI = _kty_ydai;
@@ -202,9 +193,14 @@ contract YieldFarming is Owned {
     /**
      * @notice Deposit Uniswap Liquidity tokens
      * @param _amountLP the amount of Uniswap Liquidity tokens to be deposited
+     * @param _pairCode the Pair Code associated with the Pair Pool of which the Liquidity tokens are to be deposited
      * @return bool true if the deposit is successful
-     * @dev    Each new deposit of a staker makes a new batch for this staker. Batch Number for each staker 
-     *         starts from 0 (for the first deposit), and increment by 1 for subsequent batches each.
+     * @dev    Each new deposit of a staker makes a new deposit with Deposit Number for this staker.
+     *         Deposit Number for each staker starts from 0 (for the first deposit), and increment by 1 for 
+     *         subsequent deposits. Each deposit with a Deposit Number is associated with a Pair Code 
+     *         and a Batch Number.
+     *         For each staker, each Batch Number in each Pair Pool associated with a Pair Code starts 
+     *         from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
     function deposit(uint256 _amountLP, uint256 _pairCode) public returns (bool) {
         require(block.timestamp <= programEndAt, "Yield Farming Program has already ended");
@@ -223,9 +219,11 @@ contract YieldFarming is Owned {
      * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
      *         to the user upon successful withdraw
      * @param _LPamount the amount of Uniswap Liquidity tokens to be withdrawn
-     * @dev    FIFO (First in, First out) is used to allocate the _LPamount to the user's deposit batches.
+     * @param _pairCode the Pair Code associated with the Pair Pool of which the Liquidity tokens are to be withdrawn
+     * @dev    FIFO (First in, First out) is used to allocate the _LPamount to the user's deposit batches from a Pair Pool.
      *         For example, _LPamount is allocated to batch 0 first, and if _LPamount is bigger than the amount
-     *         locked in batch 0, then the rest is allocated to batch 1, and so forth.
+     *         locked in batch 0, then the rest is allocated to batch 1, and so forth. Allocation only happens to batches
+     *         with the same Pair Code. 
      * @return bool true if the withdraw is successful
      */
     function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) public returns (bool) {
@@ -269,7 +267,13 @@ contract YieldFarming is Owned {
 
     /*                                                 SETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
-
+    /**
+     * @dev Set the address of pairPool
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setPairPoolAddress(address _pairPool, uint256 _pairCode) public onlyOwner {
+        pairPools[_pairCode] = _pairPool;
+    }
     /**
      * @dev Set KittieFightToken contract
      * @dev This function can only be carreid out by the owner of this contract.
@@ -372,6 +376,11 @@ contract YieldFarming is Owned {
         return stakers[_staker].totalLPlocked;
     }
 
+    /**
+     * @return uint[2][2] a 2d array containing all the deposits made by the staker in this contract,
+     *         each item in the 2d array consisting of the Pair Code and the Batch Number associated this
+     *         the deposit. The Deposit Number of the deposit is the same as its index in the 2d array.
+     */
     function getAllDeposits(address _staker)
         public view returns (uint256[2][] memory)
     {
@@ -380,10 +389,11 @@ contract YieldFarming is Owned {
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @return uint256[][] an array of the amount of locked Lquidity tokens in every batch of the _staker. 
-     *         The index of the array is the batch number associated, since batch for a stakder
-     *         starts from batch 0, and increment by 1 for subsequent batches each.
-     * @dev    Each new deposit of a staker makes a new batch.
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool from whichh the batches are to be shown
+     * @return uint256[] an array of the amount of locked Lquidity tokens in every batch of the _staker in
+     *         the _pairCode. The index of the array is the Batch Number associated with the batch, since
+     *         batch for a stakder starts from batch 0, and increment by 1 for subsequent batches each.
+     * @dev    Each new deposit of a staker makes a new batch in _pairCode.
      */
     function getAllBatchesPerPairPool(address _staker, uint256 _pairCode)
         public view returns (uint256[] memory)
@@ -393,6 +403,7 @@ contract YieldFarming is Owned {
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @return uint256 the batch number of the last batch of the _staker. 
      *         The batch number of the first batch of a staker is always 0, and increments by 1 for 
      *         subsequent batches each.
@@ -406,7 +417,8 @@ contract YieldFarming is Owned {
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
-     * @return uint256 the amount of Uniswap Liquidity tokens locked in the batch with _batchNumber by the staker 
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return uint256 the amount of Uniswap Liquidity tokens locked in the batch with _batchNumber in _pairCode by the staker 
      */
     function getLiquidityTokenLockedPerBatch(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (uint256)
@@ -417,7 +429,8 @@ contract YieldFarming is Owned {
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
-     * @return bool true if the batch with the _batchNumber of the _staker is a valid batch, false if it is non-valid.
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is a valid batch, false if it is non-valid.
      * @dev    A valid batch is a batch which has locked Liquidity tokens in it. 
      * @dev    A non-valid batch is an empty batch which has no Liquidity tokens in it.
      */
@@ -430,7 +443,8 @@ contract YieldFarming is Owned {
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
-     * @return bool true if the batch with the _batchNumber of the _staker is eligible for claiming yields, false if it is not eligible.
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is eligible for claiming yields, false if it is not eligible.
      * @dev    A batch needs to be locked for at least 30 days to be eligible for claiming yields.
      * @dev    A batch locked for less than 30 days has 0 rewards, although the locked Liquidity tokens can be withdrawn at any time.
      */
@@ -451,6 +465,13 @@ contract YieldFarming is Owned {
         return false;
     }
 
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is eligible for Early Bonus, false if it is not eligible.
+     * @dev    A batch needs to be locked within 7 days since contract deployment to be eligible for claiming yields.
+     */
     function isBatchEligibleForEarlyBonus(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (bool)
     {
@@ -462,6 +483,13 @@ contract YieldFarming is Owned {
         return false;
     }
 
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return uint256 the amount of early bonus for this _staker. Since the amount of early bonus is the same
+     *         for KittieFightToken and SuperDaoToken, only one number is returned.
+     */
     function getEarlyBonusForBatch(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (uint256)
     {
@@ -486,6 +514,7 @@ contract YieldFarming is Owned {
      *         locked by a staker
      * @param _staker address the address of the staker for whom the rewards are calculated
      * @param _amountLP the amount of Uniswap Liquidity tokens locked
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @return unit256 the amount of KittieFightToken rewards associated with the _amountLP lockec by this _staker
      * @return unit256 the amount of SuperDaoToken rewards associated with the _amountLP lockec by this _staker
      * @return uint256 the starting batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
@@ -574,6 +603,17 @@ contract YieldFarming is Owned {
         }
     }
 
+    /**
+     * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
+     * @param _staker address the address of the staker for whom the rewards are calculated
+     * @param _amountLP the amount of Uniswap Liquidity tokens locked
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return unit256 the Batch Number of the starting batch to which LP is allocated
+     * @return unit256 the Batch Number of the end batch to which LP is allocated
+     * @return bool true if all the LP locked in the end batch is allocated, false if there is residual
+               amount left in the end batch after allocation
+     * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
+     */
     function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
         public view returns (uint256, uint256, bool)
     {
@@ -611,6 +651,7 @@ contract YieldFarming is Owned {
      *         made by a staker
      * @param _staker address the address of the staker for whom the rewards are calculated
      * @param _batchNumber the deposit number of the deposits made by _staker
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @return unit256 the amount of KittieFightToken rewards associated with the _batchNumber of this _staker
      * @return unit256 the amount of SuperDaoToken rewards associated with the _batchNumber of this _staker
      */
@@ -807,6 +848,10 @@ contract YieldFarming is Owned {
         return (unlockedKTY, unlockedSDAO);
     }
 
+    /**
+     * @param _time uint256 The time point for which the month number is enquired
+     * @return uint256 the month in which the time point _time is
+     */
     function getMonth(uint256 _time) public view returns (uint256) {
         uint256 month;
         for (uint256 i = 5; i >= 0; i--) {
@@ -818,6 +863,10 @@ contract YieldFarming is Owned {
         return month;
     }
 
+    /**
+     * @param _time uint256 The time point for which the day number is enquired
+     * @return uint256 the day in which the time point _time is
+     */
     function getDay(uint256 _time) public view returns (uint256) {
         if (_time <= programStartAt) {
             return 0;
@@ -826,6 +875,11 @@ contract YieldFarming is Owned {
         return elapsedTime.div(DAY);
     }
 
+    /**
+     * @dev Get the starting month, ending month, and days in starting month during which the locked Liquidity
+     *      tokens in _staker's _batchNumber associated with _pairCode are locked and eligible for rewards.
+     * @dev The ending month is the month preceding the current month.
+     */
     function getLockedPeriod(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view
         returns (
@@ -837,9 +891,9 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         uint256 _lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
         uint256 _startingDay = getDay(_lockedAt);
-        // get starting month
+
         _startingMonth = getMonth(_lockedAt); 
-        _endingMonth = _currentMonth == 0 ? 0 : _currentMonth.sub(1);
+        _endingMonth = _currentMonth == 0 ? 0 : block.timestamp > programEndAt ? 5 : _currentMonth.sub(1);
         _daysInStartMonth = 30 - getElapsedDaysInMonth(_startingDay, _startingMonth);
     }
 
@@ -900,9 +954,7 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @return uint256 the entire program duration
-     * @return uint256 the total period in month
-     * @return uint256 elapsed months
+     * @dev get info on program duration and month
      */
     function getProgramDuration() public view 
     returns
@@ -945,6 +997,11 @@ contract YieldFarming is Owned {
         return (KTYunlockRates, SDAOunlockRates);
     }
 
+    /**
+     * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
+     * @return uint256 the amount of total Rewards for KittieFightToken for the _month
+     * @return uint256 the amount of total Rewards for SuperDaoToken for the _month
+     */
     function getTotalRewardsByMonth(uint256 _month)
         public view 
         returns (uint256 rewardKTYbyMonth, uint256 rewardSDAObyMonth)
@@ -959,6 +1016,7 @@ contract YieldFarming is Owned {
     /**
      * @dev    Internal functions used in function deposit()
      * @param _sender address the address of the sender
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @param _amount uint256 the amount of Uniswap Liquidity tokens to be deposited
      * @param _lockedAt uint256 the time when this depoist is made
      */
@@ -984,6 +1042,7 @@ contract YieldFarming is Owned {
     /**
      * @dev Internal functions used in function withdrawByAmount(), to deduct deposits from mapping deposits storage
      * @param _sender address the address of the sender
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @param _LP uint256 the amount of Uniswap Liquidity tokens to be deposited
      * @param _startBatchNumber uint256 the starting batch number from which the _amount of Liquidity tokens 
                                 of the _sender is allocated
@@ -1036,6 +1095,7 @@ contract YieldFarming is Owned {
 
     /**
      * @param _sender address the address of the sender
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @param _KTY uint256 the amount of KittieFightToken
      * @param _SDAO uint256 the amount of SuperDaoToken
      * @param _LP uint256 the amount of Uniswap Liquidity tokens
@@ -1069,6 +1129,7 @@ contract YieldFarming is Owned {
 
     /**
      * @param _user address the address of the _user to whom the tokens are transferred
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @param _amountLP uint256 the amount of Uniswap Liquidity tokens to be transferred to the _user
      * @param _amountKTY uint256 the amount of KittieFightToken to be transferred to the _user
      * @param _amountSDAO uint256 the amount of SuperDaoToken to be transferred to the _user
