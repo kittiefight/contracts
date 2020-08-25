@@ -361,26 +361,6 @@ contract("YieldFarming", accounts => {
     console.log("Current Month:", currentMonth.toString());
   });
 
-  it("calculates rewards by batch number", async () => {
-    let pairCode = 0
-    let rewards = await yieldFarming.calculateRewardsByBatchNumber(
-      accounts[1],
-      1,
-      pairCode
-    );
-    //console.log(rewards);
-    let rewardKTY = rewards[0];
-    let rewardSDAO = rewards[1];
-    console.log(
-      "KittieFightToken reward for user 1's batch 1 in", pairCodeList[pairCode], ":",
-      weiToEther(rewardKTY)
-    );
-    console.log(
-      "SuperDaoToken reward for user 1's batch 1 in", pairCodeList[pairCode], ":",
-      weiToEther(rewardSDAO)
-    );
-  });
-
   it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
     let rewards_month_0 = await yieldFarming.getTotalRewardsByMonth(0);
     let KTYrewards_month_0 = rewards_month_0.rewardKTYbyMonth;
@@ -538,29 +518,6 @@ contract("YieldFarming", accounts => {
     console.log("has residual?", hasResidual);
   });
 
-  it("calculates the KittieFightToken and SuperDaoToken rewards per the Liquidity token amount given for a staker", async () => {
-    let LP_amount = new BigNumber(
-      web3.utils.toWei("60", "ether") //60 Uniswap Liquidity tokens
-    );
-    let user = 7;
-    let pairCode = 0;
-    console.log("User", user);
-    let rewards = await yieldFarming.calculateRewardsByAmount(
-      accounts[user],
-      pairCode,
-      LP_amount
-    );
-    let rewardKTY = rewards.rewardKTY;
-    let rewardSDAO = rewards.rewardSDAO;
-    let startBatchNumber = rewards.startBatchNumber;
-    let endBatchNumber = rewards.endBatchNumber;
-    console.log("Pair Pool:", pairCodeList[pairCode])
-    console.log("KittieFightToken rewards calculated:", weiToEther(rewardKTY));
-    console.log("SuperDaoToken rewards calculated:", weiToEther(rewardSDAO));
-    console.log("starting batch number:", startBatchNumber.toString());
-    console.log("end batch number:", endBatchNumber.toString());
-  });
-
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     let withdraw_LP_amount = new BigNumber(
       web3.utils.toWei("60", "ether") //60 Uniswap Liquidity tokens
@@ -703,29 +660,6 @@ contract("YieldFarming", accounts => {
     console.log("Starting Batch Number:", startBatchNumber.toString());
     console.log("End Batch Number:", endBatchNumber.toString());
     console.log("has residual?", hasResidual);
-  });
-
-  it("calculates the KittieFightToken and SuperDaoToken rewards per the Liquidity token amount given for a staker, with an empty batch among valid batches", async () => {
-    let LP_amount = new BigNumber(
-      web3.utils.toWei("60", "ether") //60 Uniswap Liquidity tokens
-    );
-    let user = 8;
-    let pairCode = 0
-    console.log("User", user);
-    let rewards = await yieldFarming.calculateRewardsByAmount(
-      accounts[user],
-      pairCode,
-      LP_amount
-    );
-    let rewardKTY = rewards.rewardKTY;
-    let rewardSDAO = rewards.rewardSDAO;
-    let startBatchNumber = rewards.startBatchNumber;
-    let endBatchNumber = rewards.endBatchNumber;
-    console.log("Pair Pool:", pairCodeList[pairCode])
-    console.log("KittieFightToken rewards calculated:", weiToEther(rewardKTY));
-    console.log("SuperDaoToken rewards calculated:", weiToEther(rewardSDAO));
-    console.log("starting batch number:", startBatchNumber.toString());
-    console.log("end batch number:", endBatchNumber.toString());
   });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards in KittieFighToken and SuperDaoTokne, with an empty batch among valid batches", async () => {
@@ -950,31 +884,6 @@ contract("YieldFarming", accounts => {
     console.log("===============================\n");
   });
 
-  it("calculates rewards by batch number", async () => {
-    let user = 3;
-    console.log("User", user);
-
-    let pairCode = 0
-
-    let rewards = await yieldFarming.calculateRewardsByBatchNumber(
-      accounts[user],
-      0,
-      pairCode
-    );
-    //console.log(rewards);
-    let rewardKTY = rewards[0];
-    let rewardSDAO = rewards[1];
-    console.log("Pair Pool:", pairCodeList[pairCode])
-    console.log(
-      "KittieFightToken reward for user 1's batch 1:",
-      weiToEther(rewardKTY)
-    );
-    console.log(
-      "SuperDaoToken reward for user 1's batch 1:",
-      weiToEther(rewardSDAO)
-    );
-  });
-
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     // Info before withdraw
     let user = 3;
@@ -1115,29 +1024,6 @@ contract("YieldFarming", accounts => {
     console.log("Starting Batch Number:", startBatchNumber.toString());
     console.log("End Batch Number:", endBatchNumber.toString());
     console.log("has residual?", hasResidual);
-  });
-
-  it("calculates the KittieFightToken and SuperDaoToken rewards per the Liquidity token amount given for a staker", async () => {
-    let LP_amount = new BigNumber(
-      web3.utils.toWei("60", "ether") //60 Uniswap Liquidity tokens
-    );
-    let user = 6;
-    let pairCode = 0
-    console.log("User", user);
-    let rewards = await yieldFarming.calculateRewardsByAmount(
-      accounts[user],
-      pairCode,
-      LP_amount
-    );
-    let rewardKTY = rewards.rewardKTY;
-    let rewardSDAO = rewards.rewardSDAO;
-    let startBatchNumber = rewards.startBatchNumber;
-    let endBatchNumber = rewards.endBatchNumber;
-    console.log("Pair Pool:", pairCodeList[pairCode])
-    console.log("KittieFightToken rewards calculated:", weiToEther(rewardKTY));
-    console.log("SuperDaoToken rewards calculated:", weiToEther(rewardSDAO));
-    console.log("starting batch number:", startBatchNumber.toString());
-    console.log("end batch number:", endBatchNumber.toString());
   });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards in KittieFighToken and SuperDaoTokne", async () => {
@@ -1282,28 +1168,6 @@ contract("YieldFarming", accounts => {
     console.log("Starting Batch Number:", startBatchNumber.toString());
     console.log("End Batch Number:", endBatchNumber.toString());
     console.log("has residual?", hasResidual);
-  });
-
-  it("calculates the KittieFightToken and SuperDaoToken rewards per the Liquidity token amount given for a staker, with an empty batch among valid batches", async () => {
-    let LP_amount = new BigNumber(
-      web3.utils.toWei("60", "ether") //60 Uniswap Liquidity tokens
-    );
-    let user = 3;
-    let pairCode = 0;
-    console.log("User", user);
-    let rewards = await yieldFarming.calculateRewardsByAmount(
-      accounts[user],
-      pairCode,
-      LP_amount
-    );
-    let rewardKTY = rewards.rewardKTY;
-    let rewardSDAO = rewards.rewardSDAO;
-    let startBatchNumber = rewards.startBatchNumber;
-    let endBatchNumber = rewards.endBatchNumber;
-    console.log("KittieFightToken rewards calculated:", weiToEther(rewardKTY));
-    console.log("SuperDaoToken rewards calculated:", weiToEther(rewardSDAO));
-    console.log("starting batch number:", startBatchNumber.toString());
-    console.log("end batch number:", endBatchNumber.toString());
   });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards in KittieFighToken and SuperDaoTokne, with an empty batch among valid batches", async () => {

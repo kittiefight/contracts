@@ -927,6 +927,10 @@ contract YieldFarming is Owned {
         totalDepositedLP = totalDepositedLP.add(_amount);
         totalLockedLP = totalLockedLP.add(_amount);
 
+        if (block.timestamp <= programStartAt.add(DAY.mul(7))) {
+            totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
+        }
+
         emit Deposited(msg.sender, _depositNumber, _pairCode, _batchNumber, _amount, _lockedAt);
     }
 
@@ -1052,6 +1056,9 @@ contract YieldFarming is Owned {
         uint256 rewardKTY;
         uint256 rewardSDAO;
 
+        // get the locked Liquidity token amount in this batch
+        uint256 lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
+
         // If the batch is locked less than 30 days, rewards are 0.
         if (!isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
             return(0, 0);
@@ -1061,13 +1068,9 @@ contract YieldFarming is Owned {
         if (block.timestamp > programEndAt) {
             // Check if eligible for Early Mining Bonus
             if (isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
-                rewardKTY = getEarlyBonusForBatch(_staker, _batchNumber, _pairCode);
-                return (rewardKTY, rewardKTY);
+                totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(lockedLP);
             }
         }
-
-        // get the locked Liquidity token amount in this batch
-        uint256 lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
 
         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
         if (isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
@@ -1192,7 +1195,7 @@ contract YieldFarming is Owned {
                     rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP));
                     // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
                     if (isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
-                        totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(lockedLP);
+                        totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_amountLP);
                     }
                 }
             }    
