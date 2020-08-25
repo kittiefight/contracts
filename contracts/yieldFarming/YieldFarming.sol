@@ -663,13 +663,17 @@ contract YieldFarming is Owned {
      * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
      *         all Liquidity tokens locked in this contract.
      */
-    function getTotalLiquidityTokenLockedInDAI() public view returns (uint256) {
+    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
         // to do
 
-        // uint256 percentLPinYieldFarm = LP_KTY_WETH.balanceOf(address(this)).mul(1000000).div(LP_KTY_WETH.totalSupply());
-        // uint256 totalEthInPairPool = weth.balanceOf(address(LP_KTY_WETH));
-        // return totalEthInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.ETH_DAI_price())
-        //        .div(1000000000000000000).div(1000000);
+        uint256 balance = IUniswapV2ERC20(pairPools[_pairCode]).balanceOf(address(this));
+        uint256 totalSupply = IUniswapV2ERC20(pairPools[_pairCode]).totalSupply();
+        uint256 percentLPinYieldFarm = balance.mul(1000000).div(totalSupply);
+        
+        uint256 totalKtyInPairPool = kittieFightToken.balanceOf(pairPools[_pairCode]);
+
+        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.KTY_DAI_price())
+               .div(1000000000000000000).div(1000000);
     }
 
     /**
