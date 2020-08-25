@@ -307,6 +307,35 @@ contract YieldFarming is Owned {
     }
 
     /**
+     * @dev This function transfers unclaimed KittieFightToken rewards to a new address
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function transferKTY(uint256 _amountKTY, address _addr) public onlyOwner returns (bool) {
+        require(_amountKTY > 0, "Cannot transfer 0 tokens");
+        require(kittieFightToken.transfer(_addr, _amountKTY), "Fail to transfer KTY");
+        return true;
+    }
+
+    /**
+     * @dev This function transfers unclaimed SuperDaoToken rewards to a new address
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function transferSDAO(uint256 _amountSDAO, address _addr) public onlyOwner returns (bool) {
+        require(_amountSDAO > 0, "Cannot transfer 0 tokens");
+        require(superDaoToken.transfer(_addr, _amountSDAO), "Fail to transfer SDAO");
+        return true;
+    }
+
+    /**
+     * @dev This function transfers other tokens erroneously tranferred to this contract back to their original owner
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function returnTokens(address _token, address _tokenOwner) external onlyOwner {
+        uint256 balance = ERC20Standard(_token).balanceOf(address(this));
+        require(ERC20Standard(_token).transfer(_tokenOwner, balance), "Fail to transfer other tokens");
+    }
+
+    /**
      * @notice Modify Reward Unlock Rate for KittieFightToken and SuperDaoToken for any month (from 0 to 5)
      *         within the program duration (a period of 6 months)
      * @param _month uint256 the month (from 0 to 5) for which the unlock rate is to be modified
