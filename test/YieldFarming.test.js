@@ -305,13 +305,19 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {from: accounts[i]}).should
         .be.fulfilled;
     }
-
+  
     // get info on all batches of each staker
-    console.log(`\n======== Batches Info ======== `);
+    console.log(`\n======== Deposits and Batches Info ======== `);
+    let allDeposits;
     let allBatches;
     let lastBatchNumber;
     for (let i = 1; i < 19; i++) {
       console.log("User", i);
+      allDeposits = await yieldFarming.getAllDeposits(accounts[i])
+      console.log("Total number of deposits:", allDeposits.length - 1)
+      console.log("Pair Code Associated with Deposit Number 0:", allDeposits[0][0].toString())
+      console.log("Batch Number Associated with Deposit Number 0:", allDeposits[0][1].toString())
+    
       allBatches = await yieldFarming.getAllBatchesPerPairPool(accounts[i], pairCode);
       lastBatchNumber = await yieldFarming.getLastBatchNumber(accounts[i], pairCode);
       for (let j = 0; j < allBatches.length; j++) {
