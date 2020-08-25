@@ -22,13 +22,21 @@ contract YieldFarming is Owned {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
  
-    IUniswapV2ERC20 public LP_KTY_WETH;         // Uniswap Liquidity token contract variable - KTY_WETH pool
-    IUniswapV2ERC20 public LP_KTY_ANT;          // Uniswap Liquidity token contract variable - KTY_ANT pool
-    IUniswapV2ERC20 public LP_KTY_yDAI;          // Uniswap Liquidity token contract variable - KTY_yDAI pool
-    IUniswapV2ERC20 public LP_KTY_yYFI;          // Uniswap Liquidity token contract variable - KTY_yYFI pool
-    IUniswapV2ERC20 public LP_KTY_yyCRV;        // Uniswap Liquidity token contract variable - KTY_yyCRV pool
-    IUniswapV2ERC20 public LP_KTY_yaLINK;       // Uniswap Liquidity token contract variable - KTY_yaLINK pool
-    IUniswapV2ERC20 public LP_KTY_LEND;         // Uniswap Liquidity token contract variable - KTY_LEND pool
+    // IUniswapV2ERC20 public LP_KTY_WETH;         // Uniswap Liquidity token contract variable - KTY_WETH pool
+    // IUniswapV2ERC20 public LP_KTY_ANT;          // Uniswap Liquidity token contract variable - KTY_ANT pool
+    // IUniswapV2ERC20 public LP_KTY_yDAI;          // Uniswap Liquidity token contract variable - KTY_yDAI pool
+    // IUniswapV2ERC20 public LP_KTY_yYFI;          // Uniswap Liquidity token contract variable - KTY_yYFI pool
+    // IUniswapV2ERC20 public LP_KTY_yyCRV;        // Uniswap Liquidity token contract variable - KTY_yyCRV pool
+    // IUniswapV2ERC20 public LP_KTY_yaLINK;       // Uniswap Liquidity token contract variable - KTY_yaLINK pool
+    // IUniswapV2ERC20 public LP_KTY_LEND;         // Uniswap Liquidity token contract variable - KTY_LEND pool
+
+    address public LP_KTY_WETH;         // Uniswap Liquidity token contract address - KTY_WETH pool
+    address public LP_KTY_ANT;          // Uniswap Liquidity token contract address - KTY_ANT pool
+    address public LP_KTY_yDAI;          // Uniswap Liquidity token contract address - KTY_yDAI pool
+    address public LP_KTY_yYFI;          // Uniswap Liquidity token contract address - KTY_yYFI pool
+    address public LP_KTY_yyCRV;        // Uniswap Liquidity token contract address - KTY_yyCRV pool
+    address public LP_KTY_yaLINK;       // Uniswap Liquidity token contract address - KTY_yaLINK pool
+    address public LP_KTY_LEND;         // Uniswap Liquidity token contract address - KTY_LEND pool
 
     ERC20Standard public kittieFightToken;      // KittieFightToken contract variable
     ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
@@ -49,6 +57,8 @@ contract YieldFarming is Owned {
     uint256 constant LP_KTY_YYCRV_CODE = 4;
     uint256 constant LP_KTY_YALINK_CODE = 5;
     uint256 constant LP_KTY_LEND_CODE = 6;
+
+    address[7] pairPools;
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -101,13 +111,13 @@ contract YieldFarming is Owned {
     // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
-        IUniswapV2ERC20 _kty_weth,
-        IUniswapV2ERC20 _kty_ant,
-        IUniswapV2ERC20 _kty_ydai,
-        IUniswapV2ERC20 _kty_yyfi,
-        IUniswapV2ERC20 _kty_yycrv,
-        IUniswapV2ERC20 _kty_yalink,
-        IUniswapV2ERC20 _kty_lend,
+        address _kty_weth,
+        address _kty_ant,
+        address _kty_ydai,
+        address _kty_yyfi,
+        address _kty_yycrv,
+        address _kty_yalink,
+        address _kty_lend,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
@@ -118,13 +128,29 @@ contract YieldFarming is Owned {
         public onlyOwner
     {
         // Set token contracts
-        setLP_KTY_WETH(_kty_weth);
-        setLP_KTY_ANT(_kty_ant);
-        setLP_KTY_yDAI(_kty_ydai);
-        setLP_KTY_yYFI(_kty_yyfi);
-        setLP_KTY_yyCRV(_kty_yycrv);
-        setLP_KTY_yaLINK(_kty_yalink);
-        setLP_KTY_LEND(_kty_lend);
+        // setLP_KTY_WETH(_kty_weth);
+        // setLP_KTY_ANT(_kty_ant);
+        // setLP_KTY_yDAI(_kty_ydai);
+        // setLP_KTY_yYFI(_kty_yyfi);
+        // setLP_KTY_yyCRV(_kty_yycrv);
+        // setLP_KTY_yaLINK(_kty_yalink);
+        // setLP_KTY_LEND(_kty_lend);
+
+        LP_KTY_WETH = _kty_weth;
+        LP_KTY_ANT = _kty_ant;
+        LP_KTY_yDAI = _kty_ydai;
+        LP_KTY_yYFI = _kty_yyfi;
+        LP_KTY_yyCRV = _kty_yycrv;
+        LP_KTY_yaLINK = _kty_yalink;
+        LP_KTY_LEND = _kty_lend;
+
+        pairPools[0] = _kty_weth;
+        pairPools[1] = _kty_ant;
+        pairPools[2] = _kty_ydai;
+        pairPools[3] = _kty_yyfi;
+        pairPools[4] = _kty_yycrv;
+        pairPools[5] = _kty_yalink;
+        pairPools[6] = _kty_lend;
 
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
@@ -193,22 +219,24 @@ contract YieldFarming is Owned {
         require(block.timestamp <= programEndAt, "Yield Farming Program has already ended");
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
+
+        require(IUniswapV2ERC20(pairPools[_pairCode]).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
         
-        if (_pairCode == 0) {
-            require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        } else if (_pairCode == 1) {
-            require(LP_KTY_ANT.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        } else if (_pairCode == 2) {
-            require(LP_KTY_yDAI.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        } else if (_pairCode == 3) {
-            require(LP_KTY_yYFI.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        } else if (_pairCode == 4) {
-            require(LP_KTY_yyCRV.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        } else if (_pairCode == 5) {
-            require(LP_KTY_yaLINK.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        } else if (_pairCode == 6) {
-            require(LP_KTY_LEND.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
-        }
+        // if (_pairCode == 0) {
+        //     require(LP_KTY_WETH.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // } else if (_pairCode == 1) {
+        //     require(LP_KTY_ANT.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // } else if (_pairCode == 2) {
+        //     require(LP_KTY_yDAI.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // } else if (_pairCode == 3) {
+        //     require(LP_KTY_yYFI.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // } else if (_pairCode == 4) {
+        //     require(LP_KTY_yyCRV.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // } else if (_pairCode == 5) {
+        //     require(LP_KTY_yaLINK.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // } else if (_pairCode == 6) {
+        //     require(LP_KTY_LEND.transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        // }
 
         _addDeposit(msg.sender, _pairCode, _amountLP, block.timestamp);
 
@@ -267,37 +295,37 @@ contract YieldFarming is Owned {
     /*                                                 SETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
 
-    /**
-     * @dev Set Uniswap Liquidity token contract
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
-    function setLP_KTY_WETH(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_WETH = _liquidityToken;
-    }
+    // /**
+    //  * @dev Set Uniswap Liquidity token contract
+    //  * @dev This function can only be carreid out by the owner of this contract.
+    //  */
+    // function setLP_KTY_WETH(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_WETH = _liquidityToken;
+    // }
 
-    function setLP_KTY_ANT(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_ANT = _liquidityToken;
-    }
+    // function setLP_KTY_ANT(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_ANT = _liquidityToken;
+    // }
 
-    function setLP_KTY_yDAI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_yDAI = _liquidityToken;
-    }
+    // function setLP_KTY_yDAI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_yDAI = _liquidityToken;
+    // }
 
-    function setLP_KTY_yYFI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_yYFI = _liquidityToken;
-    }
+    // function setLP_KTY_yYFI(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_yYFI = _liquidityToken;
+    // }
 
-    function setLP_KTY_yyCRV(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_yyCRV = _liquidityToken;
-    }
+    // function setLP_KTY_yyCRV(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_yyCRV = _liquidityToken;
+    // }
 
-    function setLP_KTY_yaLINK(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_yaLINK = _liquidityToken;
-    }
+    // function setLP_KTY_yaLINK(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_yaLINK = _liquidityToken;
+    // }
 
-    function setLP_KTY_LEND(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
-        LP_KTY_LEND = _liquidityToken;
-    }
+    // function setLP_KTY_LEND(IUniswapV2ERC20 _liquidityToken) public onlyOwner {
+    //     LP_KTY_LEND = _liquidityToken;
+    // }
 
     /**
      * @dev Set KittieFightToken contract
@@ -1100,21 +1128,22 @@ contract YieldFarming is Owned {
         internal
     {
         // transfer liquidity tokens
-        if (_pairCode == 0) {
-            require(LP_KTY_WETH.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 1) {
-            require(LP_KTY_ANT.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 2) {
-            require(LP_KTY_yDAI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 3) {
-            require(LP_KTY_yYFI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 4) {
-            require(LP_KTY_yyCRV.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 5) {
-            require(LP_KTY_yaLINK.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        } else if (_pairCode == 6) {
-            require(LP_KTY_LEND.transfer(_user, _amountLP), "Fail to transfer liquidity token");
-        }
+        require(IUniswapV2ERC20(pairPools[_pairCode]).transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // if (_pairCode == 0) {
+        //     require(LP_KTY_WETH.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // } else if (_pairCode == 1) {
+        //     require(LP_KTY_ANT.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // } else if (_pairCode == 2) {
+        //     require(LP_KTY_yDAI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // } else if (_pairCode == 3) {
+        //     require(LP_KTY_yYFI.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // } else if (_pairCode == 4) {
+        //     require(LP_KTY_yyCRV.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // } else if (_pairCode == 5) {
+        //     require(LP_KTY_yaLINK.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // } else if (_pairCode == 6) {
+        //     require(LP_KTY_LEND.transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        // }
 
         // transfer rewards
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
