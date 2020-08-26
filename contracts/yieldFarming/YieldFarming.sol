@@ -127,7 +127,7 @@ contract YieldFarming is Owned {
         uint256 _totalKTYrewards,
         uint256 _totalSDAOrewards
     )
-        public onlyOwner
+        external onlyOwner
     {
         LP_KTY_WETH = _kty_weth;
         LP_KTY_ANT = _kty_ant;
@@ -213,7 +213,7 @@ contract YieldFarming is Owned {
      *         For each staker, each Batch Number in each Pair Pool associated with a Pair Code starts 
      *         from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
-    function deposit(uint256 _amountLP, uint256 _pairCode) public returns (bool) {
+    function deposit(uint256 _amountLP, uint256 _pairCode) external returns (bool) {
         require(block.timestamp <= programEndAt, "Yield Farming Program has already ended");
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
@@ -237,7 +237,7 @@ contract YieldFarming is Owned {
      *         with the same Pair Code. 
      * @return bool true if the withdraw is successful
      */
-    function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) public lock returns (bool) {
+    function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) external lock returns (bool) {
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient liquidity tokens locked");
 
         (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _pairCode, _LPamount);
@@ -257,7 +257,7 @@ contract YieldFarming is Owned {
      * @param _depositNumber the deposit number of the deposit from which the user wishes to withdraw the Uniswap Liquidity tokens locked 
      * @return bool true if the withdraw is successful
      */
-    function withdrawByDepositNumber(uint256 _depositNumber) public returns (bool) {
+    function withdrawByDepositNumber(uint256 _depositNumber) external lock returns (bool) {
 
         uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
         uint256 _batchNumber = stakers[msg.sender].totalDeposits[_depositNumber][1];
@@ -321,7 +321,7 @@ contract YieldFarming is Owned {
      * @dev This function transfers unclaimed KittieFightToken rewards to a new address
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function transferKTY(uint256 _amountKTY, address _addr) public onlyOwner returns (bool) {
+    function transferKTY(uint256 _amountKTY, address _addr) external onlyOwner returns (bool) {
         require(_amountKTY > 0, "Cannot transfer 0 tokens");
         require(kittieFightToken.transfer(_addr, _amountKTY), "Fail to transfer KTY");
         return true;
@@ -331,7 +331,7 @@ contract YieldFarming is Owned {
      * @dev This function transfers unclaimed SuperDaoToken rewards to a new address
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function transferSDAO(uint256 _amountSDAO, address _addr) public onlyOwner returns (bool) {
+    function transferSDAO(uint256 _amountSDAO, address _addr) external onlyOwner returns (bool) {
         require(_amountSDAO > 0, "Cannot transfer 0 tokens");
         require(superDaoToken.transfer(_addr, _amountSDAO), "Fail to transfer SDAO");
         return true;
@@ -354,7 +354,7 @@ contract YieldFarming is Owned {
      * @param forKTY bool true if this modification is for KittieFightToken, false if it is for SuperDaoToken
      * @dev    This function can only be carreid out by the owner of this contract.
      */
-    function modifyRewardUnlockRate(uint256 _month, uint256 _rate, bool forKTY) public onlyOwner {
+    function modifyRewardUnlockRate(uint256 _month, uint256 _rate, bool forKTY) external onlyOwner {
         if (forKTY) {
             KTYunlockRates[_month] = _rate;
         } else {
