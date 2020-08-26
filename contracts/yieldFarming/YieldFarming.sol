@@ -92,7 +92,18 @@ contract YieldFarming is Owned {
 
     // Total Uniswap Liquidity tokens locked from each uniswap pair pool
     // pair code => total locked LP from the pair pool with this pair code
-    mapping(uint256 => uint256) public totalLockedLPbyPairCode;               
+    mapping(uint256 => uint256) public totalLockedLPbyPairCode;   
+
+    uint256 private unlocked = 1;
+
+    /*                                                   MODIFIERS                                                    */
+    /* ============================================================================================================== */
+    modifier lock() {
+        require(unlocked == 1, 'Locked');
+        unlocked = 0;
+        _;
+        unlocked = 1;
+    }          
 
     /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
@@ -226,7 +237,7 @@ contract YieldFarming is Owned {
      *         with the same Pair Code. 
      * @return bool true if the withdraw is successful
      */
-    function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) public returns (bool) {
+    function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) public lock returns (bool) {
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient liquidity tokens locked");
 
         (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _pairCode, _LPamount);
