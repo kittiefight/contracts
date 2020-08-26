@@ -916,7 +916,7 @@ contract YieldFarming is Owned {
         rewardSDAObyMonth = totalRewardsSDAO.mul(SDAOunlockRates[_month]).div(1000000);
     }
 
-    /*                                                 INTERNAL FUNCTIONS                                             */
+    /*                                                 PRIVATE FUNCTIONS                                             */
     /* ============================================================================================================== */
 
     /**
@@ -926,7 +926,7 @@ contract YieldFarming is Owned {
      * @param _amount uint256 the amount of Uniswap Liquidity tokens to be deposited
      * @param _lockedAt uint256 the time when this depoist is made
      */
-    function _addDeposit(address _sender, uint256 _pairCode, uint256 _amount, uint256 _lockedAt) internal {
+    function _addDeposit(address _sender, uint256 _pairCode, uint256 _amount, uint256 _lockedAt) private {
         uint256 _depositNumber = stakers[_sender].totalDeposits.length;
         uint256 _batchNumber = stakers[_sender].batchLockedLPamount[_pairCode].length;
         uint256 _currentMonth = getCurrentMonth();
@@ -965,7 +965,7 @@ contract YieldFarming is Owned {
         uint256 _startBatchNumber, uint256 _endBatchNumber,
         uint256 _LP, uint256 _KTY, uint256 _SDAO
     ) 
-        internal 
+        private 
     {
         // ========= update staker info =========
         // batch info
@@ -1015,7 +1015,7 @@ contract YieldFarming is Owned {
         address _sender, uint256 _pairCode, uint256 _batchNumber,
         uint256 _LP, uint256 _KTY, uint256 _SDAO
     ) 
-        internal
+        private
     {
         // ========= update staker info =========
         // batch info
@@ -1045,7 +1045,7 @@ contract YieldFarming is Owned {
      * @param _amountSDAO uint256 the amount of SuperDaoToken to be transferred to the _user
      */
     function _transferTokens(address _user, uint256 _pairCode, uint256 _amountLP, uint256 _amountKTY, uint256 _amountSDAO)
-        internal
+        private
     {
         // transfer liquidity tokens
         require(IUniswapV2ERC20(pairPools[_pairCode]).transfer(_user, _amountLP), "Fail to transfer liquidity token");
@@ -1065,7 +1065,7 @@ contract YieldFarming is Owned {
      * @return unit256 the amount of SuperDaoToken rewards associated with the _batchNumber of this _staker
      */
     function calculateRewardsByBatchNumber(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        internal
+        private
         returns (uint256, uint256)
     {
         uint256 rewardKTY;
@@ -1117,7 +1117,7 @@ contract YieldFarming is Owned {
      * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
      */
     function calculateRewardsByAmount(address _staker, uint256 _pairCode, uint256 _amountLP)
-        internal
+        private
         returns (
             uint256 rewardKTY,
             uint256 rewardSDAO,
