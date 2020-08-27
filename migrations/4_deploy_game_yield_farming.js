@@ -164,21 +164,35 @@ module.exports = (deployer, network, accounts) => {
       console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
 
       console.log("\nInitializing contracts...");
-      await yieldFarming.initialize(
+      const pairPoolAddrs = [
         ktyWethPair.address,
         ktyAntPair.address,
         ktyYDAIPair.address,
         ktyYYFIPair.address,
         ktyYYCRVPair.address,
         ktyYALINKPair.address,
-        ktyLendPair.address,
+        ktyLendPair.address
+      ]
+
+      const ktyUnlockRates = [
+        300000, 250000, 150000, 100000, 100000, 100000
+      ]
+
+      const sdaoUnlockRates = [
+        100000, 100000, 100000, 150000, 250000, 300000
+      ]
+
+      await yieldFarming.initialize(
+        pairPoolAddrs,
         kittieFightToken.address,
         superDaoToken.address,
         ktyUniswapOracle.address,
-        weth.address,
         TOTAL_KTY_REWARDS,
-        TOTAL_SDAO_REWARDS
+        TOTAL_SDAO_REWARDS,
+        ktyUnlockRates,
+        sdaoUnlockRates
       );
+
       await ktyUniswapOracle.initialize(
         ktyWethPair.address,
         daiWethPair.address,

@@ -511,11 +511,11 @@ contract("YieldFarming", accounts => {
     );
     let startBatchNumber = allocation_LP[0];
     let endBatchNumber = allocation_LP[1];
-    let hasResidual = allocation_LP[2];
+    let residual = allocation_LP[2];
     console.log("Pair pool:", pairCodeList[pairCode])
     console.log("Starting Batch Number:", startBatchNumber.toString());
     console.log("End Batch Number:", endBatchNumber.toString());
-    console.log("has residual?", hasResidual);
+    console.log("residual", residual.toString());
   });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards in KittieFighToken and SuperDaoTokne", async () => {
@@ -655,11 +655,11 @@ contract("YieldFarming", accounts => {
     );
     let startBatchNumber = allocation_LP[0];
     let endBatchNumber = allocation_LP[1];
-    let hasResidual = allocation_LP[2];
+    let residual = allocation_LP[2];
     console.log("Pair Pool:", pairCodeList[pairCode])
     console.log("Starting Batch Number:", startBatchNumber.toString());
     console.log("End Batch Number:", endBatchNumber.toString());
-    console.log("has residual?", hasResidual);
+    console.log("Residual:", residual.toString());
   });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards in KittieFighToken and SuperDaoTokne, with an empty batch among valid batches", async () => {
