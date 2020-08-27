@@ -177,7 +177,7 @@ contract YieldFarming is Owned {
      *         For each staker, each Batch Number in each Pair Pool associated with a Pair Code starts 
      *         from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
-    function deposit(uint256 _amountLP, uint256 _pairCode) external returns (bool) {
+    function deposit(uint256 _amountLP, uint256 _pairCode) external lock returns (bool) {
         require(block.timestamp <= programEndAt, "Program has ended");
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
