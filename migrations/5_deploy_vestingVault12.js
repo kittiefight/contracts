@@ -15,4 +15,15 @@ module.exports = (deployer, network, accounts) => {
   deployer
     .deploy(KittieFightToken, ERC20_TOKEN_SUPPLY)
     .then(() => deployer.deploy(VestingVault12, KittieFightToken.address))
+    .then(async () => {
+      console.log("\nGetting contract instances...");
+
+      // VestingVault12
+      vestingVault12 = await VestingVault12.deployed();
+      console.log("VestingVault12:", vestingVault12.address);
+
+      // TOKENS
+      kittieFightToken = await KittieFightToken.deployed();
+      console.log(kittieFightToken.address);
+    });
 };
