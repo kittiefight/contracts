@@ -12,18 +12,18 @@ const ERC20_TOKEN_SUPPLY = new BigNumber(
 );
 
 module.exports = (deployer, network, accounts) => {
-  deployer
-    .deploy(KittieFightToken, ERC20_TOKEN_SUPPLY)
-    .then(() => deployer.deploy(VestingVault12, KittieFightToken.address))
-    .then(async () => {
-      console.log("\nGetting contract instances...");
+  // deployer
+  //   .deploy(KittieFightToken, ERC20_TOKEN_SUPPLY)
+  //   .then(() => deployer.deploy(VestingVault12, KittieFightToken.address))
+  //   .then(async () => {
+  //     console.log("\nGetting contract instances...");
 
-      // VestingVault12
-      vestingVault12 = await VestingVault12.deployed();
-      console.log("VestingVault12:", vestingVault12.address);
+  //     // VestingVault12
+  //     vestingVault12 = await VestingVault12.deployed();
+  //     console.log("VestingVault12:", vestingVault12.address);
 
-      // TOKENS
-      kittieFightToken = await KittieFightToken.deployed();
-      console.log(kittieFightToken.address);
-    });
+  //     // TOKENS
+  //     kittieFightToken = await KittieFightToken.deployed();
+  //     console.log(kittieFightToken.address);
+  //   });
 };

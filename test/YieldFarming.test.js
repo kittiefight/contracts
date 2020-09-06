@@ -45,6 +45,51 @@ function weiToEther(w) {
   return web3.utils.fromWei(w.toString(), "ether");
 }
 
+advanceTime = time => {
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send(
+      {
+        jsonrpc: "2.0",
+        method: "evm_increaseTime",
+        params: [time],
+        id: new Date().getTime()
+      },
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      }
+    );
+  });
+};
+
+advanceBlock = () => {
+  return new Promise((resolve, reject) => {
+    web3.currentProvider.send(
+      {
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        id: new Date().getTime()
+      },
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        const newBlockHash = web3.eth.getBlock("latest").hash;
+
+        return resolve(newBlockHash);
+      }
+    );
+  });
+};
+
+advanceTimeAndBlock = async time => {
+  await advanceTime(time);
+  await advanceBlock();
+  return Promise.resolve(web3.eth.getBlock("latest"));
+};
+
 //Contract instances
 let yieldFarming,
   superDaoToken,
@@ -244,13 +289,6 @@ contract("YieldFarming", accounts => {
   // ==============================  FIRST MONTH: MONTH 0  ==============================
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
-    // temporarily set month as 60 sec and day as 2 sec for testing purpose
-    let MONTH = 30 * 2;
-    let DAY = 2;
-    await yieldFarming.setMonthAndDayForTest(MONTH, DAY);
-    let seconds = new Date().getTime() / 1000;
-    let startTime = Math.floor(seconds);
-    await yieldFarming.setProgramDuration(6, startTime);
 
     console.log(
       "\n====================== FIRST MONTH: MONTH 0 ======================\n"
@@ -816,8 +854,9 @@ contract("YieldFarming", accounts => {
       "Days elapsed in current month:",
       daysElapsedInMonth.toString()
     );
-    console.log("Life goes on...");
-    await timeout(timeUntilCurrentMonthEnd.toNumber());
+    console.log("Time is flying...");
+    let advancement = timeUntilCurrentMonthEnd.toNumber()
+    await advanceTimeAndBlock(advancement);
     console.log("The second Month starts: Month 1...");
   });
 
@@ -835,6 +874,9 @@ contract("YieldFarming", accounts => {
   });
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
+    let advancement = 2 * 24 * 60 * 60  // 2 days
+    await advanceTimeAndBlock(advancement);
+  
     console.log(
       "\n====================== SECOND MONTH: MONTH 1 ======================\n"
     );
@@ -1324,8 +1366,9 @@ contract("YieldFarming", accounts => {
       "Days elapsed in current month:",
       daysElapsedInMonth.toString()
     );
-    console.log("Life goes on...");
-    await timeout(timeUntilCurrentMonthEnd.toNumber());
-    console.log("The second Month starts: Month 1...");
+    console.log("Time is flying...");
+    let advancement = timeUntilCurrentMonthEnd.toNumber()
+    await advanceTimeAndBlock(advancement);
+    console.log("The third Month starts: Month 2...");
   });
 });

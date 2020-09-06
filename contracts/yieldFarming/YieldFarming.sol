@@ -25,8 +25,8 @@ contract YieldFarming is Owned {
     ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
     KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
 
-    uint256 public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
-    uint256 public DAY = 24 * 60 * 60; 
+    uint256 constant MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
+    uint256 constant DAY = 24 * 60 * 60; 
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
@@ -363,12 +363,6 @@ contract YieldFarming is Owned {
     function setTotalRewards(uint256 _rewardsKTY, uint256 _rewardsSDAO) public onlyOwner {
         totalRewardsKTY = _rewardsKTY;
         totalRewardsSDAO = _rewardsSDAO;
-    }
-
-    // This is a temporary function just for truffle testing purpose
-    function setMonthAndDayForTest(uint256 _monthDuration, uint256 _dayDuration) external onlyOwner {
-        MONTH = _monthDuration;
-        DAY = _dayDuration;
     }
 
     /*                                                 GETTER FUNCTIONS                                               */
