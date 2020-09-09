@@ -5,7 +5,7 @@ import "../../interfaces/ERC20Advanced.sol";
 import "../../libs/SafeMath.sol";
 
 
-contract MockLEND is ERC20Basic, ERC20Advanced {
+contract MockaSNX is ERC20Basic, ERC20Advanced {
   using SafeMath for uint256;
 
   mapping (address => uint256) private _balances;

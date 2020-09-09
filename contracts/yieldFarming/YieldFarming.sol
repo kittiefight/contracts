@@ -38,10 +38,15 @@ contract YieldFarming is Owned {
     uint256 constant LP_KTY_YYFI_CODE = 3;
     uint256 constant LP_KTY_YYCRV_CODE = 4;
     uint256 constant LP_KTY_YALINK_CODE = 5;
-    uint256 constant LP_KTY_LEND_CODE = 6;
+    uint256 constant LP_KTY_ALEND_CODE = 6;
+    uint256 constant LP_KTY_ASNX_CODE = 7;
+    uint256 constant LP_KTY_GNO_CODE = 8;
+    uint256 constant LP_KTY_2KEY_CODE = 9;
+    uint256 constant LP_KTY_YETH_CODE = 10;
+    uint256 constant LP_KTY_AYFI_CODE = 11;
 
-    address[7] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
-    string[7] public pairPoolNames;                   // An array of the name of each Pair Pool, indexed by its pairCode
+    address[12] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
+    string[12] public pairPoolNames;                   // An array of the name of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -105,7 +110,7 @@ contract YieldFarming is Owned {
     // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
-        address[7] calldata _pairPoolAddr,
+        address[12] calldata _pairPoolAddr,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
@@ -116,7 +121,7 @@ contract YieldFarming is Owned {
     )
         external onlyOwner
     {
-        for (uint256 i = 0; i < 7; i++) {
+        for (uint256 i = 0; i < 12; i++) {
             setPairPoolAddress(i, _pairPoolAddr[i]);
         }
 

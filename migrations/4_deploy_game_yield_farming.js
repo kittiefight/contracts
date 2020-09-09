@@ -18,13 +18,23 @@ const YDAI = artifacts.require("MockyDAI");
 const YYFI = artifacts.require("MockyYFI");
 const YYCRV = artifacts.require("MockyyCRV");
 const YALINK = artifacts.require("MockyaLINK");
-const LEND = artifacts.require("MockLEND");
+const ALEND = artifacts.require("MockaLEND");
+const ASNX = artifacts.require("MockaSNX");
+const GNO = artifacts.require("MockGNO");
+const _2KEY = artifacts.require("Mock2key");
+const YETH = artifacts.require("MockyETH");
+const AYFI = artifacts.require("MockaYFI")
 const KtyAntPair = artifacts.require("UniswapV2Pair");
 const KtyYDAIPair = artifacts.require("UniswapV2Pair");
 const KtyYYFIPair = artifacts.require("UniswapV2Pair");
 const KtyYYCRVPair = artifacts.require("UniswapV2Pair");
 const KtyYALINKPair = artifacts.require("UniswapV2Pair");
-const KtyLendPair = artifacts.require("UniswapV2Pair");
+const KtyALENDPair = artifacts.require("UniswapV2Pair");
+const KtyASNXPair = artifacts.require("UniswapV2Pair");
+const KtyGNOPair = artifacts.require("UniswapV2Pair");
+const Kty2keyPair = artifacts.require("UniswapV2Pair");
+const KtyYETHPair = artifacts.require("UniswapV2Pair");
+const KtyAYFIPair = artifacts.require("UniswapV2Pair");
 
 //Rinkeby address of KittieFightToken
 //const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
@@ -55,7 +65,12 @@ module.exports = (deployer, network, accounts) => {
     .then(() => deployer.deploy(YYFI, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YYCRV, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YALINK, ERC20_TOKEN_SUPPLY))
-    .then(() => deployer.deploy(LEND, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(ALEND, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(ASNX, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(GNO, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(_2KEY, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(YETH, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(AYFI, ERC20_TOKEN_SUPPLY))
     .then(async () => {
       console.log("\nGetting contract instances...");
 
@@ -88,8 +103,18 @@ module.exports = (deployer, network, accounts) => {
       console.log("yyCRV:", yyCRV.address)
       yaLINK = await YALINK.deployed()
       console.log("yaLINK:", yaLINK.address)
-      lend = await LEND.deployed()
-      console.log("LEND:", lend.address)
+      aLend = await ALEND.deployed()
+      console.log("aLEND:", aLend.address)
+      aSNX = await ASNX.deployed()
+      console.log("aSNX:", aSNX.address)
+      gno = await GNO.deployed()
+      console.log("GNO:", gno.address)
+      _2key = await _2KEY.deployed()
+      console.log("2Key:", _2key.address)
+      yETH = await YETH.deployed()
+      console.log("yETH:", yETH.address)
+      aYFI = await AYFI.deployed()
+      console.log("aYFI:", aYFI.address)
 
       await factory.createPair(weth.address, kittieFightToken.address);
       const ktyPairAddress = await factory.getPair(
@@ -149,16 +174,62 @@ module.exports = (deployer, network, accounts) => {
       );
       console.log("ktyYALINKPair address", ktyYALINKPairAddress);
       const ktyYALINKPair = await KtyYALINKPair.at(ktyYALINKPairAddress);
-      console.log("ktyWethPair:", ktyYALINKPair.address);
+      console.log("ktyYALINKPair:", ktyYALINKPair.address);
 
-      await factory.createPair(lend.address, kittieFightToken.address);
-      const ktyLendPairAddress = await factory.getPair(
-        lend.address,
+      await factory.createPair(aLend.address, kittieFightToken.address);
+      const ktyALENDPairAddress = await factory.getPair(
+        aLend.address,
         kittieFightToken.address
       );
-      console.log("ktyLendPair address", ktyLendPairAddress);
-      const ktyLendPair = await KtyLendPair.at(ktyLendPairAddress);
-      console.log("ktyWethPair:", ktyLendPair.address);
+      console.log("ktyALENDPair address", ktyALENDPairAddress);
+      const ktyALENDPair = await KtyALENDPair.at(ktyALENDPairAddress);
+      console.log("ktyALENDPair:", ktyALENDPair.address);
+
+      await factory.createPair(aSNX.address, kittieFightToken.address);
+      const ktyASNXPairAddress = await factory.getPair(
+        aSNX.address,
+        kittieFightToken.address
+      );
+      console.log("ktyASNXPair address", ktyASNXPairAddress);
+      const ktyASNXPair = await KtyASNXPair.at(ktyASNXPairAddress);
+      console.log("ktyASNXPair:", ktyASNXPair.address);
+
+      await factory.createPair(gno.address, kittieFightToken.address);
+      const ktyGNOPairAddress = await factory.getPair(
+        gno.address,
+        kittieFightToken.address
+      );
+      console.log("ktyGNOPair address", ktyGNOPairAddress);
+      const ktyGNOPair = await KtyGNOPair.at(ktyGNOPairAddress);
+      console.log("ktyGNOPair:", ktyGNOPair.address);
+
+      await factory.createPair(_2key.address, kittieFightToken.address);
+      const kty2keyPairAddress = await factory.getPair(
+        _2key.address,
+        kittieFightToken.address
+      )
+      console.log("kty2keyPair address", kty2keyPairAddress);
+      const kty2keyPair = await Kty2keyPair.at(kty2keyPairAddress);
+      console.log("kty2keyPair:", kty2keyPair.address);
+
+      await factory.createPair(yETH.address, kittieFightToken.address);
+      const ktyYETHPairAddress = await factory.getPair(
+        yETH.address,
+        kittieFightToken.address
+      )
+      console.log("ktyYETHPair address", ktyYETHPairAddress);
+      const ktyYETHPair = await KtyYETHPair.at(ktyYETHPairAddress);
+      console.log("ktyYETHPair:", ktyYETHPair.address);
+
+      await factory.createPair(aYFI.address, kittieFightToken.address);
+      const ktyAYFIPairAddress = await factory.getPair(
+        aYFI.address,
+        kittieFightToken.address
+      )
+
+      console.log("ktyAYFIPair address", ktyAYFIPairAddress);
+      const ktyAYFIPair = await KtyAYFIPair.at(ktyAYFIPairAddress);
+      console.log("ktyAYFIPair:", ktyAYFIPair.address);
 
       ktyUniswapOracle = await KtyUniswapOracle.deployed();
       console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
@@ -171,7 +242,12 @@ module.exports = (deployer, network, accounts) => {
         ktyYYFIPair.address,
         ktyYYCRVPair.address,
         ktyYALINKPair.address,
-        ktyLendPair.address
+        ktyALENDPair.address,
+        ktyASNXPair.address,
+        ktyGNOPair.address,
+        kty2keyPair.address,
+        ktyYETHPair.address,
+        ktyAYFIPair.address
       ]
 
       const ktyUnlockRates = [
@@ -210,10 +286,15 @@ module.exports = (deployer, network, accounts) => {
         "KTY_YYFI",
         "KTY_YYCRV",
         "KTY_YALINK",
-        "KTY_LEND"
+        "KTY_ALEND",
+        "KTY_ASNX",
+        "KTY_GNO",
+        "KTY_2KEY",
+        "KTY_YETH",
+        "KTY_AYFI"
       ]
 
-      for (let n = 0; n < 7; n++) {
+      for (let n = 0; n < 12; n++) {
         await yieldFarming.setPairPoolName(n, pairPoolNames[n])
       }
 
