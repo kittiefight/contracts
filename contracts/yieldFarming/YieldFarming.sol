@@ -72,9 +72,9 @@ contract YieldFarming is Owned {
     // Properties of a Staker
     struct Staker {
         uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
-        uint256[][7] batchLockedLPamount;               // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
-        uint256[][7] batchLockedAt;                     // A 2d array showing the locked time of each batch in each Pair Pool
-        uint256[7] totalLPlockedbyPairCode;             // Total amount of Liquidity tokens locked by this stader from all pair pools
+        uint256[][12] batchLockedLPamount;               // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
+        uint256[][12] batchLockedAt;                     // A 2d array showing the locked time of each batch in each Pair Pool
+        uint256[12] totalLPlockedbyPairCode;             // Total amount of Liquidity tokens locked by this stader from all pair pools
         uint256 totalLPlocked;                          // Total Uniswap Liquidity tokens locked by this staker
         uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
