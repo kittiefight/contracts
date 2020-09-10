@@ -32,21 +32,20 @@ contract YieldFarming is Owned {
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
 
     // Uniswap pair contract code
-    uint256 constant LP_KTY_WETH_CODE = 0;
-    uint256 constant LP_KTY_ANT_CODE = 1;
-    uint256 constant LP_KTY_YDAI_CODE = 2;
-    uint256 constant LP_KTY_YYFI_CODE = 3;
-    uint256 constant LP_KTY_YYCRV_CODE = 4;
-    uint256 constant LP_KTY_YALINK_CODE = 5;
-    uint256 constant LP_KTY_ALEND_CODE = 6;
-    uint256 constant LP_KTY_ASNX_CODE = 7;
-    uint256 constant LP_KTY_GNO_CODE = 8;
-    uint256 constant LP_KTY_2KEY_CODE = 9;
-    uint256 constant LP_KTY_YETH_CODE = 10;
-    uint256 constant LP_KTY_AYFI_CODE = 11;
+    uint256 constant public KTY_WETH = 0;
+    uint256 constant public KTY_ANT = 1;
+    uint256 constant public KTY_YDAI = 2;
+    uint256 constant public KTY_YYFI = 3;
+    uint256 constant public KTY_YYCRV = 4;
+    uint256 constant public KTY_YALINK = 5;
+    uint256 constant public KTY_ALEND = 6;
+    uint256 constant public KTY_ASNX = 7;
+    uint256 constant public KTY_GNO = 8;
+    uint256 constant public KTY_2KEY = 9;
+    uint256 constant public KTY_YETH = 10;
+    uint256 constant public KTY_AYFI = 11;
 
     address[12] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
-    string[12] public pairPoolNames;                   // An array of the name of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -255,13 +254,14 @@ contract YieldFarming is Owned {
         pairPools[_pairCode] = _pairPool;
     }
 
-    /**
-     * @dev Set the name of pairPool
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
-    function setPairPoolName(uint256 _pairCode, string calldata _pairPoolName) external onlyOwner {
-        pairPoolNames[_pairCode] = _pairPoolName;
-    }
+    // Not necessary
+    // /**
+    //  * @dev Set the name of pairPool
+    //  * @dev This function can only be carreid out by the owner of this contract.
+    //  */
+    // function setPairPoolName(uint256 _pairCode, string calldata _pairPoolName) external onlyOwner {
+    //     pairPoolNames[_pairCode] = _pairPoolName;
+    // }
 
     /**
      * @dev Set KittieFightToken contract
@@ -374,10 +374,10 @@ contract YieldFarming is Owned {
     /* ============================================================================================================== */
     /**
      * @param _pairCode uint256 Pair Code assocated with the Pair Pool 
-     * @return the name and address of the pair pool associated with _pairCode
+     * @return the address of the pair pool associated with _pairCode
      */
-    function getPairPool(uint256 _pairCode) external view returns (string memory, address) {
-        return (pairPoolNames[_pairCode], pairPools[_pairCode]);
+    function getPairPool(uint256 _pairCode) external view returns (address) {
+        return pairPools[_pairCode];
     }
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
