@@ -132,7 +132,7 @@ contract YieldFarming is Owned {
         setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
 
         // Set early mining bonus
-        EARLY_MINING_BONUS = 700000;
+        EARLY_MINING_BONUS = 700000*(10**18);
 
         // Set reward unlock rate for the program duration
         for (uint256 j = 0; j < 6; j++) {
@@ -823,6 +823,12 @@ contract YieldFarming is Owned {
      */
     function timeUntilCurrentMonthEnd() public view returns (uint) {
         uint256 nextMonth = getCurrentMonth().add(1);
+        if (nextMonth > 5) {
+            if (block.timestamp >= monthsStartAt[5].add(MONTH)) {
+                return 0;
+            }
+            return MONTH.sub(block.timestamp.sub(monthsStartAt[5]));
+        }
         return monthsStartAt[nextMonth].sub(block.timestamp);
     }
 
