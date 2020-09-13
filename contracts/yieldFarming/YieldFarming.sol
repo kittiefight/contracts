@@ -1185,9 +1185,11 @@ contract YieldFarming is Owned {
                 rewardSDAO = 0;
             } else {
                 // check if early mining bonus applies here
-                if (isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode) && block.timestamp > programEndAt) {
-                    rewardKTY = getEarlyBonusForBatch(_amountLP);
-                    rewardSDAO = rewardKTY;
+                if (block.timestamp > programEndAt) {
+                    if (isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
+                        rewardKTY = getEarlyBonusForBatch(_amountLP);
+                        rewardSDAO = rewardKTY;
+                    }
                 } else {
                     ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
                     rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, _amountLP);
@@ -1207,10 +1209,12 @@ contract YieldFarming is Owned {
                 if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
                     lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     // if eligible for early bonus, the rewards for early bonus is added for this batch
-                    if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                        earlyBonus = getEarlyBonusForBatch(lockedLP);
-                        rewardKTY = rewardKTY.add(earlyBonus);
-                        rewardSDAO = rewardSDAO.add(earlyBonus);
+                    if (block.timestamp > programEndAt) {
+                        if (isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                            earlyBonus = getEarlyBonusForBatch(lockedLP);
+                            rewardKTY = rewardKTY.add(earlyBonus);
+                            rewardSDAO = rewardSDAO.add(earlyBonus);
+                        }
                     } else {
                         ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
                         rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
@@ -1229,10 +1233,12 @@ contract YieldFarming is Owned {
                 if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
                     lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     // _amountLP = _amountLP.sub(lockedLP);
-                    if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                        earlyBonus = getEarlyBonusForBatch(lockedLP);
-                        rewardKTY = rewardKTY.add(earlyBonus);
-                        rewardSDAO = rewardSDAO.add(earlyBonus);
+                    if (block.timestamp > programEndAt) {
+                        if (isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                            earlyBonus = getEarlyBonusForBatch(lockedLP);
+                            rewardKTY = rewardKTY.add(earlyBonus);
+                            rewardSDAO = rewardSDAO.add(earlyBonus);
+                        } 
                     } else {
                         ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
                         rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
@@ -1247,10 +1253,12 @@ contract YieldFarming is Owned {
             }
             // add rewards for end Batch from which only part of the locked amount is to be withdrawn
             if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
-                if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
-                    earlyBonus = getEarlyBonusForBatch(residual);
-                    rewardKTY = rewardKTY.add(earlyBonus);
-                    rewardSDAO = rewardSDAO.add(earlyBonus);
+                if (block.timestamp > programEndAt) {
+                    if (isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
+                        earlyBonus = getEarlyBonusForBatch(residual);
+                        rewardKTY = rewardKTY.add(earlyBonus);
+                        rewardSDAO = rewardSDAO.add(earlyBonus);
+                    }
                 } else {
                     ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
                     rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, residual));

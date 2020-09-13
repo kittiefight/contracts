@@ -2065,7 +2065,7 @@ contract("YieldFarming", accounts => {
 
     let totalDeposits, eligible, lockedLP, bonusForDeposit, newWithdraw;
 
-    for (let i = 1; i < 19; i++) {
+    for (let i = 1; i < 17; i++) {
       totalDeposits = await yieldFarming.getAllDeposits(accounts[i]);
       console.log(
         `\n======== User`,
@@ -2098,18 +2098,104 @@ contract("YieldFarming", accounts => {
             fromBlock: "latest",
             toBlock: "latest"
           });
-          newWithdraw.map(async (e) => {
-            console.log('\n**** NEW WITHDRAW HAPPENED ****');
-            console.log('    KTY reward ', weiToEther(e.returnValues.KTYamount))
-            console.log('    SuperDao reward ', weiToEther(e.returnValues.SDAOamount))
-            console.log('************************\n')
-            assert.equal(Number(weiToEther(bonusForDeposit)), Number(weiToEther(e.returnValues.KTYamount)))
-            assert.equal(Number(weiToEther(bonusForDeposit)), Number(weiToEther(e.returnValues.SDAOamount)))
-          })
+          newWithdraw.map(async e => {
+            console.log("\n**** NEW WITHDRAW HAPPENED ****");
+            console.log(
+              "    KTY reward ",
+              weiToEther(e.returnValues.KTYamount)
+            );
+            console.log(
+              "    SuperDao reward ",
+              weiToEther(e.returnValues.SDAOamount)
+            );
+            console.log("************************\n");
+            assert.equal(
+              Number(weiToEther(bonusForDeposit)),
+              Number(weiToEther(e.returnValues.KTYamount))
+            );
+            assert.equal(
+              Number(weiToEther(bonusForDeposit)),
+              Number(weiToEther(e.returnValues.SDAOamount))
+            );
+          });
         }
       }
     }
-
     console.log("===============================\n");
+  });
+
+  it("user withdraws by amount after program ends", async () => {
+    let user = 17;
+    let pairCode0 = 0;
+    let pairCode8 = 8;
+    let allLP_0 = await yieldFarming.getLockeLPbyPairCode(
+      accounts[user],
+      pairCode0
+    );
+    let allLP_8 = await yieldFarming.getLockeLPbyPairCode(
+      accounts[user],
+      pairCode8
+    );
+    console.log(
+      "all liquidity tokens locked by user",
+      user,
+      "per",
+      pairCodeList[pairCode0],
+      ":",
+      weiToEther(allLP_0)
+    );
+    console.log(
+      "all liquidity tokens locked by user",
+      user,
+      "per",
+      pairCodeList[pairCode8],
+      ":",
+      weiToEther(allLP_8)
+    );
+    let withdraw_LP_amount_0 = new BigNumber(
+      web3.utils.toWei(weiToEther(allLP_0), "ether")
+    );
+    let withdraw_LP_amount_8 = new BigNumber(
+      web3.utils.toWei(weiToEther(allLP_8), "ether")
+    );
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount_0, pairCode0, {
+      from: accounts[user]
+    });
+
+    newWithdraw = await yieldFarming.getPastEvents("WithDrawn", {
+      fromBlock: "latest",
+      toBlock: "latest"
+    });
+
+    newWithdraw.map(async e => {
+      console.log("\n**** NEW WITHDRAW HAPPENED ****");
+      console.log("    Liquidity tokens ", weiToEther(e.returnValues.LPamount));
+      console.log("    KTY reward ", weiToEther(e.returnValues.KTYamount));
+      console.log(
+        "    SuperDao reward ",
+        weiToEther(e.returnValues.SDAOamount)
+      );
+      console.log("************************\n");
+    });
+
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount_8, pairCode8, {
+      from: accounts[user]
+    });
+
+    newWithdraw = await yieldFarming.getPastEvents("WithDrawn", {
+      fromBlock: "latest",
+      toBlock: "latest"
+    });
+
+    newWithdraw.map(async e => {
+      console.log("\n**** NEW WITHDRAW HAPPENED ****");
+      console.log("    Liquidity tokens ", weiToEther(e.returnValues.LPamount));
+      console.log("    KTY reward ", weiToEther(e.returnValues.KTYamount));
+      console.log(
+        "    SuperDao reward ",
+        weiToEther(e.returnValues.SDAOamount)
+      );
+      console.log("************************\n");
+    });
   });
 });
