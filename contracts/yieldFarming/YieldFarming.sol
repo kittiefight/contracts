@@ -399,6 +399,34 @@ contract YieldFarming is Owned {
     }
 
     /**
+     * @return uint256 the deposit number for this _staker associated with the _batchNumber and _pairCode
+     */
+    function getDepositNumber(address _staker, uint256 _batchNumber, uint256 _pairCode)
+        external view returns (uint256)
+    {
+        uint256[2][] memory allDeposits = stakers[_staker].totalDeposits;
+        for (uint256 i = 0; i < allDeposits.length; i++) {
+            if (_pairCode == allDeposits[i][0] && _batchNumber == allDeposits[i][1]) {
+                return i;
+            }
+        }
+    }
+
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _depositNumber deposit number for the _staker
+     * @return pair pool code and batch number associated with this _depositNumber for the _staker
+     */
+
+    function getBathcNumberAndPairCode(address _staker, uint256 _depositNumber)
+        public view returns (uint256, uint256)
+    {
+        uint256 _pairCode = stakers[_staker].totalDeposits[_depositNumber][0];
+        uint256 _batchNumber = stakers[_staker].totalDeposits[_depositNumber][1];
+        return (_pairCode, _batchNumber);
+    }
+
+    /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _pairCode uint256 Pair Code assocated with a Pair Pool from whichh the batches are to be shown
      * @return uint256[] an array of the amount of locked Lquidity tokens in every batch of the _staker in
@@ -410,6 +438,25 @@ contract YieldFarming is Owned {
         external view returns (uint256[] memory)
     {
         return stakers[_staker].batchLockedLPamount[_pairCode];
+    }
+
+    /**
+     * @return uint256 the amount of locked liquidity tokens in a deposit of a staker assocaited with _depositNumber
+     */
+    function getLockedLPinDeposit(address _staker, uint256 _depositNumber)
+        external view returns (uint256)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
+        return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
+    }
+
+    /**
+     * @return uint256 the total amount of locked liquidity tokens of a staker assocaited with _pairCode
+     */
+    function getLockeLPbyPairCode(address _staker, uint256 _pairCode)
+        external view returns (uint256)
+    {
+        return stakers[_staker].totalLPlockedbyPairCode[_pairCode];
     }
 
     /**
@@ -446,9 +493,16 @@ contract YieldFarming is Owned {
      * @dev    A non-valid batch is an empty batch which has no Liquidity tokens in it.
      */
     function isBatchValid(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        external view returns (bool)
+        public view returns (bool)
     {
         return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber] > 0;
+    }
+
+    function isDepositValid(address _staker, uint256 _depositNumber)
+        public view returns (bool)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
+        return isBatchValid(_staker, _batchNumber, _pairCode);
     }
 
     /**
@@ -476,6 +530,13 @@ contract YieldFarming is Owned {
         return false;
     }
 
+    function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
+        public view returns (bool)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
+        return isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
+    }
+
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
@@ -492,6 +553,13 @@ contract YieldFarming is Owned {
             return true;
         }
         return false;
+    }
+
+    function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
+        public view returns (bool)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
+        return isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
     /**
@@ -1058,6 +1126,7 @@ contract YieldFarming is Owned {
             if (isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
                 rewardKTY = getEarlyBonusForBatch(lockedLP);
                 rewardSDAO = rewardKTY;
+                return (rewardKTY, rewardSDAO);
             }
         }
 
