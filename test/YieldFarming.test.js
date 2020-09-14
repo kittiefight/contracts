@@ -1878,6 +1878,151 @@ contract("YieldFarming", accounts => {
     console.log("Last number of batches:", lastBatchNumber.toString());
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
+    let LP_balance_user_before = await ktyGNOPair.balanceOf(accounts[user]);
+    let KTY_balance_user_before = await kittieFightToken.balanceOf(
+      accounts[user]
+    );
+    let SDAO_balance_user_before = await superDaoToken.balanceOf(
+      accounts[user]
+    );
+
+    // withdraw by Amount
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
+      from: accounts[user]
+    }).should.be.fulfilled;
+
+    // Info after withdraw
+    console.log(`\n======== User:  Batches Info After Withdraw ======== `);
+    allBatches;
+    lastBatchNumber;
+    isBatchValid;
+
+    allBatches = await yieldFarming.getAllBatchesPerPairPool(
+      accounts[user],
+      pairCode
+    );
+    lastBatchNumber = await yieldFarming.getLastBatchNumber(
+      accounts[user],
+      pairCode
+    );
+    for (let j = 0; j < allBatches.length; j++) {
+      console.log("Pair Pool:", pairCodeList[pairCode]);
+      console.log("Batch Number:", j);
+      console.log("Liquidity Locked:", weiToEther(allBatches[j]));
+      isBatchValid = await yieldFarming.isBatchValid(
+        accounts[user],
+        j,
+        pairCode
+      );
+      console.log("Is Batch Valid?", isBatchValid);
+    }
+    console.log("Last number of batches:", lastBatchNumber.toString());
+    console.log("Total number of batches:", allBatches.length);
+    console.log("===============================\n");
+
+    let LP_balance_user_after = await ktyGNOPair.balanceOf(accounts[user]);
+    let KTY_balance_user_after = await kittieFightToken.balanceOf(
+      accounts[user]
+    );
+    let SDAO_balance_user_after = await superDaoToken.balanceOf(accounts[user]);
+    console.log(
+      "User Liquidity Token balance before withdraw:",
+      weiToEther(LP_balance_user_before)
+    );
+    console.log(
+      "User Liquidity Token balance after withdraw:",
+      weiToEther(LP_balance_user_after)
+    );
+    console.log(
+      "User KittieFightToken balance before withdraw:",
+      weiToEther(KTY_balance_user_before)
+    );
+    console.log(
+      "User KittieFightToke Token balance after withdraw:",
+      weiToEther(KTY_balance_user_after)
+    );
+    console.log(
+      "User SuperDaoToken balance before withdraw:",
+      weiToEther(SDAO_balance_user_before)
+    );
+    console.log(
+      "User SuperDaoToken balance after withdraw:",
+      weiToEther(SDAO_balance_user_after)
+    );
+
+    let rewardsClaimedByUser = await yieldFarming.getTotalRewardsClaimedByStaker(
+      accounts[user]
+    );
+    console.log(
+      "Total KittieFightToken rewards claimed by user:",
+      weiToEther(rewardsClaimedByUser[0])
+    );
+    console.log(
+      "Total SuperDaoToken rewards claimed by user:",
+      weiToEther(rewardsClaimedByUser[1])
+    );
+
+    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    console.log(
+      "Total Uniswap Liquidity tokens locked in Yield Farming:",
+      weiToEther(total_LP_locked)
+    );
+
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+      pairCode
+    );
+    console.log(
+      "Total Uniswap Liquidity tokens locked in Dai value:",
+      weiToEther(totalLiquidityTokenLockedInDAI)
+    );
+
+    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    console.log(
+      "Total KittieFightToken rewards claimed:",
+      weiToEther(totalRewardsClaimed[0])
+    );
+    console.log(
+      "Total SuperDaoToken rewards claimed:",
+      weiToEther(totalRewardsClaimed[1])
+    );
+  });
+
+  it("user withdraws again Uniswap Liquidity tokens by Amount and get rewards", async () => {
+    let withdraw_LP_amount = new BigNumber(
+      web3.utils.toWei("50", "ether") //60 Uniswap Liquidity tokens
+    );
+    // Info before withdraw
+    console.log(`\n======== User: Batches Info Before Withdraw ======== `);
+    let allBatches;
+    let lastBatchNumber;
+    let isBatchValid;
+    let user = 10;
+    let pairCode = 0;
+
+    console.log("User", user);
+
+    allBatches = await yieldFarming.getAllBatchesPerPairPool(
+      accounts[user],
+      pairCode
+    );
+    lastBatchNumber = await yieldFarming.getLastBatchNumber(
+      accounts[user],
+      pairCode
+    );
+    for (let j = 0; j < allBatches.length; j++) {
+      console.log("pair Pool:", pairCodeList[pairCode]);
+      console.log("Batch Number:", j);
+      console.log("Liquidity Locked:", weiToEther(allBatches[j]));
+      isBatchValid = await yieldFarming.isBatchValid(
+        accounts[user],
+        j,
+        pairCode
+      );
+      console.log("Is Batch Valid?", isBatchValid);
+    }
+    console.log("Last number of batches:", lastBatchNumber.toString());
+    console.log("Total number of batches:", allBatches.length);
+    console.log("===============================\n");
     let LP_balance_user_before = await ktyWethPair.balanceOf(accounts[user]);
     let KTY_balance_user_before = await kittieFightToken.balanceOf(
       accounts[user]
@@ -1886,7 +2031,7 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
 
-    // withdraw by Batch NUmber
+    // withdraw by Amount
     await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
       from: accounts[user]
     }).should.be.fulfilled;
@@ -1986,6 +2131,21 @@ contract("YieldFarming", accounts => {
       weiToEther(totalRewardsClaimed[1])
     );
   });
+
+  it("users deposit in the sixth month", async () => {
+    let deposit_LP_amount = new BigNumber(
+      web3.utils.toWei("70", "ether") //30 Uniswap Liquidity tokens
+    );
+    let pairCode = 8;
+    for (let i = 17; i < 19; i++) {
+      await ktyGNOPair.approve(yieldFarming.address, deposit_LP_amount, {
+        from: accounts[i]
+      }).should.be.fulfilled;
+      await yieldFarming.deposit(deposit_LP_amount, pairCode, {
+        from: accounts[i]
+      }).should.be.fulfilled;
+    }
+  })
 
   it("Approching the end of sixth month: Month 5", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();
@@ -2158,6 +2318,73 @@ contract("YieldFarming", accounts => {
     let withdraw_LP_amount_8 = new BigNumber(
       web3.utils.toWei(weiToEther(allLP_8), "ether")
     );
+
+    let allocation_LP_0 = await yieldFarming.allocateLP(
+      accounts[user],
+      withdraw_LP_amount_0,
+      pairCode0
+    );
+    let startBatchNumber0 = allocation_LP_0[0];
+    let endBatchNumber0 = allocation_LP_0[1];
+    let residual0 = allocation_LP_0[2];
+    console.log("Pair Pool:", pairCodeList[pairCode0]);
+    console.log("Starting Batch Number:", startBatchNumber0.toString());
+    console.log("End Batch Number:", endBatchNumber0.toString());
+    console.log("residual:", weiToEther(residual0));
+
+    let locked_period_00 = await yieldFarming.getLockedPeriod(accounts[user], 0, pairCode0)
+    let locked_period_01 = await yieldFarming.getLockedPeriod(accounts[user], 1, pairCode0)
+    let locked_period_02 = await yieldFarming.getLockedPeriod(accounts[user], 2, pairCode0)
+    console.log(locked_period_00[0].toString())
+    console.log(locked_period_00[1].toString())
+    console.log(locked_period_00[2].toString())
+    console.log(locked_period_01[0].toString())
+    console.log(locked_period_01[1].toString())
+    console.log(locked_period_01[2].toString())
+    console.log(locked_period_02[0].toString())
+    console.log(locked_period_02[1].toString())
+    console.log(locked_period_02[2].toString())
+
+    // let k0 = new BigNumber(
+    //   web3.utils.toWei(weiToEther(locked_period_00[2]), "ether")
+    // );
+
+    // let k1 = new BigNumber(
+    //   web3.utils.toWei(weiToEther(locked_period_01[2]), "ether")
+    // );
+
+    // let k2 = new BigNumber(
+    //   web3.utils.toWei(weiToEther(locked_period_02[2]), "ether")
+    // );
+
+    // let kty_part_2 = await yieldFarming.calculateYieldsKTY_part_2(0, 1, k0)
+    // console.log(kty_part_2.toString())
+
+    // let kty_part_3 = await yieldFarming.calculateYieldsKTY_part_2(0, 2, k0)
+    // console.log(kty_part_3.toString())
+
+    // let kty_part_4 = await yieldFarming.calculateYieldsKTY_part_2(0, 3, k0)
+    // console.log(kty_part_4.toString())
+
+    // let kty_part_5 = await yieldFarming.calculateYieldsKTY_part_2(0, 4, k0)
+    // console.log(kty_part_5.toString())
+
+    // let kty_part_20 = await yieldFarming.calculateYieldsKTY_part_2(0, 5, k0)
+    // let kty_part_21 = await yieldFarming.calculateYieldsKTY_part_2(0, 5, k1)
+    // let kty_part_22 = await yieldFarming.calculateYieldsKTY_part_2(1, 5, k2)
+
+    // console.log(kty_part_20.toString())
+    // console.log(kty_part_21.toString())
+    // console.log(kty_part_22.toString())
+
+    // // let calculation = await yieldFarming.calculateRewardsByAmount(
+    // //   accounts[user], pairCode0, withdraw_LP_amount_0)
+    // // console.log(weiToEther(calculation[0]))
+    // // console.log(weiToEther(calculation[1]))
+    // // console.log(calculation[2].toString())
+    // // console.log(calculation[3].toString())
+
+
     await yieldFarming.withdrawByAmount(withdraw_LP_amount_0, pairCode0, {
       from: accounts[user]
     });
@@ -2197,5 +2424,103 @@ contract("YieldFarming", accounts => {
       );
       console.log("************************\n");
     });
+  });
+
+  it("user withdraws again by amount after program ends", async () => {
+    let advancement = 30 * 24 * 60 * 60;
+    await advanceTimeAndBlock(advancement);
+    console.log("Time is flying...")
+    // user 18 withdraws all her locked LPs,
+    // and now all the deposits now meet the 30-criteria for claming rewards
+    let user = 18;
+    let pairCode0 = 0;
+    let pairCode8 = 8;
+    let allLP_0 = await yieldFarming.getLockeLPbyPairCode(
+      accounts[user],
+      pairCode0
+    );
+    let allLP_8 = await yieldFarming.getLockeLPbyPairCode(
+      accounts[user],
+      pairCode8
+    );
+    console.log(
+      "all liquidity tokens locked by user",
+      user,
+      "per",
+      pairCodeList[pairCode0],
+      ":",
+      weiToEther(allLP_0)
+    );
+    console.log(
+      "all liquidity tokens locked by user",
+      user,
+      "per",
+      pairCodeList[pairCode8],
+      ":",
+      weiToEther(allLP_8)
+    );
+    let withdraw_LP_amount_0 = new BigNumber(
+      web3.utils.toWei(weiToEther(allLP_0), "ether")
+    );
+    let withdraw_LP_amount_8 = new BigNumber(
+      web3.utils.toWei(weiToEther(allLP_8), "ether")
+    );
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount_0, pairCode0, {
+      from: accounts[user]
+    });
+
+    newWithdraw = await yieldFarming.getPastEvents("WithDrawn", {
+      fromBlock: "latest",
+      toBlock: "latest"
+    });
+
+    newWithdraw.map(async e => {
+      console.log("\n**** NEW WITHDRAW HAPPENED ****");
+      console.log("    Liquidity tokens ", weiToEther(e.returnValues.LPamount));
+      console.log("    KTY reward ", weiToEther(e.returnValues.KTYamount));
+      console.log(
+        "    SuperDao reward ",
+        weiToEther(e.returnValues.SDAOamount)
+      );
+      console.log("************************\n");
+    });
+
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount_8, pairCode8, {
+      from: accounts[user]
+    });
+
+    newWithdraw = await yieldFarming.getPastEvents("WithDrawn", {
+      fromBlock: "latest",
+      toBlock: "latest"
+    });
+
+    newWithdraw.map(async e => {
+      console.log("\n**** NEW WITHDRAW HAPPENED ****");
+      console.log("    Liquidity tokens ", weiToEther(e.returnValues.LPamount));
+      console.log("    KTY reward ", weiToEther(e.returnValues.KTYamount));
+      console.log(
+        "    SuperDao reward ",
+        weiToEther(e.returnValues.SDAOamount)
+      );
+      console.log("************************\n");
+    });
+
+    // compare the total rewards claimed by user 17 and user 18
+    let rewards_claimed_17 = await yieldFarming.getTotalRewardsClaimedByStaker(accounts[17])
+    let rewards_claimed_18 = await yieldFarming.getTotalRewardsClaimedByStaker(accounts[18])
+    let KTY_claimed_17 = rewards_claimed_17[0]
+    let SDAO_claimed_17 = rewards_claimed_17[1]
+    let KTY_claimed_18 = rewards_claimed_18[0]
+    let SDAO_claimed_18 = rewards_claimed_18[1]
+
+    console.log("\n**** Total Rewards Claimed by User 17 ****");
+    console.log("KTY rewards:", weiToEther(KTY_claimed_17))
+    console.log("SuperDao rewards:", weiToEther(SDAO_claimed_17))
+    console.log("************************\n");
+
+    console.log("\n**** Total Rewards Claimed by User 18 ****");
+    console.log("KTY rewards:", weiToEther(KTY_claimed_18))
+    console.log("SuperDao rewards:", weiToEther(SDAO_claimed_18))
+    console.log("************************\n");
   });
 });

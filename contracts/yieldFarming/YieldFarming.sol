@@ -657,7 +657,7 @@ contract YieldFarming is Owned {
         if (endMonth == startMonth) {
             yieldsKTY_part_2 = 0;
         } else {
-            for (uint256 i = startMonth.add(1); i <= endMonth; i ++) {
+            for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
                 yieldsKTY_part_2 = yieldsKTY_part_2
                     .add(KTYunlockRates[i].mul(totalRewardsKTY).mul(lockedLP).div(monthlyDeposits[i]).div(1000000));
             }
@@ -691,7 +691,7 @@ contract YieldFarming is Owned {
         if (endMonth == startMonth) {
             yieldsSDAO_part_2 = 0;
         } else {
-            for (uint256 i = startMonth.add(1); i <= endMonth; i ++) {
+            for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
                 yieldsSDAO_part_2 = yieldsSDAO_part_2
                     .add(SDAOunlockRates[i].mul(totalRewardsSDAO).mul(lockedLP).div(monthlyDeposits[i]).div(1000000));
             }
@@ -978,7 +978,9 @@ contract YieldFarming is Owned {
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
         stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.add(_amount);
 
-        monthlyDeposits[_currentMonth] = monthlyDeposits[_currentMonth].add(_amount);
+        for (uint i = _currentMonth; i < 6; i++) {
+            monthlyDeposits[i] = monthlyDeposits[i].add(_amount);
+        }
 
         totalDepositedLP = totalDepositedLP.add(_amount);
         totalLockedLP = totalLockedLP.add(_amount);
@@ -1042,6 +1044,13 @@ contract YieldFarming is Owned {
         totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
         totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
         totalLockedLP = totalLockedLP.sub(_LP);
+
+        uint256 _currentMonth = getCurrentMonth();
+        if (_currentMonth < 5) {
+            for (uint i = _currentMonth.add(1); i < 6; i++) {
+                monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
+            }
+        }
     }
 
     /**
@@ -1075,7 +1084,13 @@ contract YieldFarming is Owned {
         totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
         totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
         totalLockedLP = totalLockedLP.sub(_LP);
-        
+
+        uint256 _currentMonth = getCurrentMonth();
+        if (_currentMonth < 5) {
+            for (uint i = _currentMonth.add(1); i < 6; i++) {
+                monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
+            }
+        }
     }
 
     /**
@@ -1209,12 +1224,11 @@ contract YieldFarming is Owned {
                 if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
                     lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     // if eligible for early bonus, the rewards for early bonus is added for this batch
-                    if (block.timestamp > programEndAt) {
-                        if (isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                            earlyBonus = getEarlyBonusForBatch(lockedLP);
-                            rewardKTY = rewardKTY.add(earlyBonus);
-                            rewardSDAO = rewardSDAO.add(earlyBonus);
-                        }
+                    if (block.timestamp > programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                        earlyBonus = getEarlyBonusForBatch(lockedLP);
+                        rewardKTY = rewardKTY.add(earlyBonus);
+                        rewardSDAO = rewardSDAO.add(earlyBonus);
+                        
                     } else {
                         ( _startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
                         rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, lockedLP));
