@@ -1087,7 +1087,7 @@ contract YieldFarming is Owned {
 
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
-            for (uint i = _currentMonth.add(1); i < 6; i++) {
+            for (uint i = _currentMonth; i < 6; i++) {
                 monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
             }
         }
