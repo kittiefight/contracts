@@ -504,6 +504,12 @@ contract("YieldFarming", accounts => {
     console.log("Current Month:", currentMonth.toString());
   });
 
+  it("gets total early mining bonus", async () => {
+    let totalEarlyMiningBonus = await yieldFarming.getTotalEarlyMiningBonus()
+    console.log("Early Mining Bonus KittieFightToken:", weiToEther(totalEarlyMiningBonus[0]))
+    console.log("Early Mining Bonus SuperDao token:", weiToEther(totalEarlyMiningBonus[1]))
+  })
+
   it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
     let rewards_month_0 = await yieldFarming.getTotalRewardsByMonth(0);
     let KTYrewards_month_0 = rewards_month_0.rewardKTYbyMonth;

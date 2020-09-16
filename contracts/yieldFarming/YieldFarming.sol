@@ -1013,6 +1013,15 @@ contract YieldFarming is Owned {
         rewardSDAObyMonth = totalRewardsSDAO.mul(SDAOunlockRates[_month]).div(1000000);
     }
 
+    /**
+     * @return uint256 the amount of total Rewards for KittieFightToken for early mining bonnus
+     * @return uint256 the amount of total Rewards for SuperDaoToken for early mining bonnus
+     */
+    function getTotalEarlyMiningBonus() external view returns (uint256, uint256) {
+        // early mining bonus is the same amount in KTY and SDAO
+        return (EARLY_MINING_BONUS, EARLY_MINING_BONUS);
+    }
+
     /*                                                 PRIVATE FUNCTIONS                                             */
     /* ============================================================================================================== */
 
