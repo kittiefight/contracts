@@ -72,12 +72,13 @@ contract YieldFarming is Owned {
     // Properties of a Staker
     struct Staker {
         uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
-        uint256[][12] batchLockedLPamount;               // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
-        uint256[][12] batchLockedAt;                     // A 2d array showing the locked time of each batch in each Pair Pool
-        uint256[12] totalLPlockedbyPairCode;             // Total amount of Liquidity tokens locked by this stader from all pair pools
+        uint256[][12] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
+        uint256[][12] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
+        uint256[12] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
         uint256 totalLPlocked;                          // Total Uniswap Liquidity tokens locked by this staker
         uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
+        uint256[] depositNumberForEarlyBonus;           // An array of all the deposit number eligible for early bonus for this staker
     }
 
     mapping(address => Staker) public stakers;
@@ -562,6 +563,47 @@ contract YieldFarming is Owned {
         return isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
+    function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256) {
+        uint256[] memory depositsEarlyBonus = stakers[_staker].depositNumberForEarlyBonus;
+        uint256 totalLPEarlyBonus = 0;
+        uint256 depositNum;
+        uint256 batchNum;
+        uint256 pairCode;
+        for (uint256 i = 0; i < depositsEarlyBonus.length; i++) {
+            depositNum = depositsEarlyBonus[i];
+            (pairCode, batchNum) = getBathcNumberAndPairCode(_staker, depositNum);
+            if (pairCode == _pairCode && stakers[_staker].batchLockedAt[_pairCode][depositNum] > 0 && stakers[_staker].batchLockedLPamount[_pairCode][depositNum] > 0) {
+                totalLPEarlyBonus = totalLPEarlyBonus.add(stakers[_staker].batchLockedLPamount[_pairCode][depositNum]);
+            }
+        }
+
+        return totalLPEarlyBonus;
+    }
+
+    function totalLPforEarlyBonus(address _staker) public view returns (uint256) {
+        uint256[] memory _depositsEarlyBonus = stakers[_staker].depositNumberForEarlyBonus;
+        uint256 _totalLPEarlyBonus = 0;
+        uint256 _depositNum;
+        uint256 _batchNum;
+        uint256 _pair;
+        for (uint256 i = 0; i < _depositsEarlyBonus.length; i++) {
+            _depositNum = _depositsEarlyBonus[i];
+            (_pair, _batchNum) = getBathcNumberAndPairCode(_staker, _depositNum);
+            if (stakers[_staker].batchLockedAt[_pair][_depositNum] > 0 && stakers[_staker].batchLockedLPamount[_pair][_depositNum] > 0) {
+                _totalLPEarlyBonus = _totalLPEarlyBonus.add(stakers[_staker].batchLockedLPamount[_pair][_depositNum]);
+            }
+        }
+
+        return _totalLPEarlyBonus;
+    }
+
+    function getTotalEarlyBonus(address _staker) public view returns (uint256, uint256) {
+        uint256 totalEarlyLP = totalLPforEarlyBonus(_staker);
+        uint256 earlyBonus = getEarlyBonusForBatch(totalEarlyLP);
+        // early bonus for KTY is the same amount as early bonus for SDAO
+        return (earlyBonus, earlyBonus);
+    }
+
     /**
      * @param _amountLP the amount of locked Liquidity token eligible for claiming early bonus
      * @return uint256 the amount of early bonus for this _staker. Since the amount of early bonus is the same
@@ -987,6 +1029,7 @@ contract YieldFarming is Owned {
 
         if (block.timestamp <= programStartAt.add(DAY.mul(7))) {
             totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
+            stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
 
         emit Deposited(msg.sender, _depositNumber, _pairCode, _batchNumber, _amount, _lockedAt);
