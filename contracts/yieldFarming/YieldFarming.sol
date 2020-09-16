@@ -599,7 +599,7 @@ contract YieldFarming is Owned {
 
     function getTotalEarlyBonus(address _staker) public view returns (uint256, uint256) {
         uint256 totalEarlyLP = totalLPforEarlyBonus(_staker);
-        uint256 earlyBonus = getEarlyBonusForBatch(totalEarlyLP);
+        uint256 earlyBonus = getEarlyBonus(totalEarlyLP);
         // early bonus for KTY is the same amount as early bonus for SDAO
         return (earlyBonus, earlyBonus);
     }
@@ -609,7 +609,7 @@ contract YieldFarming is Owned {
      * @return uint256 the amount of early bonus for this _staker. Since the amount of early bonus is the same
      *         for KittieFightToken and SuperDaoToken, only one number is returned.
      */
-    function getEarlyBonusForBatch(uint256 _amountLP)
+    function getEarlyBonus(uint256 _amountLP)
         public view returns (uint256)
     {
         return _amountLP.mul(EARLY_MINING_BONUS.div(totalLockedLPinEarlyMining));
@@ -747,13 +747,22 @@ contract YieldFarming is Owned {
         return totalLockedLP;
     }
 
+    function totalLockedLPinDAI() external view returns (uint256) {
+        uint256 _totalLockedLPinDAI = 0;
+        uint256 _LPinDai;
+        for (uint256 i = 0; i < 12; i++) {
+            _LPinDai = getTotalLiquidityTokenLockedInDAI(i);
+            _totalLockedLPinDAI = _totalLockedLPinDAI.add(_LPinDai);
+        }
+
+        return _totalLockedLPinDAI;
+    }
+
     /**
      * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
      *         all Liquidity tokens locked in this contract.
      */
-    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) external view returns (uint256) {
-        // to do
-
+    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
         uint256 balance = IUniswapV2ERC20(pairPools[_pairCode]).balanceOf(address(this));
         uint256 totalSupply = IUniswapV2ERC20(pairPools[_pairCode]).totalSupply();
         uint256 percentLPinYieldFarm = balance.mul(1000000).div(totalSupply);
@@ -1182,7 +1191,7 @@ contract YieldFarming is Owned {
         if (block.timestamp > programEndAt) {
             // if eligible for Early Mining Bonus, return the rewards for early bonus
             if (isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
-                rewardKTY = getEarlyBonusForBatch(lockedLP);
+                rewardKTY = getEarlyBonus(lockedLP);
                 rewardSDAO = rewardKTY;
                 return (rewardKTY, rewardSDAO);
             }
@@ -1244,7 +1253,7 @@ contract YieldFarming is Owned {
             } else {
                 // check if early mining bonus applies here
                 if (block.timestamp >= programEndAt && isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
-                    rewardKTY = getEarlyBonusForBatch(_amountLP);
+                    rewardKTY = getEarlyBonus(_amountLP);
                     rewardSDAO = rewardKTY;
                     
                 } else {
@@ -1267,7 +1276,7 @@ contract YieldFarming is Owned {
                     lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     // if eligible for early bonus, the rewards for early bonus is added for this batch
                     if (block.timestamp >= programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                        earlyBonus = getEarlyBonusForBatch(lockedLP);
+                        earlyBonus = getEarlyBonus(lockedLP);
                         rewardKTY = rewardKTY.add(earlyBonus);
                         rewardSDAO = rewardSDAO.add(earlyBonus);
                         
@@ -1290,7 +1299,7 @@ contract YieldFarming is Owned {
                     lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                     // _amountLP = _amountLP.sub(lockedLP);
                     if (block.timestamp >= programEndAt && isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                        earlyBonus = getEarlyBonusForBatch(lockedLP);
+                        earlyBonus = getEarlyBonus(lockedLP);
                         rewardKTY = rewardKTY.add(earlyBonus);
                         rewardSDAO = rewardSDAO.add(earlyBonus);
                          
@@ -1309,7 +1318,7 @@ contract YieldFarming is Owned {
             // add rewards for end Batch from which only part of the locked amount is to be withdrawn
             if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
                 if (block.timestamp >= programEndAt && isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
-                    earlyBonus = getEarlyBonusForBatch(residual);
+                    earlyBonus = getEarlyBonus(residual);
                     rewardKTY = rewardKTY.add(earlyBonus);
                     rewardSDAO = rewardSDAO.add(earlyBonus);
                     

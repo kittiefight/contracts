@@ -2243,7 +2243,7 @@ contract("YieldFarming", accounts => {
           locke_liquidity_tokens = new BigNumber(
             web3.utils.toWei(weiToEther(lockedLP), "ether")
           );
-          bonusForDeposit = await yieldFarming.getEarlyBonusForBatch(
+          bonusForDeposit = await yieldFarming.getEarlyBonus(
             locke_liquidity_tokens
           );
           console.log(
