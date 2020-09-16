@@ -481,7 +481,8 @@ contract("YieldFarming", accounts => {
     let monthDuration = programDuration.monthDuration;
     let startMonth = programDuration.startMonth;
     let endMonth = programDuration.endMonth;
-    let activeMonth = programDuration.activeMonth;
+    let currentMonth = programDuration.currentMonth;
+    let daysLeft = programDuration.daysLeft;
     let elapsedMonths = programDuration.elapsedMonths;
     let allMonthsStartTime = programDuration.allMonthsStartTime;
     console.log(`\n======== Program Duration and Months ======== `);
@@ -489,7 +490,8 @@ contract("YieldFarming", accounts => {
     console.log("Month duration:", monthDuration.toString());
     console.log("Start Month:", startMonth.toString());
     console.log("End Month:", endMonth.toString());
-    console.log("Active Month:", activeMonth.toString());
+    console.log("Current Month:", currentMonth.toString());
+    console.log("Days Left:", daysLeft.toString())
     console.log("Elapsed Months:", elapsedMonths.toString());
     for (let i = 0; i < 6; i++) {
       console.log("Month", i, "Start Time:", allMonthsStartTime[i].toString());

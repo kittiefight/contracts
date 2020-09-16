@@ -894,6 +894,9 @@ contract YieldFarming is Owned {
      * @dev    There are 180 days in this program in total, starting from day 0 to day 179.
      */
     function getCurrentDay() public view returns (uint256) {
+        if (block.timestamp <= programStartAt) {
+            return 0;
+        }
         uint256 elapsedTime = block.timestamp.sub(programStartAt);
         uint256 currentDay = elapsedTime.div(DAY);
         return currentDay;
@@ -961,17 +964,19 @@ contract YieldFarming is Owned {
         uint256 monthDuration,
         uint256 startMonth,
         uint256 endMonth,
-        uint256 activeMonth,
+        uint256 currentMonth,
+        uint256 daysLeft,
         uint256 elapsedMonths,
         uint256[6] memory allMonthsStartTime
     ) 
     {
-        uint256 currentMonth = getCurrentMonth();
+        uint256 currentDay = getCurrentDay();
         entireProgramDuration = programDuration;
         monthDuration = MONTH;
         startMonth = 0;
         endMonth = 5;
-        activeMonth = currentMonth;
+        currentMonth = getCurrentMonth();
+        daysLeft = currentDay >= 180 ? 0 : 180 - currentDay;
         elapsedMonths = currentMonth == 0 ? 0 : currentMonth;
         allMonthsStartTime = monthsStartAt;
     }
