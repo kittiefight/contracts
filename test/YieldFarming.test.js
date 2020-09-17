@@ -522,7 +522,7 @@ contract("YieldFarming", accounts => {
     superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_0);
   });
 
-  it("user withdraws Uniswap Liquidity tokens by Batch Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
+  it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     // Info before withdraw
     let user = 1;
     console.log("User", user);
@@ -566,7 +566,7 @@ contract("YieldFarming", accounts => {
 
     let depositNumber = 1;
 
-    // withdraw by Batch NUmber
+    // withdraw by Deposit NUmber
     await yieldFarming.withdrawByDepositNumber(depositNumber, {
       from: accounts[user]
     }).should.be.fulfilled;
@@ -1193,6 +1193,10 @@ contract("YieldFarming", accounts => {
     let SDAO_balance_user_1_before = await superDaoToken.balanceOf(
       accounts[user]
     );
+
+    let rewards = await yieldFarming.calculateRewardsByDepositNumber(accounts[user], 1)
+    console.log("KittieFightToken rewards:", weiToEther(rewards[0]))
+    console.log("SuperDaoToken rewards:", weiToEther(rewards[1]))
 
     // withdraw by Batch NUmber
     await yieldFarming.withdrawByDepositNumber(1, {from: accounts[user]}).should

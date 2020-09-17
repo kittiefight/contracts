@@ -743,6 +743,15 @@ contract YieldFarming is Owned {
         } 
     }
 
+    function calculateRewardsByDepositNumber(address _staker, uint256 _depositNumber)
+        external view
+        returns (uint256, uint256)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _rewardKTY, uint256 _rewardSDAO) = calculateRewardsByBatchNumber(_staker, _batchNumber, _pairCode);
+        return (_rewardKTY, _rewardSDAO);
+    }
+
     /**
      * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the batch number of deposits
      *         made by a staker
