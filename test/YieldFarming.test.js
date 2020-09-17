@@ -899,8 +899,11 @@ contract("YieldFarming", accounts => {
     let SDAO_balance_user_before = await superDaoToken.balanceOf(
       accounts[user]
     );
+    let totalLPforEarlyBonus_before = await yieldFarming.totalLockedLPinEarlyMining.call()
+    let totalLPforEarlyBonus_user_before = await yieldFarming.totalLPforEarlyBonus(accounts[user])
+    let totalLPforEarlyBonus_user_pair_before = await yieldFarming.totalLPforEarlyBonusPerPairCode(accounts[user], pairCode)
 
-    // withdraw by Batch NUmber
+    // withdraw by Amount
     await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
       from: accounts[user]
     }).should.be.fulfilled;
@@ -939,6 +942,9 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
     let SDAO_balance_user_after = await superDaoToken.balanceOf(accounts[user]);
+    let totalLPforEarlyBonus_after = await yieldFarming.totalLockedLPinEarlyMining.call()
+    let totalLPforEarlyBonus_user_after = await yieldFarming.totalLPforEarlyBonus(accounts[user])
+    let totalLPforEarlyBonus_user_pair_after = await yieldFarming.totalLPforEarlyBonusPerPairCode(accounts[user], pairCode)
     console.log(
       "User Liquidity Token balance before withdraw:",
       weiToEther(LP_balance_user_before)
@@ -963,6 +969,30 @@ contract("YieldFarming", accounts => {
       "User SuperDaoToken balance after withdraw:",
       weiToEther(SDAO_balance_user_after)
     );
+    console.log(
+      "Total LP locked for early mining bonus in pair code", pairCode, "by this user before withdraw:",
+      weiToEther(totalLPforEarlyBonus_user_pair_before)
+    )
+    console.log(
+      "Total LP locked for early mining bonus in pair code", pairCode, "by this user after withdraw:",
+      weiToEther(totalLPforEarlyBonus_user_pair_after)
+    )
+    console.log(
+      "Total LP locked for early mining bonus by this user before withdraw:",
+      weiToEther(totalLPforEarlyBonus_user_before)
+    )
+    console.log(
+      "Total LP locked for early mining bonus by this user after withdraw:",
+      weiToEther(totalLPforEarlyBonus_user_after)
+    )
+    console.log(
+      "Total LP locked for early mining bonus before withdraw:",
+      weiToEther(totalLPforEarlyBonus_before)
+    )
+    console.log(
+      "Total LP locked for early mining bonus after withdraw:",
+      weiToEther(totalLPforEarlyBonus_after)
+    )
 
     let rewardsClaimedByUser = await yieldFarming.getTotalRewardsClaimedByStaker(
       accounts[user]
