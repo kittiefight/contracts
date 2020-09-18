@@ -524,7 +524,37 @@ contract("YieldFarming", accounts => {
     superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_0);
   });
 
+  it ("user cannot withdraw if it is not on pay day", async () => {
+    let payDay = await yieldFarming.isPayDay();
+    console.log("Is Pay Day?", payDay[0])
+
+    let user = 1;
+    let pairCode = 0;
+    let depositNumber = 1;
+    let withdraw_LP_amount = new BigNumber(
+      web3.utils.toWei("20", "ether") //20 Uniswap Liquidity tokens
+    );
+
+    await yieldFarming.withdrawByDepositNumber(depositNumber, {
+      from: accounts[user]
+    }).should.be.rejected;
+
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
+      from: accounts[user]
+    }).should.be.rejected;
+  }) 
+
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
+    let payDay = await yieldFarming.isPayDay();
+    let timeUntilPayDay = payDay[1];
+    console.log("Time until Pay Day:", timeUntilPayDay.toString())
+    if (timeUntilPayDay.toNumber() > 0) {
+      let advancement = timeUntilPayDay.toNumber() + 10
+      await advanceTimeAndBlock(advancement);
+    }
+    payDay = await yieldFarming.isPayDay();
+    console.log("Is Pay Day?", payDay[0])
+
     // Info before withdraw
     let user = 1;
     console.log("User", user);
@@ -1155,7 +1185,36 @@ contract("YieldFarming", accounts => {
     console.log("===============================\n");
   });
 
+  it ("user cannot withdraw if it is not on pay day", async () => {
+    let payDay = await yieldFarming.isPayDay();
+    console.log("Is Pay Day?", payDay[0])
+    
+    let user = 3;
+    let pairCode = 0;
+    let depositNumber = 1;
+    let withdraw_LP_amount = new BigNumber(
+      web3.utils.toWei("20", "ether") //20 Uniswap Liquidity tokens
+    );
+
+    await yieldFarming.withdrawByDepositNumber(depositNumber, {
+      from: accounts[user]
+    }).should.be.rejected;
+
+    await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
+      from: accounts[user]
+    }).should.be.rejected;
+  }) 
+
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
+    let payDay = await yieldFarming.isPayDay();
+    let timeUntilPayDay = payDay[1];
+    console.log("Time until Pay Day:", timeUntilPayDay.toString())
+    if (timeUntilPayDay.toNumber() > 0) {
+      let advancement = timeUntilPayDay.toNumber() + 10
+      await advanceTimeAndBlock(advancement);
+    }
+    payDay = await yieldFarming.isPayDay();
+    console.log("Is Pay Day?", payDay[0])
     // Info before withdraw
     let user = 3;
     console.log("User", user);
@@ -1884,8 +1943,15 @@ contract("YieldFarming", accounts => {
   // ==============================  SIXTH MONTH: MONTH 5  ==============================
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards", async () => {
-    let advancement = 10 * 24 * 60 * 60;
-    await advanceTimeAndBlock(advancement);
+    let payDay = await yieldFarming.isPayDay();
+    let timeUntilPayDay = payDay[1];
+    console.log("Time until Pay Day:", timeUntilPayDay.toString())
+    if (timeUntilPayDay.toNumber() > 0) {
+      let advancement = timeUntilPayDay.toNumber() + 10
+      await advanceTimeAndBlock(advancement);
+    }
+    payDay = await yieldFarming.isPayDay();
+    console.log("Is Pay Day?", payDay[0])
 
     let withdraw_LP_amount = new BigNumber(
       web3.utils.toWei("30", "ether") //60 Uniswap Liquidity tokens
@@ -2329,6 +2395,8 @@ contract("YieldFarming", accounts => {
   });
 
   it("user withdraws by partial amount after program ends", async () => {
+    let payDay = await yieldFarming.isPayDay();
+    console.log("Is Pay Day?", payDay[0])
     let user = 16;
     let pairCode0 = 0;
     let pairCode8 = 8;

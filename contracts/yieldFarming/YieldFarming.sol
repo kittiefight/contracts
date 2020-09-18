@@ -49,7 +49,7 @@ contract YieldFarming is Owned {
 
     uint256 public totalNumberOfPairPools = 14;        // Total number of Uniswap V2 pair pools associated with YieldFarming
 
-    address[14] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
+    address[200] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -76,9 +76,9 @@ contract YieldFarming is Owned {
     // Properties of a Staker
     struct Staker {
         uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
-        uint256[][14] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
-        uint256[][14] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
-        uint256[14] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
+        uint256[][200] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
+        uint256[][200] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
+        uint256[200] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
         uint256 totalLPlocked;                          // Total Uniswap Liquidity tokens locked by this staker
         uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
@@ -114,7 +114,7 @@ contract YieldFarming is Owned {
     // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
-        address[14] calldata _pairPoolAddr,
+        address[] calldata _pairPoolAddr,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
@@ -127,6 +127,7 @@ contract YieldFarming is Owned {
     {
         for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
             setPairPoolAddress(i, _pairPoolAddr[i]);
+            //pairPools.push(_pairPoolAddr[i]);
         }
 
         setKittieFightToken(_kittieFightToken);
@@ -211,6 +212,8 @@ contract YieldFarming is Owned {
      * @return bool true if the withdraw is successful
      */
     function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) external lock returns (bool) {
+        (bool _isPayDay,) = isPayDay();
+        require(_isPayDay == true, "Can only withdraw on pay day");
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
 
         (uint256 _KTY, uint256 _SDAO, uint256 _startBatchNumber, uint256 _endBatchNumber) = calculateRewardsByAmount(msg.sender, _pairCode, _LPamount);
@@ -231,6 +234,8 @@ contract YieldFarming is Owned {
      * @return bool true if the withdraw is successful
      */
     function withdrawByDepositNumber(uint256 _depositNumber) external lock returns (bool) {
+        (bool _isPayDay,) = isPayDay();
+        require(_isPayDay == true, "Can only withdraw on pay day");
 
         uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
         uint256 _batchNumber = stakers[msg.sender].totalDeposits[_depositNumber][1];
@@ -1185,6 +1190,34 @@ contract YieldFarming is Owned {
     function getTotalEarlyMiningBonus() external view returns (uint256, uint256) {
         // early mining bonus is the same amount in KTY and SDAO
         return (EARLY_MINING_BONUS, EARLY_MINING_BONUS);
+    }
+
+    /**
+     * @return true and 0 if now is pay day, false if now is not pay day and the time until next pay day
+     */
+    function isPayDay()
+        public view
+        returns (bool, uint256)
+    {
+        if (block.timestamp <= programStartAt) {
+            return (false, monthsStartAt[0].add(DAY.mul(27)).sub(block.timestamp));
+        }
+        if (block.timestamp >= programEndAt) {
+            return (true, 0);
+        }
+        uint256 currentMonth = getCurrentMonth();
+        uint256 day28Start = monthsStartAt[currentMonth].add(DAY.mul(27));
+        uint256 day28End = day28Start.add(DAY);
+        if (block.timestamp >= day28Start && block.timestamp <= day28Start.add(DAY)) {
+            return (true, 0);
+        }
+        if (block.timestamp < day28Start) {
+            return (false, day28Start.sub(block.timestamp));
+        }
+        if (block.timestamp > day28Start) {
+            uint256 nextPayDay = monthsStartAt[currentMonth.add(1)].add(DAY.mul(27));
+            return (false, nextPayDay.sub(block.timestamp));
+        }
     }
 
     /*                                                 PRIVATE FUNCTIONS                                             */
