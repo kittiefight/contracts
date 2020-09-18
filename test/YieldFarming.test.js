@@ -32,7 +32,9 @@ const pairCodeList = [
   "KTY_GNO",
   "KTY_2KEY",
   "KTY_YETH",
-  "KTY_AYFI"
+  "KTY_AYFI",
+  "KTY_UNI",
+  "KTY_SDAO"
 ];
 
 function randomValue(num) {

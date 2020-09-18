@@ -32,20 +32,24 @@ contract YieldFarming is Owned {
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
 
     // Uniswap pair contract code
-    uint256 constant public KTY_WETH = 0;
-    uint256 constant public KTY_ANT = 1;
-    uint256 constant public KTY_YDAI = 2;
-    uint256 constant public KTY_YYFI = 3;
-    uint256 constant public KTY_YYCRV = 4;
-    uint256 constant public KTY_YALINK = 5;
-    uint256 constant public KTY_ALEND = 6;
-    uint256 constant public KTY_ASNX = 7;
-    uint256 constant public KTY_GNO = 8;
-    uint256 constant public KTY_2KEY = 9;
-    uint256 constant public KTY_YETH = 10;
-    uint256 constant public KTY_AYFI = 11;
+    uint256 constant public KTY_WETH_V2 = 0;
+    uint256 constant public KTY_ANT_V2 = 1;
+    uint256 constant public KTY_YDAI_V2 = 2;
+    uint256 constant public KTY_YYFI_V2 = 3;
+    uint256 constant public KTY_YYCRV_V2 = 4;
+    uint256 constant public KTY_YALINK_V2 = 5;
+    uint256 constant public KTY_ALEND_V2 = 6;
+    uint256 constant public KTY_ASNX_V2 = 7;
+    uint256 constant public KTY_GNO_V2 = 8;
+    uint256 constant public KTY_2KEY_V2 = 9;
+    uint256 constant public KTY_YETH_V2 = 10;
+    uint256 constant public KTY_AYFI_V2 = 11;
+    uint256 constant public KTY_UNI_V2 = 12;
+    uint256 constant public KTY_SDAO_V2 = 13;
 
-    address[12] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
+    uint256 public totalNumberOfPairPools = 14;        // Total number of Uniswap V2 pair pools associated with YieldFarming
+
+    address[14] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -72,9 +76,9 @@ contract YieldFarming is Owned {
     // Properties of a Staker
     struct Staker {
         uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
-        uint256[][12] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
-        uint256[][12] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
-        uint256[12] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
+        uint256[][14] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
+        uint256[][14] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
+        uint256[14] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
         uint256 totalLPlocked;                          // Total Uniswap Liquidity tokens locked by this staker
         uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
@@ -110,7 +114,7 @@ contract YieldFarming is Owned {
     // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
-        address[12] calldata _pairPoolAddr,
+        address[14] calldata _pairPoolAddr,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
@@ -121,7 +125,7 @@ contract YieldFarming is Owned {
     )
         external onlyOwner
     {
-        for (uint256 i = 0; i < 12; i++) {
+        for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
             setPairPoolAddress(i, _pairPoolAddr[i]);
         }
 
@@ -911,7 +915,7 @@ contract YieldFarming is Owned {
     function totalLockedLPinDAI() external view returns (uint256) {
         uint256 _totalLockedLPinDAI = 0;
         uint256 _LPinDai;
-        for (uint256 i = 0; i < 12; i++) {
+        for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
             _LPinDai = getTotalLiquidityTokenLockedInDAI(i);
             _totalLockedLPinDAI = _totalLockedLPinDAI.add(_LPinDai);
         }

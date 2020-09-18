@@ -23,7 +23,8 @@ const ASNX = artifacts.require("MockaSNX");
 const GNO = artifacts.require("MockGNO");
 const _2KEY = artifacts.require("Mock2key");
 const YETH = artifacts.require("MockyETH");
-const AYFI = artifacts.require("MockaYFI")
+const AYFI = artifacts.require("MockaYFI");
+const UNI = artifacts.require("MockUNI");
 const KtyAntPair = artifacts.require("UniswapV2Pair");
 const KtyYDAIPair = artifacts.require("UniswapV2Pair");
 const KtyYYFIPair = artifacts.require("UniswapV2Pair");
@@ -35,6 +36,9 @@ const KtyGNOPair = artifacts.require("UniswapV2Pair");
 const Kty2keyPair = artifacts.require("UniswapV2Pair");
 const KtyYETHPair = artifacts.require("UniswapV2Pair");
 const KtyAYFIPair = artifacts.require("UniswapV2Pair");
+const KtyUNIPair = artifacts.require("UniswapV2Pair");
+const KtySDAOPair = artifacts.require("UniswapV2Pair");
+
 
 //Rinkeby address of KittieFightToken
 //const KTY_ADDRESS = '0x8d05f69bd9e804eb467c7e1f2902ecd5e41a72da';
@@ -71,6 +75,7 @@ module.exports = (deployer, network, accounts) => {
     .then(() => deployer.deploy(_2KEY, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YETH, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(AYFI, ERC20_TOKEN_SUPPLY))
+    .then(() => deployer.deploy(UNI, ERC20_TOKEN_SUPPLY))
     .then(async () => {
       console.log("\nGetting contract instances...");
 
@@ -115,6 +120,8 @@ module.exports = (deployer, network, accounts) => {
       console.log("yETH:", yETH.address)
       aYFI = await AYFI.deployed()
       console.log("aYFI:", aYFI.address)
+      uni = await UNI.deployed()
+      console.log("UNI:", uni.address)
 
       await factory.createPair(weth.address, kittieFightToken.address);
       const ktyPairAddress = await factory.getPair(
@@ -231,6 +238,24 @@ module.exports = (deployer, network, accounts) => {
       const ktyAYFIPair = await KtyAYFIPair.at(ktyAYFIPairAddress);
       console.log("ktyAYFIPair:", ktyAYFIPair.address);
 
+      await factory.createPair(uni.address, kittieFightToken.address);
+      const ktyUNIPairAddress = await factory.getPair(
+        uni.address,
+        kittieFightToken.address
+      );
+      console.log("ktyUNIPair address", ktyUNIPairAddress);
+      const ktyUNIPair = await KtyUNIPair.at(ktyUNIPairAddress);
+      console.log("ktyUNIPair:", ktyUNIPair.address);
+
+      await factory.createPair(superDaoToken.address, kittieFightToken.address);
+      const ktySDAOPairAddress = await factory.getPair(
+        superDaoToken.address,
+        kittieFightToken.address
+      );
+      console.log("ktySDAOPair address", ktySDAOPairAddress);
+      const ktySDAOPair = await KtySDAOPair.at(ktyPairAddress);
+      console.log("ktyWethPair:", ktySDAOPair.address);
+
       ktyUniswapOracle = await KtyUniswapOracle.deployed();
       console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
 
@@ -247,7 +272,9 @@ module.exports = (deployer, network, accounts) => {
         ktyGNOPair.address,
         kty2keyPair.address,
         ktyYETHPair.address,
-        ktyAYFIPair.address
+        ktyAYFIPair.address,
+        ktyUNIPair.address,
+        ktySDAOPair.address
       ]
 
       const ktyUnlockRates = [
