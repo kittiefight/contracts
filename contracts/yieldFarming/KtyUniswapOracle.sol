@@ -8,7 +8,7 @@ import '../uniswapKTY/uniswap-v2-periphery/libraries/UniswapV2Library.sol';
 contract KtyUniswapOracle is Owned {
     using SafeMath for uint256;
 
-    IUniswapV2Pair public ktyWethPair;
+    address public ktyWethPair;
     IUniswapV2Pair public daiWethPair;
 
     address public kittieFightTokenAddr;
@@ -17,7 +17,7 @@ contract KtyUniswapOracle is Owned {
 
     function initialize
     (
-        IUniswapV2Pair _ktyWethPair,
+        address _ktyWethPair,
         IUniswapV2Pair _daiWethPair,
         address _kittieFightToken,
         address _weth,
@@ -34,7 +34,7 @@ contract KtyUniswapOracle is Owned {
      * @dev Set Uniswap KTY-Weth Pair contract
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setKtyWethPair(IUniswapV2Pair _ktyWethPair) public onlyOwner {
+    function setKtyWethPair(address _ktyWethPair) public onlyOwner {
         ktyWethPair = _ktyWethPair;
     }
 
@@ -57,13 +57,13 @@ contract KtyUniswapOracle is Owned {
     }
 
     //===================== Getters ===================
-    function isKtyToken0()
+    function isKtyToken0(address _tokenAddr)
         public view returns (bool)
     {
         address token0;
         address token1;
 
-        (token0, token1) = UniswapV2Library.sortTokens(kittieFightTokenAddr, wethAddr);
+        (token0, token1) = UniswapV2Library.sortTokens(kittieFightTokenAddr, _tokenAddr);
 
         if (token0 == kittieFightTokenAddr) {
             return true;
@@ -90,15 +90,15 @@ contract KtyUniswapOracle is Owned {
     /**
      * @dev returns the amount of KTY reserves in ktyWethPair contract.
      */
-    function getReserveKTY()
+    function getReserveKTY(address _otherTokenAddr, address _pairPoolAddr)
         public view
         returns (uint256)
     {
         uint112 _reserveKTY;
-        if (isKtyToken0()) {
-            (_reserveKTY,,) = ktyWethPair.getReserves();
+        if (isKtyToken0(_otherTokenAddr)) {
+            (_reserveKTY,,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
         } else {
-            (,_reserveKTY,) = ktyWethPair.getReserves();
+            (,_reserveKTY,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
         }
 
         return uint256(_reserveKTY);
@@ -112,10 +112,10 @@ contract KtyUniswapOracle is Owned {
         returns (uint256)
     {
         uint112 _reserveETH;
-        if (isKtyToken0()) {
-            (,_reserveETH,) = ktyWethPair.getReserves();
+        if (isKtyToken0(wethAddr)) {
+            (,_reserveETH,) = IUniswapV2Pair(ktyWethPair).getReserves();
         } else {
-            (_reserveETH,,) = ktyWethPair.getReserves();
+            (_reserveETH,,) = IUniswapV2Pair(ktyWethPair).getReserves();
         }
 
         return uint256(_reserveETH);
@@ -126,7 +126,7 @@ contract KtyUniswapOracle is Owned {
      */
     function KTY_ETH_price() public view returns (uint256) {
         uint256 _amountKTY = 1e18;  // 1 KTY
-        uint256 _reserveKTY = getReserveKTY();
+        uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
         uint256 _reserveETH = getReserveETH();
         return UniswapV2Library.getAmountIn(_amountKTY, _reserveETH, _reserveKTY);
     } 
@@ -136,7 +136,7 @@ contract KtyUniswapOracle is Owned {
      */
     function ETH_KTY_price() public view returns (uint256) {
         uint256 _amountETH = 1e18;  // 1 KTY
-        uint256 _reserveKTY = getReserveKTY();
+        uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
         uint256 _reserveETH = getReserveETH();
         return UniswapV2Library.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
     }
