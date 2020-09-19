@@ -838,7 +838,6 @@ contract YieldFarming is Owned {
     {
         uint256 rewardKTY;
         uint256 rewardSDAO;
-        uint256 adjustedLockedLP;
 
         // get the locked Liquidity token amount in this batch
         uint256 lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
@@ -854,7 +853,7 @@ contract YieldFarming is Owned {
             uint256 _daysInStartMonth
         ) = getLockedPeriod(_staker, _batchNumber, _pairCode);
 
-        adjustedLockedLP = lockedLP.mul(1000000).div(stakers[_staker].factor[_pairCode][_batchNumber]);
+        uint256 adjustedLockedLP = stakers[_staker].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
 
         // calculate KittieFightToken rewards
         rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
@@ -864,7 +863,7 @@ contract YieldFarming is Owned {
         if (block.timestamp > programEndAt) {
             // if eligible for Early Mining Bonus, add the rewards for early bonus
             if (isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
-                uint256 _earlyBonus = getEarlyBonus(lockedLP);
+                uint256 _earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(_earlyBonus);
                 rewardSDAO = rewardSDAO.add(_earlyBonus);
             }
@@ -900,7 +899,7 @@ contract YieldFarming is Owned {
 
             // check if early mining bonus applies here
             if (block.timestamp >= programEndAt && isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
-                earlyBonus = getEarlyBonus(_amountLP);
+                earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(earlyBonus);
                 rewardSDAO = rewardKTY.add(earlyBonus);
             }
@@ -1397,6 +1396,7 @@ contract YieldFarming is Owned {
                              .add(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
                                   
             stakers[_sender].batchLockedLPamount[_pairCode][i] = 0;
+            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i] = 0;
             stakers[_sender].batchLockedAt[_pairCode][i] = 0;
         }
         // the amount left after allocating to all batches except the last batch
@@ -1409,10 +1409,13 @@ contract YieldFarming is Owned {
         }
         if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
             stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = 0;
+            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = 0;
             stakers[_sender].batchLockedAt[_pairCode][_endBatchNumber] = 0;
         } else {
             stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]
                                                                    .sub(leftAmountLP);
+            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber]
+                                                                   .sub(adjustedLeftAmountLP);
         }  
 
         // all batches in pair code info
@@ -1455,7 +1458,9 @@ contract YieldFarming is Owned {
     {
         // ========= update staker info =========
         // batch info
+        uint256 adjustedLP = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
         stakers[_sender].batchLockedLPamount[_pairCode][_batchNumber] = 0;
+        stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_batchNumber] = 0;
         stakers[_sender].batchLockedAt[_pairCode][_batchNumber] = 0;
 
         // all batches in pair code info
@@ -1476,7 +1481,7 @@ contract YieldFarming is Owned {
             for (uint i = _currentMonth; i < 6; i++) {
                 monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
-                                             .sub(_LP.mul(1000000).div(stakers[_sender].factor[_pairCode][_batchNumber]));
+                                             .sub(adjustedLP);
             }
         }
 
