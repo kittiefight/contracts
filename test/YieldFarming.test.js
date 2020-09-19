@@ -551,14 +551,40 @@ contract("YieldFarming", accounts => {
     }).should.be.rejected;
   }) 
 
+  it("Approching the second month: Month 1", async () => {
+    let currentMonth = await yieldFarming.getCurrentMonth();
+    let currentDay = await yieldFarming.getCurrentDay();
+    let daysElapsedInMonth = await yieldFarming.getElapsedDaysInMonth(
+      currentDay,
+      currentMonth
+    );
+    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    console.log("Current Month:", currentMonth.toString());
+    console.log("Current Day:", currentDay.toString());
+    console.log(
+      "Time (in seconds) until current month ends:",
+      timeUntilCurrentMonthEnd.toString()
+    );
+    console.log(
+      "Days elapsed in current month:",
+      daysElapsedInMonth.toString()
+    );
+    console.log("Time is flying...");
+    let advancement = timeUntilCurrentMonthEnd.toNumber();
+    await advanceTimeAndBlock(advancement);
+    console.log("The second Month starts: Month 1...");
+  });
+
+  // ==============================  SECOND MONTH: MONTH 1  ==============================
+
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     let payDay = await yieldFarming.isPayDay();
     let timeUntilPayDay = payDay[1];
     console.log("Time until Pay Day:", timeUntilPayDay.toString())
-    if (timeUntilPayDay.toNumber() > 0) {
-      let advancement = timeUntilPayDay.toNumber() + 10
-      await advanceTimeAndBlock(advancement);
-    }
+    
+    let advancement = timeUntilPayDay.toNumber() + 3 * 60 * 60
+    await advanceTimeAndBlock(advancement);
+    
     payDay = await yieldFarming.isPayDay();
     console.log("Is Pay Day?", payDay[0])
 
@@ -572,6 +598,9 @@ contract("YieldFarming", accounts => {
     let allBatches;
     let lastBatchNumber;
     let isBatchValid;
+    let isBatchEligibleForRewards;
+    let lockedPeriod;
+    let rewards;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
@@ -591,6 +620,15 @@ contract("YieldFarming", accounts => {
         pairCode
       );
       console.log("Is Batch Valid?", isBatchValid);
+      isBatchEligibleForRewards = await yieldFarming.isBatchEligibleForRewards(accounts[user], j, pairCode)
+      console.log("Is Batch Eligible for Rewards?", isBatchEligibleForRewards)
+      lockedPeriod = await yieldFarming.getLockedPeriod(accounts[user], j, pairCode)
+      console.log("Starting month:", lockedPeriod[0].toString())
+      console.log("Ending month:", lockedPeriod[1].toString())
+      console.log("Days in Starting month:", lockedPeriod[2].toString())
+      rewards = await yieldFarming.calculateRewardsByBatchNumber(accounts[user], j, pairCode)
+      console.log("Rewards KTY:", weiToEther(rewards[0]))
+      console.log("Rewards SDAO:", weiToEther(rewards[1]))
     }
     console.log("Last number of batches:", lastBatchNumber.toString());
     console.log("Total number of batches:", allBatches.length);
@@ -611,11 +649,8 @@ contract("YieldFarming", accounts => {
     }).should.be.fulfilled;
 
     // Info after withdraw
-    console.log(`\n======== User 1:  Batches Info After Withdraw ======== `);
-    allBatches;
-    lastBatchNumber;
-    isBatchValid;
-
+    console.log(`\n======== User 1:  Batches Info After Withdraw ======== `)
+    
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
@@ -1070,31 +1105,6 @@ contract("YieldFarming", accounts => {
     );
   });
 
-  it("Approching the second month: Month 1", async () => {
-    let currentMonth = await yieldFarming.getCurrentMonth();
-    let currentDay = await yieldFarming.getCurrentDay();
-    let daysElapsedInMonth = await yieldFarming.getElapsedDaysInMonth(
-      currentDay,
-      currentMonth
-    );
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
-    console.log("Current Month:", currentMonth.toString());
-    console.log("Current Day:", currentDay.toString());
-    console.log(
-      "Time (in seconds) until current month ends:",
-      timeUntilCurrentMonthEnd.toString()
-    );
-    console.log(
-      "Days elapsed in current month:",
-      daysElapsedInMonth.toString()
-    );
-    console.log("Time is flying...");
-    let advancement = timeUntilCurrentMonthEnd.toNumber();
-    await advanceTimeAndBlock(advancement);
-    console.log("The second Month starts: Month 1...");
-  });
-
-  // ==============================  SECOND MONTH: MONTH 1  ==============================
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     let advancement = 2 * 24 * 60 * 60; // 2 days
     await advanceTimeAndBlock(advancement);
@@ -1199,6 +1209,38 @@ contract("YieldFarming", accounts => {
       from: accounts[user]
     }).should.be.rejected;
   }) 
+
+  it("Approching the third month: Month 2", async () => {
+    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let advancement = timeUntilCurrentMonthEnd.toNumber() + 2 * 24 * 60 * 60;
+    await advanceTimeAndBlock(advancement);
+    console.log("The third Month starts: Month 2...");
+
+    it("unlocks KittieFightToken and SuperDaoToken rewards for the second month (Month 1", async () => {
+      let pastMonth = 1;
+      //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
+       // currentMonth
+      //);
+      let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
+      let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
+
+      console.log(
+        "KTY Rewards for Month ",
+        currentMonth,
+        ":",
+        weiToEther(KTYrewards_month)
+      );
+      console.log(
+        "SDAO Rewards for Month ",
+        currentMonth,
+        ":",
+        weiToEther(SDAOrewards_month)
+      );
+
+      kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
+      superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
+    });
+  });
 
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     let payDay = await yieldFarming.isPayDay();
@@ -1688,38 +1730,6 @@ contract("YieldFarming", accounts => {
     );
   });
 
-  it("Approching the third month: Month 2", async () => {
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
-    let advancement = timeUntilCurrentMonthEnd.toNumber() + 2 * 24 * 60 * 60;
-    await advanceTimeAndBlock(advancement);
-    console.log("The third Month starts: Month 2...");
-
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the second month (Month 1", async () => {
-      let pastMonth = 1;
-      //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
-       // currentMonth
-      //);
-      let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
-      let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
-
-      console.log(
-        "KTY Rewards for Month ",
-        currentMonth,
-        ":",
-        weiToEther(KTYrewards_month)
-      );
-      console.log(
-        "SDAO Rewards for Month ",
-        currentMonth,
-        ":",
-        weiToEther(SDAOrewards_month)
-      );
-
-      kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
-      superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
-    });
-  });
-
   it("Approching the fourth month: Month 3", async () => {
     let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
 
@@ -1936,6 +1946,20 @@ contract("YieldFarming", accounts => {
   });
 
   // ==============================  SIXTH MONTH: MONTH 5  ==============================
+  it("users deposit in the sixth month", async () => {
+    let deposit_LP_amount = new BigNumber(
+      web3.utils.toWei("70", "ether") //30 Uniswap Liquidity tokens
+    );
+    let pairCode = 8;
+    for (let i = 17; i < 19; i++) {
+      await ktyGNOPair.approve(yieldFarming.address, deposit_LP_amount, {
+        from: accounts[i]
+      }).should.be.fulfilled;
+      await yieldFarming.deposit(deposit_LP_amount, pairCode, {
+        from: accounts[i]
+      }).should.be.fulfilled;
+    }
+  })
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards", async () => {
     let payDay = await yieldFarming.isPayDay();
@@ -2236,21 +2260,6 @@ contract("YieldFarming", accounts => {
       weiToEther(totalRewardsClaimed[1])
     );
   });
-
-  it("users deposit in the sixth month", async () => {
-    let deposit_LP_amount = new BigNumber(
-      web3.utils.toWei("70", "ether") //30 Uniswap Liquidity tokens
-    );
-    let pairCode = 8;
-    for (let i = 17; i < 19; i++) {
-      await ktyGNOPair.approve(yieldFarming.address, deposit_LP_amount, {
-        from: accounts[i]
-      }).should.be.fulfilled;
-      await yieldFarming.deposit(deposit_LP_amount, pairCode, {
-        from: accounts[i]
-      }).should.be.fulfilled;
-    }
-  })
 
   it("Approching the end of sixth month: Month 5", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();

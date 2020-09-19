@@ -762,7 +762,7 @@ contract YieldFarming is Owned {
         // yields KTY in startMonth
         uint256 rewardsKTYstartMonth = getTotalKTYRewardsByMonth(startMonth);
         yieldsKTY_part_1 = rewardsKTYstartMonth.mul(lockedLP).div(adjustedMonthlyDeposits[startMonth])
-                    .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000).div(1000000);
+                    .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000);
        
     }
 
@@ -797,7 +797,7 @@ contract YieldFarming is Owned {
         // yields SDAO in startMonth
         uint256 rewardsSDAOstartMonth = getTotalSDAORewardsByMonth(startMonth);
         yieldsSDAO_part_1 = rewardsSDAOstartMonth.mul(lockedLP).div(adjustedMonthlyDeposits[startMonth])
-                .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000).div(1000000);
+                .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000);
     }
 
     function calculateYieldsSDAO_part_2(uint256 startMonth, uint256 endMonth, uint256 lockedLP)
@@ -1277,28 +1277,25 @@ contract YieldFarming is Owned {
 
     /**
      * @return true and 0 if now is pay day, false if now is not pay day and the time until next pay day
+     * @dev Pay Day is the first day of each month, starting from the second month.
+     * @dev After program ends, every day is Pay Day.
      */
     function isPayDay()
         public view
         returns (bool, uint256)
     {
-        if (block.timestamp <= programStartAt) {
-            return (false, monthsStartAt[0].add(DAY.mul(27)).sub(block.timestamp));
+        if (block.timestamp < monthsStartAt[1]) {
+            return (false, monthsStartAt[1].sub(block.timestamp));
         }
         if (block.timestamp >= programEndAt) {
             return (true, 0);
         }
         uint256 currentMonth = getCurrentMonth();
-        uint256 day28Start = monthsStartAt[currentMonth].add(DAY.mul(27));
-        uint256 day28End = day28Start.add(DAY);
-        if (block.timestamp >= day28Start && block.timestamp <= day28Start.add(DAY)) {
+        if (block.timestamp >= monthsStartAt[currentMonth] && block.timestamp <= monthsStartAt[currentMonth].add(DAY)) {
             return (true, 0);
         }
-        if (block.timestamp < day28Start) {
-            return (false, day28Start.sub(block.timestamp));
-        }
-        if (block.timestamp > day28Start) {
-            uint256 nextPayDay = monthsStartAt[currentMonth.add(1)].add(DAY.mul(27));
+        if (block.timestamp > monthsStartAt[currentMonth].add(DAY)) {
+            uint256 nextPayDay = monthsStartAt[currentMonth.add(1)];
             return (false, nextPayDay.sub(block.timestamp));
         }
     }
