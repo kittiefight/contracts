@@ -1109,9 +1109,6 @@ contract("YieldFarming", accounts => {
     let advancement = 2 * 24 * 60 * 60; // 2 days
     await advanceTimeAndBlock(advancement);
 
-    console.log(
-      "\n====================== SECOND MONTH: MONTH 1 ======================\n"
-    );
     let deposit_LP_amount = new BigNumber(
       web3.utils.toWei("10", "ether") //30 Uniswap Liquidity tokens
     );
@@ -1212,7 +1209,7 @@ contract("YieldFarming", accounts => {
 
   it("Approching the third month: Month 2", async () => {
     let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
-    let advancement = timeUntilCurrentMonthEnd.toNumber() + 2 * 24 * 60 * 60;
+    let advancement = timeUntilCurrentMonthEnd.toNumber();
     await advanceTimeAndBlock(advancement);
     console.log("The third Month starts: Month 2...");
 
@@ -2643,5 +2640,13 @@ contract("YieldFarming", accounts => {
 
    // assert.isAbove(Number(weiToEther(KTY_claimed_18)), Number(weiToEther(KTY_claimed_17)))
    // assert.isAbove(Number(weiToEther(SDAO_claimed_18)), Number(weiToEther(SDAO_claimed_17)))
+   
   });
+
+  it("transfers leftover rewards to a new address", async () => {
+    let KTY_bal = await kittieFightToken.balanceOf(yieldFarming.address)
+   let SDAO_bal = await superDaoToken.balanceOf(yieldFarming.address)
+   console.log("Final KTY balance in YieldFarming contract:", weiToEther(KTY_bal))
+   console.log("Final SDAO balance in YieldFarming contract:", weiToEther(SDAO_bal))
+  })
 });

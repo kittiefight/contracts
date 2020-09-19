@@ -322,7 +322,7 @@ module.exports = (deployer, network, accounts) => {
       ]
 
       const sdaoUnlockRates = [
-        100000, 100000, 100000, 150000, 250000, 300000
+        165000, 165000, 165000, 165000, 165000, 175000
       ]
 
       await yieldFarming.initialize(
@@ -345,28 +345,6 @@ module.exports = (deployer, network, accounts) => {
         weth.address,
         dai.address
       );
-
-      // console.log("\nSet Pair Pool Names...");
-
-      // const pairPoolNames = [
-      //   "KTY_WETH",
-      //   "KTY_ANT",
-      //   "KTY_YDAI",
-      //   "KTY_YYFI",
-      //   "KTY_YYCRV",
-      //   "KTY_YALINK",
-      //   "KTY_ALEND",
-      //   "KTY_ASNX",
-      //   "KTY_GNO",
-      //   "KTY_2KEY",
-      //   "KTY_YETH",
-      //   "KTY_AYFI"
-      // ]
-
-      // for (let n = 0; n < 12; n++) {
-      //   await yieldFarming.setPairPoolName(n, pairPoolNames[n])
-      // }
-
 
       // set up Dai-Weth pair - only needed in truffle local test, not needed in rinkeby or mainnet
       const ethAmount = new BigNumber(
