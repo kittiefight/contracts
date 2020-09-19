@@ -176,17 +176,20 @@ contract("YieldFarming", accounts => {
     console.log("Total SuperDaoToken rewards:", weiToEther(totalRewards[1]));
   });
 
-  it("sets 7 pair pool names and addresses", async () => {
+  it("displays associated pair pool names and addresses", async () => {
     let pair;
     console.log(`\n======== Uniswap Pair Pools ======== `);
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 14; i++) {
       pair = await yieldFarming.getPairPool(i);
-      console.log("Pair Code:", i);
-      console.log("Pair Pool:", pair[0]);
-      console.log("Pair Pool Address:", pair[1]);
+      console.log("Pair Pool Name:", pair[0]);
+      console.log("Pair Pool Adddress:", pair[1]);
+      console.log("Token Address:", pair[2]);
     }
 
     console.log("===============================\n");
+
+    // let pair1 = await yieldFarming.getPairPoolCode("KTY_ANT_V2");
+    // assert.equal(pair1.toNumber(), 1);
   });
 
   it("users provides liquidity to Uniswap KTY-Weth pool", async () => {
@@ -345,6 +348,11 @@ contract("YieldFarming", accounts => {
   });
 
   // ==============================  FIRST MONTH: MONTH 0  ==============================
+
+  it("calculates the relational factor reflecting the true intrinsic value of LP from differet pools", async () => {
+    let bubbleFactor = await yieldFarming.bubbleFactor(8);
+    console.log("Bubble Factor in pair pool", pairCodeList[8], ":", bubbleFactor.toString())
+  })
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     console.log(

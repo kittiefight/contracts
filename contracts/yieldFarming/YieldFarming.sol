@@ -47,9 +47,9 @@ contract YieldFarming is Owned {
     uint256 constant public KTY_UNI_V2 = 12;
     uint256 constant public KTY_SDAO_V2 = 13;
 
-    uint256 public totalNumberOfPairPools = 14;        // Total number of Uniswap V2 pair pools associated with YieldFarming
+    uint256 public totalNumberOfPairPools;      // Total number of Uniswap V2 pair pools associated with YieldFarming
 
-    address[200] public pairPools;                       // An array of the address of each Pair Pool, indexed by its pairCode
+    address[200] public pairPools;              // An array of the address of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -122,7 +122,9 @@ contract YieldFarming is Owned {
     // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
+        bytes32[] calldata _pairPoolNames,
         address[] calldata _pairPoolAddr,
+        address[] calldata _tokenAddrs,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
@@ -133,9 +135,8 @@ contract YieldFarming is Owned {
     )
         external onlyOwner
     {
-        for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
-            setPairPoolAddress(i, _pairPoolAddr[i]);
-            //pairPools.push(_pairPoolAddr[i]);
+        for (uint256 i = 0; i < _pairPoolAddr.length; i++) {
+            addNewPairPool(bytes32ToString(_pairPoolNames[i]), _pairPoolAddr[i], _tokenAddrs[i]);
         }
 
         setKittieFightToken(_kittieFightToken);
@@ -265,11 +266,17 @@ contract YieldFarming is Owned {
     /*                                                 SETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
     /**
-     * @dev Set the address of pairPool
+     * @dev Add new pairPool
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setPairPoolAddress(uint256 _pairCode, address _pairPool) public onlyOwner {
-        pairPools[_pairCode] = _pairPool;
+    function addNewPairPool(string memory _pairName, address _pairPoolAddr, address _tokenAddr) public onlyOwner {
+        uint256 _pairCode = totalNumberOfPairPools;
+        pairPools[_pairCode] = _pairPoolAddr;
+        pairPoolsInfo[_pairCode].pairName = _pairName;
+        pairPoolsInfo[_pairCode].pairPoolAddress = _pairPoolAddr;
+        pairPoolsInfo[_pairCode].tokenAddress = _tokenAddr;
+
+        totalNumberOfPairPools = totalNumberOfPairPools.add(1);
     }
 
     // Not necessary
@@ -390,12 +397,40 @@ contract YieldFarming is Owned {
 
     /*                                                 GETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
+    function bytes32ToString(bytes32 x) internal pure returns (string memory) {
+        bytes memory bytesString = new bytes(32);
+        uint charCount = 0;
+        for (uint j = 0; j < 32; j++) {
+            byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
+            if (char != 0) {
+                bytesString[charCount] = char;
+                charCount++;
+            }
+        }
+        bytes memory bytesStringTrimmed = new bytes(charCount);
+        for (uint j = 0; j < charCount; j++) {
+            bytesStringTrimmed[j] = bytesString[j];
+        }
+        return string(bytesStringTrimmed);
+    }
+    
+    // /**
+    //  * @param _pairCode uint256 Pair Code assocated with the Pair Pool 
+    //  * @return the address of the pair pool associated with _pairCode
+    //  */
+    // function getPairPool(uint256 _pairCode) external view returns (address) {
+    //     return pairPools[_pairCode];
+    // }
+
     /**
      * @param _pairCode uint256 Pair Code assocated with the Pair Pool 
      * @return the address of the pair pool associated with _pairCode
      */
-    function getPairPool(uint256 _pairCode) external view returns (address) {
-        return pairPools[_pairCode];
+    function getPairPool(uint256 _pairCode)
+        external view
+        returns (string memory, address, address)
+    {
+        return (pairPoolsInfo[_pairCode].pairName, pairPoolsInfo[_pairCode].pairPoolAddress, pairPoolsInfo[_pairCode].tokenAddress);
     }
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
@@ -446,6 +481,19 @@ contract YieldFarming is Owned {
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return uint256 the batch number of the last batch of the _staker. 
+     *         The batch number of the first batch of a staker is always 0, and increments by 1 for 
+     *         subsequent batches each.
+     */
+    function getLastBatchNumber(address _staker, uint256 _pairCode)
+        external view returns (uint)
+    {
+        return stakers[_staker].batchLockedLPamount[_pairCode].length.sub(1);
+    }
+
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _pairCode uint256 Pair Code assocated with a Pair Pool from whichh the batches are to be shown
      * @return uint256[] an array of the amount of locked Lquidity tokens in every batch of the _staker in
      *         the _pairCode. The index of the array is the Batch Number associated with the batch, since
@@ -475,19 +523,6 @@ contract YieldFarming is Owned {
         external view returns (uint256)
     {
         return stakers[_staker].totalLPlockedbyPairCode[_pairCode];
-    }
-
-    /**
-     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return uint256 the batch number of the last batch of the _staker. 
-     *         The batch number of the first batch of a staker is always 0, and increments by 1 for 
-     *         subsequent batches each.
-     */
-    function getLastBatchNumber(address _staker, uint256 _pairCode)
-        external view returns (uint)
-    {
-        return stakers[_staker].batchLockedLPamount[_pairCode].length.sub(1);
     }
 
     /**

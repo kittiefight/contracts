@@ -260,6 +260,29 @@ module.exports = (deployer, network, accounts) => {
       console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
 
       console.log("\nInitializing contracts...");
+      const pairPoolNames = [
+        "KTY_WETH_V2",
+        "KTY_ANT_V2",
+        "KTY_YDAI_V2",
+        "KTY_YYFI_V2",
+        "KTY_YYCRV_V2",
+        "KTY_YALINK_V2",
+        "KTY_ALEND_V2",
+        "KTY_ASNX_V2",
+        "KTY_GNO_V2",
+        "KTY_2KEY_V2",
+        "KTY_YETH_V2",
+        "KTY_AYFI_V2",
+        "KTY_UNI_V2",
+        "KTY_SDAO_V2"
+      ]
+
+      let bytesNames = [];
+
+      for (i = 0; i < pairPoolNames.length; i++) {
+        bytesNames.push(web3.utils.asciiToHex(pairPoolNames[i]));
+      }
+  
       const pairPoolAddrs = [
         ktyWethPair.address,
         ktyAntPair.address,
@@ -277,6 +300,23 @@ module.exports = (deployer, network, accounts) => {
         ktySDAOPair.address
       ]
 
+      const tokenAddrs = [
+        weth.address,
+        ant.address,
+        dai.address,
+        yYFI.address,
+        yyCRV.address,
+        yaLINK.address,
+        aLend.address,
+        aSNX.address,
+        gno.address,
+        _2key.address,
+        yETH.address,
+        aYFI.address,
+        uni.address,
+        superDaoToken.address
+      ]
+
       const ktyUnlockRates = [
         300000, 250000, 150000, 100000, 100000, 100000
       ]
@@ -286,7 +326,9 @@ module.exports = (deployer, network, accounts) => {
       ]
 
       await yieldFarming.initialize(
+        bytesNames,
         pairPoolAddrs,
+        tokenAddrs,
         kittieFightToken.address,
         superDaoToken.address,
         ktyUniswapOracle.address,
