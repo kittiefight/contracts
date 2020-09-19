@@ -53,6 +53,7 @@ contract YieldFarming is Owned {
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
+    uint256 public adjustedTotalLockedLPinEarlyMining;
 
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
     uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
@@ -686,7 +687,7 @@ contract YieldFarming is Owned {
     function getEarlyBonus(uint256 _amountLP)
         public view returns (uint256)
     {
-        return _amountLP.mul(EARLY_MINING_BONUS.div(totalLockedLPinEarlyMining));
+        return _amountLP.mul(EARLY_MINING_BONUS.div(adjustedTotalLockedLPinEarlyMining));
     }
 
     /**
@@ -1355,6 +1356,7 @@ contract YieldFarming is Owned {
 
         if (block.timestamp <= programStartAt.add(DAY.mul(7))) {
             totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
+            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_amount.mul(1000000).div(_factor));
             stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
 
@@ -1406,6 +1408,7 @@ contract YieldFarming is Owned {
         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
             totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(leftAmountLP);
+            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
         }
         if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
             stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = 0;
@@ -1488,6 +1491,7 @@ contract YieldFarming is Owned {
         // if eligible for Early Mining Bonus but unstake before program end, deduct it from totalLockedLPinEarlyMining
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _batchNumber, _pairCode)) {
             totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
+            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLP);
         }
     }
 
