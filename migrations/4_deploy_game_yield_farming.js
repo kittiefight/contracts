@@ -332,8 +332,6 @@ module.exports = (deployer, network, accounts) => {
         kittieFightToken.address,
         superDaoToken.address,
         ktyUniswapOracle.address,
-        TOTAL_KTY_REWARDS,
-        TOTAL_SDAO_REWARDS,
         ktyUnlockRates,
         sdaoUnlockRates
       );

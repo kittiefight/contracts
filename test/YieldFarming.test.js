@@ -230,7 +230,10 @@ contract("YieldFarming", accounts => {
       weiToEther(totalSupplyLP)
     );
 
-    let ktyReserve = await ktyUniswapOracle.getReserveKTY(weth.address, ktyWethPair.address);
+    let ktyReserve = await ktyUniswapOracle.getReserveKTY(
+      weth.address,
+      ktyWethPair.address
+    );
     let ethReserve = await ktyUniswapOracle.getReserveETH();
     console.log("reserveKTY:", weiToEther(ktyReserve));
     console.log("reserveETH:", weiToEther(ethReserve));
@@ -351,8 +354,13 @@ contract("YieldFarming", accounts => {
 
   it("calculates the relational factor reflecting the true intrinsic value of LP from differet pools", async () => {
     let bubbleFactor = await yieldFarming.bubbleFactor(8);
-    console.log("Bubble Factor in pair pool", pairCodeList[8], ":", bubbleFactor.toString())
-  })
+    console.log(
+      "Bubble Factor in pair pool",
+      pairCodeList[8],
+      ":",
+      bubbleFactor.toString()
+    );
+  });
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     console.log(
@@ -501,7 +509,7 @@ contract("YieldFarming", accounts => {
     console.log("Start Month:", startMonth.toString());
     console.log("End Month:", endMonth.toString());
     console.log("Current Month:", currentMonth.toString());
-    console.log("Days Left:", daysLeft.toString())
+    console.log("Days Left:", daysLeft.toString());
     console.log("Elapsed Months:", elapsedMonths.toString());
     for (let i = 0; i < 6; i++) {
       console.log("Month", i, "Start Time:", allMonthsStartTime[i].toString());
@@ -515,10 +523,16 @@ contract("YieldFarming", accounts => {
   });
 
   it("gets total early mining bonus", async () => {
-    let totalEarlyMiningBonus = await yieldFarming.getTotalEarlyMiningBonus()
-    console.log("Early Mining Bonus KittieFightToken:", weiToEther(totalEarlyMiningBonus[0]))
-    console.log("Early Mining Bonus SuperDao token:", weiToEther(totalEarlyMiningBonus[1]))
-  })
+    let totalEarlyMiningBonus = await yieldFarming.getTotalEarlyMiningBonus();
+    console.log(
+      "Early Mining Bonus KittieFightToken:",
+      weiToEther(totalEarlyMiningBonus[0])
+    );
+    console.log(
+      "Early Mining Bonus SuperDao token:",
+      weiToEther(totalEarlyMiningBonus[1])
+    );
+  });
 
   it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
     let KTYrewards_month_0 = await yieldFarming.getTotalKTYRewardsByMonth(0);
@@ -531,9 +545,9 @@ contract("YieldFarming", accounts => {
     superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_0);
   });
 
-  it ("user cannot withdraw if it is not on pay day", async () => {
+  it("user cannot withdraw if it is not on pay day", async () => {
     let payDay = await yieldFarming.isPayDay();
-    console.log("Is Pay Day?", payDay[0])
+    console.log("Is Pay Day?", payDay[0]);
 
     let user = 1;
     let pairCode = 0;
@@ -549,7 +563,7 @@ contract("YieldFarming", accounts => {
     await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
       from: accounts[user]
     }).should.be.rejected;
-  }) 
+  });
 
   it("Approching the second month: Month 1", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();
@@ -580,13 +594,13 @@ contract("YieldFarming", accounts => {
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     let payDay = await yieldFarming.isPayDay();
     let timeUntilPayDay = payDay[1];
-    console.log("Time until Pay Day:", timeUntilPayDay.toString())
-    
-    let advancement = timeUntilPayDay.toNumber() + 3 * 60 * 60
+    console.log("Time until Pay Day:", timeUntilPayDay.toString());
+
+    let advancement = timeUntilPayDay.toNumber() + 3 * 60 * 60;
     await advanceTimeAndBlock(advancement);
-    
+
     payDay = await yieldFarming.isPayDay();
-    console.log("Is Pay Day?", payDay[0])
+    console.log("Is Pay Day?", payDay[0]);
 
     // Info before withdraw
     let user = 1;
@@ -620,15 +634,27 @@ contract("YieldFarming", accounts => {
         pairCode
       );
       console.log("Is Batch Valid?", isBatchValid);
-      isBatchEligibleForRewards = await yieldFarming.isBatchEligibleForRewards(accounts[user], j, pairCode)
-      console.log("Is Batch Eligible for Rewards?", isBatchEligibleForRewards)
-      lockedPeriod = await yieldFarming.getLockedPeriod(accounts[user], j, pairCode)
-      console.log("Starting month:", lockedPeriod[0].toString())
-      console.log("Ending month:", lockedPeriod[1].toString())
-      console.log("Days in Starting month:", lockedPeriod[2].toString())
-      rewards = await yieldFarming.calculateRewardsByBatchNumber(accounts[user], j, pairCode)
-      console.log("Rewards KTY:", weiToEther(rewards[0]))
-      console.log("Rewards SDAO:", weiToEther(rewards[1]))
+      isBatchEligibleForRewards = await yieldFarming.isBatchEligibleForRewards(
+        accounts[user],
+        j,
+        pairCode
+      );
+      console.log("Is Batch Eligible for Rewards?", isBatchEligibleForRewards);
+      lockedPeriod = await yieldFarming.getLockedPeriod(
+        accounts[user],
+        j,
+        pairCode
+      );
+      console.log("Starting month:", lockedPeriod[0].toString());
+      console.log("Ending month:", lockedPeriod[1].toString());
+      console.log("Days in Starting month:", lockedPeriod[2].toString());
+      rewards = await yieldFarming.calculateRewardsByBatchNumber(
+        accounts[user],
+        j,
+        pairCode
+      );
+      console.log("Rewards KTY:", weiToEther(rewards[0]));
+      console.log("Rewards SDAO:", weiToEther(rewards[1]));
     }
     console.log("Last number of batches:", lastBatchNumber.toString());
     console.log("Total number of batches:", allBatches.length);
@@ -649,8 +675,8 @@ contract("YieldFarming", accounts => {
     }).should.be.fulfilled;
 
     // Info after withdraw
-    console.log(`\n======== User 1:  Batches Info After Withdraw ======== `)
-    
+    console.log(`\n======== User 1:  Batches Info After Withdraw ======== `);
+
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
@@ -973,9 +999,14 @@ contract("YieldFarming", accounts => {
     let SDAO_balance_user_before = await superDaoToken.balanceOf(
       accounts[user]
     );
-    let totalLPforEarlyBonus_before = await yieldFarming.totalLockedLPinEarlyMining.call()
-    let totalLPforEarlyBonus_user_before = await yieldFarming.totalLPforEarlyBonus(accounts[user])
-    let totalLPforEarlyBonus_user_pair_before = await yieldFarming.totalLPforEarlyBonusPerPairCode(accounts[user], pairCode)
+    let totalLPforEarlyBonus_before = await yieldFarming.totalLockedLPinEarlyMining.call();
+    let totalLPforEarlyBonus_user_before = await yieldFarming.totalLPforEarlyBonus(
+      accounts[user]
+    );
+    let totalLPforEarlyBonus_user_pair_before = await yieldFarming.totalLPforEarlyBonusPerPairCode(
+      accounts[user],
+      pairCode
+    );
 
     // withdraw by Amount
     await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
@@ -1016,9 +1047,14 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
     let SDAO_balance_user_after = await superDaoToken.balanceOf(accounts[user]);
-    let totalLPforEarlyBonus_after = await yieldFarming.totalLockedLPinEarlyMining.call()
-    let totalLPforEarlyBonus_user_after = await yieldFarming.totalLPforEarlyBonus(accounts[user])
-    let totalLPforEarlyBonus_user_pair_after = await yieldFarming.totalLPforEarlyBonusPerPairCode(accounts[user], pairCode)
+    let totalLPforEarlyBonus_after = await yieldFarming.totalLockedLPinEarlyMining.call();
+    let totalLPforEarlyBonus_user_after = await yieldFarming.totalLPforEarlyBonus(
+      accounts[user]
+    );
+    let totalLPforEarlyBonus_user_pair_after = await yieldFarming.totalLPforEarlyBonusPerPairCode(
+      accounts[user],
+      pairCode
+    );
     console.log(
       "User Liquidity Token balance before withdraw:",
       weiToEther(LP_balance_user_before)
@@ -1044,29 +1080,33 @@ contract("YieldFarming", accounts => {
       weiToEther(SDAO_balance_user_after)
     );
     console.log(
-      "Total LP locked for early mining bonus in pair code", pairCode, "by this user before withdraw:",
+      "Total LP locked for early mining bonus in pair code",
+      pairCode,
+      "by this user before withdraw:",
       weiToEther(totalLPforEarlyBonus_user_pair_before)
-    )
+    );
     console.log(
-      "Total LP locked for early mining bonus in pair code", pairCode, "by this user after withdraw:",
+      "Total LP locked for early mining bonus in pair code",
+      pairCode,
+      "by this user after withdraw:",
       weiToEther(totalLPforEarlyBonus_user_pair_after)
-    )
+    );
     console.log(
       "Total LP locked for early mining bonus by this user before withdraw:",
       weiToEther(totalLPforEarlyBonus_user_before)
-    )
+    );
     console.log(
       "Total LP locked for early mining bonus by this user after withdraw:",
       weiToEther(totalLPforEarlyBonus_user_after)
-    )
+    );
     console.log(
       "Total LP locked for early mining bonus before withdraw:",
       weiToEther(totalLPforEarlyBonus_before)
-    )
+    );
     console.log(
       "Total LP locked for early mining bonus after withdraw:",
       weiToEther(totalLPforEarlyBonus_after)
-    )
+    );
 
     let rewardsClaimedByUser = await yieldFarming.getTotalRewardsClaimedByStaker(
       accounts[user]
@@ -1187,10 +1227,10 @@ contract("YieldFarming", accounts => {
     console.log("===============================\n");
   });
 
-  it ("user cannot withdraw if it is not on pay day", async () => {
+  it("user cannot withdraw if it is not on pay day", async () => {
     let payDay = await yieldFarming.isPayDay();
-    console.log("Is Pay Day?", payDay[0])
-    
+    console.log("Is Pay Day?", payDay[0]);
+
     let user = 3;
     let pairCode = 0;
     let depositNumber = 1;
@@ -1205,50 +1245,54 @@ contract("YieldFarming", accounts => {
     await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
       from: accounts[user]
     }).should.be.rejected;
-  }) 
+  });
 
   it("Approching the third month: Month 2", async () => {
     let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
     let advancement = timeUntilCurrentMonthEnd.toNumber();
     await advanceTimeAndBlock(advancement);
     console.log("The third Month starts: Month 2...");
+  });
 
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the second month (Month 1", async () => {
-      let pastMonth = 1;
-      //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
-       // currentMonth
-      //);
-      let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
-      let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
+  it("unlocks KittieFightToken and SuperDaoToken rewards for the second month (Month 1", async () => {
+    let pastMonth = 1;
+    //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
+    // currentMonth
+    //);
+    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+      pastMonth
+    );
+    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+      pastMonth
+    );
 
-      console.log(
-        "KTY Rewards for Month ",
-        currentMonth,
-        ":",
-        weiToEther(KTYrewards_month)
-      );
-      console.log(
-        "SDAO Rewards for Month ",
-        currentMonth,
-        ":",
-        weiToEther(SDAOrewards_month)
-      );
+    console.log(
+      "KTY Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(KTYrewards_month)
+    );
+    console.log(
+      "SDAO Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(SDAOrewards_month)
+    );
 
-      kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
-      superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
-    });
+    kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
+    superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
   });
 
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
     let payDay = await yieldFarming.isPayDay();
     let timeUntilPayDay = payDay[1];
-    console.log("Time until Pay Day:", timeUntilPayDay.toString())
+    console.log("Time until Pay Day:", timeUntilPayDay.toString());
     if (timeUntilPayDay.toNumber() > 0) {
-      let advancement = timeUntilPayDay.toNumber() + 10
+      let advancement = timeUntilPayDay.toNumber() + 10;
       await advanceTimeAndBlock(advancement);
     }
     payDay = await yieldFarming.isPayDay();
-    console.log("Is Pay Day?", payDay[0])
+    console.log("Is Pay Day?", payDay[0]);
     // Info before withdraw
     let user = 3;
     console.log("User", user);
@@ -1289,9 +1333,12 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
 
-    let rewards = await yieldFarming.calculateRewardsByDepositNumber(accounts[user], 1)
-    console.log("KittieFightToken rewards:", weiToEther(rewards[0]))
-    console.log("SuperDaoToken rewards:", weiToEther(rewards[1]))
+    let rewards = await yieldFarming.calculateRewardsByDepositNumber(
+      accounts[user],
+      1
+    );
+    console.log("KittieFightToken rewards:", weiToEther(rewards[0]));
+    console.log("SuperDaoToken rewards:", weiToEther(rewards[1]));
 
     // withdraw by Batch NUmber
     await yieldFarming.withdrawByDepositNumber(1, {from: accounts[user]}).should
@@ -1733,31 +1780,35 @@ contract("YieldFarming", accounts => {
     let advancement = timeUntilCurrentMonthEnd.toNumber() + 2 * 24 * 60 * 60;
     await advanceTimeAndBlock(advancement);
     console.log("The Fourth Month starts: Month 3...");
+  });
 
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the third month (Month 2)", async () => {
-      let pastMonth = 2;
-      //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
-      //  currentMonth
-      //);
-      let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
-      let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
+  it("unlocks KittieFightToken and SuperDaoToken rewards for the third month (Month 2)", async () => {
+    let pastMonth = 2;
+    //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
+    //  currentMonth
+    //);
+    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+      pastMonth
+    );
+    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+      pastMonth
+    );
 
-      console.log(
-        "KTY Rewards for Month ",
-        currentMonth,
-        ":",
-        weiToEther(KTYrewards_month)
-      );
-      console.log(
-        "SDAO Rewards for Month ",
-        currentMonth,
-        ":",
-        weiToEther(SDAOrewards_month)
-      );
+    console.log(
+      "KTY Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(KTYrewards_month)
+    );
+    console.log(
+      "SDAO Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(SDAOrewards_month)
+    );
 
-      kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
-      superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
-    });
+    kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
+    superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
   });
 
   it("Approching the fifth month: Month 4", async () => {
@@ -1783,29 +1834,33 @@ contract("YieldFarming", accounts => {
     let advancement = timeUntilCurrentMonthEnd.toNumber();
     await advanceTimeAndBlock(advancement);
     console.log("The fifth Month starts: Month 4...");
+  });
 
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the fourth month (Month 3", async () => {
-      let pastMonth = 3;
-      //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
-      let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
-      let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
+  it("unlocks KittieFightToken and SuperDaoToken rewards for the fourth month (Month 3", async () => {
+    let pastMonth = 3;
+    //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
+    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+      pastMonth
+    );
+    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+      pastMonth
+    );
 
-      console.log(
-        "KTY Rewards for Month ",
-        pastMonth,
-        ":",
-        weiToEther(KTYrewards_month)
-      );
-      console.log(
-        "SDAO Rewards for Month ",
-        pastMonth,
-        ":",
-        weiToEther(SDAOrewards_month)
-      );
+    console.log(
+      "KTY Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(KTYrewards_month)
+    );
+    console.log(
+      "SDAO Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(SDAOrewards_month)
+    );
 
-      kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
-      superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
-    });
+    kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
+    superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
   });
 
   // ==============================  FIFTH MONTH: MONTH 4  ==============================
@@ -1917,29 +1972,33 @@ contract("YieldFarming", accounts => {
     let advancement = timeUntilCurrentMonthEnd.toNumber();
     await advanceTimeAndBlock(advancement);
     console.log("The sixth Month starts: Month 5...");
+  });
 
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the fifth month (Month 4", async () => {
-      let pastMonth = 4;
-      //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
-      let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
-      let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
+  it("unlocks KittieFightToken and SuperDaoToken rewards for the fifth month (Month 4", async () => {
+    let pastMonth = 4;
+    //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
+    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+      pastMonth
+    );
+    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+      pastMonth
+    );
 
-      console.log(
-        "KTY Rewards for Month ",
-        pastMonth,
-        ":",
-        weiToEther(KTYrewards_month)
-      );
-      console.log(
-        "SDAO Rewards for Month ",
-        pastMonth,
-        ":",
-        weiToEther(SDAOrewards_month)
-      );
+    console.log(
+      "KTY Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(KTYrewards_month)
+    );
+    console.log(
+      "SDAO Rewards for Month ",
+      pastMonth,
+      ":",
+      weiToEther(SDAOrewards_month)
+    );
 
-      kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
-      superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
-    });
+    kittieFightToken.transfer(yieldFarming.address, KTYrewards_month);
+    superDaoToken.transfer(yieldFarming.address, SDAOrewards_month);
   });
 
   // ==============================  SIXTH MONTH: MONTH 5  ==============================
@@ -1956,21 +2015,21 @@ contract("YieldFarming", accounts => {
         from: accounts[i]
       }).should.be.fulfilled;
     }
-  })
+  });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards", async () => {
     let payDay = await yieldFarming.isPayDay();
     let timeUntilPayDay = payDay[1];
-    console.log("Time until Pay Day:", timeUntilPayDay.toString())
+    console.log("Time until Pay Day:", timeUntilPayDay.toString());
     if (timeUntilPayDay.toNumber() > 0) {
-      let advancement = timeUntilPayDay.toNumber() + 10
+      let advancement = timeUntilPayDay.toNumber() + 10;
       await advanceTimeAndBlock(advancement);
     }
     payDay = await yieldFarming.isPayDay();
-    console.log("Is Pay Day?", payDay[0])
+    console.log("Is Pay Day?", payDay[0]);
 
     let withdraw_LP_amount = new BigNumber(
-      web3.utils.toWei("30", "ether") //60 Uniswap Liquidity tokens
+      web3.utils.toWei("5", "ether") //60 Uniswap Liquidity tokens
     );
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
@@ -2287,8 +2346,12 @@ contract("YieldFarming", accounts => {
   it("unlocks KittieFightToken and SuperDaoToken rewards for the sixth month and the early bonus", async () => {
     let pastMonth = 5;
     //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
-    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(pastMonth);
-    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(pastMonth);
+    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+      pastMonth
+    );
+    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+      pastMonth
+    );
 
     console.log(
       "KTY Rewards for Month ",
@@ -2336,7 +2399,7 @@ contract("YieldFarming", accounts => {
 
     let totalDeposits, eligible, lockedLP, bonusForDeposit, newWithdraw;
 
-    for (let i = 1; i < 4; i++) {
+    for (let i = 1; i < 16; i++) {
       totalDeposits = await yieldFarming.getAllDeposits(accounts[i]);
       console.log(
         `\n======== User`,
@@ -2389,7 +2452,7 @@ contract("YieldFarming", accounts => {
 
   it("user withdraws by partial amount after program ends", async () => {
     let payDay = await yieldFarming.isPayDay();
-    console.log("Is Pay Day?", payDay[0])
+    console.log("Is Pay Day?", payDay[0]);
     let user = 16;
     let pairCode0 = 0;
     let pairCode8 = 8;
@@ -2544,7 +2607,7 @@ contract("YieldFarming", accounts => {
   it("user withdraws again by amount after program ends", async () => {
     let advancement = 30 * 24 * 60 * 60;
     await advanceTimeAndBlock(advancement);
-    console.log("Time is flying...")
+    console.log("Time is flying...");
     // user 18 withdraws all her locked LPs,
     // and now all the deposits now meet the 30-criteria for claming rewards
     let user = 18;
@@ -2621,32 +2684,58 @@ contract("YieldFarming", accounts => {
     });
 
     // compare the total rewards claimed by user 17 and user 18
-    let rewards_claimed_17 = await yieldFarming.getTotalRewardsClaimedByStaker(accounts[17])
-    let rewards_claimed_18 = await yieldFarming.getTotalRewardsClaimedByStaker(accounts[18])
-    let KTY_claimed_17 = rewards_claimed_17[0]
-    let SDAO_claimed_17 = rewards_claimed_17[1]
-    let KTY_claimed_18 = rewards_claimed_18[0]
-    let SDAO_claimed_18 = rewards_claimed_18[1]
+    let rewards_claimed_17 = await yieldFarming.getTotalRewardsClaimedByStaker(
+      accounts[17]
+    );
+    let rewards_claimed_18 = await yieldFarming.getTotalRewardsClaimedByStaker(
+      accounts[18]
+    );
+    let KTY_claimed_17 = rewards_claimed_17[0];
+    let SDAO_claimed_17 = rewards_claimed_17[1];
+    let KTY_claimed_18 = rewards_claimed_18[0];
+    let SDAO_claimed_18 = rewards_claimed_18[1];
 
     console.log("\n**** Total Rewards Claimed by User 17 ****");
-    console.log("KTY rewards:", weiToEther(KTY_claimed_17))
-    console.log("SuperDao rewards:", weiToEther(SDAO_claimed_17))
+    console.log("KTY rewards:", weiToEther(KTY_claimed_17));
+    console.log("SuperDao rewards:", weiToEther(SDAO_claimed_17));
     console.log("************************\n");
 
     console.log("\n**** Total Rewards Claimed by User 18 ****");
-    console.log("KTY rewards:", weiToEther(KTY_claimed_18))
-    console.log("SuperDao rewards:", weiToEther(SDAO_claimed_18))
+    console.log("KTY rewards:", weiToEther(KTY_claimed_18));
+    console.log("SuperDao rewards:", weiToEther(SDAO_claimed_18));
     console.log("************************\n");
 
-   // assert.isAbove(Number(weiToEther(KTY_claimed_18)), Number(weiToEther(KTY_claimed_17)))
-   // assert.isAbove(Number(weiToEther(SDAO_claimed_18)), Number(weiToEther(SDAO_claimed_17)))
-   
   });
 
   it("transfers leftover rewards to a new address", async () => {
-    let KTY_bal = await kittieFightToken.balanceOf(yieldFarming.address)
-   let SDAO_bal = await superDaoToken.balanceOf(yieldFarming.address)
-   console.log("Final KTY balance in YieldFarming contract:", weiToEther(KTY_bal))
-   console.log("Final SDAO balance in YieldFarming contract:", weiToEther(SDAO_bal))
-  })
+    let advancement = 90 * 24 * 60 * 60;
+    await advanceTimeAndBlock(advancement);
+
+    let KTY_bal = await kittieFightToken.balanceOf(yieldFarming.address);
+    let SDAO_bal = await superDaoToken.balanceOf(yieldFarming.address);
+    console.log(
+      "Final KTY balance in YieldFarming contract:",
+      weiToEther(KTY_bal)
+    );
+    console.log(
+      "Final SDAO balance in YieldFarming contract:",
+      weiToEther(SDAO_bal)
+    );
+
+    if (Number(weiToEther(KTY_bal)) > 0) {
+      let KTY_leftover = new BigNumber(
+        web3.utils.toWei(weiToEther(KTY_bal), "ether")
+      );
+      await yieldFarming.transferKTY(KTY_leftover, accounts[0]).should.be.fulfilled;
+    }
+
+    if (Number(weiToEther(SDAO_bal)) > 0) {
+      let SDAO_leftover = new BigNumber(
+        web3.utils.toWei(weiToEther(SDAO_bal), "ether")
+      );
+      await yieldFarming.transferSDAO(SDAO_leftover, accounts[0]).should.be.fulfilled;
+    }
+
+    
+  });
 });

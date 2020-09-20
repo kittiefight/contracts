@@ -119,8 +119,6 @@ contract YieldFarming is Owned {
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         KtyUniswapOracle _ktyUniswapOracle,
-        uint256 _totalKTYrewards,
-        uint256 _totalSDAOrewards,
         uint256[6] calldata _ktyUnlockRates,
         uint256[6] calldata _sdaoUnlockRates
     )
@@ -135,7 +133,8 @@ contract YieldFarming is Owned {
         setKtyUniswapOracle(_ktyUniswapOracle);
 
         // Set total rewards in KittieFightToken and SuperDaoToken
-        setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
+        totalRewardsKTY = 7000000 * base18;
+        totalRewardsSDAO = 7000000 * base18;
 
         // Set early mining bonus
         EARLY_MINING_BONUS = 700000 * base18;
