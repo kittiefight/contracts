@@ -12,7 +12,7 @@ const KittieFightToken = artifacts.require("KittieFightToken");
 const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("IUniswapV2Pair");
-const KtyUniswapOracle = artifacts.require("KtyUniswapOracle");
+const YieldFarmingHelper = artifacts.require("YieldFarmingHelper");
 const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const GNO = artifacts.require("MockGNO");
@@ -99,7 +99,7 @@ let yieldFarming,
   factory,
   weth,
   ktyWethPair,
-  ktyUniswapOracle,
+  yieldFarmingHelper,
   dai,
   daiWethPair,
   gno,
@@ -112,7 +112,7 @@ contract("YieldFarming", accounts => {
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
     kittieFightToken = await KittieFightToken.deployed();
-    ktyUniswapOracle = await KtyUniswapOracle.deployed();
+    yieldFarmingHelper = await YieldFarmingHelper.deployed();
     weth = await WETH.deployed();
     factory = await Factory.deployed();
     dai = await Dai.deployed();
@@ -230,16 +230,16 @@ contract("YieldFarming", accounts => {
       weiToEther(totalSupplyLP)
     );
 
-    let ktyReserve = await ktyUniswapOracle.getReserveKTY(
+    let ktyReserve = await yieldFarmingHelper.getReserveKTY(
       weth.address,
       ktyWethPair.address
     );
-    let ethReserve = await ktyUniswapOracle.getReserveETH();
+    let ethReserve = await yieldFarmingHelper.getReserveETH();
     console.log("reserveKTY:", weiToEther(ktyReserve));
     console.log("reserveETH:", weiToEther(ethReserve));
 
-    let ether_kty_price = await ktyUniswapOracle.ETH_KTY_price();
-    let kty_ether_price = await ktyUniswapOracle.KTY_ETH_price();
+    let ether_kty_price = await yieldFarmingHelper.ETH_KTY_price();
+    let kty_ether_price = await yieldFarmingHelper.KTY_ETH_price();
     console.log(
       "Ether to KTY price:",
       "1 ether to",
@@ -254,13 +254,13 @@ contract("YieldFarming", accounts => {
     );
 
     // daiWethPair info
-    let daiReserve = await ktyUniswapOracle.getReserveDAI();
-    let ethReserveFromDai = await ktyUniswapOracle.getReserveETHfromDAI();
+    let daiReserve = await yieldFarmingHelper.getReserveDAI();
+    let ethReserveFromDai = await yieldFarmingHelper.getReserveETHfromDAI();
     console.log("reserveDAI:", weiToEther(daiReserve));
     console.log("reserveETH:", weiToEther(ethReserveFromDai));
 
-    let ether_dai_price = await ktyUniswapOracle.ETH_DAI_price();
-    let dai_ether_price = await ktyUniswapOracle.DAI_ETH_price();
+    let ether_dai_price = await yieldFarmingHelper.ETH_DAI_price();
+    let dai_ether_price = await yieldFarmingHelper.DAI_ETH_price();
     console.log(
       "Ether to DAI price:",
       "1 ether to",
@@ -274,8 +274,8 @@ contract("YieldFarming", accounts => {
       "ether"
     );
 
-    let kty_dai_price = await ktyUniswapOracle.KTY_DAI_price();
-    let dai_kty_price = await ktyUniswapOracle.DAI_KTY_price();
+    let kty_dai_price = await yieldFarmingHelper.KTY_DAI_price();
+    let dai_kty_price = await yieldFarmingHelper.DAI_KTY_price();
     console.log(
       "KTY to DAI price:",
       "1 KTY to",
@@ -397,16 +397,16 @@ contract("YieldFarming", accounts => {
       );
     }
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI_0 = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI_0 = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode_0
     );
-    let totalLiquidityTokenLockedInDAI_8 = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI_8 = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode_8
     );
     console.log(
@@ -744,13 +744,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -910,13 +910,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1120,13 +1120,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1170,13 +1170,13 @@ contract("YieldFarming", accounts => {
       );
     }
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1417,13 +1417,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1583,13 +1583,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1749,13 +1749,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1892,13 +1892,13 @@ contract("YieldFarming", accounts => {
       );
     }
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -2147,13 +2147,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -2292,13 +2292,13 @@ contract("YieldFarming", accounts => {
       weiToEther(rewardsClaimedByUser[1])
     );
 
-    let total_LP_locked = await yieldFarming.getTotalLiquidityTokenLocked();
+    let total_LP_locked = await yieldFarmingHelper.getTotalLiquidityTokenLocked();
     console.log(
       "Total Uniswap Liquidity tokens locked in Yield Farming:",
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(

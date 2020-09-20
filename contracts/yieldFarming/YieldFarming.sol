@@ -13,7 +13,7 @@ import "../libs/SafeMath.sol";
 import "../authority/Owned.sol";
 import "../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/ERC20Standard.sol";
-import "./KtyUniswapOracle.sol";
+import "./YieldFarmingHelper.sol";
 
 contract YieldFarming is Owned {
     using SafeMath for uint256;
@@ -21,9 +21,9 @@ contract YieldFarming is Owned {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
 
-    ERC20Standard public kittieFightToken;      // KittieFightToken contract variable
-    ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
-    KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
+    ERC20Standard public kittieFightToken;        // KittieFightToken contract variable
+    ERC20Standard public superDaoToken;           // SuperDaoToken contract variable
+    YieldFarmingHelper public yieldFarmingHelper; // YieldFarmingHelper contract variable
 
     uint256 base18 = 1000000000000000000;
     uint256 base6 = 1000000;
@@ -56,8 +56,6 @@ contract YieldFarming is Owned {
   
     uint256[6] KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
     uint256[6] SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
-
-    enum Months { FirstMonth, SecondMonth, ThirdMonth, FourthMonth, FifthMonth, SixthMonth }
 
     // Properties of a Staker
     struct Staker {
@@ -118,7 +116,7 @@ contract YieldFarming is Owned {
         address[] calldata _tokenAddrs,
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
-        KtyUniswapOracle _ktyUniswapOracle,
+        YieldFarmingHelper _yieldFarmingHelper,
         uint256[6] calldata _ktyUnlockRates,
         uint256[6] calldata _sdaoUnlockRates
     )
@@ -130,7 +128,7 @@ contract YieldFarming is Owned {
 
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
-        setKtyUniswapOracle(_ktyUniswapOracle);
+        setYieldFarmingHelper(_yieldFarmingHelper);
 
         // Set total rewards in KittieFightToken and SuperDaoToken
         totalRewardsKTY = 7000000 * base18;
@@ -302,11 +300,11 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @dev Set KtyUniswapOracle contract
+     * @dev Set YieldFarmingHelper contract
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setKtyUniswapOracle(KtyUniswapOracle _ktyUniswapOracle) public onlyOwner {
-        ktyUniswapOracle = _ktyUniswapOracle;
+    function setYieldFarmingHelper(YieldFarmingHelper _yieldFarmingHelper) public onlyOwner {
+        yieldFarmingHelper = _yieldFarmingHelper;
     }
 
     /**
@@ -947,39 +945,6 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @return uint256 the total amount of Uniswap Liquidity tokens locked in this contract
-     */
-    function getTotalLiquidityTokenLocked() external view returns (uint256) {
-        return totalLockedLP;
-    }
-
-    function totalLockedLPinDAI() external view returns (uint256) {
-        uint256 _totalLockedLPinDAI = 0;
-        uint256 _LPinDai;
-        for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
-            _LPinDai = getTotalLiquidityTokenLockedInDAI(i);
-            _totalLockedLPinDAI = _totalLockedLPinDAI.add(_LPinDai);
-        }
-
-        return _totalLockedLPinDAI;
-    }
-
-    /**
-     * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
-     *         all Liquidity tokens locked in this contract.
-     */
-    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
-        uint256 balance = IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).balanceOf(address(this));
-        uint256 totalSupply = IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).totalSupply();
-        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
-        
-        uint256 totalKtyInPairPool = kittieFightToken.balanceOf(pairPoolsInfo[_pairCode].pairPoolAddress);
-
-        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.KTY_DAI_price())
-               .div(base18).div(base6);
-    }
-
-    /**
      * @return uint256 the total amount of KittieFightToken that have been claimed
      * @return uint256 the total amount of SuperDaoToken that have been claimed
      */
@@ -1259,20 +1224,12 @@ contract YieldFarming is Owned {
         }
     }
 
-    function getLPinfo(uint256 _pairCode)
-        internal view returns (uint256 reserveKTY, uint256 totalSupplyLP) 
-    {
-        address _tokenAddr = pairPoolsInfo[_pairCode].tokenAddress;
-        reserveKTY = ktyUniswapOracle.getReserveKTY(_tokenAddr, pairPoolsInfo[_pairCode].pairPoolAddress);
-        totalSupplyLP = IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).totalSupply();
-    }
-
     // LP1 / LP =  (T1 x R) / (T x R1)
     // amplify 1000000 times to avoid float imprecision
     function bubbleFactor(uint256 _pairCode) public view returns (uint256)
     {
-        (uint256 reserveKTY, uint256 totalSupply) = getLPinfo(0);
-        (uint256 reserveKTY_1, uint256 totalSupply_1) = getLPinfo(_pairCode);
+        (uint256 reserveKTY, uint256 totalSupply) = yieldFarmingHelper.getLPinfo(0);
+        (uint256 reserveKTY_1, uint256 totalSupply_1) = yieldFarmingHelper.getLPinfo(_pairCode);
 
         uint256 factor = totalSupply_1.mul(reserveKTY).mul(base6).div(totalSupply.mul(reserveKTY_1));
         return factor;

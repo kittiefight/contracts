@@ -10,7 +10,7 @@ const KittieFightToken = artifacts.require("KittieFightToken");
 const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("UniswapV2Pair");
-const KtyUniswapOracle = artifacts.require("KtyUniswapOracle");
+const YieldFarmingHelper = artifacts.require("YieldFarmingHelper");
 const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const ANT = artifacts.require("MockANT");
@@ -62,7 +62,7 @@ module.exports = (deployer, network, accounts) => {
     .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(WETH))
     .then(() => deployer.deploy(Factory, accounts[0]))
-    .then(() => deployer.deploy(KtyUniswapOracle))
+    .then(() => deployer.deploy(YieldFarmingHelper))
     .then(() => deployer.deploy(Dai, 1))
     .then(() => deployer.deploy(ANT, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YDAI, ERC20_TOKEN_SUPPLY))
@@ -256,8 +256,8 @@ module.exports = (deployer, network, accounts) => {
       const ktySDAOPair = await KtySDAOPair.at(ktyPairAddress);
       console.log("ktyWethPair:", ktySDAOPair.address);
 
-      ktyUniswapOracle = await KtyUniswapOracle.deployed();
-      console.log("ktyUiswapOracle:", ktyUniswapOracle.address);
+      yieldFarmingHelper = await YieldFarmingHelper.deployed();
+      console.log("yieldFarmingHelper:", yieldFarmingHelper.address);
 
       console.log("\nInitializing contracts...");
       const pairPoolNames = [
@@ -331,12 +331,13 @@ module.exports = (deployer, network, accounts) => {
         tokenAddrs,
         kittieFightToken.address,
         superDaoToken.address,
-        ktyUniswapOracle.address,
+        yieldFarmingHelper.address,
         ktyUnlockRates,
         sdaoUnlockRates
       );
 
-      await ktyUniswapOracle.initialize(
+      await yieldFarmingHelper.initialize(
+        yieldFarming.address,
         ktyWethPair.address,
         daiWethPair.address,
         kittieFightToken.address,
