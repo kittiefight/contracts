@@ -171,7 +171,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("sets total KittieFightToken and SuperDaoToken rewards for the entire program duration", async () => {
-    let totalRewards = await yieldFarming.getTotalRewards();
+    let totalRewards = await yieldFarmingHelper.getTotalRewards();
     console.log("Total KittieFightToken rewards:", weiToEther(totalRewards[0]));
     console.log("Total SuperDaoToken rewards:", weiToEther(totalRewards[1]));
   });
@@ -353,7 +353,7 @@ contract("YieldFarming", accounts => {
   // ==============================  FIRST MONTH: MONTH 0  ==============================
 
   it("calculates the relational factor reflecting the true intrinsic value of LP from differet pools", async () => {
-    let bubbleFactor = await yieldFarming.bubbleFactor(8);
+    let bubbleFactor = await yieldFarmingHelper.bubbleFactor(8);
     console.log(
       "Bubble Factor in pair pool",
       pairCodeList[8],
@@ -457,7 +457,7 @@ contract("YieldFarming", accounts => {
     console.log(`\n======== Deposits and Batches Info ======== `);
     let allDeposits;
     let allBatches;
-    let lastBatchNumber;
+
     for (let i = 1; i < 19; i++) {
       console.log("User", i);
       allDeposits = await yieldFarming.getAllDeposits(accounts[i]);
@@ -475,17 +475,14 @@ contract("YieldFarming", accounts => {
         accounts[i],
         pairCode
       );
-      lastBatchNumber = await yieldFarming.getLastBatchNumber(
-        accounts[i],
-        pairCode
-      );
+      
       for (let j = 0; j < allBatches.length; j++) {
         console.log("Pair Code:", pairCode);
         console.log("Pair Pool:", pairCodeList[pairCode]);
         console.log("Batch Number:", j);
         console.log("Liquidity Locked:", weiToEther(allBatches[j]));
       }
-      console.log("Last number of batches:", lastBatchNumber.toString());
+  
       console.log("Total number of batches:", allBatches.length);
       console.log("****************************\n");
     }
@@ -493,7 +490,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("gets program duration", async () => {
-    let programDuration = await yieldFarming.getProgramDuration();
+    let programDuration = await yieldFarmingHelper.getProgramDuration();
     // console.log(programDuration)
     let entireProgramDuration = programDuration.entireProgramDuration;
     let monthDuration = programDuration.monthDuration;
@@ -502,7 +499,7 @@ contract("YieldFarming", accounts => {
     let currentMonth = programDuration.currentMonth;
     let daysLeft = programDuration.daysLeft;
     let elapsedMonths = programDuration.elapsedMonths;
-    let allMonthsStartTime = programDuration.allMonthsStartTime;
+    let monthStartTime;
     console.log(`\n======== Program Duration and Months ======== `);
     console.log("Entire program duration:", entireProgramDuration.toString());
     console.log("Month duration:", monthDuration.toString());
@@ -512,7 +509,8 @@ contract("YieldFarming", accounts => {
     console.log("Days Left:", daysLeft.toString());
     console.log("Elapsed Months:", elapsedMonths.toString());
     for (let i = 0; i < 6; i++) {
-      console.log("Month", i, "Start Time:", allMonthsStartTime[i].toString());
+      monthStartTime = yieldFarming.getMonthStartAt(i)
+      console.log("Month", i, "Start Time:", monthStartTime.toString());
     }
     console.log("===============================================\n");
   });
@@ -523,7 +521,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("gets total early mining bonus", async () => {
-    let totalEarlyMiningBonus = await yieldFarming.getTotalEarlyMiningBonus();
+    let totalEarlyMiningBonus = await yieldFarmingHelper.getTotalEarlyMiningBonus();
     console.log(
       "Early Mining Bonus KittieFightToken:",
       weiToEther(totalEarlyMiningBonus[0])
@@ -546,7 +544,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("user cannot withdraw if it is not on pay day", async () => {
-    let payDay = await yieldFarming.isPayDay();
+    let payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);
 
     let user = 1;
@@ -592,14 +590,14 @@ contract("YieldFarming", accounts => {
   // ==============================  SECOND MONTH: MONTH 1  ==============================
 
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
-    let payDay = await yieldFarming.isPayDay();
+    let payDay = await yieldFarmingHelper.isPayDay();
     let timeUntilPayDay = payDay[1];
     console.log("Time until Pay Day:", timeUntilPayDay.toString());
 
     let advancement = timeUntilPayDay.toNumber() + 3 * 60 * 60;
     await advanceTimeAndBlock(advancement);
 
-    payDay = await yieldFarming.isPayDay();
+    payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);
 
     // Info before withdraw
@@ -610,7 +608,6 @@ contract("YieldFarming", accounts => {
 
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let isBatchEligibleForRewards;
     let lockedPeriod;
@@ -620,10 +617,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+ 
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -656,7 +650,7 @@ contract("YieldFarming", accounts => {
       console.log("Rewards KTY:", weiToEther(rewards[0]));
       console.log("Rewards SDAO:", weiToEther(rewards[1]));
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+  
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_1_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -681,10 +675,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+  
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -696,7 +687,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -758,7 +749,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -797,7 +788,6 @@ contract("YieldFarming", accounts => {
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let user = 7;
     let pairCode = 0;
@@ -808,10 +798,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -823,7 +810,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -842,17 +829,13 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -864,7 +847,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -924,7 +907,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -963,7 +946,6 @@ contract("YieldFarming", accounts => {
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let user = 9;
     let pairCode = 0;
@@ -974,10 +956,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+   
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -989,7 +968,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+   
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -1016,17 +995,13 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+   
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1038,7 +1013,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+   
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -1134,7 +1109,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -1189,7 +1164,7 @@ contract("YieldFarming", accounts => {
     let allDeposits;
     let lastDepositNumber;
     let allBatches;
-    let lastBatchNumber;
+
     for (let i = 1; i < 19; i++) {
       console.log("User", i);
       allDeposits = await yieldFarming.getAllDeposits(accounts[i]);
@@ -1211,16 +1186,13 @@ contract("YieldFarming", accounts => {
         accounts[i],
         pairCode
       );
-      lastBatchNumber = await yieldFarming.getLastBatchNumber(
-        accounts[i],
-        pairCode
-      );
+      
       for (let j = 0; j < allBatches.length; j++) {
         console.log("Pair Pool:", pairCodeList[pairCode]);
         console.log("Batch Number:", j);
         console.log("Liquidity Locked:", weiToEther(allBatches[j]));
       }
-      console.log("Last number of batches:", lastBatchNumber.toString());
+     
       console.log("Total number of batches:", allBatches.length);
       console.log("****************************\n");
     }
@@ -1228,7 +1200,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("user cannot withdraw if it is not on pay day", async () => {
-    let payDay = await yieldFarming.isPayDay();
+    let payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);
 
     let user = 3;
@@ -1284,14 +1256,14 @@ contract("YieldFarming", accounts => {
   });
 
   it("user withdraws Uniswap Liquidity tokens by Deposit Number and get rewards in KittieFighToken and SuperDaoTokne", async () => {
-    let payDay = await yieldFarming.isPayDay();
+    let payDay = await yieldFarmingHelper.isPayDay();
     let timeUntilPayDay = payDay[1];
     console.log("Time until Pay Day:", timeUntilPayDay.toString());
     if (timeUntilPayDay.toNumber() > 0) {
       let advancement = timeUntilPayDay.toNumber() + 10;
       await advanceTimeAndBlock(advancement);
     }
-    payDay = await yieldFarming.isPayDay();
+    payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);
     // Info before withdraw
     let user = 3;
@@ -1300,17 +1272,13 @@ contract("YieldFarming", accounts => {
 
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+   
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1322,7 +1290,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+    
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_1_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -1333,7 +1301,7 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
 
-    let rewards = await yieldFarming.calculateRewardsByDepositNumber(
+    let rewards = await yieldFarmingHelper.calculateRewardsByDepositNumber(
       accounts[user],
       1
     );
@@ -1347,17 +1315,13 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+   
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1369,7 +1333,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+   
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -1431,7 +1395,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -1470,7 +1434,6 @@ contract("YieldFarming", accounts => {
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let user = 6;
     let pairCode = 0;
@@ -1481,10 +1444,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+    
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1496,7 +1456,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -1515,17 +1475,13 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+  
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1537,7 +1493,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -1597,7 +1553,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -1636,7 +1592,6 @@ contract("YieldFarming", accounts => {
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let user = 3;
     let pairCode = 0;
@@ -1647,10 +1602,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+  
     for (let j = 0; j < allBatches.length; j++) {
       console.log("pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1662,7 +1614,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+   
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -1681,17 +1633,14 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
+   
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+  
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -1703,7 +1652,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+  
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -1763,7 +1712,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -1911,7 +1860,7 @@ contract("YieldFarming", accounts => {
     let allDeposits;
     let lastDepositNumber;
     let allBatches;
-    let lastBatchNumber;
+
     for (let i = 1; i < 19; i++) {
       console.log("User", i);
       allDeposits = await yieldFarming.getAllDeposits(accounts[i]);
@@ -1933,16 +1882,13 @@ contract("YieldFarming", accounts => {
         accounts[i],
         pairCode
       );
-      lastBatchNumber = await yieldFarming.getLastBatchNumber(
-        accounts[i],
-        pairCode
-      );
+    
       for (let j = 0; j < allBatches.length; j++) {
         console.log("Pair Pool:", pairCodeList[pairCode]);
         console.log("Batch Number:", j);
         console.log("Liquidity Locked:", weiToEther(allBatches[j]));
       }
-      console.log("Last number of batches:", lastBatchNumber.toString());
+ 
       console.log("Total number of batches:", allBatches.length);
       console.log("****************************\n");
     }
@@ -2018,14 +1964,14 @@ contract("YieldFarming", accounts => {
   });
 
   it("user withdraws Uniswap Liquidity tokens by Amount and get rewards", async () => {
-    let payDay = await yieldFarming.isPayDay();
+    let payDay = await yieldFarmingHelper.isPayDay();
     let timeUntilPayDay = payDay[1];
     console.log("Time until Pay Day:", timeUntilPayDay.toString());
     if (timeUntilPayDay.toNumber() > 0) {
       let advancement = timeUntilPayDay.toNumber() + 10;
       await advanceTimeAndBlock(advancement);
     }
-    payDay = await yieldFarming.isPayDay();
+    payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);
 
     let withdraw_LP_amount = new BigNumber(
@@ -2034,7 +1980,6 @@ contract("YieldFarming", accounts => {
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let user = 3;
     let pairCode = 8;
@@ -2045,10 +1990,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+   
     for (let j = 0; j < allBatches.length; j++) {
       console.log("pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -2060,7 +2002,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+  
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_before = await ktyGNOPair.balanceOf(accounts[user]);
@@ -2079,17 +2021,13 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+   
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -2101,7 +2039,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+  
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -2161,7 +2099,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -2179,7 +2117,6 @@ contract("YieldFarming", accounts => {
     // Info before withdraw
     console.log(`\n======== User: Batches Info Before Withdraw ======== `);
     let allBatches;
-    let lastBatchNumber;
     let isBatchValid;
     let user = 10;
     let pairCode = 0;
@@ -2190,10 +2127,7 @@ contract("YieldFarming", accounts => {
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+ 
     for (let j = 0; j < allBatches.length; j++) {
       console.log("pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -2205,7 +2139,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+   
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
     let LP_balance_user_before = await ktyWethPair.balanceOf(accounts[user]);
@@ -2224,17 +2158,13 @@ contract("YieldFarming", accounts => {
     // Info after withdraw
     console.log(`\n======== User:  Batches Info After Withdraw ======== `);
     allBatches;
-    lastBatchNumber;
     isBatchValid;
 
     allBatches = await yieldFarming.getAllBatchesPerPairPool(
       accounts[user],
       pairCode
     );
-    lastBatchNumber = await yieldFarming.getLastBatchNumber(
-      accounts[user],
-      pairCode
-    );
+ 
     for (let j = 0; j < allBatches.length; j++) {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
@@ -2246,7 +2176,7 @@ contract("YieldFarming", accounts => {
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
-    console.log("Last number of batches:", lastBatchNumber.toString());
+  
     console.log("Total number of batches:", allBatches.length);
     console.log("===============================\n");
 
@@ -2306,7 +2236,7 @@ contract("YieldFarming", accounts => {
       weiToEther(totalLiquidityTokenLockedInDAI)
     );
 
-    let totalRewardsClaimed = await yieldFarming.getTotalRewardsClaimed();
+    let totalRewardsClaimed = await yieldFarmingHelper.getTotalRewardsClaimed();
     console.log(
       "Total KittieFightToken rewards claimed:",
       weiToEther(totalRewardsClaimed[0])
@@ -2407,7 +2337,7 @@ contract("YieldFarming", accounts => {
         `: deposits eligible for early bonus ======== `
       );
       for (let j = 0; j < totalDeposits.length; j++) {
-        eligible = await yieldFarming.isDepositEligibleForEarlyBonus(
+        eligible = await yieldFarmingHelper.isDepositEligibleForEarlyBonus(
           accounts[i],
           j
         );
@@ -2451,7 +2381,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("user withdraws by partial amount after program ends", async () => {
-    let payDay = await yieldFarming.isPayDay();
+    let payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);
     let user = 16;
     let pairCode0 = 0;

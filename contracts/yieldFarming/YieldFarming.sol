@@ -25,11 +25,11 @@ contract YieldFarming is Owned {
     ERC20Standard public superDaoToken;           // SuperDaoToken contract variable
     YieldFarmingHelper public yieldFarmingHelper; // YieldFarmingHelper contract variable
 
-    uint256 base18 = 1000000000000000000;
-    uint256 base6 = 1000000;
+    uint256 constant public base18 = 1000000000000000000;
+    uint256 constant public base6 = 1000000;
 
-    uint256 constant MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
-    uint256 constant DAY = 24 * 60 * 60; 
+    uint256 constant public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
+    uint256 constant public DAY = 24 * 60 * 60; 
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
@@ -49,13 +49,13 @@ contract YieldFarming is Owned {
     uint256 public totalRewardsKTYclaimed;      // KittieFightToken rewards already claimed
     uint256 public totalRewardsSDAOclaimed;     // SuperDaoToken rewards already claimed
 
-    uint256 programDuration;                    // Total time duration for Yield Farming Program
-    uint256 programStartAt;                     // Start Time of Yield Farming Program 
-    uint256 programEndAt;                       // End Time of Yield Farming Program 
+    uint256 public programDuration;                    // Total time duration for Yield Farming Program
+    uint256 public programStartAt;                     // Start Time of Yield Farming Program 
+    uint256 public programEndAt;                       // End Time of Yield Farming Program 
     uint256[6] public monthsStartAt;            // an array of the start time of each month.
   
-    uint256[6] KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
-    uint256[6] SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+    uint256[6] public KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+    uint256[6] public SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
 
     // Properties of a Staker
     struct Staker {
@@ -209,7 +209,7 @@ contract YieldFarming is Owned {
      * @return bool true if the withdraw is successful
      */
     function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) external lock returns (bool) {
-        (bool _isPayDay,) = isPayDay();
+        (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
         require(_isPayDay == true, "Can only withdraw on pay day");
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
 
@@ -247,7 +247,7 @@ contract YieldFarming is Owned {
      * @return bool true if the withdraw is successful
      */
     function withdrawByDepositNumber(uint256 _depositNumber) external lock returns (bool) {
-        (bool _isPayDay,) = isPayDay();
+        (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
         require(_isPayDay == true, "Can only withdraw on pay day");
 
         uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
@@ -469,19 +469,6 @@ contract YieldFarming is Owned {
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return uint256 the batch number of the last batch of the _staker. 
-     *         The batch number of the first batch of a staker is always 0, and increments by 1 for 
-     *         subsequent batches each.
-     */
-    function getLastBatchNumber(address _staker, uint256 _pairCode)
-        external view returns (uint)
-    {
-        return stakers[_staker].batchLockedLPamount[_pairCode].length.sub(1);
-    }
-
-    /**
-     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _pairCode uint256 Pair Code assocated with a Pair Pool from whichh the batches are to be shown
      * @return uint256[] an array of the amount of locked Lquidity tokens in every batch of the _staker in
      *         the _pairCode. The index of the array is the Batch Number associated with the batch, since
@@ -539,13 +526,6 @@ contract YieldFarming is Owned {
         return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber] > 0;
     }
 
-    function isDepositValid(address _staker, uint256 _depositNumber)
-        public view returns (bool)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
-        return isBatchValid(_staker, _batchNumber, _pairCode);
-    }
-
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
@@ -571,13 +551,6 @@ contract YieldFarming is Owned {
         return false;
     }
 
-    function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
-        public view returns (bool)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
-        return isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
-    }
-
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
@@ -594,13 +567,6 @@ contract YieldFarming is Owned {
             return true;
         }
         return false;
-    }
-
-    function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
-        public view returns (bool)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
-        return isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
     function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256) {
@@ -638,13 +604,6 @@ contract YieldFarming is Owned {
         }
 
         return _totalLPEarlyBonus;
-    }
-
-    function getTotalEarlyBonus(address _staker) public view returns (uint256, uint256) {
-        uint256 totalEarlyLP = totalLPforEarlyBonus(_staker);
-        uint256 earlyBonus = getEarlyBonus(totalEarlyLP);
-        // early bonus for KTY is the same amount as early bonus for SDAO
-        return (earlyBonus, earlyBonus);
     }
 
     /**
@@ -782,15 +741,6 @@ contract YieldFarming is Owned {
          
     }
 
-    function calculateRewardsByDepositNumber(address _staker, uint256 _depositNumber)
-        external view
-        returns (uint256, uint256)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
-        (uint256 _rewardKTY, uint256 _rewardSDAO) = calculateRewardsByBatchNumber(_staker, _batchNumber, _pairCode);
-        return (_rewardKTY, _rewardSDAO);
-    }
-
     /**
      * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the batch number of deposits
      *         made by a staker
@@ -904,7 +854,6 @@ contract YieldFarming is Owned {
         
     }
     
-
     /**
      * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the amount of Uniswap Liquidity tokens 
      *         locked by a staker
@@ -942,73 +891,6 @@ contract YieldFarming is Owned {
                 rewardSDAO = rewardSDAO.add(earlyBonus);
             }
         }    
-    }
-
-    /**
-     * @return uint256 the total amount of KittieFightToken that have been claimed
-     * @return uint256 the total amount of SuperDaoToken that have been claimed
-     */
-    function getTotalRewardsClaimed() external view returns (uint256, uint256) {
-        uint256 totalKTYclaimed = totalRewardsKTYclaimed;
-        uint256 totalSDAOclaimed = totalRewardsSDAOclaimed;
-        return (totalKTYclaimed, totalSDAOclaimed);
-    }
-
-    /**
-     * @return uint256 
-     */
-    function getAPY() external view returns (uint256) {
-        // to do
-    }
-
-    /**
-     * @return uint256 the Reward Multiplier for KittieFightToken
-     * @return uint256 the Reward Multiplier for SuperDaoFightToken
-     */
-    function getRewardMultipliers() external view returns (uint256, uint256) {
-        // to do
-    }
-
-    /**
-     * @return uint256 the accrued KittieFightToken rewards
-     * @return uint256 the accrued SuperDaoFightToken rewards
-     */
-    function getAccruedRewards() external view returns (uint256, uint256) {
-        // to do
-    }
-
-    /**
-     * @return uint256 the total amount of KittieFightToken rewards
-     * @return uint256 the total amount of SuperDaoFightToken rewards
-     */
-    function getTotalRewards() external view returns (uint256, uint256) {
-        return (totalRewardsKTY, totalRewardsSDAO);
-    }
-
-    /**
-     * @return uint256 the total amount of Uniswap Liquidity tokens deposited
-     *         including both locked tokens and withdrawn tokens
-     */
-    function getTotalDeposits() external view returns (uint256) {
-        return totalDepositedLP;
-    }
-
-    /**
-     * @return uint256 the total amount of KittieFightToken rewards yet to be distributed
-     * @return uint256 the total amount of SuperDaoFightToken rewards yet to be distributed
-     */
-    function getLockedRewards() external view returns (uint256, uint256) {
-        return (lockedRewardsKTY, lockedRewardsSDAO);
-    }
-
-    /**
-     * @return uint256 the total amount of KittieFightToken rewards already distributed
-     * @return uint256 the total amount of SuperDaoFightToken rewards already distributed
-     */
-    function getUnlockedRewards() external view returns (uint256, uint256) {
-        uint256 unlockedKTY = totalRewardsKTY.sub(lockedRewardsKTY);
-        uint256 unlockedSDAO = totalRewardsSDAO.sub(lockedRewardsSDAO);
-        return (unlockedKTY, unlockedSDAO);
     }
 
     /**
@@ -1125,51 +1007,6 @@ contract YieldFarming is Owned {
         return monthsStartAt[nextMonth].sub(block.timestamp);
     }
 
-    /**
-     * @dev get info on program duration and month
-     */
-    function getProgramDuration() external view 
-    returns
-    (
-        uint256 entireProgramDuration,
-        uint256 monthDuration,
-        uint256 startMonth,
-        uint256 endMonth,
-        uint256 currentMonth,
-        uint256 daysLeft,
-        uint256 elapsedMonths,
-        uint256[6] memory allMonthsStartTime
-    ) 
-    {
-        uint256 currentDay = getCurrentDay();
-        entireProgramDuration = programDuration;
-        monthDuration = MONTH;
-        startMonth = 0;
-        endMonth = 5;
-        currentMonth = getCurrentMonth();
-        daysLeft = currentDay >= 180 ? 0 : 180 - currentDay;
-        elapsedMonths = currentMonth == 0 ? 0 : currentMonth;
-        allMonthsStartTime = monthsStartAt;
-    }
-
-    /**
-     * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
-     * @return uint256 the Reward Unlock Rate for KittieFightToken for the _month
-     * @return uint256 the Reward Unlock Rate for SuperDaoToken for the _month
-     */
-    function getRewardUnlockRateByMonth(uint256 _month) external view returns (uint256, uint256) {
-        uint256 _KTYunlockRate = KTYunlockRates[_month];
-        uint256 _SDAOunlockRate = SDAOunlockRates[_month];
-        return (_KTYunlockRate, _SDAOunlockRate);
-    }
-
-    /**
-     * @return uint256 the Reward Unlock Rate for KittieFightToken for each month in the entire program duration
-     * @return uint256 the Reward Unlock Rate for SuperDaoToken for each month in the entire program duration
-     */
-    function getRewardUnlockRate() external view returns (uint256[6] memory, uint256[6] memory) {
-        return (KTYunlockRates, SDAOunlockRates);
-    }
 
     /**
      * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
@@ -1191,48 +1028,26 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @return uint256 the amount of total Rewards for KittieFightToken for early mining bonnus
-     * @return uint256 the amount of total Rewards for SuperDaoToken for early mining bonnus
+     * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
+     * @return uint256 the Reward Unlock Rate for KittieFightToken for the _month
+     * @return uint256 the Reward Unlock Rate for SuperDaoToken for the _month
      */
-    function getTotalEarlyMiningBonus() external view returns (uint256, uint256) {
-        // early mining bonus is the same amount in KTY and SDAO
-        return (EARLY_MINING_BONUS, EARLY_MINING_BONUS);
+    function getRewardUnlockRateByMonth(uint256 _month) external view returns (uint256, uint256) {
+        uint256 _KTYunlockRate = KTYunlockRates[_month];
+        uint256 _SDAOunlockRate = SDAOunlockRates[_month];
+        return (_KTYunlockRate, _SDAOunlockRate);
     }
 
     /**
-     * @return true and 0 if now is pay day, false if now is not pay day and the time until next pay day
-     * @dev Pay Day is the first day of each month, starting from the second month.
-     * @dev After program ends, every day is Pay Day.
+     * @return uint256 the Reward Unlock Rate for KittieFightToken for each month in the entire program duration
+     * @return uint256 the Reward Unlock Rate for SuperDaoToken for each month in the entire program duration
      */
-    function isPayDay()
-        public view
-        returns (bool, uint256)
-    {
-        if (block.timestamp < monthsStartAt[1]) {
-            return (false, monthsStartAt[1].sub(block.timestamp));
-        }
-        if (block.timestamp >= programEndAt) {
-            return (true, 0);
-        }
-        uint256 currentMonth = getCurrentMonth();
-        if (block.timestamp >= monthsStartAt[currentMonth] && block.timestamp <= monthsStartAt[currentMonth].add(DAY)) {
-            return (true, 0);
-        }
-        if (block.timestamp > monthsStartAt[currentMonth].add(DAY)) {
-            uint256 nextPayDay = monthsStartAt[currentMonth.add(1)];
-            return (false, nextPayDay.sub(block.timestamp));
-        }
+    function getRewardUnlockRate() external view returns (uint256[6] memory, uint256[6] memory) {
+        return (KTYunlockRates, SDAOunlockRates);
     }
 
-    // LP1 / LP =  (T1 x R) / (T x R1)
-    // amplify 1000000 times to avoid float imprecision
-    function bubbleFactor(uint256 _pairCode) public view returns (uint256)
-    {
-        (uint256 reserveKTY, uint256 totalSupply) = yieldFarmingHelper.getLPinfo(0);
-        (uint256 reserveKTY_1, uint256 totalSupply_1) = yieldFarmingHelper.getLPinfo(_pairCode);
-
-        uint256 factor = totalSupply_1.mul(reserveKTY).mul(base6).div(totalSupply.mul(reserveKTY_1));
-        return factor;
+    function getMonthStartAt(uint256 month) external view returns (uint256) {
+        return monthsStartAt[month];
     }
 
     /*                                                 PRIVATE FUNCTIONS                                             */
@@ -1249,7 +1064,7 @@ contract YieldFarming is Owned {
         uint256 _depositNumber = stakers[_sender].totalDeposits.length;
         uint256 _batchNumber = stakers[_sender].batchLockedLPamount[_pairCode].length;
         uint256 _currentMonth = getCurrentMonth();
-        uint256 _factor = bubbleFactor(_pairCode);
+        uint256 _factor = yieldFarmingHelper.bubbleFactor(_pairCode);
 
         stakers[_sender].totalDeposits.push([_pairCode, _batchNumber]);
         stakers[_sender].batchLockedLPamount[_pairCode].push(_amount);
