@@ -712,15 +712,17 @@ contract YieldFarming is Owned {
         return (startBatchNumber, endBatchNumber, residual);
     }
 
-    
     function calculateYieldsKTY(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
         internal view
         returns (uint256 yieldsKTY)
     {
         uint256 yieldsKTY_part_1 = calculateYieldsKTY_part_1(startMonth, daysInStartMonth, lockedLP);
-        uint256 yieldsKTY_part_2 = calculateYieldsKTY_part_2(startMonth, endMonth, lockedLP);
-  
-        yieldsKTY = yieldsKTY_part_1.add(yieldsKTY_part_2);
+        uint256 yieldsKTY_part_2 = 0;
+        if (endMonth > startMonth) {
+            yieldsKTY_part_2 = calculateYieldsKTY_part_2(startMonth, endMonth, lockedLP);
+        }
+        
+        yieldsKTY = yieldsKTY_part_2 == 0 ? yieldsKTY_part_1 : yieldsKTY_part_1.add(yieldsKTY_part_2);
     }
 
     function calculateYieldsKTY_part_1(uint256 startMonth, uint256 daysInStartMonth, uint256 lockedLP)
@@ -739,14 +741,11 @@ contract YieldFarming is Owned {
         returns (uint256 yieldsKTY_part_2)
     {
         // yields KTY in endMonth and other month between startMonth and endMonth
-        if (endMonth == startMonth) {
-            yieldsKTY_part_2 = 0;
-        } else {
-            for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
-                yieldsKTY_part_2 = yieldsKTY_part_2
-                    .add(KTYunlockRates[i].mul(totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(1000000));
-            }
-        } 
+        for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
+            yieldsKTY_part_2 = yieldsKTY_part_2
+                .add(KTYunlockRates[i].mul(totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(1000000));
+        }
+         
     }
 
     function calculateYieldsSDAO(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
@@ -754,8 +753,11 @@ contract YieldFarming is Owned {
         returns (uint256 yieldsSDAO)
     {
         uint256 yieldsSDAO_part_1 = calculateYieldsSDAO_part_1(startMonth, daysInStartMonth, lockedLP);
-        uint256 yieldsSDAO_part_2 = calculateYieldsSDAO_part_2(startMonth, endMonth, lockedLP);
-        yieldsSDAO = yieldsSDAO_part_1.add(yieldsSDAO_part_2);
+        uint256 yieldsSDAO_part_2 = 0;
+        if (endMonth > startMonth) {
+            yieldsSDAO_part_2 = calculateYieldsSDAO_part_2(startMonth, endMonth, lockedLP);
+        }
+        yieldsSDAO = yieldsSDAO_part_2 == 0 ? yieldsSDAO_part_1 : yieldsSDAO_part_1.add(yieldsSDAO_part_2);
     }
 
     function calculateYieldsSDAO_part_1(uint256 startMonth, uint256 daysInStartMonth, uint256 lockedLP)
@@ -773,14 +775,11 @@ contract YieldFarming is Owned {
         returns (uint256 yieldsSDAO_part_2)
     {
         // yields SDAO in endMonth and in other months (between startMonth and endMonth)
-        if (endMonth == startMonth) {
-            yieldsSDAO_part_2 = 0;
-        } else {
-            for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
-                yieldsSDAO_part_2 = yieldsSDAO_part_2
-                    .add(SDAOunlockRates[i].mul(totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(1000000));
-            }
-        } 
+        for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
+            yieldsSDAO_part_2 = yieldsSDAO_part_2
+                .add(SDAOunlockRates[i].mul(totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(1000000));
+        }
+         
     }
 
     function calculateRewardsByDepositNumber(address _staker, uint256 _depositNumber)
