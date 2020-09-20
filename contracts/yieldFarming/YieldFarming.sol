@@ -25,6 +25,9 @@ contract YieldFarming is Owned {
     ERC20Standard public superDaoToken;         // SuperDaoToken contract variable
     KtyUniswapOracle public ktyUniswapOracle;   // KtyUniswapOracle contract variable
 
+    uint256 base18 = 1000000000000000000;
+    uint256 base6 = 1000000;
+
     uint256 constant MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
     uint256 constant DAY = 24 * 60 * 60; 
 
@@ -32,8 +35,6 @@ contract YieldFarming is Owned {
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
 
     uint256 public totalNumberOfPairPools;      // Total number of Uniswap V2 pair pools associated with YieldFarming
-
-    address[200] public pairPools;              // An array of the address of each Pair Pool, indexed by its pairCode
 
     uint256 public EARLY_MINING_BONUS;
     uint256 public totalLockedLPinEarlyMining;
@@ -137,7 +138,7 @@ contract YieldFarming is Owned {
         setTotalRewards(_totalKTYrewards, _totalSDAOrewards);
 
         // Set early mining bonus
-        EARLY_MINING_BONUS = 700000*(10**18);
+        EARLY_MINING_BONUS = 700000 * base18;
 
         // Set reward unlock rate for the program duration
         for (uint256 j = 0; j < 6; j++) {
@@ -191,7 +192,7 @@ contract YieldFarming is Owned {
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
 
-        require(IUniswapV2ERC20(pairPools[_pairCode]).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        require(IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
 
         _addDeposit(msg.sender, _pairCode, _amountLP, block.timestamp);
 
@@ -275,7 +276,7 @@ contract YieldFarming is Owned {
      */
     function addNewPairPool(string memory _pairName, address _pairPoolAddr, address _tokenAddr) public onlyOwner {
         uint256 _pairCode = totalNumberOfPairPools;
-        pairPools[_pairCode] = _pairPoolAddr;
+
         pairPoolsInfo[_pairCode].pairName = _pairName;
         pairPoolsInfo[_pairCode].pairPoolAddress = _pairPoolAddr;
         pairPoolsInfo[_pairCode].tokenAddress = _tokenAddr;
@@ -732,7 +733,7 @@ contract YieldFarming is Owned {
         // yields KTY in startMonth
         uint256 rewardsKTYstartMonth = getTotalKTYRewardsByMonth(startMonth);
         yieldsKTY_part_1 = rewardsKTYstartMonth.mul(lockedLP).div(adjustedMonthlyDeposits[startMonth])
-                    .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000);
+                    .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(base6);
        
     }
 
@@ -743,7 +744,7 @@ contract YieldFarming is Owned {
         // yields KTY in endMonth and other month between startMonth and endMonth
         for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
             yieldsKTY_part_2 = yieldsKTY_part_2
-                .add(KTYunlockRates[i].mul(totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(1000000));
+                .add(KTYunlockRates[i].mul(totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(base6));
         }
          
     }
@@ -767,7 +768,7 @@ contract YieldFarming is Owned {
         // yields SDAO in startMonth
         uint256 rewardsSDAOstartMonth = getTotalSDAORewardsByMonth(startMonth);
         yieldsSDAO_part_1 = rewardsSDAOstartMonth.mul(lockedLP).div(adjustedMonthlyDeposits[startMonth])
-                .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(1000000);
+                .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(base6);
     }
 
     function calculateYieldsSDAO_part_2(uint256 startMonth, uint256 endMonth, uint256 lockedLP)
@@ -777,7 +778,7 @@ contract YieldFarming is Owned {
         // yields SDAO in endMonth and in other months (between startMonth and endMonth)
         for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
             yieldsSDAO_part_2 = yieldsSDAO_part_2
-                .add(SDAOunlockRates[i].mul(totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(1000000));
+                .add(SDAOunlockRates[i].mul(totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(lockedLP).div(adjustedMonthlyDeposits[i]).div(base6));
         }
          
     }
@@ -880,12 +881,9 @@ contract YieldFarming is Owned {
         uint256 _startingMonth;
         uint256 _endingMonth;
         uint256 _daysInStartMonth;
-        //uint256 lockedLP;
         uint256 earlyBonus;
         uint256 adjustedLockedLP;
 
-        // // allocate _amountLP per FIFO
-        // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
         for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
             // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
             if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
@@ -931,8 +929,6 @@ contract YieldFarming is Owned {
         uint256 earlyBonus;
         uint256 adjustedLockedLP;
 
-        // // allocate _amountLP per FIFO
-        // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
         // add rewards for end Batch from which only part of the locked amount is to be withdrawn
         if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
             adjustedLockedLP = residual.mul(1000000).div(stakers[_staker].factor[_pairCode][endBatchNumber]);
@@ -972,14 +968,14 @@ contract YieldFarming is Owned {
      *         all Liquidity tokens locked in this contract.
      */
     function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
-        uint256 balance = IUniswapV2ERC20(pairPools[_pairCode]).balanceOf(address(this));
-        uint256 totalSupply = IUniswapV2ERC20(pairPools[_pairCode]).totalSupply();
-        uint256 percentLPinYieldFarm = balance.mul(1000000).div(totalSupply);
+        uint256 balance = IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).balanceOf(address(this));
+        uint256 totalSupply = IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).totalSupply();
+        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
         
-        uint256 totalKtyInPairPool = kittieFightToken.balanceOf(pairPools[_pairCode]);
+        uint256 totalKtyInPairPool = kittieFightToken.balanceOf(pairPoolsInfo[_pairCode].pairPoolAddress);
 
         return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(ktyUniswapOracle.KTY_DAI_price())
-               .div(1000000000000000000).div(1000000);
+               .div(base18).div(base6);
     }
 
     /**
@@ -1218,14 +1214,14 @@ contract YieldFarming is Owned {
         public view 
         returns (uint256)
     {
-        return (totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(KTYunlockRates[_month]).div(1000000);
+        return (totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(KTYunlockRates[_month]).div(base6);
     }
 
     function getTotalSDAORewardsByMonth(uint256 _month)
         public view 
         returns (uint256)
     {
-        return (totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(SDAOunlockRates[_month]).div(1000000);
+        return (totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(SDAOunlockRates[_month]).div(base6);
     }
 
     /**
@@ -1266,8 +1262,8 @@ contract YieldFarming is Owned {
         internal view returns (uint256 reserveKTY, uint256 totalSupplyLP) 
     {
         address _tokenAddr = pairPoolsInfo[_pairCode].tokenAddress;
-        reserveKTY = ktyUniswapOracle.getReserveKTY(_tokenAddr, pairPools[_pairCode]);
-        totalSupplyLP = IUniswapV2ERC20(pairPools[_pairCode]).totalSupply();
+        reserveKTY = ktyUniswapOracle.getReserveKTY(_tokenAddr, pairPoolsInfo[_pairCode].pairPoolAddress);
+        totalSupplyLP = IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).totalSupply();
     }
 
     // LP1 / LP =  (T1 x R) / (T x R1)
@@ -1277,7 +1273,7 @@ contract YieldFarming is Owned {
         (uint256 reserveKTY, uint256 totalSupply) = getLPinfo(0);
         (uint256 reserveKTY_1, uint256 totalSupply_1) = getLPinfo(_pairCode);
 
-        uint256 factor = totalSupply_1.mul(reserveKTY).mul(1000000).div(totalSupply.mul(reserveKTY_1));
+        uint256 factor = totalSupply_1.mul(reserveKTY).mul(base6).div(totalSupply.mul(reserveKTY_1));
         return factor;
     }
 
@@ -1299,7 +1295,7 @@ contract YieldFarming is Owned {
 
         stakers[_sender].totalDeposits.push([_pairCode, _batchNumber]);
         stakers[_sender].batchLockedLPamount[_pairCode].push(_amount);
-        stakers[_sender].adjustedBatchLockedLPamount[_pairCode].push(_amount.mul(1000000).div(_factor));
+        stakers[_sender].adjustedBatchLockedLPamount[_pairCode].push(_amount.mul(base6).div(_factor));
         stakers[_sender].factor[_pairCode].push(_factor);
         stakers[_sender].batchLockedAt[_pairCode].push(_lockedAt);
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
@@ -1307,7 +1303,7 @@ contract YieldFarming is Owned {
 
         for (uint i = _currentMonth; i < 6; i++) {
             monthlyDeposits[i] = monthlyDeposits[i].add(_amount);
-            adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].add(_amount.mul(1000000).div(_factor));
+            adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].add(_amount.mul(base6).div(_factor));
         }
 
         totalDepositedLP = totalDepositedLP.add(_amount);
@@ -1315,7 +1311,7 @@ contract YieldFarming is Owned {
 
         if (block.timestamp <= programStartAt.add(DAY.mul(21))) {
             totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
-            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_amount.mul(1000000).div(_factor));
+            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_amount.mul(base6).div(_factor));
             stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
 
@@ -1362,7 +1358,7 @@ contract YieldFarming is Owned {
         }
         // the amount left after allocating to all batches except the last batch
         uint256 leftAmountLP = _LP.sub(withdrawAmount);
-        uint256 adjustedLeftAmountLP = leftAmountLP.mul(1000000).div(stakers[_sender].factor[_pairCode][_endBatchNumber]);
+        uint256 adjustedLeftAmountLP = leftAmountLP.mul(base6).div(stakers[_sender].factor[_pairCode][_endBatchNumber]);
         // last batch
         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
@@ -1465,7 +1461,7 @@ contract YieldFarming is Owned {
         private
     {
         // transfer liquidity tokens
-        require(IUniswapV2ERC20(pairPools[_pairCode]).transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        require(IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).transfer(_user, _amountLP), "Fail to transfer liquidity token");
 
         // transfer rewards
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
