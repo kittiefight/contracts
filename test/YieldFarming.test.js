@@ -667,7 +667,7 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
 
-    let depositNumber = 1;
+    let depositNumber = 0;
 
     // withdraw by Deposit NUmber
     await yieldFarming.withdrawByDepositNumber(depositNumber, {
@@ -1341,7 +1341,7 @@ contract("YieldFarming", accounts => {
     console.log("SuperDaoToken rewards:", weiToEther(rewards[1]));
 
     // withdraw by Batch NUmber
-    await yieldFarming.withdrawByDepositNumber(1, {from: accounts[user]}).should
+    await yieldFarming.withdrawByDepositNumber(0, {from: accounts[user]}).should
       .be.fulfilled;
 
     // Info after withdraw
