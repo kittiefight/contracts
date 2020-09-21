@@ -317,22 +317,18 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @dev This function transfers unclaimed KittieFightToken rewards to a new address
+     * @dev This function transfers unclaimed KittieFightToken or SuperDaoToken rewards to a new address
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function transferKTY(uint256 _amountKTY, address _addr) external onlyOwner returns (bool) {
-        require(_amountKTY > 0, "Cannot transfer 0 tokens");
-        require(kittieFightToken.transfer(_addr, _amountKTY), "Fail to transfer KTY");
-        return true;
-    }
 
-    /**
-     * @dev This function transfers unclaimed SuperDaoToken rewards to a new address
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
-    function transferSDAO(uint256 _amountSDAO, address _addr) external onlyOwner returns (bool) {
-        require(_amountSDAO > 0, "Cannot transfer 0 tokens");
-        require(superDaoToken.transfer(_addr, _amountSDAO), "Fail to transfer SDAO");
+    function transferRewards(uint256 _amount, address _addr, bool forKTY) external onlyOwner returns (bool) {
+        require(_amount > 0, "Cannot transfer 0 tokens");
+        if (forKTY == true) {
+            require(kittieFightToken.transfer(_addr, _amount), "Fail to transfer KTY");
+        } else if (forKTY == false) {
+            require(superDaoToken.transfer(_addr, _amount), "Fail to transfer SDAO");
+        }
+        
         return true;
     }
 
@@ -372,16 +368,8 @@ contract YieldFarming is Owned {
         programDuration = _totalNumberOfMonths.mul(MONTH);
         programStartAt = _programStartAt;
         programEndAt = programStartAt.add(MONTH.mul(6));
-        setMonth(_totalNumberOfMonths, _programStartAt);
-    }
+        //setMonth(_totalNumberOfMonths, _programStartAt);
 
-    /**
-     * @notice Set start time for each month in Yield Farming Program 
-     * @param _totalNumberOfMonths uint256 total number of months in the entire program duration
-     * @param _programStartAt uint256 time when Yield Farming Program starts
-     * @dev    This function can only be carreid out by the owner of this contract.
-     */
-    function setMonth(uint256 _totalNumberOfMonths, uint256 _programStartAt) public onlyOwner {
         monthsStartAt[0] = _programStartAt;
         for (uint256 i = 1; i < _totalNumberOfMonths; i++) {
             monthsStartAt[i] = monthsStartAt[0].add(MONTH.mul(i)); 

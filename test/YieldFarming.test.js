@@ -2656,14 +2656,14 @@ contract("YieldFarming", accounts => {
       let KTY_leftover = new BigNumber(
         web3.utils.toWei(weiToEther(KTY_bal), "ether")
       );
-      await yieldFarming.transferKTY(KTY_leftover, accounts[0]).should.be.fulfilled;
+      await yieldFarming.transferRewards(KTY_leftover, accounts[0], true).should.be.fulfilled;
     }
 
     if (Number(weiToEther(SDAO_bal)) > 0) {
       let SDAO_leftover = new BigNumber(
         web3.utils.toWei(weiToEther(SDAO_bal), "ether")
       );
-      await yieldFarming.transferSDAO(SDAO_leftover, accounts[0]).should.be.fulfilled;
+      await yieldFarming.transferRewards(SDAO_leftover, accounts[0], false).should.be.fulfilled;
     }
 
     
