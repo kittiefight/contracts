@@ -532,29 +532,8 @@ contract YieldFarming is Owned {
         return stakers[_staker].totalLPlockedbyPairCode[_pairCode];
     }
 
-    /**
-     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is eligible for claiming yields, false if it is not eligible.
-     * @dev    A batch needs to be locked for at least 30 days to be eligible for claiming yields.
-     * @dev    A batch locked for less than 30 days has 0 rewards, although the locked Liquidity tokens can be withdrawn at any time.
-     */
-    function isBatchEligibleForRewards(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        public view returns (bool)
-    {
-        // get locked time
-        uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
-        if (lockedAt == 0) {
-            return false;
-        }
-        // get total locked duration
-        uint256 lockedPeriod = block.timestamp.sub(lockedAt);
-        // a minimum of 30 days of staking is required to be eligible for claiming rewards
-        if (lockedPeriod >= MONTH) {
-            return true;
-        }
-        return false;
+    function getDepositsForEarlyBonus(address _staker) external view returns(uint256[] memory) {
+        return stakers[_staker].depositNumberForEarlyBonus;
     }
 
     /**
@@ -573,43 +552,6 @@ contract YieldFarming is Owned {
             return true;
         }
         return false;
-    }
-
-    function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256) {
-        uint256[] memory depositsEarlyBonus = stakers[_staker].depositNumberForEarlyBonus;
-        uint256 totalLPEarlyBonus = 0;
-        uint256 depositNum;
-        uint256 batchNum;
-        uint256 pairCode;
-        for (uint256 i = 0; i < depositsEarlyBonus.length; i++) {
-            depositNum = depositsEarlyBonus[i];
-            (pairCode, batchNum) = getBathcNumberAndPairCode(_staker, depositNum);
-            if (pairCode == _pairCode && stakers[_staker].batchLockedAt[_pairCode][batchNum] > 0 && stakers[_staker].batchLockedLPamount[_pairCode][batchNum] > 0) {
-                totalLPEarlyBonus = totalLPEarlyBonus.add(stakers[_staker].batchLockedLPamount[_pairCode][batchNum]);
-            }
-        }
-
-        return totalLPEarlyBonus;
-    }
-
-    function totalLPforEarlyBonus(address _staker) public view returns (uint256) {
-        uint256[] memory _depositsEarlyBonus = stakers[_staker].depositNumberForEarlyBonus;
-        if (_depositsEarlyBonus.length == 0) {
-            return 0;
-        }
-        uint256 _totalLPEarlyBonus = 0;
-        uint256 _depositNum;
-        uint256 _batchNum;
-        uint256 _pair;
-        for (uint256 i = 0; i < _depositsEarlyBonus.length; i++) {
-            _depositNum = _depositsEarlyBonus[i];
-            (_pair, _batchNum) = getBathcNumberAndPairCode(_staker, _depositNum);
-            if (stakers[_staker].batchLockedAt[_pair][_batchNum] > 0 && stakers[_staker].batchLockedLPamount[_pair][_batchNum] > 0) {
-                _totalLPEarlyBonus = _totalLPEarlyBonus.add(stakers[_staker].batchLockedLPamount[_pair][_batchNum]);
-            }
-        }
-
-        return _totalLPEarlyBonus;
     }
 
     /**

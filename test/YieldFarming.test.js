@@ -623,7 +623,7 @@ contract("YieldFarming", accounts => {
         j
       );
       console.log("Is Batch Valid?", isBatchValid);
-      isBatchEligibleForRewards = await yieldFarming.isBatchEligibleForRewards(
+      isBatchEligibleForRewards = await yieldsCalculator.isBatchEligibleForRewards(
         accounts[user],
         j,
         pairCode
@@ -974,13 +974,15 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
     let totalLPforEarlyBonus_before = await yieldFarming.totalLockedLPinEarlyMining.call();
-    let totalLPforEarlyBonus_user_before = await yieldFarming.totalLPforEarlyBonus(
+    let totalLPforEarlyBonus_user_before = await yieldFarmingHelper.totalLPforEarlyBonus(
       accounts[user]
     );
-    let totalLPforEarlyBonus_user_pair_before = await yieldFarming.totalLPforEarlyBonusPerPairCode(
+    totalLPforEarlyBonus_user_before = totalLPforEarlyBonus_user_before[0]
+    let totalLPforEarlyBonus_user_pair_before = await yieldFarmingHelper.totalLPforEarlyBonusPerPairCode(
       accounts[user],
       pairCode
     );
+    totalLPforEarlyBonus_user_pair_before = totalLPforEarlyBonus_user_pair_before[0]
 
     // withdraw by Amount
     await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
@@ -1018,13 +1020,15 @@ contract("YieldFarming", accounts => {
     );
     let SDAO_balance_user_after = await superDaoToken.balanceOf(accounts[user]);
     let totalLPforEarlyBonus_after = await yieldFarming.totalLockedLPinEarlyMining.call();
-    let totalLPforEarlyBonus_user_after = await yieldFarming.totalLPforEarlyBonus(
+    let totalLPforEarlyBonus_user_after = await yieldFarmingHelper.totalLPforEarlyBonus(
       accounts[user]
     );
-    let totalLPforEarlyBonus_user_pair_after = await yieldFarming.totalLPforEarlyBonusPerPairCode(
+    totalLPforEarlyBonus_user_after = totalLPforEarlyBonus_user_after[0]
+    let totalLPforEarlyBonus_user_pair_after = await yieldFarmingHelper.totalLPforEarlyBonusPerPairCode(
       accounts[user],
       pairCode
     );
+    totalLPforEarlyBonus_user_pair_after = totalLPforEarlyBonus_user_pair_after[0]
     console.log(
       "User Liquidity Token balance before withdraw:",
       weiToEther(LP_balance_user_before)

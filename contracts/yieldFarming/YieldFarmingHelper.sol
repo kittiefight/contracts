@@ -171,7 +171,7 @@ contract YieldFarmingHelper is Owned {
         external view returns (bool)
     {
         (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
-        return yieldFarming.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
+        return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
     }
 
     function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
@@ -181,8 +181,57 @@ contract YieldFarmingHelper is Owned {
         return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
+    function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256, uint256) {
+        uint256[] memory depositsEarlyBonus = yieldFarming.getDepositsForEarlyBonus(_staker);
+        uint256 totalLPEarlyBonus = 0;
+        uint256 adjustedTotalLPEarlyBonus = 0;
+        uint256 depositNum;
+        uint256 batchNum;
+        uint256 pairCode;
+        uint256 lockTime;
+        uint256 lockedLP;
+        uint256 adjustedLockedLP;
+        for (uint256 i = 0; i < depositsEarlyBonus.length; i++) {
+            depositNum = depositsEarlyBonus[i];
+            (pairCode, batchNum) = yieldFarming.getBathcNumberAndPairCode(_staker, depositNum);
+            (lockedLP,adjustedLockedLP, lockTime) = yieldFarming.getLPinBatch(_staker, pairCode, batchNum);
+            if (pairCode == _pairCode && lockTime > 0 && lockedLP > 0) {
+                totalLPEarlyBonus = totalLPEarlyBonus.add(lockedLP);
+                adjustedTotalLPEarlyBonus = adjustedTotalLPEarlyBonus.add(adjustedLockedLP);
+            }
+        }
+
+        return (totalLPEarlyBonus, adjustedTotalLPEarlyBonus);
+    }
+
+    function totalLPforEarlyBonus(address _staker) public view returns (uint256, uint256) {
+        uint256[] memory _depositsEarlyBonus = yieldFarming.getDepositsForEarlyBonus(_staker);
+        if (_depositsEarlyBonus.length == 0) {
+            return (0, 0);
+        }
+        uint256 _totalLPEarlyBonus = 0;
+        uint256 _adjustedTotalLPEarlyBonus = 0;
+        uint256 _depositNum;
+        uint256 _batchNum;
+        uint256 _pair;
+        uint256 lockTime;
+        uint256 lockedLP;
+        uint256 adjustedLockedLP;
+        for (uint256 i = 0; i < _depositsEarlyBonus.length; i++) {
+            _depositNum = _depositsEarlyBonus[i];
+            (_pair, _batchNum) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNum);
+            (lockedLP,adjustedLockedLP, lockTime) = yieldFarming.getLPinBatch(_staker, _pair, _batchNum);
+            if (lockTime > 0 && lockedLP > 0) {
+                _totalLPEarlyBonus = _totalLPEarlyBonus.add(lockedLP);
+                _adjustedTotalLPEarlyBonus = _adjustedTotalLPEarlyBonus.add(adjustedLockedLP);
+            }
+        }
+
+        return (_totalLPEarlyBonus, _adjustedTotalLPEarlyBonus);
+    }
+
     function getTotalEarlyBonus(address _staker) external view returns (uint256, uint256) {
-        uint256 totalEarlyLP = yieldFarming.totalLPforEarlyBonus(_staker);
+        (, uint256 totalEarlyLP) = totalLPforEarlyBonus(_staker);
         uint256 earlyBonus = yieldFarming.getEarlyBonus(totalEarlyLP);
         // early bonus for KTY is the same amount as early bonus for SDAO
         return (earlyBonus, earlyBonus);

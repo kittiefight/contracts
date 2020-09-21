@@ -294,7 +294,7 @@ contract YieldsCalculator is Owned {
         uint256 rewardSDAO;
 
         // If the batch is locked less than 30 days, rewards are 0.
-        if (!yieldFarming.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
+        if (!isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
             return(0, 0);
         }
 
@@ -338,7 +338,7 @@ contract YieldsCalculator is Owned {
 
         // // allocate _amountLP per FIFO
         // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
-        if (!yieldFarming.isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
+        if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
             rewardKTY = 0;
             rewardSDAO = 0;
         } else {
@@ -372,7 +372,7 @@ contract YieldsCalculator is Owned {
 
         for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
             // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
-            if(yieldFarming.isBatchEligibleForRewards(_staker, i, _pairCode)) {
+            if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
                 // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                 (,adjustedLockedLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
 
@@ -412,11 +412,11 @@ contract YieldsCalculator is Owned {
         uint256 _endingMonth;
         uint256 _daysInStartMonth;
         uint256 earlyBonus;
-        uint256 adjustedLockedLP;
 
         // add rewards for end Batch from which only part of the locked amount is to be withdrawn
-        if(yieldFarming.isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
+        if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
             uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
+            uint256 adjustedLockedLP = residual.mul(1000000).div(factor);
     
             (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
 
@@ -430,6 +430,34 @@ contract YieldsCalculator is Owned {
             }
         }    
     }
+
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is eligible for claiming yields, false if it is not eligible.
+     * @dev    A batch needs to be locked for at least 30 days to be eligible for claiming yields.
+     * @dev    A batch locked for less than 30 days has 0 rewards, although the locked Liquidity tokens can be withdrawn at any time.
+     */
+    function isBatchEligibleForRewards(address _staker, uint256 _batchNumber, uint256 _pairCode)
+        public view returns (bool)
+    {
+        // get locked time
+        (,,uint256 lockedAt) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+      
+        if (lockedAt == 0) {
+            return false;
+        }
+        // get total locked duration
+        uint256 lockedPeriod = block.timestamp.sub(lockedAt);
+        // a minimum of 30 days of staking is required to be eligible for claiming rewards
+        if (lockedPeriod >= MONTH) {
+            return true;
+        }
+        return false;
+    }
+
+    
 
 
 
