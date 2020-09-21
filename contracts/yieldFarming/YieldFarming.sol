@@ -123,8 +123,11 @@ contract YieldFarming is Owned {
             addNewPairPool(bytes32ToString(_pairPoolNames[i]), _pairPoolAddr[i], _tokenAddrs[i]);
         }
 
-        setKittieFightToken(_kittieFightToken);
-        setSuperDaoToken(_superDaoToken);
+        setRewardsToken(_kittieFightToken, true);
+        setRewardsToken(_superDaoToken, false);
+
+        // setKittieFightToken(_kittieFightToken);
+        // setSuperDaoToken(_superDaoToken);
         setYieldFarmingHelper(_yieldFarmingHelper);
         setYieldsCalculator(_yieldsCalculator);
 
@@ -276,16 +279,13 @@ contract YieldFarming is Owned {
      * @dev Set KittieFightToken contract
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setKittieFightToken(ERC20Standard _kittieFightToken) public onlyOwner {
-        kittieFightToken = _kittieFightToken;
-    }
-
-    /**
-     * @dev Set SuperDaoToken contract
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
-    function setSuperDaoToken(ERC20Standard _superDaoToken) public onlyOwner {
-        superDaoToken = _superDaoToken;
+    function setRewardsToken(ERC20Standard _rewardsToken, bool forKTY) public onlyOwner {
+        if (forKTY == true) {
+            kittieFightToken = _rewardsToken;
+        } else if (forKTY == false) {
+            superDaoToken = _rewardsToken;
+        }
+        
     }
 
     /**
@@ -312,7 +312,7 @@ contract YieldFarming is Owned {
      * @dev This function can only be carreid out by the owner of this contract.
      */
 
-    function transferRewards(uint256 _amount, address _addr, bool forKTY) external onlyOwner returns (bool) {
+    function transferUnclaimedRewards(uint256 _amount, address _addr, bool forKTY) external onlyOwner returns (bool) {
         require(_amount > 0, "Cannot transfer 0 tokens");
         if (forKTY == true) {
             require(kittieFightToken.transfer(_addr, _amount), "Fail to transfer KTY");
@@ -359,7 +359,6 @@ contract YieldFarming is Owned {
         programDuration = _totalNumberOfMonths.mul(MONTH);
         programStartAt = _programStartAt;
         programEndAt = programStartAt.add(MONTH.mul(6));
-        //setMonth(_totalNumberOfMonths, _programStartAt);
 
         monthsStartAt[0] = _programStartAt;
         for (uint256 i = 1; i < _totalNumberOfMonths; i++) {
