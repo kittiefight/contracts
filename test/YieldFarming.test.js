@@ -637,7 +637,7 @@ contract("YieldFarming", accounts => {
       console.log("Starting month:", lockedPeriod[0].toString());
       console.log("Ending month:", lockedPeriod[1].toString());
       console.log("Days in Starting month:", lockedPeriod[2].toString());
-      rewards = await yieldFarming.calculateRewardsByBatchNumber(
+      rewards = await yieldsCalculator.calculateRewardsByBatchNumber(
         accounts[user],
         j,
         pairCode

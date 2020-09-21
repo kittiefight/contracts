@@ -193,7 +193,7 @@ contract YieldFarmingHelper is Owned {
         returns (uint256, uint256)
     {
         (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
-        (uint256 _rewardKTY, uint256 _rewardSDAO) = yieldFarming.calculateRewardsByBatchNumber(_staker, _batchNumber, _pairCode);
+        (uint256 _rewardKTY, uint256 _rewardSDAO) = yieldsCalculator.calculateRewardsByBatchNumber(_staker, _batchNumber, _pairCode);
         return (_rewardKTY, _rewardSDAO);
     }
 

@@ -277,5 +277,51 @@ contract YieldsCalculator is Owned {
          
     }
 
+    /**
+     * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the batch number of deposits
+     *         made by a staker
+     * @param _staker address the address of the staker for whom the rewards are calculated
+     * @param _batchNumber the deposit number of the deposits made by _staker
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return unit256 the amount of KittieFightToken rewards associated with the _batchNumber of this _staker
+     * @return unit256 the amount of SuperDaoToken rewards associated with the _batchNumber of this _staker
+     */
+    function calculateRewardsByBatchNumber(address _staker, uint256 _batchNumber, uint256 _pairCode)
+        public view
+        returns (uint256, uint256)
+    {
+        uint256 rewardKTY;
+        uint256 rewardSDAO;
+
+        // If the batch is locked less than 30 days, rewards are 0.
+        if (!yieldFarming.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
+            return(0, 0);
+        }
+
+        (
+            uint256 _startingMonth,
+            uint256 _endingMonth,
+            uint256 _daysInStartMonth
+        ) = getLockedPeriod(_staker, _batchNumber, _pairCode);
+
+        (,uint256 adjustedLockedLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+
+        // calculate KittieFightToken rewards
+        rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
+        rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
+
+        // If the program ends
+        if (block.timestamp >= yieldFarming.programEndAt()) {
+            // if eligible for Early Mining Bonus, add the rewards for early bonus
+            if (yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
+                uint256 _earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                rewardKTY = rewardKTY.add(_earlyBonus);
+                rewardSDAO = rewardSDAO.add(_earlyBonus);
+            }
+        }
+
+        return (rewardKTY, rewardSDAO);
+    }
+
 
 }
