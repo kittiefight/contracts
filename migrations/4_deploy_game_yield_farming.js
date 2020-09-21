@@ -344,6 +344,7 @@ module.exports = (deployer, network, accounts) => {
 
       await yieldFarmingHelper.initialize(
         yieldFarming.address,
+        yieldsCalculator.address,
         ktyWethPair.address,
         daiWethPair.address,
         kittieFightToken.address,

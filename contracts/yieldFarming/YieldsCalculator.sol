@@ -49,5 +49,155 @@ contract YieldsCalculator is Owned {
         yieldFarmingHelper = _yieldFarmingHelper;
     }
 
-    
+    /**
+     * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
+     * @param _staker address the address of the staker for whom the rewards are calculated
+     * @param _amountLP the amount of Uniswap Liquidity tokens locked
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return unit256 the Batch Number of the starting batch to which LP is allocated
+     * @return unit256 the Batch Number of the end batch to which LP is allocated
+     * @return bool true if all the LP locked in the end batch is allocated, false if there is residual
+               amount left in the end batch after allocation
+     * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
+     */
+    function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
+        public view returns (uint256, uint256, uint256)
+    {
+        uint256 startBatchNumber;
+        uint256 endBatchNumber;
+        uint256[] memory allBatches = yieldFarming.getAllBatchesPerPairPool(_staker, _pairCode);
+        uint256 residual;
+
+        for (uint256 m = 0; m < allBatches.length; m++) {
+            if (allBatches[m] > 0) {
+                startBatchNumber = m;
+                break;
+            }
+        }
+        
+        for (uint256 i = startBatchNumber; i < allBatches.length; i++) {
+            if (_amountLP <= allBatches[i]) {
+                if (_amountLP == allBatches[i]) {
+                    residual = 0;
+                } else {
+                    residual = allBatches[i].sub(_amountLP);
+                }
+                endBatchNumber = i;
+                break;
+            } else {
+                _amountLP = _amountLP.sub(allBatches[i]);
+            }
+        }
+
+        return (startBatchNumber, endBatchNumber, residual);
+    }
+
+    /**
+     * @param _time uint256 The time point for which the month number is enquired
+     * @return uint256 the month in which the time point _time is
+     */
+    function getMonth(uint256 _time) public view returns (uint256) {
+        uint256 month;
+        uint256 monthStartTime;
+
+        for (uint256 i = 5; i >= 0; i--) {
+            monthStartTime = yieldFarming.getMonthStartAt(i);
+            if (_time >= monthStartTime) {
+                month = i;
+                break;
+            }
+        }
+        return month;
+    }
+
+    /**
+     * @param _time uint256 The time point for which the day number is enquired
+     * @return uint256 the day in which the time point _time is
+     */
+    function getDay(uint256 _time) public view returns (uint256) {
+        uint256 _programStartAt = yieldFarming.programStartAt();
+        if (_time <= _programStartAt) {
+            return 0;
+        }
+        uint256 elapsedTime = _time.sub(_programStartAt);
+        return elapsedTime.div(DAY);
+    }
+
+    /**
+     * @dev Get the starting month, ending month, and days in starting month during which the locked Liquidity
+     *      tokens in _staker's _batchNumber associated with _pairCode are locked and eligible for rewards.
+     * @dev The ending month is the month preceding the current month.
+     */
+    function getLockedPeriod(address _staker, uint256 _batchNumber, uint256 _pairCode)
+        public view
+        returns (
+            uint256 _startingMonth,
+            uint256 _endingMonth,
+            uint256 _daysInStartMonth
+        )
+    {
+        uint256 _currentMonth = yieldFarming.getCurrentMonth();
+        (,,uint256 _lockedAt) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+        uint256 _startingDay = getDay(_lockedAt);
+        uint256 _programEndAt = yieldFarming.programEndAt();
+
+        _startingMonth = getMonth(_lockedAt); 
+        _endingMonth = _currentMonth == 0 ? 0 : block.timestamp > _programEndAt ? 5 : _currentMonth.sub(1);
+        _daysInStartMonth = 30 - getElapsedDaysInMonth(_startingDay, _startingMonth);
+    }
+
+    /**
+     * @return unit256 the current day
+     * @dev    There are 180 days in this program in total, starting from day 0 to day 179.
+     */
+    function getCurrentDay() public view returns (uint256) {
+        uint256 programStartTime = yieldFarming.programStartAt();
+        if (block.timestamp <= programStartTime) {
+            return 0;
+        }
+        uint256 elapsedTime = block.timestamp.sub(programStartTime);
+        uint256 currentDay = elapsedTime.div(DAY);
+        return currentDay;
+    }
+
+    /**
+     * @param _days uint256 which day since this program starts
+     * @param _month uint256 which month since this program starts
+     * @return unit256 the number of days that have elapsed in this _month
+     */
+    function getElapsedDaysInMonth(uint256 _days, uint256 _month) public view returns (uint256) {
+        // In the first month
+        if (_month == 0) {
+            return _days;
+        }
+
+        // In the other months
+        // Get the unix time for _days
+        uint256 month0StartTime = yieldFarming.getMonthStartAt(0);
+        uint256 dayInUnix = _days.mul(DAY).add(month0StartTime);
+        // If _days are before the start of _month, then no day has been elapsed
+        uint256 monthStartTime = yieldFarming.getMonthStartAt(_month);
+        if (dayInUnix <= monthStartTime) {
+            return 0;
+        }
+        // get time elapsed in seconds
+        uint256 timeElapsed = dayInUnix.sub(monthStartTime);
+        return timeElapsed.div(DAY);
+    }
+
+     /**
+     * @return unit256 time in seconds until the current month ends
+     */
+    function timeUntilCurrentMonthEnd() public view returns (uint) {
+        uint256 nextMonth = yieldFarming.getCurrentMonth().add(1);
+        if (nextMonth > 5) {
+            if (block.timestamp >= yieldFarming.getMonthStartAt(5).add(MONTH)) {
+                return 0;
+            }
+            return MONTH.sub(block.timestamp.sub(yieldFarming.getMonthStartAt(5)));
+        }
+        return yieldFarming.getMonthStartAt(nextMonth).sub(block.timestamp);
+    }
+
+
 }

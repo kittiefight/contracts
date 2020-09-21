@@ -5,12 +5,14 @@ import '../libs/SafeMath.sol';
 import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import '../uniswapKTY/uniswap-v2-periphery/libraries/UniswapV2Library.sol';
 import './YieldFarming.sol';
+import './YieldsCalculator.sol';
 import "../interfaces/ERC20Standard.sol";
 
 contract YieldFarmingHelper is Owned {
     using SafeMath for uint256;
 
     YieldFarming public yieldFarming;
+    YieldsCalculator public yieldsCalculator;
 
     address public ktyWethPair;
     IUniswapV2Pair public daiWethPair;
@@ -31,6 +33,7 @@ contract YieldFarmingHelper is Owned {
     function initialize
     (
         YieldFarming _yieldFarming,
+        YieldsCalculator _yieldsCalculator,
         address _ktyWethPair,
         IUniswapV2Pair _daiWethPair,
         address _kittieFightToken,
@@ -40,6 +43,7 @@ contract YieldFarmingHelper is Owned {
         public onlyOwner
     {
         setYieldFarming(_yieldFarming);
+        setYieldsCalculator(_yieldsCalculator);
         setKtyWethPair(_ktyWethPair);
         setDaiWethPair(_daiWethPair);
         setTokenAddress(_kittieFightToken, _weth, _dai);
@@ -51,6 +55,14 @@ contract YieldFarmingHelper is Owned {
      */
     function setYieldFarming(YieldFarming _yieldFarming) public onlyOwner {
         yieldFarming = _yieldFarming;
+    }
+
+    /**
+     * @dev Set Uniswap KTY-Weth Pair contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setYieldsCalculator(YieldsCalculator _yieldsCalculator) public onlyOwner {
+        yieldsCalculator= _yieldsCalculator;
     }
 
     /**
@@ -273,7 +285,7 @@ contract YieldFarmingHelper is Owned {
         uint256 elapsedMonths
     ) 
     {
-        uint256 currentDay = yieldFarming.getCurrentDay();
+        uint256 currentDay = yieldsCalculator.getCurrentDay();
         entireProgramDuration = yieldFarming.programDuration();
         monthDuration = yieldFarming.MONTH();
         startMonth = 0;

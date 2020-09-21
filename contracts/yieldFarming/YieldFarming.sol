@@ -218,7 +218,7 @@ contract YieldFarming is Owned {
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
 
         // allocate _amountLP per FIFO
-        (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = allocateLP(msg.sender, _LPamount, _pairCode);
+        (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = yieldsCalculator.allocateLP(msg.sender, _LPamount, _pairCode);
         uint256 _KTY;
         uint256 _SDAO;
 
@@ -634,49 +634,6 @@ contract YieldFarming is Owned {
         return (totalKTYclaimedByStaker, totalSDAOclaimedByStaker);
     }
 
-    /**
-     * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
-     * @param _staker address the address of the staker for whom the rewards are calculated
-     * @param _amountLP the amount of Uniswap Liquidity tokens locked
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return unit256 the Batch Number of the starting batch to which LP is allocated
-     * @return unit256 the Batch Number of the end batch to which LP is allocated
-     * @return bool true if all the LP locked in the end batch is allocated, false if there is residual
-               amount left in the end batch after allocation
-     * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
-     */
-    function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
-        public view returns (uint256, uint256, uint256)
-    {
-        uint256 startBatchNumber;
-        uint256 endBatchNumber;
-        uint256[] memory allBatches = stakers[_staker].batchLockedLPamount[_pairCode];
-        uint256 residual;
-
-        for (uint256 m = 0; m < allBatches.length; m++) {
-            if (allBatches[m] > 0) {
-                startBatchNumber = m;
-                break;
-            }
-        }
-        
-        for (uint256 i = startBatchNumber; i < allBatches.length; i++) {
-            if (_amountLP <= allBatches[i]) {
-                if (_amountLP == allBatches[i]) {
-                    residual = 0;
-                } else {
-                    residual = allBatches[i].sub(_amountLP);
-                }
-                endBatchNumber = i;
-                break;
-            } else {
-                _amountLP = _amountLP.sub(allBatches[i]);
-            }
-        }
-
-        return (startBatchNumber, endBatchNumber, residual);
-    }
-
     function calculateYieldsKTY(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
         internal view
         returns (uint256 yieldsKTY)
@@ -772,7 +729,7 @@ contract YieldFarming is Owned {
             uint256 _startingMonth,
             uint256 _endingMonth,
             uint256 _daysInStartMonth
-        ) = getLockedPeriod(_staker, _batchNumber, _pairCode);
+        ) = yieldsCalculator.getLockedPeriod(_staker, _batchNumber, _pairCode);
 
         uint256 adjustedLockedLP = stakers[_staker].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
 
@@ -813,7 +770,7 @@ contract YieldFarming is Owned {
             rewardSDAO = 0;
         } else {
             adjustedLockedLP = _amountLP.mul(1000000).div(stakers[_staker].factor[_pairCode][startBatchNumber]);
-            (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
+            (_startingMonth, _endingMonth, _daysInStartMonth) = yieldsCalculator.getLockedPeriod(_staker, startBatchNumber, _pairCode);
             rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
             rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
 
@@ -845,7 +802,7 @@ contract YieldFarming is Owned {
                 // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                 adjustedLockedLP = stakers[_staker].adjustedBatchLockedLPamount[_pairCode][i];
 
-                (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
+                (_startingMonth, _endingMonth, _daysInStartMonth) = yieldsCalculator.getLockedPeriod(_staker, i, _pairCode);
                 rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP));
                 rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP));
 
@@ -886,7 +843,7 @@ contract YieldFarming is Owned {
         // add rewards for end Batch from which only part of the locked amount is to be withdrawn
         if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
             adjustedLockedLP = residual.mul(1000000).div(stakers[_staker].factor[_pairCode][endBatchNumber]);
-            (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
+            (_startingMonth, _endingMonth, _daysInStartMonth) = yieldsCalculator.getLockedPeriod(_staker, endBatchNumber, _pairCode);
 
             rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
             rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
@@ -897,68 +854,6 @@ contract YieldFarming is Owned {
                 rewardSDAO = rewardSDAO.add(earlyBonus);
             }
         }    
-    }
-
-    /**
-     * @param _time uint256 The time point for which the month number is enquired
-     * @return uint256 the month in which the time point _time is
-     */
-    function getMonth(uint256 _time) public view returns (uint256) {
-        uint256 month;
-        for (uint256 i = 5; i >= 0; i--) {
-            if (_time >= monthsStartAt[i]) {
-                month = i;
-                break;
-            }
-        }
-        return month;
-    }
-
-    /**
-     * @param _time uint256 The time point for which the day number is enquired
-     * @return uint256 the day in which the time point _time is
-     */
-    function getDay(uint256 _time) public view returns (uint256) {
-        if (_time <= programStartAt) {
-            return 0;
-        }
-        uint256 elapsedTime = _time.sub(programStartAt);
-        return elapsedTime.div(DAY);
-    }
-
-    /**
-     * @dev Get the starting month, ending month, and days in starting month during which the locked Liquidity
-     *      tokens in _staker's _batchNumber associated with _pairCode are locked and eligible for rewards.
-     * @dev The ending month is the month preceding the current month.
-     */
-    function getLockedPeriod(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        public view
-        returns (
-            uint256 _startingMonth,
-            uint256 _endingMonth,
-            uint256 _daysInStartMonth
-        )
-    {
-        uint256 _currentMonth = getCurrentMonth();
-        uint256 _lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
-        uint256 _startingDay = getDay(_lockedAt);
-
-        _startingMonth = getMonth(_lockedAt); 
-        _endingMonth = _currentMonth == 0 ? 0 : block.timestamp > programEndAt ? 5 : _currentMonth.sub(1);
-        _daysInStartMonth = 30 - getElapsedDaysInMonth(_startingDay, _startingMonth);
-    }
-
-    /**
-     * @return unit256 the current day
-     * @dev    There are 180 days in this program in total, starting from day 0 to day 179.
-     */
-    function getCurrentDay() public view returns (uint256) {
-        if (block.timestamp <= programStartAt) {
-            return 0;
-        }
-        uint256 elapsedTime = block.timestamp.sub(programStartAt);
-        uint256 currentDay = elapsedTime.div(DAY);
-        return currentDay;
     }
 
     /**
@@ -975,44 +870,6 @@ contract YieldFarming is Owned {
         }
         return currentMonth;
     }
-
-    /**
-     * @param _days uint256 which day since this program starts
-     * @param _month uint256 which month since this program starts
-     * @return unit256 the number of days that have elapsed in this _month
-     */
-    function getElapsedDaysInMonth(uint256 _days, uint256 _month) public view returns (uint256) {
-        // In the first month
-        if (_month == 0) {
-            return _days;
-        }
-
-        // In the other months
-        // Get the unix time for _days
-        uint256 dayInUnix = _days.mul(DAY).add(monthsStartAt[0]);
-        // If _days are before the start of _month, then no day has been elapsed
-        if (dayInUnix <= monthsStartAt[_month]) {
-            return 0;
-        }
-        // get time elapsed in seconds
-        uint256 timeElapsed = dayInUnix.sub(monthsStartAt[_month]);
-        return timeElapsed.div(DAY);
-    }
-
-    /**
-     * @return unit256 time in seconds until the current month ends
-     */
-    function timeUntilCurrentMonthEnd() public view returns (uint) {
-        uint256 nextMonth = getCurrentMonth().add(1);
-        if (nextMonth > 5) {
-            if (block.timestamp >= monthsStartAt[5].add(MONTH)) {
-                return 0;
-            }
-            return MONTH.sub(block.timestamp.sub(monthsStartAt[5]));
-        }
-        return monthsStartAt[nextMonth].sub(block.timestamp);
-    }
-
 
     /**
      * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
@@ -1042,14 +899,6 @@ contract YieldFarming is Owned {
         uint256 _KTYunlockRate = KTYunlockRates[_month];
         uint256 _SDAOunlockRate = SDAOunlockRates[_month];
         return (_KTYunlockRate, _SDAOunlockRate);
-    }
-
-    /**
-     * @return uint256 the Reward Unlock Rate for KittieFightToken for each month in the entire program duration
-     * @return uint256 the Reward Unlock Rate for SuperDaoToken for each month in the entire program duration
-     */
-    function getRewardUnlockRate() external view returns (uint256[6] memory, uint256[6] memory) {
-        return (KTYunlockRates, SDAOunlockRates);
     }
 
     function getMonthStartAt(uint256 month) external view returns (uint256) {

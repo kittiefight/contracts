@@ -13,6 +13,7 @@ const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("IUniswapV2Pair");
 const YieldFarmingHelper = artifacts.require("YieldFarmingHelper");
+const YieldsCalculator = artifacts.require("YieldsCalculator");
 const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const GNO = artifacts.require("MockGNO");
@@ -100,6 +101,7 @@ let yieldFarming,
   weth,
   ktyWethPair,
   yieldFarmingHelper,
+  yieldsCalculator,
   dai,
   daiWethPair,
   gno,
@@ -113,6 +115,7 @@ contract("YieldFarming", accounts => {
     superDaoToken = await SuperDaoToken.deployed();
     kittieFightToken = await KittieFightToken.deployed();
     yieldFarmingHelper = await YieldFarmingHelper.deployed();
+    yieldsCalculator = await YieldsCalculator.deployed();
     weth = await WETH.deployed();
     factory = await Factory.deployed();
     dai = await Dai.deployed();
@@ -135,39 +138,31 @@ contract("YieldFarming", accounts => {
   });
 
   it("sets Rewards Unlock Rate for KittieFightToken and SuperDaoToken", async () => {
-    let unlockRates = await yieldFarming.getRewardUnlockRate();
-    let KTYunlockRates = unlockRates[0];
-    let SDAOunlockRates = unlockRates[1];
-    console.log(`\n======== KTY Rewards Unlock Rate ======== `);
+    let unlockRate, KTYunlockRate, SDAOunlockRate;
+    console.log(`\n======== Rewards Unlock Rate ======== `);
     for (let i = 0; i < 6; i++) {
+      unlockRate = await yieldFarming.getRewardUnlockRateByMonth(i)
+      KTYunlockRate = unlockRate[0]
+      SDAOunlockRate = unlockRate[1]
       console.log(
         "KTY rewards unlock rate in",
         "Month",
         i,
         ":",
-        KTYunlockRates[i].toString()
+        KTYunlockRate.toString()
       );
-    }
 
-    console.log(`\n======== SDAO Rewards Unlock Rate ======== `);
-    for (let j = 0; j < 6; j++) {
       console.log(
         "SDAO rewards unlock rate in",
         "Month",
-        j,
+        i,
         ":",
-        SDAOunlockRates[j].toString()
+        SDAOunlockRate.toString()
       );
     }
 
     console.log("===============================\n");
 
-    let unlockRatesByMonth0 = await yieldFarming.getRewardUnlockRateByMonth(0);
-    let unlockRatesByMonth1 = await yieldFarming.getRewardUnlockRateByMonth(1);
-    console.log(unlockRatesByMonth0[0].toString());
-    console.log(unlockRatesByMonth0[1].toString());
-    console.log(unlockRatesByMonth1[0].toString());
-    console.log(unlockRatesByMonth1[1].toString());
   });
 
   it("sets total KittieFightToken and SuperDaoToken rewards for the entire program duration", async () => {
@@ -509,7 +504,7 @@ contract("YieldFarming", accounts => {
     console.log("Days Left:", daysLeft.toString());
     console.log("Elapsed Months:", elapsedMonths.toString());
     for (let i = 0; i < 6; i++) {
-      monthStartTime = yieldFarming.getMonthStartAt(i)
+      monthStartTime = await yieldFarming.getMonthStartAt(i)
       console.log("Month", i, "Start Time:", monthStartTime.toString());
     }
     console.log("===============================================\n");
@@ -565,12 +560,12 @@ contract("YieldFarming", accounts => {
 
   it("Approching the second month: Month 1", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();
-    let currentDay = await yieldFarming.getCurrentDay();
-    let daysElapsedInMonth = await yieldFarming.getElapsedDaysInMonth(
+    let currentDay = await yieldsCalculator.getCurrentDay();
+    let daysElapsedInMonth = await yieldsCalculator.getElapsedDaysInMonth(
       currentDay,
       currentMonth
     );
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
     console.log("Current Month:", currentMonth.toString());
     console.log("Current Day:", currentDay.toString());
     console.log(
@@ -634,7 +629,7 @@ contract("YieldFarming", accounts => {
         pairCode
       );
       console.log("Is Batch Eligible for Rewards?", isBatchEligibleForRewards);
-      lockedPeriod = await yieldFarming.getLockedPeriod(
+      lockedPeriod = await yieldsCalculator.getLockedPeriod(
         accounts[user],
         j,
         pairCode
@@ -767,7 +762,7 @@ contract("YieldFarming", accounts => {
     );
     let user = 7;
     console.log("User", user);
-    let allocation_LP = await yieldFarming.allocateLP(
+    let allocation_LP = await yieldsCalculator.allocateLP(
       accounts[user],
       LP_amount,
       pairCode
@@ -925,7 +920,7 @@ contract("YieldFarming", accounts => {
     let user = 1;
     let pairCode = 0;
     console.log("User", user);
-    let allocation_LP = await yieldFarming.allocateLP(
+    let allocation_LP = await yieldsCalculator.allocateLP(
       accounts[user],
       LP_amount,
       pairCode
@@ -1220,7 +1215,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("Approching the third month: Month 2", async () => {
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
     let advancement = timeUntilCurrentMonthEnd.toNumber();
     await advanceTimeAndBlock(advancement);
     console.log("The third Month starts: Month 2...");
@@ -1413,7 +1408,7 @@ contract("YieldFarming", accounts => {
     let user = 6;
     let pairCode = 0;
     console.log("User", user);
-    let allocation_LP = await yieldFarming.allocateLP(
+    let allocation_LP = await yieldsCalculator.allocateLP(
       accounts[user],
       LP_amount,
       pairCode
@@ -1571,7 +1566,7 @@ contract("YieldFarming", accounts => {
     let user = 3;
     let pairCode = 0;
     console.log("User", user);
-    let allocation_LP = await yieldFarming.allocateLP(
+    let allocation_LP = await yieldsCalculator.allocateLP(
       accounts[user],
       LP_amount,
       pairCode
@@ -1724,7 +1719,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("Approching the fourth month: Month 3", async () => {
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
 
     let advancement = timeUntilCurrentMonthEnd.toNumber() + 2 * 24 * 60 * 60;
     await advanceTimeAndBlock(advancement);
@@ -1762,12 +1757,12 @@ contract("YieldFarming", accounts => {
 
   it("Approching the fifth month: Month 4", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();
-    let currentDay = await yieldFarming.getCurrentDay();
-    let daysElapsedInMonth = await yieldFarming.getElapsedDaysInMonth(
+    let currentDay = await yieldsCalculator.getCurrentDay();
+    let daysElapsedInMonth = await yieldsCalculator.getElapsedDaysInMonth(
       currentDay,
       currentMonth
     );
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
     console.log("Current Month:", currentMonth.toString());
     console.log("Current Day:", currentDay.toString());
     console.log(
@@ -1897,12 +1892,12 @@ contract("YieldFarming", accounts => {
 
   it("Approching the sixth month: Month 5", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();
-    let currentDay = await yieldFarming.getCurrentDay();
-    let daysElapsedInMonth = await yieldFarming.getElapsedDaysInMonth(
+    let currentDay = await yieldsCalculator.getCurrentDay();
+    let daysElapsedInMonth = await yieldsCalculator.getElapsedDaysInMonth(
       currentDay,
       currentMonth
     );
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
     console.log("Current Month:", currentMonth.toString());
     console.log("Current Day:", currentDay.toString());
     console.log(
@@ -2249,10 +2244,10 @@ contract("YieldFarming", accounts => {
 
   it("Approching the end of sixth month: Month 5", async () => {
     let currentMonth = await yieldFarming.getCurrentMonth();
-    let currentDay = await yieldFarming.getCurrentDay();
+    let currentDay = await yieldsCalculator.getCurrentDay();
     console.log("Current Month:", currentMonth.toString());
     console.log("Current Day:", currentDay.toString());
-    let daysElapsedInMonth = await yieldFarming.getElapsedDaysInMonth(
+    let daysElapsedInMonth = await yieldsCalculator.getElapsedDaysInMonth(
       currentDay,
       currentMonth
     );
@@ -2260,7 +2255,7 @@ contract("YieldFarming", accounts => {
       "Days elapsed in current month:",
       daysElapsedInMonth.toString()
     );
-    let timeUntilCurrentMonthEnd = await yieldFarming.timeUntilCurrentMonthEnd();
+    let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
     console.log(
       "Time (in seconds) until current month ends:",
       timeUntilCurrentMonthEnd.toString()
