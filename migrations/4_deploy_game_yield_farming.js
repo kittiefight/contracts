@@ -11,6 +11,7 @@ const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
 const KtyWethPair = artifacts.require("UniswapV2Pair");
 const YieldFarmingHelper = artifacts.require("YieldFarmingHelper");
+const YieldsCalculator = artifacts.require("YieldsCalculator");
 const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const ANT = artifacts.require("MockANT");
@@ -63,6 +64,7 @@ module.exports = (deployer, network, accounts) => {
     .then(() => deployer.deploy(WETH))
     .then(() => deployer.deploy(Factory, accounts[0]))
     .then(() => deployer.deploy(YieldFarmingHelper))
+    .then(() => deployer.deploy(YieldsCalculator))
     .then(() => deployer.deploy(Dai, 1))
     .then(() => deployer.deploy(ANT, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(YDAI, ERC20_TOKEN_SUPPLY))
@@ -259,6 +261,9 @@ module.exports = (deployer, network, accounts) => {
       yieldFarmingHelper = await YieldFarmingHelper.deployed();
       console.log("yieldFarmingHelper:", yieldFarmingHelper.address);
 
+      yieldsCalculator = await YieldsCalculator.deployed();
+      console.log("yieldFarmingHelper:", yieldsCalculator.address);
+
       console.log("\nInitializing contracts...");
       const pairPoolNames = [
         "KTY_WETH_V2",
@@ -332,6 +337,7 @@ module.exports = (deployer, network, accounts) => {
         kittieFightToken.address,
         superDaoToken.address,
         yieldFarmingHelper.address,
+        yieldsCalculator.address,
         ktyUnlockRates,
         sdaoUnlockRates
       );
@@ -344,6 +350,11 @@ module.exports = (deployer, network, accounts) => {
         weth.address,
         dai.address
       );
+
+      await yieldsCalculator.initialize(
+        yieldFarming.address,
+        yieldFarmingHelper.address
+      )
 
       // set up Dai-Weth pair - only needed in truffle local test, not needed in rinkeby or mainnet
       const ethAmount = new BigNumber(

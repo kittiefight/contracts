@@ -403,10 +403,10 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI_0 = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI_0 = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode_0
     );
-    let totalLiquidityTokenLockedInDAI_8 = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI_8 = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode_8
     );
     console.log(
@@ -622,10 +622,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
       isBatchEligibleForRewards = await yieldFarming.isBatchEligibleForRewards(
@@ -680,10 +680,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -741,7 +741,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -803,10 +803,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -840,10 +840,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -899,7 +899,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -961,10 +961,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1006,10 +1006,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1101,7 +1101,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1151,7 +1151,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1283,10 +1283,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1326,10 +1326,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1387,7 +1387,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1449,10 +1449,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1486,10 +1486,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1545,7 +1545,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1607,10 +1607,10 @@ contract("YieldFarming", accounts => {
       console.log("pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1645,10 +1645,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -1704,7 +1704,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1847,7 +1847,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -1995,10 +1995,10 @@ contract("YieldFarming", accounts => {
       console.log("pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -2032,10 +2032,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -2091,7 +2091,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -2132,10 +2132,10 @@ contract("YieldFarming", accounts => {
       console.log("pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -2169,10 +2169,10 @@ contract("YieldFarming", accounts => {
       console.log("Pair Pool:", pairCodeList[pairCode]);
       console.log("Batch Number:", j);
       console.log("Liquidity Locked:", weiToEther(allBatches[j]));
-      isBatchValid = await yieldFarming.isBatchValid(
+      isBatchValid = await yieldFarmingHelper.isBatchValid(
         accounts[user],
-        j,
-        pairCode
+        pairCode,
+        j
       );
       console.log("Is Batch Valid?", isBatchValid);
     }
@@ -2228,7 +2228,7 @@ contract("YieldFarming", accounts => {
       weiToEther(total_LP_locked)
     );
 
-    let totalLiquidityTokenLockedInDAI = await yieldFarmingHelper.getTotalLiquidityTokenLockedInDAI(
+    let totalLiquidityTokenLockedInDAI = await yieldFarming.getTotalLiquidityTokenLockedInDAI(
       pairCode
     );
     console.log(
@@ -2343,7 +2343,8 @@ contract("YieldFarming", accounts => {
         );
         if (eligible == true) {
           console.log("Deposit", j);
-          lockedLP = await yieldFarming.getLockedLPinDeposit(accounts[i], j);
+          lockedLP = await yieldFarmingHelper.getLockedLPinDeposit(accounts[i], j);
+          lockedLP = lockedLP[0]
           locke_liquidity_tokens = new BigNumber(
             web3.utils.toWei(weiToEther(lockedLP), "ether")
           );

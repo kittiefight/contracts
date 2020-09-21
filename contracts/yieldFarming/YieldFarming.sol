@@ -11,9 +11,10 @@ pragma solidity ^0.5.5;
 
 import "../libs/SafeMath.sol";
 import "../authority/Owned.sol";
-import "../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2ERC20.sol";
+import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import "../interfaces/ERC20Standard.sol";
 import "./YieldFarmingHelper.sol";
+import "./YieldsCalculator.sol";
 
 contract YieldFarming is Owned {
     using SafeMath for uint256;
@@ -24,6 +25,7 @@ contract YieldFarming is Owned {
     ERC20Standard public kittieFightToken;        // KittieFightToken contract variable
     ERC20Standard public superDaoToken;           // SuperDaoToken contract variable
     YieldFarmingHelper public yieldFarmingHelper; // YieldFarmingHelper contract variable
+    YieldsCalculator public yieldsCalculator; // YieldFarmingHelper contract variable
 
     uint256 constant public base18 = 1000000000000000000;
     uint256 constant public base6 = 1000000;
@@ -117,6 +119,7 @@ contract YieldFarming is Owned {
         ERC20Standard _kittieFightToken,
         ERC20Standard _superDaoToken,
         YieldFarmingHelper _yieldFarmingHelper,
+        YieldsCalculator _yieldsCalculator,
         uint256[6] calldata _ktyUnlockRates,
         uint256[6] calldata _sdaoUnlockRates
     )
@@ -129,6 +132,7 @@ contract YieldFarming is Owned {
         setKittieFightToken(_kittieFightToken);
         setSuperDaoToken(_superDaoToken);
         setYieldFarmingHelper(_yieldFarmingHelper);
+        setYieldsCalculator(_yieldsCalculator);
 
         // Set total rewards in KittieFightToken and SuperDaoToken
         totalRewardsKTY = 7000000 * base18;
@@ -189,7 +193,7 @@ contract YieldFarming is Owned {
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
 
-        require(IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        require(IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
 
         _addDeposit(msg.sender, _pairCode, _amountLP, block.timestamp);
 
@@ -308,6 +312,14 @@ contract YieldFarming is Owned {
     }
 
     /**
+     * @dev Set YieldsCalculator contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setYieldsCalculator(YieldsCalculator _yieldsCalculator) public onlyOwner {
+        yieldsCalculator = _yieldsCalculator;
+    }
+
+    /**
      * @dev This function transfers unclaimed KittieFightToken rewards to a new address
      * @dev This function can only be carreid out by the owner of this contract.
      */
@@ -414,7 +426,7 @@ contract YieldFarming is Owned {
      * @return the address of the pair pool associated with _pairCode
      */
     function getPairPool(uint256 _pairCode)
-        external view
+        public view
         returns (string memory, address, address)
     {
         return (pairPoolsInfo[_pairCode].pairName, pairPoolsInfo[_pairCode].pairPoolAddress, pairPoolsInfo[_pairCode].tokenAddress);
@@ -482,13 +494,33 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @return uint256 the amount of locked liquidity tokens in a deposit of a staker assocaited with _depositNumber
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @return uint256 the amount of Uniswap Liquidity tokens locked,
+     *         and its adjusted amount, and the time when this batch was locked,
+     *         in the batch with _batchNumber in _pairCode by the staker 
      */
-    function getLockedLPinDeposit(address _staker, uint256 _depositNumber)
+    function getLPinBatch(address _staker, uint256 _pairCode, uint256 _batchNumber)
+        external view returns (uint256, uint256, uint256)
+    {
+        uint256 _LP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
+        uint256 _adjustedLP = stakers[_staker].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
+        uint256 _lockTime = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
+        
+        return (_LP, _adjustedLP, _lockTime);
+    }
+
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @return uint256 the bubble factor of LP associated with this batch
+     */
+    function getFactorInBatch(address _staker, uint256 _pairCode, uint256 _batchNumber)
         external view returns (uint256)
     {
-        (uint256 _pairCode, uint256 _batchNumber) = getBathcNumberAndPairCode(_staker, _depositNumber); 
-        return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
+        return stakers[_staker].factor[_pairCode][_batchNumber];
     }
 
     /**
@@ -498,32 +530,6 @@ contract YieldFarming is Owned {
         external view returns (uint256)
     {
         return stakers[_staker].totalLPlockedbyPairCode[_pairCode];
-    }
-
-    /**
-     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return uint256 the amount of Uniswap Liquidity tokens locked in the batch with _batchNumber in _pairCode by the staker 
-     */
-    function getLiquidityTokenLockedPerBatch(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        external view returns (uint256)
-    {
-        return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
-    }
-
-    /**
-     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is a valid batch, false if it is non-valid.
-     * @dev    A valid batch is a batch which has locked Liquidity tokens in it. 
-     * @dev    A non-valid batch is an empty batch which has no Liquidity tokens in it.
-     */
-    function isBatchValid(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        public view returns (bool)
-    {
-        return stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber] > 0;
     }
 
     /**
@@ -1050,6 +1056,21 @@ contract YieldFarming is Owned {
         return monthsStartAt[month];
     }
 
+    /**
+     * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
+     *         all Liquidity tokens locked in this contract.
+     */
+    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
+        uint256 balance = IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).balanceOf(address(this));
+        uint256 totalSupply = IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).totalSupply();
+        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
+        
+        uint256 totalKtyInPairPool = kittieFightToken.balanceOf(pairPoolsInfo[_pairCode].pairPoolAddress);
+
+        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(yieldFarmingHelper.KTY_DAI_price())
+               .div(base18).div(base6);
+    }
+
     /*                                                 PRIVATE FUNCTIONS                                             */
     /* ============================================================================================================== */
 
@@ -1287,7 +1308,7 @@ contract YieldFarming is Owned {
         private
     {
         // transfer liquidity tokens
-        require(IUniswapV2ERC20(pairPoolsInfo[_pairCode].pairPoolAddress).transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        require(IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).transfer(_user, _amountLP), "Fail to transfer liquidity token");
 
         // transfer rewards
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");

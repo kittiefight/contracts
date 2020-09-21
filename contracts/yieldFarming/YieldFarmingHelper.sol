@@ -25,6 +25,9 @@ contract YieldFarmingHelper is Owned {
     uint256 constant public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
     uint256 constant public DAY = 24 * 60 * 60;
 
+    // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
+    uint256 constant public DAILY_PORTION_IN_MONTH = 33333;
+
     function initialize
     (
         YieldFarming _yieldFarming,
@@ -136,33 +139,20 @@ contract YieldFarmingHelper is Owned {
         uint256 _LPinDai;
         uint256 totalNumberOfPairPools = yieldFarming.totalNumberOfPairPools();
         for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
-            _LPinDai = getTotalLiquidityTokenLockedInDAI(i);
+            _LPinDai = yieldFarming.getTotalLiquidityTokenLockedInDAI(i);
             _totalLockedLPinDAI = _totalLockedLPinDAI.add(_LPinDai);
         }
 
         return _totalLockedLPinDAI;
     }
 
-    /**
-     * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
-     *         all Liquidity tokens locked in this contract.
-     */
-    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
-        (,address pairPoolAddress,) = yieldFarming.getPairPool(_pairCode);
-        uint256 balance = IUniswapV2Pair(pairPoolAddress).balanceOf(address(this));
-        uint256 totalSupply = IUniswapV2Pair(pairPoolAddress).totalSupply();
-        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
-        
-        uint256 totalKtyInPairPool = ERC20Standard(kittieFightTokenAddr).balanceOf(pairPoolAddress);
-
-        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(KTY_DAI_price()).div(base18).div(base6);
-    }
+    
 
     function isDepositValid(address _staker, uint256 _depositNumber)
         external view returns (bool)
     {
         (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
-        return yieldFarming.isBatchValid(_staker, _batchNumber, _pairCode);
+        return isBatchValid(_staker, _pairCode, _batchNumber);
     }
 
     function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
@@ -300,6 +290,34 @@ contract YieldFarmingHelper is Owned {
     function getTotalEarlyMiningBonus() external view returns (uint256, uint256) {
         // early mining bonus is the same amount in KTY and SDAO
         return (yieldFarming.EARLY_MINING_BONUS(), yieldFarming.EARLY_MINING_BONUS());
+    }
+
+    /**
+     * @return uint256 the amount of locked liquidity tokens,
+     *         and its adjusted amount, and when this deposit was made,
+     *         in a deposit of a staker assocaited with _depositNumber
+     */
+    function getLockedLPinDeposit(address _staker, uint256 _depositNumber)
+        external view returns (uint256, uint256, uint256)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _LP, uint256 _adjustedLP, uint256 _lockTime) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+        return (_LP, _adjustedLP, _lockTime);
+    }
+
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is a valid batch, false if it is non-valid.
+     * @dev    A valid batch is a batch which has locked Liquidity tokens in it. 
+     * @dev    A non-valid batch is an empty batch which has no Liquidity tokens in it.
+     */
+    function isBatchValid(address _staker, uint256 _pairCode, uint256 _batchNumber)
+        public view returns (bool)
+    {
+        (uint256 _LP,,) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+        return _LP > 0;
     }
 
     // Getters Uniswap
