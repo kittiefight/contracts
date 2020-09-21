@@ -257,15 +257,6 @@ contract YieldFarmingHelper is Owned {
         return (earlyBonus, earlyBonus);
     }
 
-    function calculateRewardsByDepositNumber(address _staker, uint256 _depositNumber)
-        external view
-        returns (uint256, uint256)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
-        (uint256 _rewardKTY, uint256 _rewardSDAO) = yieldsCalculator.calculateRewardsByBatchNumber(_staker, _batchNumber, _pairCode);
-        return (_rewardKTY, _rewardSDAO);
-    }
-
     /**
      * @return uint256 the total amount of KittieFightToken that have been claimed
      * @return uint256 the total amount of SuperDaoToken that have been claimed
