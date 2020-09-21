@@ -211,22 +211,13 @@ contract YieldFarming is Owned {
         require(_isPayDay == true, "Can only withdraw on pay day");
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
 
-        // allocate _amountLP per FIFO
-        (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = yieldsCalculator.allocateLP(msg.sender, _LPamount, _pairCode);
-        uint256 _KTY;
-        uint256 _SDAO;
+        (
+            uint256 _KTY, uint256 _SDAO, uint256 startBatchNumber, uint256 endBatchNumber
+        ) = yieldsCalculator.calculateRewardsByAmount(msg.sender,  _LPamount, _pairCode);
 
         if (startBatchNumber == endBatchNumber) {
-            (_KTY, _SDAO) = yieldsCalculator.calculateRewardsByAmountCase1(msg.sender, _pairCode, _LPamount, startBatchNumber);
             _updateWithDrawByAmountCase1(msg.sender, _pairCode, startBatchNumber, _LPamount, _KTY, _SDAO);
-        } else if (startBatchNumber < endBatchNumber && residual == 0) {
-            (_KTY, _SDAO) = yieldsCalculator.calculateRewardsByAmountCase2(msg.sender, _pairCode, startBatchNumber, endBatchNumber);
-            _updateWithDrawByAmount(msg.sender, _pairCode, startBatchNumber, endBatchNumber, _LPamount, _KTY, _SDAO); 
-        } else if (startBatchNumber < endBatchNumber && residual > 0) {
-            (_KTY, _SDAO) = yieldsCalculator.calculateRewardsByAmountCase2(msg.sender, _pairCode, startBatchNumber, endBatchNumber.sub(1));
-            (uint256 _KTYresidual, uint256 _SDAOresidual) = yieldsCalculator.calculateRewardsByAmountResidual(msg.sender, _pairCode, endBatchNumber, residual);
-            _KTY = _KTY.add(_KTYresidual);
-            _SDAO = _SDAO.add(_SDAOresidual);
+        } else {
             _updateWithDrawByAmount(msg.sender, _pairCode, startBatchNumber, endBatchNumber, _LPamount, _KTY, _SDAO); 
         }
 

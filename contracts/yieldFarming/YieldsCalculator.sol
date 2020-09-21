@@ -506,27 +506,26 @@ contract YieldsCalculator is Owned {
 
     function calculateRewardsByAmount(address _staker, uint256 _LPamount, uint256 _pairCode)
         external view
-        returns (uint256, uint256, uint256)
+        returns (uint256, uint256, uint256, uint256)
     {
         // allocate _amountLP per FIFO
         (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = allocateLP(_staker, _LPamount, _pairCode);
         uint256 _KTY;
         uint256 _SDAO;
-        uint256 _case;
 
         if (startBatchNumber == endBatchNumber) {
             (_KTY, _SDAO) = calculateRewardsByAmountCase1(_staker, _pairCode, _LPamount, startBatchNumber);
-            _case = 1;
+          
         } else if (startBatchNumber < endBatchNumber && residual == 0) {
             (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber);
-            _case = 2;
+           
         } else if (startBatchNumber < endBatchNumber && residual > 0) {
             (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber.sub(1));
             (uint256 _KTYresidual, uint256 _SDAOresidual) = calculateRewardsByAmountResidual(_staker, _pairCode, endBatchNumber, residual);
             _KTY = _KTY.add(_KTYresidual);
             _SDAO = _SDAO.add(_SDAOresidual);
-            _case = 3;
+           
         }
-        return (_KTY, _SDAO, _case);
+        return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
     }
 }

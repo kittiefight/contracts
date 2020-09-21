@@ -1300,7 +1300,7 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
 
-    let rewards = await yieldFarmingHelper.calculateRewardsByDepositNumber(
+    let rewards = await yieldsCalculator.calculateRewardsByDepositNumber(
       accounts[user],
       1
     );
