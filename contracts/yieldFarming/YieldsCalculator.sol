@@ -357,5 +357,80 @@ contract YieldsCalculator is Owned {
         }
     }
 
+    function calculateRewardsByAmountCase2
+    (address _staker, uint256 _pairCode,
+     uint256 startBatchNumber, uint256 endBatchNumber)
+        public view
+        returns (uint256 rewardKTY, uint256 rewardSDAO)
+    {
+        
+        uint256 _startingMonth;
+        uint256 _endingMonth;
+        uint256 _daysInStartMonth;
+        uint256 earlyBonus;
+        uint256 adjustedLockedLP;
+
+        for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
+            // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
+            if(yieldFarming.isBatchEligibleForRewards(_staker, i, _pairCode)) {
+                // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
+                (,adjustedLockedLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
+
+                (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, i, _pairCode);
+                rewardKTY = rewardKTY.add(calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP));
+                rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP));
+
+                // if eligible for early bonus, the rewards for early bonus is added for this batch
+                if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                    earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                    rewardKTY = rewardKTY.add(earlyBonus);
+                    rewardSDAO = rewardSDAO.add(earlyBonus);
+                } 
+            } 
+        }
+        
+    }
+    
+    /**
+     * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the amount of Uniswap Liquidity tokens 
+     *         locked by a staker
+     * @param _staker address the address of the staker for whom the rewards are calculated
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @return unit256 the amount of KittieFightToken rewards associated with the _amountLP lockec by this _staker
+     * @return unit256 the amount of SuperDaoToken rewards associated with the _amountLP lockec by this _staker
+     * @return uint256 the starting batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
+     * @return uint256 the ending batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
+     * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
+     */
+    function calculateRewardsByAmountResidual
+    (address _staker, uint256 _pairCode, uint256 endBatchNumber, uint256 residual)
+        public view
+        returns (uint256 rewardKTY, uint256 rewardSDAO)
+    {
+        
+        uint256 _startingMonth;
+        uint256 _endingMonth;
+        uint256 _daysInStartMonth;
+        uint256 earlyBonus;
+        uint256 adjustedLockedLP;
+
+        // add rewards for end Batch from which only part of the locked amount is to be withdrawn
+        if(yieldFarming.isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
+            uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
+    
+            (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
+
+            rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
+            rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
+
+            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
+                earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                rewardKTY = rewardKTY.add(earlyBonus);
+                rewardSDAO = rewardSDAO.add(earlyBonus);
+            }
+        }    
+    }
+
+
 
 }
