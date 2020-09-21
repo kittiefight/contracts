@@ -64,7 +64,6 @@ contract YieldFarming is Owned {
         uint256[][200] factor;                          // A 2d array showing the LP bubbling factor in each batch of each Pair Pool
         uint256[][200] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
         uint256[200] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
-        uint256 totalLPlocked;                          // Total Uniswap Liquidity tokens locked by this staker
         uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
         uint256[] depositNumberForEarlyBonus;           // An array of all the deposit number eligible for early bonus for this staker
@@ -408,14 +407,6 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @return uint256 the amount of Uniswap Liquidity tokens locked by the staker in this contract
-     */
-    function getLiquidityTokenLocked(address _staker) external view returns (uint256) {
-        return stakers[_staker].totalLPlocked;
-    }
-
-    /**
      * @return uint[2][2] a 2d array containing all the deposits made by the staker in this contract,
      *         each item in the 2d array consisting of the Pair Code and the Batch Number associated this
      *         the deposit. The Deposit Number of the deposit is the same as its index in the 2d array.
@@ -593,7 +584,6 @@ contract YieldFarming is Owned {
         stakers[_sender].factor[_pairCode].push(_factor);
         stakers[_sender].batchLockedAt[_pairCode].push(_lockedAt);
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
-        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.add(_amount);
 
         for (uint256 i = _currentMonth; i < 6; i++) {
             //monthlyDeposits[i] = monthlyDeposits[i].add(_amount);
@@ -642,7 +632,6 @@ contract YieldFarming is Owned {
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
         
         // general staker info
-        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.sub(_LP);
         stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
         stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
 
@@ -727,7 +716,6 @@ contract YieldFarming is Owned {
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
         
         // general staker info
-        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.sub(_LP);
         stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
         stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
 
@@ -772,7 +760,6 @@ contract YieldFarming is Owned {
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
         
         // general staker info
-        stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.sub(_LP);
         stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
         stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
 

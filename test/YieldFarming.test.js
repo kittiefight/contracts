@@ -383,7 +383,7 @@ contract("YieldFarming", accounts => {
         from: accounts[i]
       }).should.be.fulfilled;
 
-      LP_locked = await yieldFarming.getLiquidityTokenLocked(accounts[i]);
+      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode_0);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -1135,7 +1135,7 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {
         from: accounts[i]
       }).should.be.fulfilled;
-      LP_locked = await yieldFarming.getLiquidityTokenLocked(accounts[i]);
+      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -1831,7 +1831,7 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {
         from: accounts[i]
       }).should.be.fulfilled;
-      LP_locked = await yieldFarming.getLiquidityTokenLocked(accounts[i]);
+      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
