@@ -80,11 +80,8 @@ contract YieldFarming is Owned {
 
     mapping(uint256 => pairPoolInfo) public pairPoolsInfo;
 
-    // a mapping of every month to the deposits made during that month: 
-    // month => total amount of Uniswap Liquidity tokens deposted in this month
-    // mapping(uint256 => uint256) public monthlyDeposits;
-
     // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
+    // month => total amount of Uniswap Liquidity tokens deposted in this month, adjusted to the bubbling factor
     mapping(uint256 => uint256) public adjustedMonthlyDeposits;
 
     // Total Uniswap Liquidity tokens locked from each uniswap pair pool
@@ -433,24 +430,22 @@ contract YieldFarming is Owned {
      *         each item in the 2d array consisting of the Pair Code and the Batch Number associated this
      *         the deposit. The Deposit Number of the deposit is the same as its index in the 2d array.
      */
-    function getAllDeposits(address _staker)
-        external view returns (uint256[2][] memory)
-    {
-        return stakers[_staker].totalDeposits;
-    }
+    // function getAllDeposits(address _staker)
+    //     external view returns (uint256[2][] memory)
+    // {
+    //     return stakers[_staker].totalDeposits;
+    // }
 
-    /**
-     * @return uint256 the deposit number for this _staker associated with the _batchNumber and _pairCode
-     */
-    function getDepositNumber(address _staker, uint256 _batchNumber, uint256 _pairCode)
-        external view returns (uint256)
+    function getDepositInfo(address _staker, uint256 _depositNumber)
+        public view returns (uint256, uint256, uint256)
     {
-        uint256[2][] memory allDeposits = stakers[_staker].totalDeposits;
-        for (uint256 i = 0; i < allDeposits.length; i++) {
-            if (_pairCode == allDeposits[i][0] && _batchNumber == allDeposits[i][1]) {
-                return i;
-            }
+        uint256 _totalDeposits = stakers[_staker].totalDeposits.length;
+        if (_totalDeposits == 0) {
+            return (0, 0, 0);
         }
+        uint256 _pairCode = stakers[_staker].totalDeposits[_depositNumber][0];
+        uint256 _batchNumber = stakers[_staker].totalDeposits[_depositNumber][1];
+        return (_pairCode, _batchNumber, _totalDeposits);
     }
 
     /**
