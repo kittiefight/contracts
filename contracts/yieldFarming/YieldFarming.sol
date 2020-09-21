@@ -82,7 +82,7 @@ contract YieldFarming is Owned {
 
     // a mapping of every month to the deposits made during that month: 
     // month => total amount of Uniswap Liquidity tokens deposted in this month
-    mapping(uint256 => uint256) public monthlyDeposits;
+    // mapping(uint256 => uint256) public monthlyDeposits;
 
     // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
     mapping(uint256 => uint256) public adjustedMonthlyDeposits;
@@ -317,7 +317,10 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @dev This function transfers unclaimed KittieFightToken or SuperDaoToken rewards to a new address
+     * @notice This function transfers unclaimed KittieFightToken or SuperDaoToken rewards to a new address
+     * @param _amount uint256 amount of rewards to be transferred
+     * @param _addr uint256 account address to which the unclaimed rewards to be transferred
+     * @param forKTY bool true if this transfer is for KittieFightToken, false if it is for SuperDaoToken
      * @dev This function can only be carreid out by the owner of this contract.
      */
 
@@ -611,7 +614,7 @@ contract YieldFarming is Owned {
         stakers[_sender].totalLPlocked = stakers[_sender].totalLPlocked.add(_amount);
 
         for (uint256 i = _currentMonth; i < 6; i++) {
-            monthlyDeposits[i] = monthlyDeposits[i].add(_amount);
+            //monthlyDeposits[i] = monthlyDeposits[i].add(_amount);
             adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].add(_amount.mul(base6).div(_factor));
         }
 
@@ -669,7 +672,7 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
-                monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
+                //monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(_adjustedLP);
                                            
@@ -754,7 +757,7 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
-                monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
+                //monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(adjustedWithdrawAmount)
                                              .sub(adjustedLeftAmountLP);
@@ -799,7 +802,7 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
-                monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
+                //monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(adjustedLP);
             }
