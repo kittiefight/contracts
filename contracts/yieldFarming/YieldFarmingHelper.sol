@@ -151,7 +151,7 @@ contract YieldFarmingHelper is Owned {
         uint256 _LPinDai;
         uint256 totalNumberOfPairPools = yieldFarming.totalNumberOfPairPools();
         for (uint256 i = 0; i < totalNumberOfPairPools; i++) {
-            _LPinDai = yieldFarming.getTotalLiquidityTokenLockedInDAI(i);
+            _LPinDai = getTotalLiquidityTokenLockedInDAI(i);
             _totalLockedLPinDAI = _totalLockedLPinDAI.add(_LPinDai);
         }
 
@@ -379,6 +379,22 @@ contract YieldFarmingHelper is Owned {
     {
         (uint256 _LP,,) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
         return _LP > 0;
+    }
+
+    /**
+     * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
+     *         all Liquidity tokens locked in this contract.
+     */
+    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
+        (,address pairPoolAddress,) = yieldFarming.getPairPool(_pairCode);
+        uint256 balance = IUniswapV2Pair(pairPoolAddress).balanceOf(address(yieldFarming));
+        uint256 totalSupply = IUniswapV2Pair(pairPoolAddress).totalSupply();
+        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
+        
+        uint256 totalKtyInPairPool = ERC20Standard(kittieFightTokenAddr).balanceOf(pairPoolAddress);
+
+        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(KTY_DAI_price())
+               .div(base18).div(base6);
     }
 
     // Getters Uniswap

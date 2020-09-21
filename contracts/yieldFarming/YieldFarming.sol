@@ -33,9 +33,6 @@ contract YieldFarming is Owned {
     uint256 constant public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
     uint256 constant public DAY = 24 * 60 * 60; 
 
-    // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
-    uint256 constant DAILY_PORTION_IN_MONTH = 33333;
-
     uint256 public totalNumberOfPairPools;      // Total number of Uniswap V2 pair pools associated with YieldFarming
 
     uint256 public EARLY_MINING_BONUS;
@@ -599,20 +596,7 @@ contract YieldFarming is Owned {
         return monthsStartAt[month];
     }
 
-    /**
-     * @return uint256 DAI value representation of ETH in uniswap KTY - ETH pool, according to 
-     *         all Liquidity tokens locked in this contract.
-     */
-    function getTotalLiquidityTokenLockedInDAI(uint256 _pairCode) public view returns (uint256) {
-        uint256 balance = IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).balanceOf(address(this));
-        uint256 totalSupply = IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).totalSupply();
-        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
-        
-        uint256 totalKtyInPairPool = kittieFightToken.balanceOf(pairPoolsInfo[_pairCode].pairPoolAddress);
-
-        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(yieldFarmingHelper.KTY_DAI_price())
-               .div(base18).div(base6);
-    }
+    
 
     /*                                                 PRIVATE FUNCTIONS                                             */
     /* ============================================================================================================== */
