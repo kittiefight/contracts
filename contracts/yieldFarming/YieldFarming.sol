@@ -430,22 +430,19 @@ contract YieldFarming is Owned {
      *         each item in the 2d array consisting of the Pair Code and the Batch Number associated this
      *         the deposit. The Deposit Number of the deposit is the same as its index in the 2d array.
      */
-    // function getAllDeposits(address _staker)
-    //     external view returns (uint256[2][] memory)
-    // {
-    //     return stakers[_staker].totalDeposits;
-    // }
-
-    function getDepositInfo(address _staker, uint256 _depositNumber)
-        public view returns (uint256, uint256, uint256)
+    function getAllDeposits(address _staker)
+        external view returns (uint256[2][] memory)
     {
-        uint256 _totalDeposits = stakers[_staker].totalDeposits.length;
-        if (_totalDeposits == 0) {
-            return (0, 0, 0);
-        }
-        uint256 _pairCode = stakers[_staker].totalDeposits[_depositNumber][0];
-        uint256 _batchNumber = stakers[_staker].totalDeposits[_depositNumber][1];
-        return (_pairCode, _batchNumber, _totalDeposits);
+        return stakers[_staker].totalDeposits;
+    }
+
+    /**
+     * @return the total number of deposits this _staker has made
+     */
+    function getNumberOfDeposits(address _staker)
+        external view returns (uint256)
+    {
+        return stakers[_staker].totalDeposits.length;
     }
 
     /**

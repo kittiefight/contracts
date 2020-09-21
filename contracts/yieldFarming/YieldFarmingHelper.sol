@@ -159,29 +159,26 @@ contract YieldFarmingHelper is Owned {
     }
 
     /**
+     * @return bool true if this _staker has made any deposit, false if this _staker has no deposit
      * @return uint256 the deposit number for this _staker associated with the _batchNumber and _pairCode
      */
     function getDepositNumber(address _staker, uint256 _pairCode, uint256 _batchNumber)
         external view returns (bool, uint256)
     {
-        //uint256[2][] memory allDeposits = stakers[_staker].totalDeposits;
-        uint256 _totalDeposits;
         uint256 _pair;
         uint256 _batch;
 
-        (,,_totalDeposits) = yieldFarming.getDepositInfo(_staker, 0);
+        uint256 _totalDeposits = yieldFarming.getNumberOfDeposits(_staker);
         if (_totalDeposits == 0) {
             return (false, 0);
         }
         for (uint256 i = 0; i < _totalDeposits; i++) {
-            (_pair, _batch,) = yieldFarming.getDepositInfo(_staker, i);
+            (_pair, _batch) = yieldFarming.getBathcNumberAndPairCode(_staker, i);
             if (_pair == _pairCode && _batch == _batchNumber) {
                 return (true, i);
             }
         }
     }
-
-    
 
     function isDepositValid(address _staker, uint256 _depositNumber)
         external view returns (bool)
