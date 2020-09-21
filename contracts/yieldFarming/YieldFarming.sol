@@ -223,7 +223,7 @@ contract YieldFarming is Owned {
         uint256 _SDAO;
 
         if (startBatchNumber == endBatchNumber) {
-            (_KTY, _SDAO) = calculateRewardsByAmountCase1(msg.sender, _pairCode, _LPamount, startBatchNumber);
+            (_KTY, _SDAO) = yieldsCalculator.calculateRewardsByAmountCase1(msg.sender, _pairCode, _LPamount, startBatchNumber);
             _updateWithDrawByAmountCase1(msg.sender, _pairCode, startBatchNumber, _LPamount, _KTY, _SDAO);
         } else if (startBatchNumber < endBatchNumber && residual == 0) {
             (_KTY, _SDAO) = calculateRewardsByAmountCase2(msg.sender, _pairCode, startBatchNumber, endBatchNumber);
@@ -638,38 +638,6 @@ contract YieldFarming is Owned {
         return adjustedMonthlyDeposits[_month];
     }
 
-    function calculateRewardsByAmountCase1
-    (address _staker, uint256 _pairCode, uint256 _amountLP,
-     uint256 startBatchNumber)
-        public view
-        returns (uint256 rewardKTY, uint256 rewardSDAO)
-    {
-        
-        uint256 _startingMonth;
-        uint256 _endingMonth;
-        uint256 _daysInStartMonth;
-        uint256 earlyBonus;
-        uint256 adjustedLockedLP;
-
-        // // allocate _amountLP per FIFO
-        // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
-        if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
-            rewardKTY = 0;
-            rewardSDAO = 0;
-        } else {
-            adjustedLockedLP = _amountLP.mul(1000000).div(stakers[_staker].factor[_pairCode][startBatchNumber]);
-            (_startingMonth, _endingMonth, _daysInStartMonth) = yieldsCalculator.getLockedPeriod(_staker, startBatchNumber, _pairCode);
-            rewardKTY = yieldsCalculator.calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
-            rewardSDAO = yieldsCalculator.calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
-
-            // check if early mining bonus applies here
-            if (block.timestamp >= programEndAt && isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
-                earlyBonus = getEarlyBonus(adjustedLockedLP);
-                rewardKTY = rewardKTY.add(earlyBonus);
-                rewardSDAO = rewardKTY.add(earlyBonus);
-            }
-        }
-    }
 
     function calculateRewardsByAmountCase2
     (address _staker, uint256 _pairCode,

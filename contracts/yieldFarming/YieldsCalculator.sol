@@ -323,5 +323,39 @@ contract YieldsCalculator is Owned {
         return (rewardKTY, rewardSDAO);
     }
 
+    function calculateRewardsByAmountCase1
+    (address _staker, uint256 _pairCode, uint256 _amountLP,
+     uint256 startBatchNumber)
+        public view
+        returns (uint256 rewardKTY, uint256 rewardSDAO)
+    {
+        
+        uint256 _startingMonth;
+        uint256 _endingMonth;
+        uint256 _daysInStartMonth;
+        uint256 earlyBonus;
+        uint256 adjustedLockedLP;
+
+        // // allocate _amountLP per FIFO
+        // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
+        if (!yieldFarming.isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
+            rewardKTY = 0;
+            rewardSDAO = 0;
+        } else {
+            uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, startBatchNumber); 
+            adjustedLockedLP = _amountLP.mul(1000000).div(factor);
+            (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
+            rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
+            rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
+
+            // check if early mining bonus applies here
+            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
+                earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                rewardKTY = rewardKTY.add(earlyBonus);
+                rewardSDAO = rewardKTY.add(earlyBonus);
+            }
+        }
+    }
+
 
 }
