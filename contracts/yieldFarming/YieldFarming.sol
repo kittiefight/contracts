@@ -36,7 +36,7 @@ contract YieldFarming is Owned {
     uint256 public totalNumberOfPairPools;      // Total number of Uniswap V2 pair pools associated with YieldFarming
 
     uint256 public EARLY_MINING_BONUS;
-    uint256 public totalLockedLPinEarlyMining;
+    //uint256 public totalLockedLPinEarlyMining;
     uint256 public adjustedTotalLockedLPinEarlyMining;
 
     uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
@@ -594,7 +594,7 @@ contract YieldFarming is Owned {
         totalLockedLP = totalLockedLP.add(_amount);
 
         if (block.timestamp <= programStartAt.add(DAY.mul(21))) {
-            totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
+            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_amount.mul(base6).div(_factor));
             stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
@@ -619,7 +619,7 @@ contract YieldFarming is Owned {
             _adjustedLP = _LP.mul(base6).div(stakers[_sender].factor[_pairCode][_startBatchNumber]);
         }
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _startBatchNumber, _pairCode)) {
-            totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
+            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
                                                  .sub(_adjustedLP);
         }
@@ -643,7 +643,6 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
-                //monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(_adjustedLP);
                                            
@@ -678,7 +677,7 @@ contract YieldFarming is Owned {
         for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
             // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
             if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode)) {
-                totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(stakers[_sender].batchLockedLPamount[_pairCode][i]);
+                //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(stakers[_sender].batchLockedLPamount[_pairCode][i]);
                 adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
                                                      .sub(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
             }
@@ -698,7 +697,7 @@ contract YieldFarming is Owned {
         // last batch
         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
-            totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(leftAmountLP);
+            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(leftAmountLP);
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
         }
         if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
@@ -771,7 +770,6 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
-                //monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(adjustedLP);
             }
@@ -779,7 +777,7 @@ contract YieldFarming is Owned {
 
         // if eligible for Early Mining Bonus but unstake before program end, deduct it from totalLockedLPinEarlyMining
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _batchNumber, _pairCode)) {
-            totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
+            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLP);
         }
     }

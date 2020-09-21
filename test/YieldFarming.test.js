@@ -973,7 +973,6 @@ contract("YieldFarming", accounts => {
     let SDAO_balance_user_before = await superDaoToken.balanceOf(
       accounts[user]
     );
-    let totalLPforEarlyBonus_before = await yieldFarming.totalLockedLPinEarlyMining.call();
     let totalLPforEarlyBonus_user_before = await yieldFarmingHelper.totalLPforEarlyBonus(
       accounts[user]
     );
@@ -1019,7 +1018,6 @@ contract("YieldFarming", accounts => {
       accounts[user]
     );
     let SDAO_balance_user_after = await superDaoToken.balanceOf(accounts[user]);
-    let totalLPforEarlyBonus_after = await yieldFarming.totalLockedLPinEarlyMining.call();
     let totalLPforEarlyBonus_user_after = await yieldFarmingHelper.totalLPforEarlyBonus(
       accounts[user]
     );
@@ -1072,14 +1070,6 @@ contract("YieldFarming", accounts => {
     console.log(
       "Total LP locked for early mining bonus by this user after withdraw:",
       weiToEther(totalLPforEarlyBonus_user_after)
-    );
-    console.log(
-      "Total LP locked for early mining bonus before withdraw:",
-      weiToEther(totalLPforEarlyBonus_before)
-    );
-    console.log(
-      "Total LP locked for early mining bonus after withdraw:",
-      weiToEther(totalLPforEarlyBonus_after)
     );
 
     let rewardsClaimedByUser = await yieldFarming.getTotalRewardsClaimedByStaker(
