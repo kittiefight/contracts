@@ -217,7 +217,7 @@ contract YieldsCalculator is Owned {
         returns (uint256 yieldsKTY_part_1)
     {
         // yields KTY in startMonth
-        uint256 rewardsKTYstartMonth = yieldFarming.getTotalKTYRewardsByMonth(startMonth);
+        uint256 rewardsKTYstartMonth = getTotalKTYRewardsByMonth(startMonth);
         yieldsKTY_part_1 = rewardsKTYstartMonth.mul(lockedLP).div(yieldFarming.getAdjustedTotalMonthlyDeposits(startMonth))
                     .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(base6);
        
@@ -231,7 +231,7 @@ contract YieldsCalculator is Owned {
         uint256 adjustedMonthlyDeposit;
         // yields KTY in endMonth and other month between startMonth and endMonth
         for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
-            monthlyRewardsKTY = yieldFarming.getTotalKTYRewardsByMonth(i);
+            monthlyRewardsKTY = getTotalKTYRewardsByMonth(i);
             adjustedMonthlyDeposit = yieldFarming.getAdjustedTotalMonthlyDeposits(i);
             yieldsKTY_part_2 = yieldsKTY_part_2
                 .add(monthlyRewardsKTY.mul(lockedLP).div(adjustedMonthlyDeposit));
@@ -256,7 +256,7 @@ contract YieldsCalculator is Owned {
         returns (uint256 yieldsSDAO_part_1)
     {
         // yields SDAO in startMonth
-        uint256 rewardsSDAOstartMonth = yieldFarming.getTotalSDAORewardsByMonth(startMonth);
+        uint256 rewardsSDAOstartMonth = getTotalSDAORewardsByMonth(startMonth);
         yieldsSDAO_part_1 = rewardsSDAOstartMonth.mul(lockedLP).div(yieldFarming.getAdjustedTotalMonthlyDeposits(startMonth))
                 .mul(daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(base6);
     }
@@ -269,7 +269,7 @@ contract YieldsCalculator is Owned {
         uint256 adjustedMonthlyDeposit;
         // yields SDAO in endMonth and in other months (between startMonth and endMonth)
         for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
-            monthlyRewardsSDAO = yieldFarming.getTotalSDAORewardsByMonth(i);
+            monthlyRewardsSDAO = getTotalSDAORewardsByMonth(i);
             adjustedMonthlyDeposit = yieldFarming.getAdjustedTotalMonthlyDeposits(i);
             yieldsSDAO_part_2 = yieldsSDAO_part_2
                 .add(monthlyRewardsSDAO.mul(lockedLP).div(adjustedMonthlyDeposit));
@@ -343,7 +343,7 @@ contract YieldsCalculator is Owned {
             rewardSDAO = 0;
         } else {
             uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, startBatchNumber); 
-            adjustedLockedLP = _amountLP.mul(1000000).div(factor);
+            adjustedLockedLP = _amountLP.mul(base6).div(factor);
             (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, startBatchNumber, _pairCode);
             rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
             rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
@@ -416,7 +416,7 @@ contract YieldsCalculator is Owned {
         // add rewards for end Batch from which only part of the locked amount is to be withdrawn
         if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
             uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
-            uint256 adjustedLockedLP = residual.mul(1000000).div(factor);
+            uint256 adjustedLockedLP = residual.mul(base6).div(factor);
     
             (_startingMonth, _endingMonth, _daysInStartMonth) = getLockedPeriod(_staker, endBatchNumber, _pairCode);
 
@@ -457,8 +457,28 @@ contract YieldsCalculator is Owned {
         return false;
     }
 
-    
+    /**
+     * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
+     * @return uint256 the amount of total Rewards for KittieFightToken for the _month
+     * @return uint256 the amount of total Rewards for SuperDaoToken for the _month
+     */
+    function getTotalKTYRewardsByMonth(uint256 _month)
+        public view 
+        returns (uint256)
+    {
+        uint256 _totalRewardsKTY = yieldFarming.totalRewardsKTY();
+        (uint256 _KTYunlockRate,) = yieldFarming.getRewardUnlockRateByMonth(_month);
+        uint256 _earlyBonus = yieldFarming.EARLY_MINING_BONUS();
+        return (_totalRewardsKTY.sub(_earlyBonus)).mul(_KTYunlockRate).div(base6);
+    }
 
-
-
+    function getTotalSDAORewardsByMonth(uint256 _month)
+        public view 
+        returns (uint256)
+    {
+        uint256 _totalRewardsSDAO = yieldFarming.totalRewardsSDAO();
+        (,uint256 _SDAOunlockRate) = yieldFarming.getRewardUnlockRateByMonth(_month);
+        uint256 _earlyBonus = yieldFarming.EARLY_MINING_BONUS();
+        return (_totalRewardsSDAO.sub(_earlyBonus)).mul(_SDAOunlockRate).div(base6);
+    }
 }

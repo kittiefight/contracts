@@ -528,8 +528,8 @@ contract("YieldFarming", accounts => {
   });
 
   it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
-    let KTYrewards_month_0 = await yieldFarming.getTotalKTYRewardsByMonth(0);
-    let SDAOrewards_month_0 = await yieldFarming.getTotalSDAORewardsByMonth(0);
+    let KTYrewards_month_0 = await yieldsCalculator.getTotalKTYRewardsByMonth(0);
+    let SDAOrewards_month_0 = await yieldsCalculator.getTotalSDAORewardsByMonth(0);
 
     console.log("KTY Rewards for Month 0:", weiToEther(KTYrewards_month_0));
     console.log("SDAO Rewards for Month 0:", weiToEther(SDAOrewards_month_0));
@@ -1230,10 +1230,10 @@ contract("YieldFarming", accounts => {
     //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
     // currentMonth
     //);
-    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+    let KTYrewards_month = await yieldsCalculator.getTotalKTYRewardsByMonth(
       pastMonth
     );
-    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+    let SDAOrewards_month = await yieldsCalculator.getTotalSDAORewardsByMonth(
       pastMonth
     );
 
@@ -1735,10 +1735,10 @@ contract("YieldFarming", accounts => {
     //let rewards_month = await yieldFarming.getTotalRewardsByMonth(
     //  currentMonth
     //);
-    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+    let KTYrewards_month = await yieldsCalculator.getTotalKTYRewardsByMonth(
       pastMonth
     );
-    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+    let SDAOrewards_month = await yieldsCalculator.getTotalSDAORewardsByMonth(
       pastMonth
     );
 
@@ -1787,10 +1787,10 @@ contract("YieldFarming", accounts => {
   it("unlocks KittieFightToken and SuperDaoToken rewards for the fourth month (Month 3", async () => {
     let pastMonth = 3;
     //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
-    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+    let KTYrewards_month = await yieldsCalculator.getTotalKTYRewardsByMonth(
       pastMonth
     );
-    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+    let SDAOrewards_month = await yieldsCalculator.getTotalSDAORewardsByMonth(
       pastMonth
     );
 
@@ -1922,10 +1922,10 @@ contract("YieldFarming", accounts => {
   it("unlocks KittieFightToken and SuperDaoToken rewards for the fifth month (Month 4", async () => {
     let pastMonth = 4;
     //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
-    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+    let KTYrewards_month = await yieldsCalculator.getTotalKTYRewardsByMonth(
       pastMonth
     );
-    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+    let SDAOrewards_month = await yieldsCalculator.getTotalSDAORewardsByMonth(
       pastMonth
     );
 
@@ -2275,10 +2275,10 @@ contract("YieldFarming", accounts => {
   it("unlocks KittieFightToken and SuperDaoToken rewards for the sixth month and the early bonus", async () => {
     let pastMonth = 5;
     //let rewards_month = await yieldFarming.getTotalRewardsByMonth(pastMonth);
-    let KTYrewards_month = await yieldFarming.getTotalKTYRewardsByMonth(
+    let KTYrewards_month = await yieldsCalculator.getTotalKTYRewardsByMonth(
       pastMonth
     );
-    let SDAOrewards_month = await yieldFarming.getTotalSDAORewardsByMonth(
+    let SDAOrewards_month = await yieldsCalculator.getTotalSDAORewardsByMonth(
       pastMonth
     );
 

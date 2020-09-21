@@ -597,25 +597,6 @@ contract YieldFarming is Owned {
 
     /**
      * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
-     * @return uint256 the amount of total Rewards for KittieFightToken for the _month
-     * @return uint256 the amount of total Rewards for SuperDaoToken for the _month
-     */
-    function getTotalKTYRewardsByMonth(uint256 _month)
-        public view 
-        returns (uint256)
-    {
-        return (totalRewardsKTY.sub(EARLY_MINING_BONUS)).mul(KTYunlockRates[_month]).div(base6);
-    }
-
-    function getTotalSDAORewardsByMonth(uint256 _month)
-        public view 
-        returns (uint256)
-    {
-        return (totalRewardsSDAO.sub(EARLY_MINING_BONUS)).mul(SDAOunlockRates[_month]).div(base6);
-    }
-
-    /**
-     * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
      * @return uint256 the Reward Unlock Rate for KittieFightToken for the _month
      * @return uint256 the Reward Unlock Rate for SuperDaoToken for the _month
      */
