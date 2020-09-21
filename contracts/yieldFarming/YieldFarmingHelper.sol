@@ -232,7 +232,7 @@ contract YieldFarmingHelper is Owned {
 
     function getTotalEarlyBonus(address _staker) external view returns (uint256, uint256) {
         (, uint256 totalEarlyLP) = totalLPforEarlyBonus(_staker);
-        uint256 earlyBonus = yieldFarming.getEarlyBonus(totalEarlyLP);
+        uint256 earlyBonus = yieldsCalculator.getEarlyBonus(totalEarlyLP);
         // early bonus for KTY is the same amount as early bonus for SDAO
         return (earlyBonus, earlyBonus);
     }

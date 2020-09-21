@@ -555,17 +555,6 @@ contract YieldFarming is Owned {
     }
 
     /**
-     * @param _amountLP the amount of locked Liquidity token eligible for claiming early bonus
-     * @return uint256 the amount of early bonus for this _staker. Since the amount of early bonus is the same
-     *         for KittieFightToken and SuperDaoToken, only one number is returned.
-     */
-    function getEarlyBonus(uint256 _amountLP)
-        public view returns (uint256)
-    {
-        return _amountLP.mul(EARLY_MINING_BONUS.div(adjustedTotalLockedLPinEarlyMining));
-    }
-
-    /**
      * @param _staker address the staker who has received the rewards
      * @return uint256 the total amount of KittieFightToken that have been claimed by this _staker
      * @return uint256 the total amount of SuperDaoToken that have been claimed by this _staker

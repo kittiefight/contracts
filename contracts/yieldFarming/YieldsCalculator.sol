@@ -314,7 +314,7 @@ contract YieldsCalculator is Owned {
         if (block.timestamp >= yieldFarming.programEndAt()) {
             // if eligible for Early Mining Bonus, add the rewards for early bonus
             if (yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode)) {
-                uint256 _earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                uint256 _earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(_earlyBonus);
                 rewardSDAO = rewardSDAO.add(_earlyBonus);
             }
@@ -350,7 +350,7 @@ contract YieldsCalculator is Owned {
 
             // check if early mining bonus applies here
             if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
-                earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(earlyBonus);
                 rewardSDAO = rewardKTY.add(earlyBonus);
             }
@@ -382,7 +382,7 @@ contract YieldsCalculator is Owned {
 
                 // if eligible for early bonus, the rewards for early bonus is added for this batch
                 if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                    earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                    earlyBonus = getEarlyBonus(adjustedLockedLP);
                     rewardKTY = rewardKTY.add(earlyBonus);
                     rewardSDAO = rewardSDAO.add(earlyBonus);
                 } 
@@ -424,7 +424,7 @@ contract YieldsCalculator is Owned {
             rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
 
             if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
-                earlyBonus = yieldFarming.getEarlyBonus(adjustedLockedLP);
+                earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(earlyBonus);
                 rewardSDAO = rewardSDAO.add(earlyBonus);
             }
@@ -480,5 +480,18 @@ contract YieldsCalculator is Owned {
         (,uint256 _SDAOunlockRate) = yieldFarming.getRewardUnlockRateByMonth(_month);
         uint256 _earlyBonus = yieldFarming.EARLY_MINING_BONUS();
         return (_totalRewardsSDAO.sub(_earlyBonus)).mul(_SDAOunlockRate).div(base6);
+    }
+
+    /**
+     * @param _amountLP the amount of locked Liquidity token eligible for claiming early bonus
+     * @return uint256 the amount of early bonus for this _staker. Since the amount of early bonus is the same
+     *         for KittieFightToken and SuperDaoToken, only one number is returned.
+     */
+    function getEarlyBonus(uint256 _amountLP)
+        public view returns (uint256)
+    {
+        uint256 _earlyBonus = yieldFarming.EARLY_MINING_BONUS();
+        uint256 _adjustedTotalLockedLPinEarlyMining = yieldFarming.adjustedTotalLockedLPinEarlyMining();
+        return _amountLP.mul(_earlyBonus).div(_adjustedTotalLockedLPinEarlyMining);
     }
 }
