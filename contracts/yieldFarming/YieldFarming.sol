@@ -22,51 +22,51 @@ contract YieldFarming is Owned {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
 
-    ERC20Standard public kittieFightToken;        // KittieFightToken contract variable
-    ERC20Standard public superDaoToken;           // SuperDaoToken contract variable
-    YieldFarmingHelper public yieldFarmingHelper; // YieldFarmingHelper contract variable
-    YieldsCalculator public yieldsCalculator; // YieldFarmingHelper contract variable
+    ERC20Standard public kittieFightToken;              // KittieFightToken contract variable
+    ERC20Standard public superDaoToken;                 // SuperDaoToken contract variable
+    YieldFarmingHelper public yieldFarmingHelper;       // YieldFarmingHelper contract variable
+    YieldsCalculator public yieldsCalculator;           // YieldFarmingHelper contract variable
 
     uint256 constant public base18 = 1000000000000000000;
     uint256 constant public base6 = 1000000;
 
-    uint256 constant public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
+    uint256 constant public MONTH = 30 * 24 * 60 * 60;  // MONTH duration is 30 days, to keep things standard
     uint256 constant public DAY = 24 * 60 * 60; 
 
-    uint256 public totalNumberOfPairPools;      // Total number of Uniswap V2 pair pools associated with YieldFarming
+    uint256 public totalNumberOfPairPools;              // Total number of Uniswap V2 pair pools associated with YieldFarming
 
     uint256 public EARLY_MINING_BONUS;
     //uint256 public totalLockedLPinEarlyMining;
     uint256 public adjustedTotalLockedLPinEarlyMining;
 
-    uint256 public totalDepositedLP;            // Total Uniswap Liquidity tokens deposited
-    uint256 public totalLockedLP;               // Total Uniswap Liquidity tokens locked
-    uint256 public totalRewardsKTY;             // Total KittieFightToken rewards
-    uint256 public totalRewardsSDAO;            // Total SuperDaoToken rewards
-    uint256 public lockedRewardsKTY;            // KittieFightToken rewards to be distributed
-    uint256 public lockedRewardsSDAO;           // SuperDaoToken rewards to be distributed
-    uint256 public totalRewardsKTYclaimed;      // KittieFightToken rewards already claimed
-    uint256 public totalRewardsSDAOclaimed;     // SuperDaoToken rewards already claimed
+    uint256 public totalDepositedLP;                    // Total Uniswap Liquidity tokens deposited
+    uint256 public totalLockedLP;                       // Total Uniswap Liquidity tokens locked
+    uint256 public totalRewardsKTY;                     // Total KittieFightToken rewards
+    uint256 public totalRewardsSDAO;                    // Total SuperDaoToken rewards
+    uint256 public lockedRewardsKTY;                    // KittieFightToken rewards to be distributed
+    uint256 public lockedRewardsSDAO;                   // SuperDaoToken rewards to be distributed
+    uint256 public totalRewardsKTYclaimed;              // KittieFightToken rewards already claimed
+    uint256 public totalRewardsSDAOclaimed;             // SuperDaoToken rewards already claimed
 
-    uint256 public programDuration;                    // Total time duration for Yield Farming Program
-    uint256 public programStartAt;                     // Start Time of Yield Farming Program 
-    uint256 public programEndAt;                       // End Time of Yield Farming Program 
-    uint256[6] public monthsStartAt;            // an array of the start time of each month.
+    uint256 public programDuration;                     // Total time duration for Yield Farming Program
+    uint256 public programStartAt;                      // Start Time of Yield Farming Program 
+    uint256 public programEndAt;                        // End Time of Yield Farming Program 
+    uint256[6] public monthsStartAt;                    // an array of the start time of each month.
   
-    uint256[6] public KTYunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
-    uint256[6] public SDAOunlockRates;                 // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+    uint256[6] public KTYunlockRates;                   // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
+    uint256[6] public SDAOunlockRates;                  // Reward Unlock Rates of KittieFightToken for eahc of the 6 months for the entire program duration
 
     // Properties of a Staker
     struct Staker {
-        uint256[2][] totalDeposits;                     // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
+        uint256[2][] totalDeposits;                      // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
         uint256[][200] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
-        uint256[][200] adjustedBatchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool, adjusted to LP bubbling factor
-        uint256[][200] factor;                          // A 2d array showing the LP bubbling factor in each batch of each Pair Pool
+        uint256[][200] adjustedBatchLockedLPamount;      // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool, adjusted to LP bubbling factor
+        uint256[][200] factor;                           // A 2d array showing the LP bubbling factor in each batch of each Pair Pool
         uint256[][200] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
         uint256[200] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
-        uint256 rewardsKTYclaimed;                      // Total amount of KittieFightToken rewards already claimed by this Staker
-        uint256 rewardsSDAOclaimed;                     // Total amount of SuperDaoToken rewards already claimed by this Staker
-        uint256[] depositNumberForEarlyBonus;           // An array of all the deposit number eligible for early bonus for this staker
+        uint256 rewardsKTYclaimed;                       // Total amount of KittieFightToken rewards already claimed by this Staker
+        uint256 rewardsSDAOclaimed;                      // Total amount of SuperDaoToken rewards already claimed by this Staker
+        uint256[] depositNumberForEarlyBonus;            // An array of all the deposit number eligible for early bonus for this staker
     }
 
     struct pairPoolInfo {
@@ -100,10 +100,6 @@ contract YieldFarming is Owned {
 
     /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
-    // We can use constructor in place of function initialize(...) here. However, in local test, it's hard to get
-    // the address of the _liquidityToken (which is the KtyWeth pair address created from factory), although there
-    // would be no problem in Rinkeby or Mainnet. Therefore, function initialzie(...) can be replaced by a constructor
-    // in Rinkeby or Mainnet deployment (but will consume more gas in deployment).
     function initialize
     (
         bytes32[] calldata _pairPoolNames,
@@ -283,8 +279,7 @@ contract YieldFarming is Owned {
             kittieFightToken = _rewardsToken;
         } else if (forKTY == false) {
             superDaoToken = _rewardsToken;
-        }
-        
+        }   
     }
 
     /**
@@ -341,7 +336,7 @@ contract YieldFarming is Owned {
      * @dev    This function can only be carreid out by the owner of this contract.
      */
     function setRewardUnlockRate(uint256 _month, uint256 _rate, bool forKTY) public onlyOwner {
-        if (forKTY) {
+        if (forKTY == true) {
             KTYunlockRates[_month] = _rate;
         } else {
             SDAOunlockRates[_month] = _rate;
@@ -586,7 +581,6 @@ contract YieldFarming is Owned {
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
 
         for (uint256 i = _currentMonth; i < 6; i++) {
-            //monthlyDeposits[i] = monthlyDeposits[i].add(_amount);
             adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].add(_amount.mul(base6).div(_factor));
         }
 
@@ -594,7 +588,6 @@ contract YieldFarming is Owned {
         totalLockedLP = totalLockedLP.add(_amount);
 
         if (block.timestamp <= programStartAt.add(DAY.mul(21))) {
-            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.add(_amount);
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_amount.mul(base6).div(_factor));
             stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
@@ -619,7 +612,6 @@ contract YieldFarming is Owned {
             _adjustedLP = _LP.mul(base6).div(stakers[_sender].factor[_pairCode][_startBatchNumber]);
         }
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _startBatchNumber, _pairCode)) {
-            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
                                                  .sub(_adjustedLP);
         }
@@ -676,8 +668,7 @@ contract YieldFarming is Owned {
        // all batches except the last batch
         for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
             // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
-            if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode)) {
-                //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(stakers[_sender].batchLockedLPamount[_pairCode][i]);
+            if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode) == true) {
                 adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
                                                      .sub(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
             }
@@ -696,8 +687,7 @@ contract YieldFarming is Owned {
         uint256 adjustedLeftAmountLP = leftAmountLP.mul(base6).div(stakers[_sender].factor[_pairCode][_endBatchNumber]);
         // last batch
         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
-        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
-            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(leftAmountLP);
+        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode) == true) {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
         }
         if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
@@ -726,7 +716,6 @@ contract YieldFarming is Owned {
         uint256 _currentMonth = getCurrentMonth();
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
-                //monthlyDeposits[i] = monthlyDeposits[i].sub(_LP);
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(adjustedWithdrawAmount)
                                              .sub(adjustedLeftAmountLP);
@@ -776,8 +765,7 @@ contract YieldFarming is Owned {
         }
 
         // if eligible for Early Mining Bonus but unstake before program end, deduct it from totalLockedLPinEarlyMining
-        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _batchNumber, _pairCode)) {
-            //totalLockedLPinEarlyMining = totalLockedLPinEarlyMining.sub(_LP);
+        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _batchNumber, _pairCode) == true) {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLP);
         }
     }
