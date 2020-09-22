@@ -8,10 +8,11 @@ import './YieldFarmingHelper.sol';
 contract YieldsCalculator is Owned {
     using SafeMath for uint256;
 
+    /*                                               GENERAL VARIABLES                                                */
+    /* ============================================================================================================== */
+
     YieldFarming public yieldFarming;
     YieldFarmingHelper public yieldFarmingHelper;
-
-   
 
     uint256 constant public base18 = 1000000000000000000;
     uint256 constant public base6 = 1000000;
@@ -21,6 +22,9 @@ contract YieldsCalculator is Owned {
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
     uint256 constant public DAILY_PORTION_IN_MONTH = 33333;
+
+    /*                                                   INITIALIZER                                                  */
+    /* ============================================================================================================== */
 
     function initialize
     (
@@ -32,6 +36,9 @@ contract YieldsCalculator is Owned {
         setYieldFarming(_yieldFarming);
         setYieldFarmingHelper(_yieldFarmingHelper);
     }
+
+    /*                                                 SETTER FUNCTIONS                                               */
+    /* ============================================================================================================== */
 
     /**
      * @dev Set Uniswap KTY-Weth Pair contract
@@ -48,6 +55,9 @@ contract YieldsCalculator is Owned {
     function setYieldFarmingHelper(YieldFarmingHelper _yieldFarmingHelper) public onlyOwner {
         yieldFarmingHelper = _yieldFarmingHelper;
     }
+
+    /*                                                 GETTER FUNCTIONS                                               */
+    /* ============================================================================================================== */
 
     /**
      * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
@@ -294,7 +304,7 @@ contract YieldsCalculator is Owned {
         uint256 rewardSDAO;
 
         // If the batch is locked less than 30 days, rewards are 0.
-        if (!isBatchEligibleForRewards(_staker, _batchNumber, _pairCode)) {
+        if (isBatchEligibleForRewards(_staker, _batchNumber, _pairCode) == false) {
             return(0, 0);
         }
 
@@ -338,7 +348,7 @@ contract YieldsCalculator is Owned {
 
         // // allocate _amountLP per FIFO
         // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
-        if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
+        if (isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode) == false) {
             rewardKTY = 0;
             rewardSDAO = 0;
         } else {
@@ -349,7 +359,7 @@ contract YieldsCalculator is Owned {
             rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
 
             // check if early mining bonus applies here
-            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
+            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode) == true) {
                 earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(earlyBonus);
                 rewardSDAO = rewardKTY.add(earlyBonus);
@@ -372,7 +382,7 @@ contract YieldsCalculator is Owned {
 
         for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
             // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
-            if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
+            if(isBatchEligibleForRewards(_staker, i, _pairCode) == true) {
                 // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                 (,adjustedLockedLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
 
@@ -381,7 +391,7 @@ contract YieldsCalculator is Owned {
                 rewardSDAO = rewardSDAO.add(calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP));
 
                 // if eligible for early bonus, the rewards for early bonus is added for this batch
-                if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+                if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode) == true) {
                     earlyBonus = getEarlyBonus(adjustedLockedLP);
                     rewardKTY = rewardKTY.add(earlyBonus);
                     rewardSDAO = rewardSDAO.add(earlyBonus);
@@ -414,7 +424,7 @@ contract YieldsCalculator is Owned {
         uint256 earlyBonus;
 
         // add rewards for end Batch from which only part of the locked amount is to be withdrawn
-        if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
+        if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode) == true) {
             uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
             uint256 adjustedLockedLP = residual.mul(base6).div(factor);
     
@@ -423,7 +433,7 @@ contract YieldsCalculator is Owned {
             rewardKTY = calculateYieldsKTY(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
             rewardSDAO = calculateYieldsSDAO(_startingMonth, _endingMonth, _daysInStartMonth, adjustedLockedLP);
 
-            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
+            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode) == true) {
                 earlyBonus = getEarlyBonus(adjustedLockedLP);
                 rewardKTY = rewardKTY.add(earlyBonus);
                 rewardSDAO = rewardSDAO.add(earlyBonus);
