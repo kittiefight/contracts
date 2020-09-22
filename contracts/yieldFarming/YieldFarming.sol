@@ -81,11 +81,7 @@ contract YieldFarming is Owned {
 
     // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
     // month => total amount of Uniswap Liquidity tokens deposted in this month, adjusted to the bubbling factor
-    mapping(uint256 => uint256) public adjustedMonthlyDeposits;
-
-    // Total Uniswap Liquidity tokens locked from each uniswap pair pool
-    // pair code => total locked LP from the pair pool with this pair code
-    mapping(uint256 => uint256) public totalLockedLPbyPairCode;   
+    mapping(uint256 => uint256) public adjustedMonthlyDeposits;   
 
     uint256 private unlocked = 1;
 
