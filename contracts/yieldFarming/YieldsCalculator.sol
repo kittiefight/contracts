@@ -548,7 +548,7 @@ contract YieldsCalculator is Owned {
         return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
     }
 
-    function getTotalLPsLocked(address _staker) external view returns (uint256) {
+    function getTotalLPsLocked(address _staker) public view returns (uint256) {
         uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
         uint256 _totalLPs;
         uint256 _LP;
@@ -569,7 +569,11 @@ contract YieldsCalculator is Owned {
     function getAPY(address _staker) external view returns (uint256) {
         uint256 totalRewards = yieldFarming.totalRewardsKTY();
         // get total number of LPs deposited
-        uint256 totalLPs = yieldFarming.getAllDepositedLPs(_staker);
+        uint256 totalLPs = getTotalLPsLocked(_staker);
+
+        if (totalLPs == 0) {
+            return 0;
+        }
         // return APY calculated
         return totalLPs.mul(base6).mul(totalRewards).div(tokensSold).div(base18);
     }
@@ -583,14 +587,14 @@ contract YieldsCalculator is Owned {
      * @return uint256 the Reward Multiplier for SuperDaoFightToken, amplified 1000000 times to avoid float imprecision
      */
     function getRewardMultipliers(address _staker) external view returns (uint256, uint256) {
+        uint256 totalLPs = getTotalLPsLocked(_staker);
+        if (totalLPs == 0) {
+            return (0, 0);
+        }
         uint256 totalRewards = yieldFarming.totalRewardsKTY();
-        // get rewards accrued
-        (uint256 accruedRewardsKTY, uint256 accruedRewardsSDAO) = getAccruedRewards(_staker);
-        // get total number of LPs deposited
-        uint256 totalLPs = yieldFarming.getAllDepositedLPs(_staker);
-        // calculate reward multiplier
-        uint256 rewardMultiplierKTY = accruedRewardsKTY.mul(base6).mul(totalRewards).div(tokensSold).div(totalLPs);
-        uint256 rewardMultiplierSDAO = accruedRewardsSDAO.mul(base6).mul(totalRewards).div(tokensSold).div(totalLPs);
+        (uint256 rewardsKTY, uint256 rewardsSDAO) = getRewardsToClaim(_staker);
+        uint256 rewardMultiplierKTY = rewardsKTY.mul(base6).mul(totalRewards).div(tokensSold).div(totalLPs);
+        uint256 rewardMultiplierSDAO = rewardsSDAO.mul(base6).mul(totalRewards).div(tokensSold).div(totalLPs);
         return (rewardMultiplierKTY, rewardMultiplierSDAO);
     }
 
@@ -600,11 +604,19 @@ contract YieldsCalculator is Owned {
      * @return uint256 the accrued SuperDaoFightToken rewards
      */
     function getAccruedRewards(address _staker) public view returns (uint256, uint256) {
-        uint256 _accruedKTY;
-        uint256 _accruedSDAO;
         // get rewards already claimed
-        (_accruedKTY, _accruedSDAO) = yieldFarming.getTotalRewardsClaimedByStaker(_staker);
+        (uint256 _claimedKTY, uint256 _claimedSDAO) = yieldFarming.getTotalRewardsClaimedByStaker(_staker);
 
+        // get rewards earned but yet to be claimed
+        (uint256 _KTYtoClaim, uint256 _SDAOtoClaim) = getRewardsToClaim(_staker);
+
+        return (_claimedKTY.add(_KTYtoClaim), _claimedSDAO.add(_SDAOtoClaim));  
+    }
+
+    function getRewardsToClaim(address _staker) internal view returns (uint256, uint256) {
+        uint256 _KTY = 0;
+        uint256 _SDAO = 0;
+       
         // get rewards earned but yet to be claimed
         uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
         uint256 _ktyRewards;
@@ -614,11 +626,11 @@ contract YieldsCalculator is Owned {
             _LP = yieldFarming.getLockeLPbyPairCode(_staker, i);
             if (_LP > 0) {
                 (_ktyRewards, _sdaoRewards,,) = calculateRewardsByAmount(_staker, _LP, i);
-                _accruedKTY = _accruedKTY.add(_ktyRewards);
-                _accruedSDAO = _accruedSDAO.add(_sdaoRewards);
+                _KTY = _KTY.add(_ktyRewards);
+                _SDAO = _SDAO.add(_sdaoRewards);
             }
         }
 
-        return (_accruedKTY, _accruedSDAO);  
+        return (_KTY, _SDAO);  
     }
 }

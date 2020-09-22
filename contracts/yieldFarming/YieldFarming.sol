@@ -67,7 +67,7 @@ contract YieldFarming is Owned {
         uint256 rewardsKTYclaimed;                       // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                      // Total amount of SuperDaoToken rewards already claimed by this Staker
         uint256[] depositNumberForEarlyBonus;            // An array of all the deposit number eligible for early bonus for this staker
-        uint256 totalDepositedLPs;
+        //uint256 totalDepositedLPs;
     }
 
     struct pairPoolInfo {
@@ -446,11 +446,11 @@ contract YieldFarming is Owned {
         return stakers[_staker].batchLockedLPamount[_pairCode];
     }
 
-    function getAllDepositedLPs(address _staker)
-        external view returns (uint256)
-    {
-        return stakers[_staker].totalDepositedLPs;
-    }
+    // function getAllDepositedLPs(address _staker)
+    //     external view returns (uint256)
+    // {
+    //     return stakers[_staker].totalDepositedLPs;
+    // }
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
@@ -582,7 +582,7 @@ contract YieldFarming is Owned {
         stakers[_sender].factor[_pairCode].push(_factor);
         stakers[_sender].batchLockedAt[_pairCode].push(_lockedAt);
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
-        stakers[_sender].totalDepositedLPs = stakers[_sender].totalDepositedLPs.add(_amount);
+        //stakers[_sender].totalDepositedLPs = stakers[_sender].totalDepositedLPs.add(_amount);
 
         for (uint256 i = _currentMonth; i < 6; i++) {
             adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].add(_amount.mul(base6).div(_factor));
