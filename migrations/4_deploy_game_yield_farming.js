@@ -56,6 +56,10 @@ const TOTAL_SDAO_REWARDS = new BigNumber(
   web3.utils.toWei("7000000", "ether") //7,000,000 SDAO
 );
 
+const TOKENS_SOLD = new BigNumber(
+  web3.utils.toWei("1000000", "ether") //1,000,000 SDAO
+);
+
 module.exports = (deployer, network, accounts) => {
   deployer
     .deploy(YieldFarming)
@@ -353,6 +357,7 @@ module.exports = (deployer, network, accounts) => {
       );
 
       await yieldsCalculator.initialize(
+        TOKENS_SOLD,
         yieldFarming.address,
         yieldFarmingHelper.address
       )

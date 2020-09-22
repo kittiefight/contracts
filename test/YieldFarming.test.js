@@ -1208,6 +1208,20 @@ contract("YieldFarming", accounts => {
     }).should.be.rejected;
   });
 
+  it("calculates APY, reward multiplier, and accrued rewards for a user", async () => {
+    let totalLPs = await yieldsCalculator.getTotalLPsLocked(accounts[17]);
+    console.log("Total LPs locked:", weiToEther(totalLPs));
+    let APY = await yieldsCalculator.getAPY(accounts[17])
+    let rewardMultiplier = await yieldsCalculator.getRewardMultipliers(accounts[18])
+    let accruedRewards = await yieldsCalculator.getAccruedRewards(accounts[17])
+    console.log("APY:", APY.toString())
+    console.log("KTY Reward Multiplier:", rewardMultiplier[0].toString())
+    console.log("KTY Reward Multiplier:", rewardMultiplier[1].toString())
+    console.log("Accrued KTY Rewards:", weiToEther(accruedRewards[0]))
+    console.log("Accrued SDAO Rewards:", weiToEther(accruedRewards[1]))
+  })
+
+
   it("Approching the third month: Month 2", async () => {
     let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
     let advancement = timeUntilCurrentMonthEnd.toNumber();

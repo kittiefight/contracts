@@ -23,16 +23,21 @@ contract YieldsCalculator is Owned {
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
     uint256 constant public DAILY_PORTION_IN_MONTH = 33333;
 
+    // total amount of KTY sold
+    uint256 internal tokensSold;
+
     /*                                                   INITIALIZER                                                  */
     /* ============================================================================================================== */
 
     function initialize
     (
+        uint256 _tokensSold,
         YieldFarming _yieldFarming,
         YieldFarmingHelper _yieldFarmingHelper
     ) 
         public onlyOwner
     {
+        tokensSold = _tokensSold;
         setYieldFarming(_yieldFarming);
         setYieldFarmingHelper(_yieldFarmingHelper);
     }
@@ -54,6 +59,10 @@ contract YieldsCalculator is Owned {
      */
     function setYieldFarmingHelper(YieldFarmingHelper _yieldFarmingHelper) public onlyOwner {
         yieldFarmingHelper = _yieldFarmingHelper;
+    }
+
+    function setTokensSold(uint256 _tokensSold) public onlyOwner {
+        tokensSold = _tokensSold;
     }
 
     /*                                                 GETTER FUNCTIONS                                               */
@@ -515,7 +524,7 @@ contract YieldsCalculator is Owned {
     }
 
     function calculateRewardsByAmount(address _staker, uint256 _LPamount, uint256 _pairCode)
-        external view
+        public view
         returns (uint256, uint256, uint256, uint256)
     {
         // allocate _amountLP per FIFO
@@ -537,5 +546,79 @@ contract YieldsCalculator is Owned {
            
         }
         return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
+    }
+
+    function getTotalLPsLocked(address _staker) external view returns (uint256) {
+        uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
+        uint256 _totalLPs;
+        uint256 _LP;
+        for (uint256 i = 0; i < _totalPools; i++) {
+            _LP = yieldFarming.getLockeLPbyPairCode(_staker, i);
+            _totalLPs = _totalLPs.add(_LP);
+        }
+        return _totalLPs;
+    }
+
+    /**
+     * This should actually take users address as parameter to check total LP tokens locked.
+       Then it should calculate possible APY, proportional to lp tokens locked, over the 6 month 
+       program duration. Proportional meaning, total personal amount of LP tokens LOCKED relative
+       and what total percentage of the 7000,000 KTY and SDAO tokens to be earned over the next 6 months.
+     * @return uint256 APY amplified 1000000 times to avoid float imprecision
+     */
+    function getAPY(address _staker) external view returns (uint256) {
+        uint256 totalRewards = yieldFarming.totalRewardsKTY();
+        // get total number of LPs deposited
+        uint256 totalLPs = yieldFarming.getAllDepositedLPs(_staker);
+        // return APY calculated
+        return totalLPs.mul(base6).mul(totalRewards).div(tokensSold).div(base18);
+    }
+
+    /**
+     * This should actually take users address as parameter to check total LP tokens locked.
+       Its same as apy for individual but in number form, i.e Total tokens allocated in the duration
+       of the yield farming program, divided by estimated personal allocation based on How much the
+       total personal lp tokens locked
+     * @return uint256 the Reward Multiplier for KittieFightToken, amplified 1000000 times to avoid float imprecision
+     * @return uint256 the Reward Multiplier for SuperDaoFightToken, amplified 1000000 times to avoid float imprecision
+     */
+    function getRewardMultipliers(address _staker) external view returns (uint256, uint256) {
+        uint256 totalRewards = yieldFarming.totalRewardsKTY();
+        // get rewards accrued
+        (uint256 accruedRewardsKTY, uint256 accruedRewardsSDAO) = getAccruedRewards(_staker);
+        // get total number of LPs deposited
+        uint256 totalLPs = yieldFarming.getAllDepositedLPs(_staker);
+        // calculate reward multiplier
+        uint256 rewardMultiplierKTY = accruedRewardsKTY.mul(base6).mul(totalRewards).div(tokensSold).div(totalLPs);
+        uint256 rewardMultiplierSDAO = accruedRewardsSDAO.mul(base6).mul(totalRewards).div(tokensSold).div(totalLPs);
+        return (rewardMultiplierKTY, rewardMultiplierSDAO);
+    }
+
+    /**
+     * @notice This function returns already earned tokens by the _staker
+     * @return uint256 the accrued KittieFightToken rewards
+     * @return uint256 the accrued SuperDaoFightToken rewards
+     */
+    function getAccruedRewards(address _staker) public view returns (uint256, uint256) {
+        uint256 _accruedKTY;
+        uint256 _accruedSDAO;
+        // get rewards already claimed
+        (_accruedKTY, _accruedSDAO) = yieldFarming.getTotalRewardsClaimedByStaker(_staker);
+
+        // get rewards earned but yet to be claimed
+        uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
+        uint256 _ktyRewards;
+        uint256 _sdaoRewards;
+        uint256 _LP;
+        for (uint256 i = 0; i < _totalPools; i++) {
+            _LP = yieldFarming.getLockeLPbyPairCode(_staker, i);
+            if (_LP > 0) {
+                (_ktyRewards, _sdaoRewards,,) = calculateRewardsByAmount(_staker, _LP, i);
+                _accruedKTY = _accruedKTY.add(_ktyRewards);
+                _accruedSDAO = _accruedSDAO.add(_sdaoRewards);
+            }
+        }
+
+        return (_accruedKTY, _accruedSDAO);  
     }
 }

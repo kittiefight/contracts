@@ -276,29 +276,6 @@ contract YieldFarmingHelper is Owned {
     }
 
     /**
-     * @return uint256 
-     */
-    function getAPY() external view returns (uint256) {
-        // to do
-    }
-
-    /**
-     * @return uint256 the Reward Multiplier for KittieFightToken
-     * @return uint256 the Reward Multiplier for SuperDaoFightToken
-     */
-    function getRewardMultipliers() external view returns (uint256, uint256) {
-        // to do
-    }
-
-    /**
-     * @return uint256 the accrued KittieFightToken rewards
-     * @return uint256 the accrued SuperDaoFightToken rewards
-     */
-    function getAccruedRewards() external view returns (uint256, uint256) {
-        // to do
-    }
-
-    /**
      * @return uint256 the total amount of KittieFightToken rewards
      * @return uint256 the total amount of SuperDaoFightToken rewards
      */
