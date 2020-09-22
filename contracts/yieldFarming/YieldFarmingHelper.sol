@@ -11,6 +11,9 @@ import "../interfaces/ERC20Standard.sol";
 contract YieldFarmingHelper is Owned {
     using SafeMath for uint256;
 
+    /*                                               GENERAL VARIABLES                                                */
+    /* ============================================================================================================== */
+
     YieldFarming public yieldFarming;
     YieldsCalculator public yieldsCalculator;
 
@@ -26,6 +29,9 @@ contract YieldFarmingHelper is Owned {
 
     uint256 constant public MONTH = 30 * 24 * 60 * 60; // MONTH duration is 30 days, to keep things standard
     uint256 constant public DAY = 24 * 60 * 60;
+
+    /*                                                   INITIALIZER                                                  */
+    /* ============================================================================================================== */
 
     function initialize
     (
@@ -45,6 +51,9 @@ contract YieldFarmingHelper is Owned {
         setDaiWethPair(_daiWethPair);
         setTokenAddress(_kittieFightToken, _weth, _dai);
     }
+
+    /*                                                 SETTER FUNCTIONS                                               */
+    /* ============================================================================================================== */
 
     /**
      * @dev Set Uniswap KTY-Weth Pair contract
@@ -88,7 +97,9 @@ contract YieldFarmingHelper is Owned {
         daiAddr = _dai;
     }
 
-    //===================== Getters ===================
+    /*                                                 GETTER FUNCTIONS                                               */
+    /* ============================================================================================================== */
+
     // Getters YieldFarming
     function getLPinfo(uint256 _pairCode)
         public view returns (uint256 reserveKTY, uint256 totalSupplyLP) 
