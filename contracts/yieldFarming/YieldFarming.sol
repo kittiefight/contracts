@@ -124,11 +124,11 @@ contract YieldFarming is Owned {
         setYieldsCalculator(_yieldsCalculator);
 
         // Set total rewards in KittieFightToken and SuperDaoToken
-        totalRewardsKTY = 7000000 * base18;
-        totalRewardsSDAO = 7000000 * base18;
+        totalRewardsKTY = 70000 * base18; // 7000000 * base18;
+        totalRewardsSDAO = 70000 * base18; //7000000 * base18;
 
         // Set early mining bonus
-        EARLY_MINING_BONUS = 700000 * base18;
+        EARLY_MINING_BONUS = 7000 * base18; //700000 * base18;
 
         // Set reward unlock rate for the program duration
         for (uint256 j = 0; j < 6; j++) {
@@ -314,15 +314,15 @@ contract YieldFarming is Owned {
         return true;
     }
 
-    /**
-     * @dev This function transfers other tokens erroneously tranferred to this contract back to their original owner
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
-    function returnTokens(address _token, uint256 _amount, address _tokenOwner) external onlyOwner {
-        uint256 balance = ERC20Standard(_token).balanceOf(address(this));
-        require(_amount <= balance, "Exceeds balance");
-        require(ERC20Standard(_token).transfer(_tokenOwner, balance), "Fail to transfer tokens");
-    }
+    // /**
+    //  * @dev This function transfers other tokens erroneously tranferred to this contract back to their original owner
+    //  * @dev This function can only be carreid out by the owner of this contract.
+    //  */
+    // function returnTokens(address _token, uint256 _amount, address _tokenOwner) external onlyOwner {
+    //     uint256 balance = ERC20Standard(_token).balanceOf(address(this));
+    //     require(_amount <= balance, "Exceeds balance");
+    //     require(ERC20Standard(_token).transfer(_tokenOwner, balance), "Fail to transfer tokens");
+    // }
 
     /**
      * @notice Modify Reward Unlock Rate for KittieFightToken and SuperDaoToken for any month (from 0 to 5)
