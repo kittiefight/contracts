@@ -30,8 +30,8 @@ contract YieldFarming is Owned {
     uint256 constant public base18 = 1000000000000000000;
     uint256 constant public base6 = 1000000;
 
-    uint256 constant public MONTH = 30 * 24 * 60 * 60;  // MONTH duration is 30 days, to keep things standard
-    uint256 constant public DAY = 24 * 60 * 60; 
+    uint256 constant public MONTH = 24 * 60 * 60;// 30 * 24 * 60 * 60;  // MONTH duration is 30 days, to keep things standard
+    uint256 constant public DAY = 48 * 60;// 24 * 60 * 60; 
 
     uint256 public totalNumberOfPairPools;              // Total number of Uniswap V2 pair pools associated with YieldFarming
 

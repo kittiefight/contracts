@@ -589,7 +589,7 @@ contract("YieldFarming", accounts => {
     let timeUntilPayDay = payDay[1];
     console.log("Time until Pay Day:", timeUntilPayDay.toString());
 
-    let advancement = timeUntilPayDay.toNumber() + 3 * 60 * 60;
+    let advancement = timeUntilPayDay.toNumber() + 3 * 60; //3 * 60 * 60;
     await advanceTimeAndBlock(advancement);
 
     payDay = await yieldFarmingHelper.isPayDay();
@@ -1110,7 +1110,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
-    let advancement = 2 * 24 * 60 * 60; // 2 days
+    let advancement = 2 * 48 * 60 //2 * 24 * 60 * 60; // 2 days
     await advanceTimeAndBlock(advancement);
 
     let deposit_LP_amount = new BigNumber(
@@ -1729,7 +1729,7 @@ contract("YieldFarming", accounts => {
   it("Approching the fourth month: Month 3", async () => {
     let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
 
-    let advancement = timeUntilCurrentMonthEnd.toNumber() + 2 * 24 * 60 * 60;
+    let advancement = timeUntilCurrentMonthEnd.toNumber() + 3 * 60//2 * 24 * 60 * 60;
     await advanceTimeAndBlock(advancement);
     console.log("The Fourth Month starts: Month 3...");
   });
@@ -1817,7 +1817,7 @@ contract("YieldFarming", accounts => {
 
   // ==============================  FIFTH MONTH: MONTH 4  ==============================
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
-    let advancement = 2 * 24 * 60 * 60; // 2 days
+    let advancement = 3 * 60//2 * 24 * 60 * 60; // 2 days
     await advanceTimeAndBlock(advancement);
 
     console.log(
