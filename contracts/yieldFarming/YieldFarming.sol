@@ -43,8 +43,6 @@ contract YieldFarming is Owned {
     uint256 public totalLockedLP;                       // Total Uniswap Liquidity tokens locked
     uint256 public totalRewardsKTY;                     // Total KittieFightToken rewards
     uint256 public totalRewardsSDAO;                    // Total SuperDaoToken rewards
-    uint256 public lockedRewardsKTY;                    // KittieFightToken rewards to be distributed
-    uint256 public lockedRewardsSDAO;                   // SuperDaoToken rewards to be distributed
     uint256 public totalRewardsKTYclaimed;              // KittieFightToken rewards already claimed
     uint256 public totalRewardsSDAOclaimed;             // SuperDaoToken rewards already claimed
 
@@ -108,7 +106,7 @@ contract YieldFarming is Owned {
         YieldsCalculator _yieldsCalculator,
         uint256[6] calldata _ktyUnlockRates,
         uint256[6] calldata _sdaoUnlockRates,
-        uint256 _programStartTime
+        uint256 _timeUntilStart
     )
         external onlyOwner
     {
@@ -138,7 +136,7 @@ contract YieldFarming is Owned {
         }
 
         // Set program duration (for a period of 6 months). Month starts at time of program deployment/initialization
-        setProgramDuration(6, _programStartTime);
+        setProgramDuration(6, block.timestamp.add(_timeUntilStart));
     }
 
     /*                                                      EVENTS                                                    */

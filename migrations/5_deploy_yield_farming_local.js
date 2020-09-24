@@ -338,9 +338,6 @@ module.exports = (deployer, network, accounts) => {
         165000, 165000, 165000, 165000, 165000, 175000
       ]
 
-      const programStartTime = Math.floor(new Date().getTime() / 1000) + 10
-      console.log("Program start time:", programStartTime)
-
       await yieldFarming.initialize(
         bytesNames,
         pairPoolAddrs,
@@ -351,7 +348,7 @@ module.exports = (deployer, network, accounts) => {
         yieldsCalculator.address,
         ktyUnlockRates,
         sdaoUnlockRates,
-        programStartTime
+        1200
       );
 
       await yieldFarmingHelper.initialize(
@@ -360,6 +357,7 @@ module.exports = (deployer, network, accounts) => {
         ktyWethPair.address,
         daiWethPair.address,
         kittieFightToken.address,
+        superDaoToken.address,
         weth.address,
         dai.address
       );

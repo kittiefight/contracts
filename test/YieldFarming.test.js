@@ -370,6 +370,8 @@ contract("YieldFarming", accounts => {
   });
 
   it("gets program duration", async () => {
+    await advanceTimeAndBlock(1250);
+    
     let programDuration = await yieldFarmingHelper.getProgramDuration();
     // console.log(programDuration)
     let entireProgramDuration = programDuration.entireProgramDuration;
@@ -393,13 +395,7 @@ contract("YieldFarming", accounts => {
       console.log("Month", i, "Start Time:", monthStartTime.toString());
     }
     console.log("===============================================\n");
-
-    let month0start = await yieldFarming.getMonthStartAt(0)
-    if (Math.floor(new Date().getTime() / 1000) <= month0start) {
-      let advancement = month0start - Math.floor(new Date().getTime() / 1000) + 600
-      await advanceTimeAndBlock(advancement);
-    }
-
+    
     let isProgramActive = await yieldFarmingHelper.isProgramActive()
     console.log("Is program active?", isProgramActive)
   });
@@ -546,6 +542,16 @@ contract("YieldFarming", accounts => {
     kittieFightToken.transfer(yieldFarming.address, KTYrewards_month_0);
     superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_0);
   });
+
+  it("shows locked and unloced rewards", async () => {
+    let lockedRewards = await yieldFarmingHelper.getLockedRewards()
+    console.log("locked KTY rewards:", weiToEther(lockedRewards[0]))
+    console.log("locked SDAO rewards:", weiToEther(lockedRewards[1]))
+
+    let unLockedRewards = await yieldFarmingHelper. getUnlockedRewards()
+    console.log("unlocked KTY rewards:", weiToEther(unLockedRewards[0]))
+    console.log("unlocked SDAO rewards:", weiToEther(unLockedRewards[1]))
+  })
 
   it("user cannot withdraw if it is not on pay day", async () => {
     let payDay = await yieldFarmingHelper.isPayDay();

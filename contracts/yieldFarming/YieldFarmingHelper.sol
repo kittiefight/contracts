@@ -21,6 +21,7 @@ contract YieldFarmingHelper is Owned {
     IUniswapV2Pair public daiWethPair;
 
     address public kittieFightTokenAddr;
+    address public superDaoTokenAddr;
     address public wethAddr;
     address public daiAddr;
 
@@ -40,6 +41,7 @@ contract YieldFarmingHelper is Owned {
         address _ktyWethPair,
         IUniswapV2Pair _daiWethPair,
         address _kittieFightToken,
+        address _superDaoToken,
         address _weth,
         address _dai
     ) 
@@ -49,7 +51,10 @@ contract YieldFarmingHelper is Owned {
         setYieldsCalculator(_yieldsCalculator);
         setKtyWethPair(_ktyWethPair);
         setDaiWethPair(_daiWethPair);
-        setTokenAddress(_kittieFightToken, _weth, _dai);
+        setRwardsTokenAddress(_kittieFightToken, true);
+        setRwardsTokenAddress(_superDaoToken, false);
+        setWethAddress(_weth);
+        setDaiAddress(_dai);
     }
 
     /*                                                 SETTER FUNCTIONS                                               */
@@ -91,9 +96,20 @@ contract YieldFarmingHelper is Owned {
      * @dev Set tokens address
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setTokenAddress(address _kittieFightToken, address _weth, address _dai) public onlyOwner {
-        kittieFightTokenAddr = _kittieFightToken;
+    function setRwardsTokenAddress(address _rewardToken, bool forKTY) public onlyOwner {
+        if (forKTY == true) {
+            kittieFightTokenAddr = _rewardToken;
+        } else if (forKTY == false) {
+            superDaoTokenAddr = _rewardToken;
+        }
+        
+    }
+
+    function setWethAddress(address _weth) public onlyOwner {
         wethAddr = _weth;
+    }
+
+    function setDaiAddress(address _dai) public onlyOwner {
         daiAddr = _dai;
     }
 
@@ -298,8 +314,10 @@ contract YieldFarmingHelper is Owned {
      * @return uint256 the total amount of SuperDaoFightToken rewards yet to be distributed
      */
     function getLockedRewards() public view returns (uint256, uint256) {
-        uint256 lockedKTY = yieldFarming.lockedRewardsKTY();
-        uint256 lockedSDAO = yieldFarming.lockedRewardsSDAO();
+        (uint256 totalRewardsKTY, uint256 totalRewardsSDAO) = getTotalRewards();
+        (uint256 unlockedKTY, uint256 unlockedSDAO) = getUnlockedRewards();
+        uint256 lockedKTY = totalRewardsKTY.sub(unlockedKTY);
+        uint256 lockedSDAO = totalRewardsSDAO.sub(unlockedSDAO);
         return (lockedKTY, lockedSDAO);
     }
 
@@ -307,11 +325,9 @@ contract YieldFarmingHelper is Owned {
      * @return uint256 the total amount of KittieFightToken rewards already distributed
      * @return uint256 the total amount of SuperDaoFightToken rewards already distributed
      */
-    function getUnlockedRewards() external view returns (uint256, uint256) {
-        (uint256 totalRewardsKTY, uint256 totalRewardsSDAO) = getTotalRewards();
-        (uint256 lockedRewardsKTY, uint256 lockedRewardsSDAO) = getLockedRewards();
-        uint256 unlockedKTY = totalRewardsKTY.sub(lockedRewardsKTY);
-        uint256 unlockedSDAO = totalRewardsSDAO.sub(lockedRewardsSDAO);
+    function getUnlockedRewards() public view returns (uint256, uint256) {
+        uint256 unlockedKTY = ERC20Standard(kittieFightTokenAddr).balanceOf(address(yieldFarming));
+        uint256 unlockedSDAO = ERC20Standard(superDaoTokenAddr).balanceOf(address(yieldFarming));
         return (unlockedKTY, unlockedSDAO);
     }
 

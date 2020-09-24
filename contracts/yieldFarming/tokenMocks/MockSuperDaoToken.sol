@@ -8,7 +8,9 @@ import "../../libs/SafeMath.sol";
 contract MockSuperDaoToken is ERC20Basic, ERC20Advanced {
   using SafeMath for uint256;
 
-  string constant public TOKEN_NAME = "SuperDaoToken";
+  string public constant symbol = "SDAO";
+  string public constant name = "SuperDao";
+  uint8 public constant decimals = 18;
 
   mapping (address => uint256) private _balances;
   mapping (address => mapping (address => uint256)) private _allowed;
