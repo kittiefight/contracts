@@ -396,9 +396,12 @@ contract("YieldFarming", accounts => {
 
     let month0start = await yieldFarming.getMonthStartAt(0)
     if (Math.floor(new Date().getTime() / 1000) <= month0start) {
-      let advancement = month0start - Math.floor(new Date().getTime() / 1000) + 300
+      let advancement = month0start - Math.floor(new Date().getTime() / 1000) + 600
       await advanceTimeAndBlock(advancement);
     }
+
+    let isProgramActive = await yieldFarmingHelper.isProgramActive()
+    console.log("Is program active?", isProgramActive)
   });
 
   it("gets current month", async () => {
@@ -2666,14 +2669,14 @@ contract("YieldFarming", accounts => {
       let KTY_leftover = new BigNumber(
         web3.utils.toWei(weiToEther(KTY_bal), "ether")
       );
-      await yieldFarming.transferUnclaimedRewards(KTY_leftover, accounts[0], true).should.be.fulfilled;
+      await yieldFarming.returnTokens(kittieFightToken.address, KTY_leftover, accounts[0]).should.be.fulfilled;
     }
 
     if (Number(weiToEther(SDAO_bal)) > 0) {
       let SDAO_leftover = new BigNumber(
         web3.utils.toWei(weiToEther(SDAO_bal), "ether")
       );
-      await yieldFarming.transferUnclaimedRewards(SDAO_leftover, accounts[0], false).should.be.fulfilled;
+      await yieldFarming.returnTokens(superDaoToken.address, SDAO_leftover, accounts[0]).should.be.fulfilled;
     }
 
     

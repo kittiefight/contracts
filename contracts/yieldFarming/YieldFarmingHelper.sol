@@ -393,6 +393,10 @@ contract YieldFarmingHelper is Owned {
                .div(base18).div(base6);
     }
 
+    function isProgramActive() external view returns (bool) {
+        return block.timestamp >= yieldFarming.programStartAt() && block.timestamp <= yieldFarming.programEndAt();
+    }
+
     // Getters Uniswap
 
 

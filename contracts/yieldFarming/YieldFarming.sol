@@ -179,7 +179,7 @@ contract YieldFarming is Owned {
      *         from 0 (for the first deposit), and increment by 1 for subsequent batches each.
      */
     function deposit(uint256 _amountLP, uint256 _pairCode) external lock returns (bool) {
-        require(block.timestamp <= programEndAt, "Program has ended");
+        require(block.timestamp >= programStartAt && block.timestamp <= programEndAt, "Program is not active");
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
 
@@ -296,24 +296,24 @@ contract YieldFarming is Owned {
         yieldsCalculator = _yieldsCalculator;
     }
 
-    /**
-     * @notice This function transfers unclaimed KittieFightToken or SuperDaoToken rewards to a new address
-     * @param _amount uint256 amount of rewards to be transferred
-     * @param _addr uint256 account address to which the unclaimed rewards to be transferred
-     * @param forKTY bool true if this transfer is for KittieFightToken, false if it is for SuperDaoToken
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
+    // /**
+    //  * @notice This function transfers unclaimed KittieFightToken or SuperDaoToken rewards to a new address
+    //  * @param _amount uint256 amount of rewards to be transferred
+    //  * @param _addr uint256 account address to which the unclaimed rewards to be transferred
+    //  * @param forKTY bool true if this transfer is for KittieFightToken, false if it is for SuperDaoToken
+    //  * @dev This function can only be carreid out by the owner of this contract.
+    //  */
 
-    function transferUnclaimedRewards(uint256 _amount, address _addr, bool forKTY) external onlyOwner returns (bool) {
-        require(_amount > 0, "Cannot transfer 0 tokens");
-        if (forKTY == true) {
-            require(kittieFightToken.transfer(_addr, _amount), "Fail to transfer KTY");
-        } else if (forKTY == false) {
-            require(superDaoToken.transfer(_addr, _amount), "Fail to transfer SDAO");
-        }
+    // function transferUnclaimedRewards(uint256 _amount, address _addr, bool forKTY) external onlyOwner returns (bool) {
+    //     require(_amount > 0, "Cannot transfer 0 tokens");
+    //     if (forKTY == true) {
+    //         require(kittieFightToken.transfer(_addr, _amount), "Fail to transfer KTY");
+    //     } else if (forKTY == false) {
+    //         require(superDaoToken.transfer(_addr, _amount), "Fail to transfer SDAO");
+    //     }
         
-        return true;
-    }
+    //     return true;
+    // }
 
     // /**
     //  * @dev This function transfers other tokens erroneously tranferred to this contract back to their original owner
@@ -322,8 +322,20 @@ contract YieldFarming is Owned {
     // function returnTokens(address _token, uint256 _amount, address _tokenOwner) external onlyOwner {
     //     uint256 balance = ERC20Standard(_token).balanceOf(address(this));
     //     require(_amount <= balance, "Exceeds balance");
-    //     require(ERC20Standard(_token).transfer(_tokenOwner, balance), "Fail to transfer tokens");
+    //     require(ERC20Standard(_token).transfer(_tokenOwner, _amount), "Fail to transfer tokens");
     // }
+
+    /**
+     * @notice This function transfers tokens out of this contract to a new address
+     * @dev This function is used to transfer unclaimed KittieFightToken or SuperDaoToken Rewards to a new address,
+     *      or transfer other tokens erroneously tranferred to this contract back to their original owner
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function returnTokens(address _token, uint256 _amount, address _newAddress) external onlyOwner {
+        uint256 balance = ERC20Standard(_token).balanceOf(address(this));
+        require(_amount <= balance, "Exceeds balance");
+        require(ERC20Standard(_token).transfer(_newAddress, _amount), "Fail to transfer tokens");
+    }
 
     /**
      * @notice Modify Reward Unlock Rate for KittieFightToken and SuperDaoToken for any month (from 0 to 5)
@@ -354,7 +366,7 @@ contract YieldFarming is Owned {
 
         monthsStartAt[0] = _programStartAt;
         for (uint256 i = 1; i < _totalNumberOfMonths; i++) {
-            monthsStartAt[i] = monthsStartAt[0].add(MONTH.mul(i)); 
+            monthsStartAt[i] = monthsStartAt[i.sub(1)].add(MONTH); 
         }
     }
 
