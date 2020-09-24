@@ -1202,6 +1202,14 @@ contract("YieldFarming", accounts => {
     console.log("===============================\n");
   });
 
+  it("gets a user's wallet balance", async () => {
+    let balance;
+    for (let i = 1; i < 19; i++) {
+      balance = await yieldFarmingHelper.getWalletBalance(accounts[i], 0)
+      console.log("User", i, "balance in pair pool", pairCodeList[0], "is:", weiToEther(balance))
+    }
+  })
+
   it("user cannot withdraw if it is not on pay day", async () => {
     let payDay = await yieldFarmingHelper.isPayDay();
     console.log("Is Pay Day?", payDay[0]);

@@ -409,7 +409,7 @@ contract YieldFarmingHelper is Owned {
                .div(base18).div(base6);
     }
 
-    function getWalletBalance(uint256 _pairCode, address _staker) external view returns (uint256) {
+    function getWalletBalance(address _staker, uint256 _pairCode) external view returns (uint256) {
         (,address pairPoolAddress,) = yieldFarming.getPairPool(_pairCode);
         return IUniswapV2Pair(pairPoolAddress).balanceOf(_staker);
     }
