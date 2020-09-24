@@ -7,7 +7,7 @@ require("chai")
 
 //ARTIFACTS
 const YieldFarming = artifacts.require("YieldFarming");
-const SuperDaoToken = artifacts.require("MockERC20Token");
+const SuperDaoToken = artifacts.require("MockSuperDaoToken");
 const KittieFightToken = artifacts.require("KittieFightToken");
 const Factory = artifacts.require("UniswapV2Factory");
 const WETH = artifacts.require("WETH9");
