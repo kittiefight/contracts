@@ -107,7 +107,8 @@ contract YieldFarming is Owned {
         YieldFarmingHelper _yieldFarmingHelper,
         YieldsCalculator _yieldsCalculator,
         uint256[6] calldata _ktyUnlockRates,
-        uint256[6] calldata _sdaoUnlockRates
+        uint256[6] calldata _sdaoUnlockRates,
+        uint256 _programStartTime
     )
         external onlyOwner
     {
@@ -137,7 +138,7 @@ contract YieldFarming is Owned {
         }
 
         // Set program duration (for a period of 6 months). Month starts at time of program deployment/initialization
-        setProgramDuration(6, block.timestamp);
+        setProgramDuration(6, _programStartTime);
     }
 
     /*                                                      EVENTS                                                    */

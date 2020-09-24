@@ -357,6 +357,55 @@ contract("YieldFarming", accounts => {
     );
   });
 
+  it("gets total early mining bonus", async () => {
+    let totalEarlyMiningBonus = await yieldFarmingHelper.getTotalEarlyMiningBonus();
+    console.log(
+      "Early Mining Bonus KittieFightToken:",
+      weiToEther(totalEarlyMiningBonus[0])
+    );
+    console.log(
+      "Early Mining Bonus SuperDao token:",
+      weiToEther(totalEarlyMiningBonus[1])
+    );
+  });
+
+  it("gets program duration", async () => {
+    let programDuration = await yieldFarmingHelper.getProgramDuration();
+    // console.log(programDuration)
+    let entireProgramDuration = programDuration.entireProgramDuration;
+    let monthDuration = programDuration.monthDuration;
+    let startMonth = programDuration.startMonth;
+    let endMonth = programDuration.endMonth;
+    let currentMonth = programDuration.currentMonth;
+    let daysLeft = programDuration.daysLeft;
+    let elapsedMonths = programDuration.elapsedMonths;
+    let monthStartTime;
+    console.log(`\n======== Program Duration and Months ======== `);
+    console.log("Entire program duration:", entireProgramDuration.toString());
+    console.log("Month duration:", monthDuration.toString());
+    console.log("Start Month:", startMonth.toString());
+    console.log("End Month:", endMonth.toString());
+    console.log("Current Month:", currentMonth.toString());
+    console.log("Days Left:", daysLeft.toString());
+    console.log("Elapsed Months:", elapsedMonths.toString());
+    for (let i = 0; i < 6; i++) {
+      monthStartTime = await yieldFarming.getMonthStartAt(i)
+      console.log("Month", i, "Start Time:", monthStartTime.toString());
+    }
+    console.log("===============================================\n");
+
+    let month0start = await yieldFarming.getMonthStartAt(0)
+    if (Math.floor(new Date().getTime() / 1000) <= month0start) {
+      let advancement = month0start - Math.floor(new Date().getTime() / 1000) + 300
+      await advanceTimeAndBlock(advancement);
+    }
+  });
+
+  it("gets current month", async () => {
+    let currentMonth = await yieldFarming.getCurrentMonth();
+    console.log("Current Month:", currentMonth.toString());
+  });
+
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     console.log(
       "\n====================== FIRST MONTH: MONTH 0 ======================\n"
@@ -482,49 +531,6 @@ contract("YieldFarming", accounts => {
       console.log("****************************\n");
     }
     console.log("===============================\n");
-  });
-
-  it("gets program duration", async () => {
-    let programDuration = await yieldFarmingHelper.getProgramDuration();
-    // console.log(programDuration)
-    let entireProgramDuration = programDuration.entireProgramDuration;
-    let monthDuration = programDuration.monthDuration;
-    let startMonth = programDuration.startMonth;
-    let endMonth = programDuration.endMonth;
-    let currentMonth = programDuration.currentMonth;
-    let daysLeft = programDuration.daysLeft;
-    let elapsedMonths = programDuration.elapsedMonths;
-    let monthStartTime;
-    console.log(`\n======== Program Duration and Months ======== `);
-    console.log("Entire program duration:", entireProgramDuration.toString());
-    console.log("Month duration:", monthDuration.toString());
-    console.log("Start Month:", startMonth.toString());
-    console.log("End Month:", endMonth.toString());
-    console.log("Current Month:", currentMonth.toString());
-    console.log("Days Left:", daysLeft.toString());
-    console.log("Elapsed Months:", elapsedMonths.toString());
-    for (let i = 0; i < 6; i++) {
-      monthStartTime = await yieldFarming.getMonthStartAt(i)
-      console.log("Month", i, "Start Time:", monthStartTime.toString());
-    }
-    console.log("===============================================\n");
-  });
-
-  it("gets current month", async () => {
-    let currentMonth = await yieldFarming.getCurrentMonth();
-    console.log("Current Month:", currentMonth.toString());
-  });
-
-  it("gets total early mining bonus", async () => {
-    let totalEarlyMiningBonus = await yieldFarmingHelper.getTotalEarlyMiningBonus();
-    console.log(
-      "Early Mining Bonus KittieFightToken:",
-      weiToEther(totalEarlyMiningBonus[0])
-    );
-    console.log(
-      "Early Mining Bonus SuperDao token:",
-      weiToEther(totalEarlyMiningBonus[1])
-    );
   });
 
   it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
