@@ -283,7 +283,7 @@ module.exports = (deployer, network, accounts) => {
   //     console.log("yieldFarmingHelper:", yieldFarmingHelper.address);
 
   //     yieldsCalculator = await YieldsCalculator.deployed();
-  //     console.log("yieldFarmingHelper:", yieldsCalculator.address);
+  //     console.log("yieldsCalculator:", yieldsCalculator.address);
 
   //     console.log("\nInitializing contracts...");
   //     const pairPoolNames = [

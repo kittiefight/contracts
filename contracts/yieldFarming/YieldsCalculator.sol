@@ -219,7 +219,7 @@ contract YieldsCalculator is Owned {
     }
 
     function calculateYieldsKTY(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
-        public view
+        internal view
         returns (uint256 yieldsKTY)
     {
         uint256 yieldsKTY_part_1 = calculateYieldsKTY_part_1(startMonth, daysInStartMonth, lockedLP);
@@ -259,7 +259,7 @@ contract YieldsCalculator is Owned {
     }
 
     function calculateYieldsSDAO(uint256 startMonth, uint256 endMonth, uint256 daysInStartMonth, uint256 lockedLP)
-        public view
+        internal view
         returns (uint256 yieldsSDAO)
     {
         uint256 yieldsSDAO_part_1 = calculateYieldsSDAO_part_1(startMonth, daysInStartMonth, lockedLP);
@@ -345,7 +345,7 @@ contract YieldsCalculator is Owned {
     function calculateRewardsByAmountCase1
     (address _staker, uint256 _pairCode, uint256 _amountLP,
      uint256 startBatchNumber)
-        public view
+        internal view
         returns (uint256 rewardKTY, uint256 rewardSDAO)
     {
         
@@ -379,7 +379,7 @@ contract YieldsCalculator is Owned {
     function calculateRewardsByAmountCase2
     (address _staker, uint256 _pairCode,
      uint256 startBatchNumber, uint256 endBatchNumber)
-        public view
+        internal view
         returns (uint256 rewardKTY, uint256 rewardSDAO)
     {
         
@@ -423,7 +423,7 @@ contract YieldsCalculator is Owned {
      */
     function calculateRewardsByAmountResidual
     (address _staker, uint256 _pairCode, uint256 endBatchNumber, uint256 residual)
-        public view
+        internal view
         returns (uint256 rewardKTY, uint256 rewardSDAO)
     {
         
