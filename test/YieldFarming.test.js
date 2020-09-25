@@ -370,7 +370,7 @@ contract("YieldFarming", accounts => {
   });
 
   it("gets program duration", async () => {
-    await advanceTimeAndBlock(1200);
+   // await advanceTimeAndBlock(1200);
     let programDuration = await yieldFarmingHelper.getProgramDuration();
     // console.log(programDuration)
     let entireProgramDuration = programDuration.entireProgramDuration;
