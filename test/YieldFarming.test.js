@@ -404,6 +404,19 @@ contract("YieldFarming", accounts => {
     console.log("Current Month:", currentMonth.toString());
   });
 
+  it("estimates rewards for a user", async () => {
+    let LPs = ["10", "30", "60"]
+    let _LP, estimatedRewards
+    let pairCode = 0
+    for (let i=0; i<3; i++) {
+      _LP = new BigNumber(web3.utils.toWei(LPs[i], "ether"));
+      estimatedRewards = await yieldsCalculator.estimateRewards(_LP, pairCode)
+      console.log("LP input:", LPs[i])
+      console.log("Estimated KTY rewards:", weiToEther(estimatedRewards[0]))
+      console.log("Estimated SDAO rewards:", weiToEther(estimatedRewards[1]))
+    }
+  })
+
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     console.log(
       "\n====================== FIRST MONTH: MONTH 0 ======================\n"
@@ -1122,6 +1135,19 @@ contract("YieldFarming", accounts => {
       weiToEther(totalRewardsClaimed[1])
     );
   });
+
+  it("estimates rewards for a user", async () => {
+    let LPs = ["10", "30", "60"]
+    let _LP, estimatedRewards
+    let pairCode = 0
+    for (let i=0; i<3; i++) {
+      _LP = new BigNumber(web3.utils.toWei(LPs[i], "ether"));
+      estimatedRewards = await yieldsCalculator.estimateRewards(_LP, pairCode)
+      console.log("LP input:", LPs[i])
+      console.log("Estimated KTY rewards:", weiToEther(estimatedRewards[0]))
+      console.log("Estimated SDAO rewards:", weiToEther(estimatedRewards[1]))
+    }
+  })
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     let advancement = 2 * 48 * 60 //2 * 24 * 60 * 60; // 2 days

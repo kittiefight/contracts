@@ -294,35 +294,6 @@ contract YieldFarming is Owned {
         yieldsCalculator = _yieldsCalculator;
     }
 
-    // /**
-    //  * @notice This function transfers unclaimed KittieFightToken or SuperDaoToken rewards to a new address
-    //  * @param _amount uint256 amount of rewards to be transferred
-    //  * @param _addr uint256 account address to which the unclaimed rewards to be transferred
-    //  * @param forKTY bool true if this transfer is for KittieFightToken, false if it is for SuperDaoToken
-    //  * @dev This function can only be carreid out by the owner of this contract.
-    //  */
-
-    // function transferUnclaimedRewards(uint256 _amount, address _addr, bool forKTY) external onlyOwner returns (bool) {
-    //     require(_amount > 0, "Cannot transfer 0 tokens");
-    //     if (forKTY == true) {
-    //         require(kittieFightToken.transfer(_addr, _amount), "Fail to transfer KTY");
-    //     } else if (forKTY == false) {
-    //         require(superDaoToken.transfer(_addr, _amount), "Fail to transfer SDAO");
-    //     }
-        
-    //     return true;
-    // }
-
-    // /**
-    //  * @dev This function transfers other tokens erroneously tranferred to this contract back to their original owner
-    //  * @dev This function can only be carreid out by the owner of this contract.
-    //  */
-    // function returnTokens(address _token, uint256 _amount, address _tokenOwner) external onlyOwner {
-    //     uint256 balance = ERC20Standard(_token).balanceOf(address(this));
-    //     require(_amount <= balance, "Exceeds balance");
-    //     require(ERC20Standard(_token).transfer(_tokenOwner, _amount), "Fail to transfer tokens");
-    // }
-
     /**
      * @notice This function transfers tokens out of this contract to a new address
      * @dev This function is used to transfer unclaimed KittieFightToken or SuperDaoToken Rewards to a new address,
