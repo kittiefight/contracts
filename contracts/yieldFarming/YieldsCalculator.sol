@@ -521,7 +521,7 @@ contract YieldsCalculator is Owned {
         external view
         returns (uint256, uint256)
     {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
         (uint256 _rewardKTY, uint256 _rewardSDAO) = calculateRewardsByBatchNumber(_staker, _batchNumber, _pairCode);
         return (_rewardKTY, _rewardSDAO);
     }
@@ -556,7 +556,7 @@ contract YieldsCalculator is Owned {
         uint256 _totalLPs;
         uint256 _LP;
         for (uint256 i = 0; i < _totalPools; i++) {
-            _LP = yieldFarming.getLockeLPbyPairCode(_staker, i);
+            _LP = yieldFarming.getLockedLPbyPairCode(_staker, i);
             _totalLPs = _totalLPs.add(_LP);
         }
         return _totalLPs;
@@ -626,7 +626,7 @@ contract YieldsCalculator is Owned {
         uint256 _sdaoRewards;
         uint256 _LP;
         for (uint256 i = 0; i < _totalPools; i++) {
-            _LP = yieldFarming.getLockeLPbyPairCode(_staker, i);
+            _LP = yieldFarming.getLockedLPbyPairCode(_staker, i);
             if (_LP > 0) {
                 (_ktyRewards, _sdaoRewards,,) = calculateRewardsByAmount(_staker, _LP, i);
                 _KTY = _KTY.add(_ktyRewards);

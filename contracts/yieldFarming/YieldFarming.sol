@@ -406,7 +406,7 @@ contract YieldFarming is Owned {
      * @return pair pool code and batch number associated with this _depositNumber for the _staker
      */
 
-    function getBathcNumberAndPairCode(address _staker, uint256 _depositNumber)
+    function getBatchNumberAndPairCode(address _staker, uint256 _depositNumber)
         public view returns (uint256, uint256)
     {
         uint256 _pairCode = stakers[_staker].totalDeposits[_depositNumber][0];
@@ -467,7 +467,7 @@ contract YieldFarming is Owned {
     /**
      * @return uint256 the total amount of locked liquidity tokens of a staker assocaited with _pairCode
      */
-    function getLockeLPbyPairCode(address _staker, uint256 _pairCode)
+    function getLockedLPbyPairCode(address _staker, uint256 _pairCode)
         external view returns (uint256)
     {
         return stakers[_staker].totalLPlockedbyPairCode[_pairCode];

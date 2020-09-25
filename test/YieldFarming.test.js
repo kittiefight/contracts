@@ -466,7 +466,7 @@ contract("YieldFarming", accounts => {
         from: accounts[i]
       }).should.be.fulfilled;
 
-      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode_0);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode_0);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -1188,7 +1188,7 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {
         from: accounts[i]
       }).should.be.fulfilled;
-      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -1906,7 +1906,7 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {
         from: accounts[i]
       }).should.be.fulfilled;
-      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -2461,11 +2461,11 @@ contract("YieldFarming", accounts => {
     let user = 16;
     let pairCode0 = 0;
     let pairCode8 = 8;
-    let allLP_0 = await yieldFarming.getLockeLPbyPairCode(
+    let allLP_0 = await yieldFarming.getLockedLPbyPairCode(
       accounts[user],
       pairCode0
     );
-    let allLP_8 = await yieldFarming.getLockeLPbyPairCode(
+    let allLP_8 = await yieldFarming.getLockedLPbyPairCode(
       accounts[user],
       pairCode8
     );
@@ -2537,11 +2537,11 @@ contract("YieldFarming", accounts => {
     let user = 17;
     let pairCode0 = 0;
     let pairCode8 = 8;
-    let allLP_0 = await yieldFarming.getLockeLPbyPairCode(
+    let allLP_0 = await yieldFarming.getLockedLPbyPairCode(
       accounts[user],
       pairCode0
     );
-    let allLP_8 = await yieldFarming.getLockeLPbyPairCode(
+    let allLP_8 = await yieldFarming.getLockedLPbyPairCode(
       accounts[user],
       pairCode8
     );
@@ -2618,11 +2618,11 @@ contract("YieldFarming", accounts => {
     let user = 18;
     let pairCode0 = 0;
     let pairCode8 = 8;
-    let allLP_0 = await yieldFarming.getLockeLPbyPairCode(
+    let allLP_0 = await yieldFarming.getLockedLPbyPairCode(
       accounts[user],
       pairCode0
     );
-    let allLP_8 = await yieldFarming.getLockeLPbyPairCode(
+    let allLP_8 = await yieldFarming.getLockedLPbyPairCode(
       accounts[user],
       pairCode8
     );

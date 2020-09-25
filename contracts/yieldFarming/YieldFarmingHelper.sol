@@ -197,7 +197,7 @@ contract YieldFarmingHelper is Owned {
             return (false, 0);
         }
         for (uint256 i = 0; i < _totalDeposits; i++) {
-            (_pair, _batch) = yieldFarming.getBathcNumberAndPairCode(_staker, i);
+            (_pair, _batch) = yieldFarming.getBatchNumberAndPairCode(_staker, i);
             if (_pair == _pairCode && _batch == _batchNumber) {
                 return (true, i);
             }
@@ -207,21 +207,21 @@ contract YieldFarmingHelper is Owned {
     function isDepositValid(address _staker, uint256 _depositNumber)
         external view returns (bool)
     {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
         return isBatchValid(_staker, _pairCode, _batchNumber);
     }
 
     function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
         external view returns (bool)
     {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
         return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
     }
 
     function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
         external view returns (bool)
     {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
         return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
@@ -237,7 +237,7 @@ contract YieldFarmingHelper is Owned {
         uint256 adjustedLockedLP;
         for (uint256 i = 0; i < depositsEarlyBonus.length; i++) {
             depositNum = depositsEarlyBonus[i];
-            (pairCode, batchNum) = yieldFarming.getBathcNumberAndPairCode(_staker, depositNum);
+            (pairCode, batchNum) = yieldFarming.getBatchNumberAndPairCode(_staker, depositNum);
             (lockedLP,adjustedLockedLP, lockTime) = yieldFarming.getLPinBatch(_staker, pairCode, batchNum);
             if (pairCode == _pairCode && lockTime > 0 && lockedLP > 0) {
                 totalLPEarlyBonus = totalLPEarlyBonus.add(lockedLP);
@@ -263,7 +263,7 @@ contract YieldFarmingHelper is Owned {
         uint256 adjustedLockedLP;
         for (uint256 i = 0; i < _depositsEarlyBonus.length; i++) {
             _depositNum = _depositsEarlyBonus[i];
-            (_pair, _batchNum) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNum);
+            (_pair, _batchNum) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNum);
             (lockedLP,adjustedLockedLP, lockTime) = yieldFarming.getLPinBatch(_staker, _pair, _batchNum);
             if (lockTime > 0 && lockedLP > 0) {
                 _totalLPEarlyBonus = _totalLPEarlyBonus.add(lockedLP);
@@ -373,7 +373,7 @@ contract YieldFarmingHelper is Owned {
     function getLockedLPinDeposit(address _staker, uint256 _depositNumber)
         external view returns (uint256, uint256, uint256)
     {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBathcNumberAndPairCode(_staker, _depositNumber); 
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
         (uint256 _LP, uint256 _adjustedLP, uint256 _lockTime) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
         return (_LP, _adjustedLP, _lockTime);
     }
