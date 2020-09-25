@@ -417,6 +417,29 @@ contract("YieldFarming", accounts => {
     }
   })
 
+  it("estimates rewards for a user", async () => {
+    let deposit_LP_amount = new BigNumber(
+      web3.utils.toWei("100", "ether") //30 Uniswap Liquidity tokens
+    );
+    await ktyWethPair.approve(yieldFarming.address, deposit_LP_amount, {
+      from: accounts[1]
+    }).should.be.fulfilled;
+    await yieldFarming.deposit(deposit_LP_amount, 0, {
+      from: accounts[1]
+    }).should.be.fulfilled;
+
+    let LPs = ["100", "300", "600"]
+    let _LP, estimatedRewards
+    let pairCode = 0
+    for (let i=0; i<3; i++) {
+      _LP = new BigNumber(web3.utils.toWei(LPs[i], "ether"));
+      estimatedRewards = await yieldsCalculator.estimateRewards(_LP, pairCode)
+      console.log("LP input:", LPs[i])
+      console.log("Estimated KTY rewards:", weiToEther(estimatedRewards[0]))
+      console.log("Estimated SDAO rewards:", weiToEther(estimatedRewards[1]))
+    }
+  })
+
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     console.log(
       "\n====================== FIRST MONTH: MONTH 0 ======================\n"
