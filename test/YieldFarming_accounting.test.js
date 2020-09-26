@@ -372,7 +372,6 @@ contract("YieldFarming", accounts => {
   });
 
   it("gets program duration", async () => {
-    await advanceTimeAndBlock(1200);
     let programDuration = await yieldFarmingHelper.getProgramDuration();
     // console.log(programDuration)
     let entireProgramDuration = programDuration.entireProgramDuration;
@@ -432,7 +431,7 @@ contract("YieldFarming", accounts => {
         from: accounts[i]
       }).should.be.fulfilled;
 
-      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode_0);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode_0);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -760,7 +759,7 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {
         from: accounts[i]
       }).should.be.fulfilled;
-      LP_locked = await yieldFarming.getLockeLPbyPairCode(accounts[i], pairCode);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode);
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
