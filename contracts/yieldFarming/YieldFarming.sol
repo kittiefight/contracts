@@ -9,21 +9,21 @@
 */
 pragma solidity ^0.5.5;
 
+import "../libs/openzeppelin_upgradable_v2_5_0/ownership/Ownable.sol";
 import "../libs/SafeMath.sol";
-import "../authority/Owned.sol";
 import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
-import "../interfaces/ERC20Standard.sol";
+import "../uniswapKTY/uniswap-v2-core/interfaces/IERC20.sol";
 import "./YieldFarmingHelper.sol";
 import "./YieldsCalculator.sol";
 
-contract YieldFarming is Owned {
+contract YieldFarming is Ownable {
     using SafeMath for uint256;
 
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
 
-    ERC20Standard public kittieFightToken;              // KittieFightToken contract variable
-    ERC20Standard public superDaoToken;                 // SuperDaoToken contract variable
+    IERC20 public kittieFightToken;              // KittieFightToken contract variable
+    IERC20 public superDaoToken;                 // SuperDaoToken contract variable
     YieldFarmingHelper public yieldFarmingHelper;       // YieldFarmingHelper contract variable
     YieldsCalculator public yieldsCalculator;           // YieldFarmingHelper contract variable
 
@@ -72,9 +72,7 @@ contract YieldFarming is Owned {
     }
 
     struct pairPoolInfo {
-        string pairName;
         address pairPoolAddress;
-        address tokenAddress;
     }
 
     mapping(address => Staker) public stakers;
@@ -100,25 +98,24 @@ contract YieldFarming is Owned {
     /* ============================================================================================================== */
     function initialize
     (
-        bytes32[] calldata _pairPoolNames,
         address[] calldata _pairPoolAddr,
-        address[] calldata _tokenAddrs,
-        ERC20Standard _kittieFightToken,
-        ERC20Standard _superDaoToken,
+        IERC20 _kittieFightToken,
+        IERC20 _superDaoToken,
         YieldFarmingHelper _yieldFarmingHelper,
         YieldsCalculator _yieldsCalculator,
         uint256[6] calldata _ktyUnlockRates,
         uint256[6] calldata _sdaoUnlockRates,
         uint256 _programStartTime
     )
-        external onlyOwner
+        external initializer
     {
-        for (uint256 i = 0; i < _pairPoolAddr.length; i++) {
-            addNewPairPool(bytes32ToString(_pairPoolNames[i]), _pairPoolAddr[i], _tokenAddrs[i]);
-        }
-
+        Ownable.initialize(_msgSender());
         setRewardsToken(_kittieFightToken, true);
         setRewardsToken(_superDaoToken, false);
+
+        for (uint256 i = 0; i < _pairPoolAddr.length; i++) {
+            addNewPairPool(_pairPoolAddr[i]);
+        }
 
         // setKittieFightToken(_kittieFightToken);
         // setSuperDaoToken(_superDaoToken);
@@ -259,12 +256,15 @@ contract YieldFarming is Owned {
      * @dev Add new pairPool
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function addNewPairPool(string memory _pairName, address _pairPoolAddr, address _tokenAddr) public onlyOwner {
+    function addNewPairPool(address _pairPoolAddr) public onlyOwner {
         uint256 _pairCode = totalNumberOfPairPools;
 
-        pairPoolsInfo[_pairCode].pairName = _pairName;
+        IUniswapV2Pair pair = IUniswapV2Pair(_pairPoolAddr);
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+        require(token0 == address(kittieFightToken) || token1 == address(kittieFightToken), "Pair should contain KTY");
+
         pairPoolsInfo[_pairCode].pairPoolAddress = _pairPoolAddr;
-        pairPoolsInfo[_pairCode].tokenAddress = _tokenAddr;
 
         totalNumberOfPairPools = totalNumberOfPairPools.add(1);
     }
@@ -273,7 +273,7 @@ contract YieldFarming is Owned {
      * @dev Set KittieFightToken contract
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setRewardsToken(ERC20Standard _rewardsToken, bool forKTY) public onlyOwner {
+    function setRewardsToken(IERC20 _rewardsToken, bool forKTY) public onlyOwner {
         if (forKTY == true) {
             kittieFightToken = _rewardsToken;
         } else if (forKTY == false) {
@@ -304,9 +304,9 @@ contract YieldFarming is Owned {
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function returnTokens(address _token, uint256 _amount, address _newAddress) external onlyOwner {
-        uint256 balance = ERC20Standard(_token).balanceOf(address(this));
+        uint256 balance = IERC20(_token).balanceOf(address(this));
         require(_amount <= balance, "Exceeds balance");
-        require(ERC20Standard(_token).transfer(_newAddress, _amount), "Fail to transfer tokens");
+        require(IERC20(_token).transfer(_newAddress, _amount), "Fail to transfer tokens");
     }
 
     /**
@@ -380,7 +380,12 @@ contract YieldFarming is Owned {
         public view
         returns (string memory, address, address)
     {
-        return (pairPoolsInfo[_pairCode].pairName, pairPoolsInfo[_pairCode].pairPoolAddress, pairPoolsInfo[_pairCode].tokenAddress);
+        IUniswapV2Pair pair = IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress);
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+        address otherToken = (token0 == address(kittieFightToken))?token1:token0;
+        string memory pairName = string(abi.encodePacked(kittieFightToken.symbol(),"-",IERC20(otherToken).symbol()));
+        return (pairName, pairPoolsInfo[_pairCode].pairPoolAddress, otherToken);
     }
 
     /**

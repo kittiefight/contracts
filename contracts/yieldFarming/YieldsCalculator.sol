@@ -1,11 +1,11 @@
 pragma solidity ^0.5.5;
 
-import "../authority/Owned.sol";
-import '../libs/SafeMath.sol';
+import "../libs/openzeppelin_upgradable_v2_5_0/ownership/Ownable.sol";
+import "../libs/SafeMath.sol";
 import './YieldFarming.sol';
 import './YieldFarmingHelper.sol';
 
-contract YieldsCalculator is Owned {
+contract YieldsCalculator is Ownable {
     using SafeMath for uint256;
 
     /*                                               GENERAL VARIABLES                                                */
@@ -35,8 +35,9 @@ contract YieldsCalculator is Owned {
         YieldFarming _yieldFarming,
         YieldFarmingHelper _yieldFarmingHelper
     ) 
-        public onlyOwner
+        public initializer
     {
+        Ownable.initialize(_msgSender());
         tokensSold = _tokensSold;
         setYieldFarming(_yieldFarming);
         setYieldFarmingHelper(_yieldFarmingHelper);

@@ -1,14 +1,14 @@
 pragma solidity ^0.5.5;
 
-import "../authority/Owned.sol";
-import '../libs/SafeMath.sol';
+import "../libs/openzeppelin_upgradable_v2_5_0/ownership/Ownable.sol";
+import "../libs/SafeMath.sol";
 import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import '../uniswapKTY/uniswap-v2-periphery/libraries/UniswapV2Library.sol';
+import "../uniswapKTY/uniswap-v2-core/interfaces/IERC20.sol";
 import './YieldFarming.sol';
 import './YieldsCalculator.sol';
-import "../interfaces/ERC20Standard.sol";
 
-contract YieldFarmingHelper is Owned {
+contract YieldFarmingHelper is Ownable {
     using SafeMath for uint256;
 
     /*                                               GENERAL VARIABLES                                                */
@@ -45,8 +45,9 @@ contract YieldFarmingHelper is Owned {
         address _weth,
         address _dai
     ) 
-        public onlyOwner
+        public initializer
     {
+        Ownable.initialize(_msgSender());
         setYieldFarming(_yieldFarming);
         setYieldsCalculator(_yieldsCalculator);
         setKtyWethPair(_ktyWethPair);
@@ -326,8 +327,8 @@ contract YieldFarmingHelper is Owned {
      * @return uint256 the total amount of SuperDaoFightToken rewards already distributed
      */
     function getUnlockedRewards() public view returns (uint256, uint256) {
-        uint256 unlockedKTY = ERC20Standard(kittieFightTokenAddr).balanceOf(address(yieldFarming));
-        uint256 unlockedSDAO = ERC20Standard(superDaoTokenAddr).balanceOf(address(yieldFarming));
+        uint256 unlockedKTY = IERC20(kittieFightTokenAddr).balanceOf(address(yieldFarming));
+        uint256 unlockedSDAO = IERC20(superDaoTokenAddr).balanceOf(address(yieldFarming));
         return (unlockedKTY, unlockedSDAO);
     }
 
@@ -403,7 +404,7 @@ contract YieldFarmingHelper is Owned {
         uint256 totalSupply = IUniswapV2Pair(pairPoolAddress).totalSupply();
         uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
         
-        uint256 totalKtyInPairPool = ERC20Standard(kittieFightTokenAddr).balanceOf(pairPoolAddress);
+        uint256 totalKtyInPairPool = IERC20(kittieFightTokenAddr).balanceOf(pairPoolAddress);
 
         return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(KTY_DAI_price())
                .div(base18).div(base6);
