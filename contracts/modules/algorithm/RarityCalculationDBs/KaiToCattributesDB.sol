@@ -46,7 +46,7 @@ contract KaiToCattributesDB is Proxied, Guard {
     }
 
     function bytes32ToStr(bytes32 _bytes32)
-        internal
+        internal pure
         returns (string memory)
     {
         bytes memory bytesArray = new bytes(32);

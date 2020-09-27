@@ -45,7 +45,7 @@ contract MockERC721Token is ERC721, Owned {
     return owner;
   }
 
-  function supportsInterface(bytes4 _interfaceID) external view returns (bool) {
+  function supportsInterface(bytes4 /*_interfaceID*/) external view returns (bool) {
     return false;
   }
 
