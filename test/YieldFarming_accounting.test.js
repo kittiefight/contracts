@@ -139,6 +139,15 @@ contract("YieldFarming", accounts => {
     ktyGNOPair = await KtyGNOPair.at(ktyGNOPairAddress);
   });
 
+  it("shows rewards for each month", async () => {
+    let rewards = await yieldsCalculator.getTotalRewards()
+    for (let i = 0; i < 6; i++) {
+      console.log("KTY rewads in Month", i, "is:", weiToEther(rewards.ktyRewards[i]))
+      console.log("SDAO rewads in Month", i, "is:", weiToEther(rewards.sdaoRewards[i]))
+    }
+    
+  })
+
   it("sets Rewards Unlock Rate for KittieFightToken and SuperDaoToken", async () => {
     let unlockRate, KTYunlockRate, SDAOunlockRate;
     console.log(`\n======== Rewards Unlock Rate ======== `);

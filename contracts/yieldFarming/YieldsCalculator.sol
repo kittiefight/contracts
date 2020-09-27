@@ -479,6 +479,20 @@ contract YieldsCalculator is Ownable {
         return false;
     }
 
+    function getTotalRewards()
+        external view
+       returns (uint256[6] memory ktyRewards, uint256[6] memory sdaoRewards)
+    {
+        uint256 _ktyReward;
+        uint256 _sdaoReward;
+        for (uint256 i = 0; i < 6; i++) {
+            _ktyReward = getTotalKTYRewardsByMonth(i);
+            _sdaoReward = getTotalSDAORewardsByMonth(i);
+            ktyRewards[i] = _ktyReward;
+            sdaoRewards[i] = _sdaoReward;
+        }
+    }
+
     /**
      * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
      * @return uint256 the amount of total Rewards for KittieFightToken for the _month
