@@ -34,7 +34,7 @@ contract YieldFarming is Ownable {
     uint256 constant public DAY = 48 * 60;// 24 * 60 * 60; 
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
-    uint256 constant internal DAILY_PORTION_IN_MONTH = base6 * MONTH / DAY; //33333;
+    uint256 constant internal DAILY_PORTION_IN_MONTH = 33333; //base6 * MONTH / DAY
 
     uint256 public totalNumberOfPairPools;              // Total number of Uniswap V2 pair pools associated with YieldFarming
 
