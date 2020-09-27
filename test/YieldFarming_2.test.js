@@ -200,7 +200,10 @@ contract("YieldFarming", accounts => {
         newDepositEvents.map(async (e) => {
             console.log('    DepositNumber ', e.returnValues.depositNumber);
             depositNumber = e.returnValues.depositNumber;
-        })
+        })        
+
+        const adjustedDeposits = await yieldFarming.adjustedMonthlyDeposits(0);
+        console.log(adjustedDeposits.toString());
     });
 
     it('account 2 should be able to deposit 100 kty-weth lps in day 15', async () => {
@@ -215,6 +218,9 @@ contract("YieldFarming", accounts => {
         await yieldFarming.deposit(lpKtyWethAmount, 0, {
             from: accounts[2]
         }).should.be.fulfilled;
+
+        const adjustedDeposits = await yieldFarming.adjustedMonthlyDeposits(0);
+        console.log(adjustedDeposits.toString());
     });
 
     it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {

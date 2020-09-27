@@ -575,11 +575,12 @@ contract YieldFarming is Ownable {
         //stakers[_sender].totalDepositedLPs = stakers[_sender].totalDepositedLPs.add(_amount);
 
         uint256 _currentDay = yieldsCalculator.getCurrentDay();
-        uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth);
 
-        if (_daysInStartMonth > 0) {
-            adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth]
-                                                     .add(_amount.mul(_daysInStartMonth).mul(DAILY_PORTION_IN_MONTH).div(_factor));
+        if (yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth) > 0) {
+            uint256 z = yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth).mul(DAILY_PORTION_IN_MONTH);
+            uint256 currentDepositedAmount = adjustedMonthlyDeposits[_currentMonth].mul(_amount.mul(base6.sub(z))).div(adjustedMonthlyDeposits[_currentMonth]
+                                             .add(z.mul(_amount).div(base6))).div(_factor);
+            adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth].add(currentDepositedAmount);
         } else {
             adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth]
                                                      .add(_amount.mul(base6).div(_factor));
