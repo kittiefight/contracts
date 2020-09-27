@@ -27,14 +27,14 @@ contract YieldFarming is Ownable {
     YieldFarmingHelper public yieldFarmingHelper;       // YieldFarmingHelper contract variable
     YieldsCalculator public yieldsCalculator;           // YieldFarmingHelper contract variable
 
-    uint256 constant public base18 = 1000000000000000000;
-    uint256 constant public base6 = 1000000;
+    uint256 constant internal base18 = 1000000000000000000;
+    uint256 constant internal base6 = 1000000;
 
     uint256 constant public MONTH = 24 * 60 * 60;// 30 * 24 * 60 * 60;  // MONTH duration is 30 days, to keep things standard
     uint256 constant public DAY = 48 * 60;// 24 * 60 * 60; 
 
     // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
-    uint256 constant public DAILY_PORTION_IN_MONTH = 33333;
+    uint256 constant internal DAILY_PORTION_IN_MONTH = base6 * MONTH / DAY; //33333;
 
     uint256 public totalNumberOfPairPools;              // Total number of Uniswap V2 pair pools associated with YieldFarming
 
@@ -355,22 +355,6 @@ contract YieldFarming is Ownable {
 
     /*                                                 GETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
-    function bytes32ToString(bytes32 x) internal pure returns (string memory) {
-        bytes memory bytesString = new bytes(32);
-        uint charCount = 0;
-        for (uint j = 0; j < 32; j++) {
-            byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-            if (char != 0) {
-                bytesString[charCount] = char;
-                charCount++;
-            }
-        }
-        bytes memory bytesStringTrimmed = new bytes(charCount);
-        for (uint j = 0; j < charCount; j++) {
-            bytesStringTrimmed[j] = bytesString[j];
-        }
-        return string(bytesStringTrimmed);
-    }
     
     /**
      * @param _pairCode uint256 Pair Code assocated with the Pair Pool 
