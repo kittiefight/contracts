@@ -18,6 +18,10 @@ contract MockyETH is ERC20Basic, ERC20Advanced {
     emit Transfer(address(0), msg.sender, supply);
   }
 
+  function name() external view returns (string memory) {return "Wrapped Ether";}
+  function symbol() external view returns (string memory) {return "WETH";}
+  function decimals() external view returns (uint8) {return 18;}
+
   /**
   * @dev Total number of tokens in existence
   */

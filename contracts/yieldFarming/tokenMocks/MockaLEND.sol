@@ -18,6 +18,10 @@ contract MockaLEND is ERC20Basic, ERC20Advanced {
     emit Transfer(address(0), msg.sender, supply);
   }
 
+  function name() external view returns (string memory) {return "Aave Interest bearing LEND";}
+  function symbol() external view returns (string memory) {return "aLEND";}
+  function decimals() external view returns (uint8) {return 18;}
+
   /**
   * @dev Total number of tokens in existence
   */

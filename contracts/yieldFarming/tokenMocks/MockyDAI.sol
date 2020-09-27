@@ -18,6 +18,10 @@ contract MockyDAI is ERC20Basic, ERC20Advanced {
     emit Transfer(address(0), msg.sender, supply);
   }
 
+  function name() external view returns (string memory) {return "iearn DAI";}
+  function symbol() external view returns (string memory) {return "yDAI";}
+  function decimals() external view returns (uint8) {return 18;}
+
   /**
   * @dev Total number of tokens in existence
   */
