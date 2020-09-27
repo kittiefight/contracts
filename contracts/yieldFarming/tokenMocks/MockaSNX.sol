@@ -18,9 +18,9 @@ contract MockaSNX is ERC20Basic, ERC20Advanced {
     emit Transfer(address(0), msg.sender, supply);
   }
 
-  function name() external view returns (string memory) {return "Synthetix Network Token";}
-  function symbol() external view returns (string memory) {return "SNX";}
-  function decimals() external view returns (uint8) {return 18;}
+  function name() external pure returns (string memory) {return "Synthetix Network Token";}
+  function symbol() external pure returns (string memory) {return "SNX";}
+  function decimals() external pure returns (uint8) {return 18;}
 
   /**
   * @dev Total number of tokens in existence
