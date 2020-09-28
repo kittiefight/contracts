@@ -482,10 +482,10 @@ contract YieldFarming is Ownable {
         public view returns (bool)
     {
         // get locked time
-        uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
-        if (lockedAt > 0 && lockedAt <= programStartAt.add(DAY.mul(21))) {
-            return true;
-        }
+        // uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
+        // if (lockedAt > 0 && lockedAt <= programStartAt.add(DAY.mul(21))) {
+        //     return true;
+        // }
         return false;
     }
 
@@ -551,10 +551,11 @@ contract YieldFarming is Ownable {
         uint256 _batchNumber = stakers[_sender].batchLockedLPamount[_pairCode].length;
         uint256 _currentMonth = getCurrentMonth();
         uint256 _factor = yieldFarmingHelper.bubbleFactor(_pairCode);
+        uint256 _adjustedAmount = _amount.mul(base6).div(_factor);
 
         stakers[_sender].totalDeposits.push([_pairCode, _batchNumber]);
         stakers[_sender].batchLockedLPamount[_pairCode].push(_amount);
-        stakers[_sender].adjustedBatchLockedLPamount[_pairCode].push(_amount.mul(base6).div(_factor));
+        stakers[_sender].adjustedBatchLockedLPamount[_pairCode].push(_adjustedAmount);
         stakers[_sender].factor[_pairCode].push(_factor);
         stakers[_sender].batchLockedAt[_pairCode].push(_lockedAt);
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].add(_amount);
@@ -563,23 +564,25 @@ contract YieldFarming is Ownable {
         uint256 _currentDay = yieldsCalculator.getCurrentDay();
 
         if (yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth) > 0) {
-            uint256 monthlyProportion = yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth).mul(DAILY_PORTION_IN_MONTH);
-            uint256 currentDepositedAmount = adjustedMonthlyDeposits[_currentMonth].mul(_amount.mul(base6.sub(monthlyProportion))).div(adjustedMonthlyDeposits[_currentMonth]
-                                             .add(monthlyProportion.mul(_amount).div(base6))).div(_factor);
+            uint256 currentDepositedAmount = yieldsCalculator.getFirstMonthAmount(
+                _currentDay,
+                _currentMonth,
+                adjustedMonthlyDeposits[_currentMonth],
+                _adjustedAmount
+            );
 
             stakers[_sender].adjustedStartingLPamount[_pairCode].push(currentDepositedAmount);
             adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth].add(currentDepositedAmount);
         } else {
-
-            stakers[_sender].adjustedStartingLPamount[_pairCode].push(_amount.mul(base6).div(_factor));
+            stakers[_sender].adjustedStartingLPamount[_pairCode].push(_adjustedAmount);
             adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth]
-                                                     .add(_amount.mul(base6).div(_factor));
+                                                     .add(_adjustedAmount);
         }
 
         if (_currentMonth < 5) {
             for (uint256 i = _currentMonth.add(1); i < 6; i++) {
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
-                                             .add(_amount.mul(base6).div(_factor));
+                                             .add(_adjustedAmount);
             }
         }
 
@@ -587,7 +590,7 @@ contract YieldFarming is Ownable {
         totalLockedLP = totalLockedLP.add(_amount);
 
         if (block.timestamp <= programStartAt.add(DAY.mul(21))) {
-            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_amount.mul(base6).div(_factor));
+            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_adjustedAmount);
             stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
 
@@ -646,15 +649,13 @@ contract YieldFarming is Ownable {
             } 
         }
 
-        
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
                                              .sub(_adjustedLP);
                                            
             }
-        }
-          
+        }          
     }
 
     /**
@@ -794,8 +795,10 @@ contract YieldFarming is Ownable {
         // batch info
         uint256 _lockTime = stakers[_sender].batchLockedAt[_pairCode][_batchNumber];
         uint256 adjustedLP = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
+        uint256 startingLP = stakers[_sender].adjustedStartingLPamount[_pairCode][_batchNumber];
         stakers[_sender].batchLockedLPamount[_pairCode][_batchNumber] = 0;
         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_batchNumber] = 0;
+        stakers[_sender].adjustedStartingLPamount[_pairCode][_batchNumber] = 0;
         stakers[_sender].batchLockedAt[_pairCode][_batchNumber] = 0;
 
         // all batches in pair code info
@@ -821,7 +824,7 @@ contract YieldFarming is Ownable {
                                              .sub(adjustedLP);
             } else {
                 adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(adjustedLP.mul(DAILY_PORTION_IN_MONTH).div(base6));
+                                             .sub(startingLP);
             } 
         }
 
