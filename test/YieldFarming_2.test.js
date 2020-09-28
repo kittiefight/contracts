@@ -263,4 +263,21 @@ contract("YieldFarming", accounts => {
         console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
         console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));
     });
+
+    it('account 2 should be able to withdraw 100 kty-weth lps in day 61', async () => {
+        const payDay = await yieldFarmingHelper.isPayDay();
+        console.log("Is Pay Day?", payDay[0]);
+
+        const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[2]);
+
+        // withdraw by Deposit NUmber
+        await yieldFarming.withdrawByDepositNumber(depositNumber, {
+          from: accounts[2]
+        }).should.be.fulfilled;
+
+        const balanceKTYafter = await kittieFightToken.balanceOf(accounts[2]);
+
+        console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
+        console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));
+    });
 });

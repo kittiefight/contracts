@@ -62,6 +62,7 @@ contract YieldFarming is Ownable {
         uint256[2][] totalDeposits;                      // A 2d array of total deposits [[pairCode, batchNumber], [[pairCode, batchNumber], ...]]
         uint256[][200] batchLockedLPamount;              // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool
         uint256[][200] adjustedBatchLockedLPamount;      // A 2d array showing the locked amount of Liquidity tokens in each batch of each Pair Pool, adjusted to LP bubbling factor
+        uint256[][200] adjustedStartingLPamount;
         uint256[][200] factor;                           // A 2d array showing the LP bubbling factor in each batch of each Pair Pool
         uint256[][200] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
         uint256[200] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
@@ -202,7 +203,7 @@ contract YieldFarming is Ownable {
      */
     function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) external lock returns (bool) {
         (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
-        require(_isPayDay == true, "Can only withdraw on pay day");
+        require(_isPayDay, "Can only withdraw on pay day");
         require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
 
         (
@@ -231,7 +232,7 @@ contract YieldFarming is Ownable {
      */
     function withdrawByDepositNumber(uint256 _depositNumber) external lock returns (bool) {
         (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
-        require(_isPayDay == true, "Can only withdraw on pay day");
+        require(_isPayDay, "Can only withdraw on pay day");
 
         uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
         uint256 _batchNumber = stakers[msg.sender].totalDeposits[_depositNumber][1];
@@ -274,9 +275,9 @@ contract YieldFarming is Ownable {
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function setRewardsToken(IERC20 _rewardsToken, bool forKTY) public onlyOwner {
-        if (forKTY == true) {
+        if (forKTY) {
             kittieFightToken = _rewardsToken;
-        } else if (forKTY == false) {
+        } else {
             superDaoToken = _rewardsToken;
         }   
     }
@@ -318,7 +319,7 @@ contract YieldFarming is Ownable {
      * @dev    This function can only be carreid out by the owner of this contract.
      */
     function setRewardUnlockRate(uint256 _month, uint256 _rate, bool forKTY) public onlyOwner {
-        if (forKTY == true) {
+        if (forKTY) {
             KTYunlockRates[_month] = _rate;
         } else {
             SDAOunlockRates[_month] = _rate;
@@ -435,13 +436,14 @@ contract YieldFarming is Ownable {
      *         in the batch with _batchNumber in _pairCode by the staker 
      */
     function getLPinBatch(address _staker, uint256 _pairCode, uint256 _batchNumber)
-        external view returns (uint256, uint256, uint256)
+        external view returns (uint256, uint256, uint256, uint256)
     {
         uint256 _LP = stakers[_staker].batchLockedLPamount[_pairCode][_batchNumber];
         uint256 _adjustedLP = stakers[_staker].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
+        uint256 _adjustedStartingLP = stakers[_staker].adjustedStartingLPamount[_pairCode][_batchNumber];        
         uint256 _lockTime = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
         
-        return (_LP, _adjustedLP, _lockTime);
+        return (_LP, _adjustedLP, _adjustedStartingLP, _lockTime);
     }
 
     /**
@@ -561,11 +563,15 @@ contract YieldFarming is Ownable {
         uint256 _currentDay = yieldsCalculator.getCurrentDay();
 
         if (yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth) > 0) {
-            uint256 z = yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth).mul(DAILY_PORTION_IN_MONTH);
-            uint256 currentDepositedAmount = adjustedMonthlyDeposits[_currentMonth].mul(_amount.mul(base6.sub(z))).div(adjustedMonthlyDeposits[_currentMonth]
-                                             .add(z.mul(_amount).div(base6))).div(_factor);
+            uint256 monthlyProportion = yieldsCalculator.getElapsedDaysInMonth(_currentDay, _currentMonth).mul(DAILY_PORTION_IN_MONTH);
+            uint256 currentDepositedAmount = adjustedMonthlyDeposits[_currentMonth].mul(_amount.mul(base6.sub(monthlyProportion))).div(adjustedMonthlyDeposits[_currentMonth]
+                                             .add(monthlyProportion.mul(_amount).div(base6))).div(_factor);
+
+            stakers[_sender].adjustedStartingLPamount[_pairCode].push(currentDepositedAmount);
             adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth].add(currentDepositedAmount);
         } else {
+
+            stakers[_sender].adjustedStartingLPamount[_pairCode].push(_amount.mul(base6).div(_factor));
             adjustedMonthlyDeposits[_currentMonth] = adjustedMonthlyDeposits[_currentMonth]
                                                      .add(_amount.mul(base6).div(_factor));
         }
@@ -677,7 +683,7 @@ contract YieldFarming is Ownable {
        // all batches except the last batch
         for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
             // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
-            if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode) == true) {
+            if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode)) {
                 adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
                                                      .sub(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
             }
@@ -707,7 +713,7 @@ contract YieldFarming is Ownable {
         uint256 leftAmountLP, uint256 adjustedLeftAmountLP
     ) private {
         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
-        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode) == true) {
+        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
         }
         if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
@@ -827,7 +833,7 @@ contract YieldFarming is Ownable {
         }
 
         // if eligible for Early Mining Bonus but unstake before program end, deduct it from totalLockedLPinEarlyMining
-        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _batchNumber, _pairCode) == true) {
+        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _batchNumber, _pairCode)) {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLP);
         }
     }

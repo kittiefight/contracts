@@ -98,12 +98,11 @@ contract YieldFarmingHelper is Ownable {
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function setRwardsTokenAddress(address _rewardToken, bool forKTY) public onlyOwner {
-        if (forKTY == true) {
+        if (forKTY) {
             kittieFightTokenAddr = _rewardToken;
-        } else if (forKTY == false) {
+        } else {
             superDaoTokenAddr = _rewardToken;
-        }
-        
+        }        
     }
 
     function setWethAddress(address _weth) public onlyOwner {
@@ -239,7 +238,7 @@ contract YieldFarmingHelper is Ownable {
         for (uint256 i = 0; i < depositsEarlyBonus.length; i++) {
             depositNum = depositsEarlyBonus[i];
             (pairCode, batchNum) = yieldFarming.getBatchNumberAndPairCode(_staker, depositNum);
-            (lockedLP,adjustedLockedLP, lockTime) = yieldFarming.getLPinBatch(_staker, pairCode, batchNum);
+            (lockedLP,adjustedLockedLP,, lockTime) = yieldFarming.getLPinBatch(_staker, pairCode, batchNum);
             if (pairCode == _pairCode && lockTime > 0 && lockedLP > 0) {
                 totalLPEarlyBonus = totalLPEarlyBonus.add(lockedLP);
                 adjustedTotalLPEarlyBonus = adjustedTotalLPEarlyBonus.add(adjustedLockedLP);
@@ -265,7 +264,7 @@ contract YieldFarmingHelper is Ownable {
         for (uint256 i = 0; i < _depositsEarlyBonus.length; i++) {
             _depositNum = _depositsEarlyBonus[i];
             (_pair, _batchNum) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNum);
-            (lockedLP,adjustedLockedLP, lockTime) = yieldFarming.getLPinBatch(_staker, _pair, _batchNum);
+            (lockedLP,adjustedLockedLP,, lockTime) = yieldFarming.getLPinBatch(_staker, _pair, _batchNum);
             if (lockTime > 0 && lockedLP > 0) {
                 _totalLPEarlyBonus = _totalLPEarlyBonus.add(lockedLP);
                 _adjustedTotalLPEarlyBonus = _adjustedTotalLPEarlyBonus.add(adjustedLockedLP);
@@ -375,7 +374,7 @@ contract YieldFarmingHelper is Ownable {
         external view returns (uint256, uint256, uint256)
     {
         (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-        (uint256 _LP, uint256 _adjustedLP, uint256 _lockTime) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+        (uint256 _LP, uint256 _adjustedLP,, uint256 _lockTime) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
         return (_LP, _adjustedLP, _lockTime);
     }
 
@@ -390,7 +389,7 @@ contract YieldFarmingHelper is Ownable {
     function isBatchValid(address _staker, uint256 _pairCode, uint256 _batchNumber)
         public view returns (bool)
     {
-        (uint256 _LP,,) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
+        (uint256 _LP,,,) = yieldFarming.getLPinBatch(_staker, _pairCode, _batchNumber);
         return _LP > 0;
     }
 
