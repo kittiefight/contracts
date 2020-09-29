@@ -86,6 +86,9 @@ contract YieldFarming is Ownable {
 
     uint256 private unlocked = 1;
 
+    uint256 public calculated;
+    uint256 public calculated1;
+
     /*                                                   MODIFIERS                                                    */
     /* ============================================================================================================== */
     modifier lock() {
@@ -212,8 +215,9 @@ contract YieldFarming is Ownable {
 
         if (startBatchNumber == endBatchNumber) {
             _updateWithDrawByAmountCase1(msg.sender, _pairCode, startBatchNumber, _LPamount, _KTY, _SDAO);
-        } else {
-            _updateWithDrawByAmount(msg.sender, _pairCode, startBatchNumber, endBatchNumber, _LPamount, _KTY, _SDAO); 
+        } 
+        else {
+            _updateWithDrawByAmount(msg.sender, _pairCode, startBatchNumber, endBatchNumber, _LPamount, _KTY, _SDAO);
         }
 
         _transferTokens(msg.sender, _pairCode, _LPamount, _KTY, _SDAO);
@@ -482,10 +486,10 @@ contract YieldFarming is Ownable {
         public view returns (bool)
     {
         // get locked time
-        // uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
-        // if (lockedAt > 0 && lockedAt <= programStartAt.add(DAY.mul(21))) {
-        //     return true;
-        // }
+        uint256 lockedAt = stakers[_staker].batchLockedAt[_pairCode][_batchNumber];
+        if (lockedAt > 0 && lockedAt <= programStartAt.add(DAY.mul(21))) {
+            return true;
+        }
         return false;
     }
 
@@ -607,21 +611,27 @@ contract YieldFarming is Ownable {
         // ========= update staker info =========
         // batch info
         uint256 lockTime = stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber];
-        uint256 _adjustedLP;
-        if (_LP == stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber]) {
-            _adjustedLP = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber];
+
+        uint256 adjustedLP = _LP.mul(base6).div(stakers[_sender].factor[_pairCode][_startBatchNumber]);
+
+        uint256 startingLP = stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber].mul(adjustedLP).div(
+            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber]);
+
+        stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] = 
+            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber].sub(adjustedLP);
+
+        if (stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] == 0) {
             stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber] = 0;
-        } else {
-            _adjustedLP = _LP.mul(base6).div(stakers[_sender].factor[_pairCode][_startBatchNumber]);
         }
+
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _startBatchNumber, _pairCode)) {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
-                                                 .sub(_adjustedLP);
+                                                 .sub(_LP);
         }
         stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber]
                                                                              .sub(_LP);
-        stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber]
-                                                                                     .sub(_adjustedLP);
+        stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber] = stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber]
+            .sub(startingLP);
         
         // all batches in pair code info
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
@@ -642,20 +652,19 @@ contract YieldFarming is Ownable {
             uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
             if (_daysInStartMonth == 0) {
                 adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(_adjustedLP);
+                                             .sub(adjustedLP);
             } else {
                 adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(_adjustedLP.mul(DAILY_PORTION_IN_MONTH).div(base6));
+                                             .sub(startingLP);
             } 
         }
 
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {
                 adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
-                                             .sub(_adjustedLP);
-                                           
+                                             .sub(adjustedLP);
             }
-        }          
+        }
     }
 
     /**
@@ -696,8 +705,10 @@ contract YieldFarming is Ownable {
                                   
             stakers[_sender].batchLockedLPamount[_pairCode][i] = 0;
             stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i] = 0;
+            stakers[_sender].adjustedStartingLPamount[_pairCode][i] = 0;
             stakers[_sender].batchLockedAt[_pairCode][i] = 0;
         }
+
         // the amount left after allocating to all batches except the last batch
         uint256 leftAmountLP = _LP.sub(withdrawAmount);
         uint256 adjustedLeftAmountLP = leftAmountLP.mul(base6).div(stakers[_sender].factor[_pairCode][_endBatchNumber]);
@@ -717,16 +728,19 @@ contract YieldFarming is Ownable {
         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
         }
-        if (leftAmountLP >= stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
+        if (leftAmountLP == stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
             stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = 0;
             stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = 0;
+            stakers[_sender].adjustedStartingLPamount[_pairCode][_endBatchNumber] = 0;
             stakers[_sender].batchLockedAt[_pairCode][_endBatchNumber] = 0;
+        } else if(leftAmountLP > stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
+            revert();
         } else {
             stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]
                                                                    .sub(leftAmountLP);
             stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber]
                                                                    .sub(adjustedLeftAmountLP);
-        } 
+        }
     }
 
     function updateGlobalVariables(

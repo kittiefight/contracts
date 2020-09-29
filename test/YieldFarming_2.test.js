@@ -209,13 +209,22 @@ contract("YieldFarming", accounts => {
     it('account 2 should be able to deposit 50 kty-gno lps in day 10', async () => {
         await advanceTimeAndBlock(48 * 60 * 10);
 
-        const lpKtyGnoAmount = web3.utils.toWei('50');
+        const lpKtyGnoAmount = web3.utils.toWei('40');
+        const amount = web3.utils.toWei('10');
 
         await ktyGNOPair.approve(yieldFarming.address, lpKtyGnoAmount, {
             from: accounts[2]
         }).should.be.fulfilled;
 
         await yieldFarming.deposit(lpKtyGnoAmount, 8, {
+            from: accounts[2]
+        }).should.be.fulfilled;
+
+        await ktyGNOPair.approve(yieldFarming.address, amount, {
+            from: accounts[2]
+        }).should.be.fulfilled;
+
+        await yieldFarming.deposit(amount, 8, {
             from: accounts[2]
         }).should.be.fulfilled;
 
@@ -252,11 +261,18 @@ contract("YieldFarming", accounts => {
         console.log("Is Pay Day?", payDay[0]);
 
         const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[2]);
-
+        const lpKtyGnoAmount = web3.utils.toWei('30');
         // withdraw by Deposit NUmber
-        await yieldFarming.withdrawByDepositNumber(depositNumber, {
+        await yieldFarming.withdrawByAmount(lpKtyGnoAmount, 8, {
           from: accounts[2]
         }).should.be.fulfilled;
+
+        const calculated = await yieldFarming.calculated();
+
+        console.log("To be withdrawn: ", web3.utils.fromWei(calculated));
+        const calculated1 = await yieldFarming.calculated1();
+
+        console.log("To be withdrawn1: ", web3.utils.fromWei(calculated1));
 
         const balanceKTYafter = await kittieFightToken.balanceOf(accounts[2]);
 
@@ -316,14 +332,40 @@ contract("YieldFarming", accounts => {
         const payDay = await yieldFarmingHelper.isPayDay();
         console.log("Is Pay Day?", payDay[0]);
 
+        const lpKtyWethAmount = web3.utils.toWei('10');
+
         const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[1]);
 
         // withdraw by Deposit NUmber
-        await yieldFarming.withdrawByDepositNumber(depositNumber, {
+        await yieldFarming.withdrawByAmount(lpKtyWethAmount, 0, {
           from: accounts[1]
         }).should.be.fulfilled;
 
         const balanceKTYafter = await kittieFightToken.balanceOf(accounts[1]);
+
+        console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
+        console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));
+    });
+
+    it('account 1 should be able to withdraw 100 kty-weth lps in day 61', async () => {
+        const payDay = await yieldFarmingHelper.isPayDay();
+        console.log("Is Pay Day?", payDay[0]);
+
+        const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[2]);
+        const lpKtyGnoAmount = web3.utils.toWei('20');
+        // withdraw by Deposit NUmber
+        await yieldFarming.withdrawByAmount(lpKtyGnoAmount, 8, {
+          from: accounts[2]
+        }).should.be.fulfilled;
+
+        const calculated = await yieldFarming.calculated();
+
+        console.log("To be withdrawn: ", web3.utils.fromWei(calculated));
+        const calculated1 = await yieldFarming.calculated1();
+
+        console.log("To be withdrawn1: ", web3.utils.fromWei(calculated1));
+
+        const balanceKTYafter = await kittieFightToken.balanceOf(accounts[2]);
 
         console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
         console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));

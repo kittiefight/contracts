@@ -317,6 +317,7 @@ contract YieldsCalculator is Ownable {
         uint256 earlyBonus;
         uint256 adjustedLockedLP;
         uint256 adjustedStartingLP;
+        uint256 LP;
 
         // // allocate _amountLP per FIFO
         // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
@@ -324,11 +325,12 @@ contract YieldsCalculator is Ownable {
             rewardKTY = 0;
             rewardSDAO = 0;
         } else {
-            (,adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, startBatchNumber);
+            (LP, adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, startBatchNumber);
 
-            uint256 _adjustedStartingLP = _amountLP.mul(adjustedStartingLP).div(adjustedLockedLP);
+            adjustedStartingLP = _amountLP.mul(adjustedStartingLP).div(LP);
+            adjustedLockedLP = _amountLP.mul(adjustedLockedLP).div(LP);
 
-            (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, startBatchNumber, _amountLP, _adjustedStartingLP);
+            (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, startBatchNumber, adjustedLockedLP, adjustedStartingLP);
 
             // check if early mining bonus applies here
             if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
@@ -355,7 +357,10 @@ contract YieldsCalculator is Ownable {
                 // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
                 (,adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
 
-                (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, i, adjustedLockedLP, adjustedStartingLP);
+                (uint256 _KTY, uint256 _SDAO) = calculateYields2(_staker, _pairCode, i, adjustedLockedLP, adjustedStartingLP);
+
+                rewardKTY = rewardKTY.add(_KTY);
+                rewardSDAO = rewardSDAO.add(_SDAO);
 
                 // if eligible for early bonus, the rewards for early bonus is added for this batch
                 if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
@@ -389,11 +394,12 @@ contract YieldsCalculator is Ownable {
         // add rewards for end Batch from which only part of the locked amount is to be withdrawn
         if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
             uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
-            uint256 adjustedLockedLP = residual.mul(base6).div(factor);
 
-            (,, uint256 adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, endBatchNumber);
+            (uint256 LP,uint256 adjustedLockedLP , uint256 adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, endBatchNumber);
+
+            uint256 _adjustedStartingLP = residual.mul(adjustedStartingLP).div(LP);
     
-            (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, endBatchNumber, adjustedLockedLP, adjustedStartingLP);
+            (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, endBatchNumber, residual, _adjustedStartingLP);
 
             if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
                 earlyBonus = getEarlyBonus(adjustedLockedLP);
@@ -510,8 +516,7 @@ contract YieldsCalculator is Ownable {
             (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber.sub(1));
             (uint256 _KTYresidual, uint256 _SDAOresidual) = calculateRewardsByAmountResidual(_staker, _pairCode, endBatchNumber, residual);
             _KTY = _KTY.add(_KTYresidual);
-            _SDAO = _SDAO.add(_SDAOresidual);
-           
+            _SDAO = _SDAO.add(_SDAOresidual);           
         }
         return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
     }
