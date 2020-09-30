@@ -73,10 +73,6 @@ contract YieldFarming is Ownable {
         uint256[] depositNumberForEarlyBonus;            // An array of all the deposit number eligible for early bonus for this staker
     }
 
-    struct pairPoolInfo {
-        address pairPoolAddress;
-    }
-
     /// @dev a VOLCIE Token NFT's associated properties
     struct VolcieToken {
         address originalOwner;   // the owner of this token at the time of minting
@@ -94,7 +90,7 @@ contract YieldFarming is Ownable {
 
     mapping(address => Staker) public stakers;
 
-    mapping(uint256 => pairPoolInfo) public pairPoolsInfo;
+    mapping(uint256 => address) public pairPoolsInfo;
 
     /// @dev mapping volcieToken NFT to its properties
     mapping(uint256 => VolcieToken) public volcieTokens;
@@ -218,7 +214,7 @@ contract YieldFarming is Ownable {
         
         require(_amountLP > 0, "Cannot deposit 0 tokens");
 
-        require(IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
+        require(IUniswapV2Pair(pairPoolsInfo[_pairCode]).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
 
         uint256 _depositNumber = stakers[msg.sender].totalDeposits.length;
 
@@ -235,40 +231,40 @@ contract YieldFarming is Ownable {
         return true;
     }
 
-    /**
-     * @notice Withdraw Uniswap Liquidity tokens by amount specified by the staker
-     * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
-     *         to the user upon successful withdraw
-     * @param _LPamount the amount of Uniswap Liquidity tokens to be withdrawn
-     * @param _pairCode the Pair Code associated with the Pair Pool of which the Liquidity tokens are to be withdrawn
-     * @dev    FIFO (First in, First out) is used to allocate the _LPamount to the user's deposit batches from a Pair Pool.
-     *         For example, _LPamount is allocated to batch 0 first, and if _LPamount is bigger than the amount
-     *         locked in batch 0, then the rest is allocated to batch 1, and so forth. Allocation only happens to batches
-     *         with the same Pair Code. 
-     * @return bool true if the withdraw is successful
-     */
-    function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) external lock returns (bool) {
-        (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
-        require(_isPayDay, "Can only withdraw on pay day");
-        require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
+    // /**
+    //  * @notice Withdraw Uniswap Liquidity tokens by amount specified by the staker
+    //  * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
+    //  *         to the user upon successful withdraw
+    //  * @param _LPamount the amount of Uniswap Liquidity tokens to be withdrawn
+    //  * @param _pairCode the Pair Code associated with the Pair Pool of which the Liquidity tokens are to be withdrawn
+    //  * @dev    FIFO (First in, First out) is used to allocate the _LPamount to the user's deposit batches from a Pair Pool.
+    //  *         For example, _LPamount is allocated to batch 0 first, and if _LPamount is bigger than the amount
+    //  *         locked in batch 0, then the rest is allocated to batch 1, and so forth. Allocation only happens to batches
+    //  *         with the same Pair Code. 
+    //  * @return bool true if the withdraw is successful
+    //  */
+    // function withdrawByAmount(uint256 _LPamount, uint256 _pairCode) external lock returns (bool) {
+    //     (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
+    //     require(_isPayDay, "Can only withdraw on pay day");
+    //     require(_LPamount <= stakers[msg.sender].totalLPlockedbyPairCode[_pairCode], "Insuffient tokens locked");
 
-        (
-            uint256 _KTY, uint256 _SDAO, uint256 startBatchNumber, uint256 endBatchNumber
-        ) = yieldsCalculator.calculateRewardsByAmount(msg.sender,  _LPamount, _pairCode);
+    //     (
+    //         uint256 _KTY, uint256 _SDAO, uint256 startBatchNumber, uint256 endBatchNumber
+    //     ) = yieldsCalculator.calculateRewardsByAmount(msg.sender,  _LPamount, _pairCode);
 
-        if (startBatchNumber == endBatchNumber) {
-            _updateWithDrawByAmountCase1(msg.sender, _pairCode, startBatchNumber, _LPamount, _KTY, _SDAO);
-        } 
-        else {
-            _updateWithDrawByAmount(msg.sender, _pairCode, startBatchNumber, endBatchNumber, _LPamount, _KTY, _SDAO);
-        }
+    //     if (startBatchNumber == endBatchNumber) {
+    //         _updateWithDrawByAmountCase1(msg.sender, _pairCode, startBatchNumber, _LPamount, _KTY, _SDAO);
+    //     } 
+    //     else {
+    //         _updateWithDrawByAmount(msg.sender, _pairCode, startBatchNumber, endBatchNumber, _LPamount, _KTY, _SDAO);
+    //     }
 
-        _transferTokens(msg.sender, _pairCode, _LPamount, _KTY, _SDAO);
+    //     _transferTokens(msg.sender, _pairCode, _LPamount, _KTY, _SDAO);
 
-        emit WithDrawn(msg.sender, _pairCode, _KTY, _SDAO, _LPamount, startBatchNumber, endBatchNumber, block.timestamp);
+    //     emit WithDrawn(msg.sender, _pairCode, _KTY, _SDAO, _LPamount, startBatchNumber, endBatchNumber, block.timestamp);
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * @notice Withdraw Uniswap Liquidity tokens locked in a batch with _batchNumber specified by the staker
@@ -328,7 +324,7 @@ contract YieldFarming is Ownable {
         address token1 = pair.token1();
         require(token0 == address(kittieFightToken) || token1 == address(kittieFightToken), "Pair should contain KTY");
 
-        pairPoolsInfo[_pairCode].pairPoolAddress = _pairPoolAddr;
+        pairPoolsInfo[_pairCode] = _pairPoolAddr;
 
         totalNumberOfPairPools = totalNumberOfPairPools.add(1);
     }
@@ -436,12 +432,12 @@ contract YieldFarming is Ownable {
         public view
         returns (string memory, address, address)
     {
-        IUniswapV2Pair pair = IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress);
+        IUniswapV2Pair pair = IUniswapV2Pair(pairPoolsInfo[_pairCode]);
         address token0 = pair.token0();
         address token1 = pair.token1();
         address otherToken = (token0 == address(kittieFightToken))?token1:token0;
         string memory pairName = string(abi.encodePacked(kittieFightToken.symbol(),"-",IERC20(otherToken).symbol()));
-        return (pairName, pairPoolsInfo[_pairCode].pairPoolAddress, otherToken);
+        return (pairName, pairPoolsInfo[_pairCode], otherToken);
     }
 
     function getVolcieToken(uint256 _volcieTokenID) public view
@@ -704,195 +700,195 @@ contract YieldFarming is Ownable {
     }
 
 
-    function _updateWithDrawByAmountCase1
-    (
-        address _sender, uint256 _pairCode, uint256 _startBatchNumber,
-        uint256 _LP, uint256 _KTY, uint256 _SDAO
-    ) 
-        private
-    {
-        // ========= update staker info =========
-        // batch info
-        uint256 lockTime = stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber];
+    // function _updateWithDrawByAmountCase1
+    // (
+    //     address _sender, uint256 _pairCode, uint256 _startBatchNumber,
+    //     uint256 _LP, uint256 _KTY, uint256 _SDAO
+    // ) 
+    //     private
+    // {
+    //     // ========= update staker info =========
+    //     // batch info
+    //     uint256 lockTime = stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber];
 
-        uint256 adjustedLP = _LP.mul(base6).div(stakers[_sender].factor[_pairCode][_startBatchNumber]);
+    //     uint256 adjustedLP = _LP.mul(base6).div(stakers[_sender].factor[_pairCode][_startBatchNumber]);
 
-        uint256 startingLP = stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber].mul(adjustedLP).div(
-            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber]);
+    //     uint256 startingLP = stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber].mul(adjustedLP).div(
+    //         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber]);
 
-        stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] = 
-            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber].sub(adjustedLP);
+    //     stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] = 
+    //         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber].sub(adjustedLP);
 
-        if (stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] == 0) {
-            stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber] = 0;
-        }
+    //     if (stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_startBatchNumber] == 0) {
+    //         stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber] = 0;
+    //     }
 
-        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _startBatchNumber, _pairCode)) {
-            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
-                                                 .sub(_LP);
-        }
-        stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber]
-                                                                             .sub(_LP);
-        stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber] = stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber]
-            .sub(startingLP);
+    //     if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _startBatchNumber, _pairCode)) {
+    //         adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
+    //                                              .sub(_LP);
+    //     }
+    //     stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_startBatchNumber]
+    //                                                                          .sub(_LP);
+    //     stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber] = stakers[_sender].adjustedStartingLPamount[_pairCode][_startBatchNumber]
+    //         .sub(startingLP);
         
-        // all batches in pair code info
-        stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
+    //     // all batches in pair code info
+    //     stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
         
-        // general staker info
-        stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
-        stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
+    //     // general staker info
+    //     stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
+    //     stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
 
-        // ========= update public variables =========
-        totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
-        totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
-        totalLockedLP = totalLockedLP.sub(_LP);
+    //     // ========= update public variables =========
+    //     totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
+    //     totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
+    //     totalLockedLP = totalLockedLP.sub(_LP);
 
-        uint256 _currentMonth = getCurrentMonth();
+    //     uint256 _currentMonth = getCurrentMonth();
 
-        if (_KTY == 0 && _SDAO == 0) {
-            uint256 _startingDay = yieldsCalculator.getDay(lockTime);
-            uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
-            if (_daysInStartMonth == 0) {
-                adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(adjustedLP);
-            } else {
-                adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(startingLP);
-            } 
-        }
+    //     if (_KTY == 0 && _SDAO == 0) {
+    //         uint256 _startingDay = yieldsCalculator.getDay(lockTime);
+    //         uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
+    //         if (_daysInStartMonth == 0) {
+    //             adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
+    //                                          .sub(adjustedLP);
+    //         } else {
+    //             adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
+    //                                          .sub(startingLP);
+    //         } 
+    //     }
 
-        if (_currentMonth < 5) {
-            for (uint i = _currentMonth; i < 6; i++) {
-                adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
-                                             .sub(adjustedLP);
-            }
-        }
-    }
+    //     if (_currentMonth < 5) {
+    //         for (uint i = _currentMonth; i < 6; i++) {
+    //             adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i]
+    //                                          .sub(adjustedLP);
+    //         }
+    //     }
+    // }
 
-    /**
-     * @dev Internal functions used in function withdrawByAmount(), to deduct deposits from mapping deposits storage
-     * @param _sender address the address of the sender
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @param _LP uint256 the amount of Uniswap Liquidity tokens to be deposited
-     * @param _startBatchNumber uint256 the starting batch number from which the _amount of Liquidity tokens 
-                                of the _sender is allocated
-     * @param _endBatchNumber uint256 the ending batch number until which the _amount of Liquidity tokens 
-                                of the _sender is allocated
-     */
-    function _updateWithDrawByAmount
-    (
-        address _sender, uint256 _pairCode,
-        uint256 _startBatchNumber, uint256 _endBatchNumber,
-        uint256 _LP, uint256 _KTY, uint256 _SDAO
-    ) 
-        private returns (bool)
-    {
-        // ========= update staker info =========
-        // batch info
-        uint256 _lockTime = stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber];
-        uint256 withdrawAmount = 0;
-        uint256 adjustedWithdrawAmount = 0;
-       // all batches except the last batch
-        for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
-            // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
-            if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode)) {
-                adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
-                                                     .sub(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
-            }
+    // /**
+    //  * @dev Internal functions used in function withdrawByAmount(), to deduct deposits from mapping deposits storage
+    //  * @param _sender address the address of the sender
+    //  * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+    //  * @param _LP uint256 the amount of Uniswap Liquidity tokens to be deposited
+    //  * @param _startBatchNumber uint256 the starting batch number from which the _amount of Liquidity tokens 
+    //                             of the _sender is allocated
+    //  * @param _endBatchNumber uint256 the ending batch number until which the _amount of Liquidity tokens 
+    //                             of the _sender is allocated
+    //  */
+    // function _updateWithDrawByAmount
+    // (
+    //     address _sender, uint256 _pairCode,
+    //     uint256 _startBatchNumber, uint256 _endBatchNumber,
+    //     uint256 _LP, uint256 _KTY, uint256 _SDAO
+    // ) 
+    //     private returns (bool)
+    // {
+    //     // ========= update staker info =========
+    //     // batch info
+    //     uint256 _lockTime = stakers[_sender].batchLockedAt[_pairCode][_startBatchNumber];
+    //     uint256 withdrawAmount = 0;
+    //     uint256 adjustedWithdrawAmount = 0;
+    //    // all batches except the last batch
+    //     for (uint256 i = _startBatchNumber; i < _endBatchNumber; i++) {
+    //         // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
+    //         if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, i, _pairCode)) {
+    //             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining
+    //                                                  .sub(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
+    //         }
 
-            withdrawAmount = withdrawAmount
-                             .add(stakers[_sender].batchLockedLPamount[_pairCode][i]);
-            adjustedWithdrawAmount = adjustedWithdrawAmount
-                             .add(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
+    //         withdrawAmount = withdrawAmount
+    //                          .add(stakers[_sender].batchLockedLPamount[_pairCode][i]);
+    //         adjustedWithdrawAmount = adjustedWithdrawAmount
+    //                          .add(stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i]);
                                   
-            stakers[_sender].batchLockedLPamount[_pairCode][i] = 0;
-            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i] = 0;
-            stakers[_sender].adjustedStartingLPamount[_pairCode][i] = 0;
-            stakers[_sender].batchLockedAt[_pairCode][i] = 0;
-        }
+    //         stakers[_sender].batchLockedLPamount[_pairCode][i] = 0;
+    //         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][i] = 0;
+    //         stakers[_sender].adjustedStartingLPamount[_pairCode][i] = 0;
+    //         stakers[_sender].batchLockedAt[_pairCode][i] = 0;
+    //     }
 
-        // the amount left after allocating to all batches except the last batch
-        uint256 leftAmountLP = _LP.sub(withdrawAmount);
-        uint256 adjustedLeftAmountLP = leftAmountLP.mul(base6).div(stakers[_sender].factor[_pairCode][_endBatchNumber]);
-        // last batch
-        lastBatch(_sender, _endBatchNumber, _pairCode, leftAmountLP, adjustedLeftAmountLP);
+    //     // the amount left after allocating to all batches except the last batch
+    //     uint256 leftAmountLP = _LP.sub(withdrawAmount);
+    //     uint256 adjustedLeftAmountLP = leftAmountLP.mul(base6).div(stakers[_sender].factor[_pairCode][_endBatchNumber]);
+    //     // last batch
+    //     lastBatch(_sender, _endBatchNumber, _pairCode, leftAmountLP, adjustedLeftAmountLP);
 
-        updateGlobalVariables(_sender, _pairCode, _KTY, _SDAO, _LP);
+    //     updateGlobalVariables(_sender, _pairCode, _KTY, _SDAO, _LP);
 
-        removeFromMonthlyDeposits(_KTY, _SDAO, _lockTime, adjustedWithdrawAmount.add(adjustedLeftAmountLP));
-    }
+    //     removeFromMonthlyDeposits(_KTY, _SDAO, _lockTime, adjustedWithdrawAmount.add(adjustedLeftAmountLP));
+    // }
 
-    function lastBatch(
-        address _sender, uint256 _endBatchNumber, uint256 _pairCode,
-        uint256 leftAmountLP, uint256 adjustedLeftAmountLP
-    ) private {
-        // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
-        if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
-            adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
-        }
-        if (leftAmountLP == stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
-            stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = 0;
-            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = 0;
-            stakers[_sender].adjustedStartingLPamount[_pairCode][_endBatchNumber] = 0;
-            stakers[_sender].batchLockedAt[_pairCode][_endBatchNumber] = 0;
-        } else if(leftAmountLP > stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
-            revert();
-        } else {
-            stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]
-                                                                   .sub(leftAmountLP);
-            stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber]
-                                                                   .sub(adjustedLeftAmountLP);
-        }
-    }
+    // function lastBatch(
+    //     address _sender, uint256 _endBatchNumber, uint256 _pairCode,
+    //     uint256 leftAmountLP, uint256 adjustedLeftAmountLP
+    // ) private {
+    //     // if eligible for Early Mining Bonus before program end, deduct it from totalLockedLPinEarlyMining
+    //     if (block.timestamp < programEndAt && isBatchEligibleForEarlyBonus(_sender, _endBatchNumber, _pairCode)) {
+    //         adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.sub(adjustedLeftAmountLP);
+    //     }
+    //     if (leftAmountLP == stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
+    //         stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = 0;
+    //         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = 0;
+    //         stakers[_sender].adjustedStartingLPamount[_pairCode][_endBatchNumber] = 0;
+    //         stakers[_sender].batchLockedAt[_pairCode][_endBatchNumber] = 0;
+    //     } else if(leftAmountLP > stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]) {
+    //         revert();
+    //     } else {
+    //         stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].batchLockedLPamount[_pairCode][_endBatchNumber]
+    //                                                                .sub(leftAmountLP);
+    //         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber] = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_endBatchNumber]
+    //                                                                .sub(adjustedLeftAmountLP);
+    //     }
+    // }
 
-    function updateGlobalVariables(
-        address _sender, uint256 _pairCode, uint256 _KTY, uint256 _SDAO, uint256 _LP
-    ) 
-        private
-    {
-        // all batches in pair code info
-        stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
+    // function updateGlobalVariables(
+    //     address _sender, uint256 _pairCode, uint256 _KTY, uint256 _SDAO, uint256 _LP
+    // ) 
+    //     private
+    // {
+    //     // all batches in pair code info
+    //     stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
         
-        // general staker info
-        stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
-        stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
+    //     // general staker info
+    //     stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
+    //     stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
 
-        // ========= update global variables =========
-        totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
-        totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
-        totalLockedLP = totalLockedLP.sub(_LP);
-    }
+    //     // ========= update global variables =========
+    //     totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
+    //     totalRewardsSDAOclaimed = totalRewardsSDAOclaimed.add(_SDAO);
+    //     totalLockedLP = totalLockedLP.sub(_LP);
+    // }
 
-    function removeFromMonthlyDeposits(
-        uint256 _KTY, uint256 _SDAO, uint256 _lockTime, uint256 _removeAmount
-    )
-        private
-    {
-        uint256 _currentMonth = getCurrentMonth();
+    // function removeFromMonthlyDeposits(
+    //     uint256 _KTY, uint256 _SDAO, uint256 _lockTime, uint256 _removeAmount
+    // )
+    //     private
+    // {
+    //     uint256 _currentMonth = getCurrentMonth();
 
-        // if rewards are 0, then all the deposits associated with this withdraw must have happened
-        // in the last month
-        if (_KTY == 0 && _SDAO == 0) {
-           uint256 _startingDay = yieldsCalculator.getDay(_lockTime);
-           uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
-            if (_daysInStartMonth == 0) {
-                adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(_removeAmount);
-            } else {
-                // if starting batch was locked partial month, then all the subsequent batches must
-                // have also been locked partial month
-                adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(DAILY_PORTION_IN_MONTH.mul(_removeAmount).div(base6));
-            }
-        }
+    //     // if rewards are 0, then all the deposits associated with this withdraw must have happened
+    //     // in the last month
+    //     if (_KTY == 0 && _SDAO == 0) {
+    //        uint256 _startingDay = yieldsCalculator.getDay(_lockTime);
+    //        uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
+    //         if (_daysInStartMonth == 0) {
+    //             adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
+    //                                          .sub(_removeAmount);
+    //         } else {
+    //             // if starting batch was locked partial month, then all the subsequent batches must
+    //             // have also been locked partial month
+    //             adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
+    //                                          .sub(DAILY_PORTION_IN_MONTH.mul(_removeAmount).div(base6));
+    //         }
+    //     }
 
-        if (_currentMonth < 5) {
-            for (uint256 i = _currentMonth; i < 6; i++) {
-                adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].sub(_removeAmount);
-            }
-        }
-    }
+    //     if (_currentMonth < 5) {
+    //         for (uint256 i = _currentMonth; i < 6; i++) {
+    //             adjustedMonthlyDeposits[i] = adjustedMonthlyDeposits[i].sub(_removeAmount);
+    //         }
+    //     }
+    // }
 
     /**
      * @param _sender address the address of the sender
@@ -993,7 +989,7 @@ contract YieldFarming is Ownable {
         private
     {
         // transfer liquidity tokens
-        require(IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).transfer(_user, _amountLP), "Fail to transfer liquidity token");
+        require(IUniswapV2Pair(pairPoolsInfo[_pairCode]).transfer(_user, _amountLP), "Fail to transfer liquidity token");
 
         // transfer rewards
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");

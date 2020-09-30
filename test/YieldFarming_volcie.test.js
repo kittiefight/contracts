@@ -605,9 +605,6 @@ contract("YieldFarming", accounts => {
       from: accounts[user]
     }).should.be.rejected;
 
-    await yieldFarming.withdrawByAmount(withdraw_LP_amount, pairCode, {
-      from: accounts[user]
-    }).should.be.rejected;
   });
 
   it("Approching the second month: Month 1", async () => {
