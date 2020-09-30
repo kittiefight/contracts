@@ -1046,7 +1046,8 @@ contract("YieldFarming", accounts => {
   
       newDepositEvents.map(async e => {
         console.log("\n==== Volcie Burnt ===");
-        console.log("    funder ", e.returnValues.burner);
+        console.log("    Burner ", e.returnValues.burner);
+        console.log("    Original Owner ", e.returnValues.originalOwner);
         console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
         console.log("    Deposit Number ", e.returnValues.depositNumber);
         console.log("    Pair Code ", e.returnValues.pairCode);

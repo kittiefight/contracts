@@ -77,7 +77,7 @@ contract YieldFarming is Ownable {
     struct VolcieToken {
         address originalOwner;   // the owner of this token at the time of minting
         uint256 generation;      // the generation of this token, between number 0 and 5
-        uint256 depositNumber;   // the deposit number associated with this token
+        uint256 depositNumber;   // the deposit number associated with this token and the original owner
         uint256 LP;              // the original LP locked in this volcie token
         uint256 pairCode;        // the pair code of the uniswap pair pool from which the LP come from
         uint256 lockedAt;        // the unix time at which this funds is locked
@@ -173,6 +173,7 @@ contract YieldFarming is Ownable {
 
     event VolcieTokenBurnt(
         address indexed burner,
+        address originalOwner,
         uint256 indexed volcieTokenID,
         uint256 indexed depositNumber,
         uint256 pairCode,
@@ -283,27 +284,28 @@ contract YieldFarming is Ownable {
         // require this token has not been burnt already
         require(volcieTokens[_volcieID].tokenBurnt == false, "This Volcie Token has already been burnt");
 
+        address _originalOwner = volcieTokens[_volcieID].originalOwner;
         uint256 _depositNumber = volcieTokens[_volcieID].depositNumber;
 
-        uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
-        uint256 _batchNumber = stakers[msg.sender].totalDeposits[_depositNumber][1];
+        uint256 _pairCode = stakers[_originalOwner].totalDeposits[_depositNumber][0];
+        uint256 _batchNumber = stakers[_originalOwner].totalDeposits[_depositNumber][1];
 
         // get the locked Liquidity token amount in this batch
-        uint256 _amountLP = stakers[msg.sender].batchLockedLPamount[_pairCode][_batchNumber];
+        uint256 _amountLP = stakers[_originalOwner].batchLockedLPamount[_pairCode][_batchNumber];
         require(_amountLP > 0, "No locked tokens in this deposit");
 
         volcie.burn(_volcieID);
 
         (uint256 _KTY, uint256 _SDAO) = yieldsCalculator.calculateRewardsByBatchNumber(msg.sender, _batchNumber, _pairCode);
 
-        _updateWithdrawByBatchNumber(msg.sender, _pairCode, _batchNumber, _amountLP, _KTY, _SDAO);
+        _updateWithdrawByBatchNumber(_originalOwner, _pairCode, _batchNumber, _amountLP, _KTY, _SDAO);
 
         _updateBurn(msg.sender, _volcieID, _KTY, _SDAO);
 
         _transferTokens(msg.sender, _pairCode, _amountLP, _KTY, _SDAO);
 
         emit VolcieTokenBurnt(
-            msg.sender, _volcieID, _depositNumber, _pairCode,
+            msg.sender, _originalOwner, _volcieID, _depositNumber, _pairCode,
             _batchNumber, _KTY, _SDAO, _amountLP, block.timestamp
         );
 
