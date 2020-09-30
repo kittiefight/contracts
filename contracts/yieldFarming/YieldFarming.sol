@@ -166,7 +166,7 @@ contract YieldFarming is Ownable {
         address indexed sender,
         uint256 indexed volcieTokenID,
         uint256 depositNumber,
-        uint256 pairCode,
+        uint256 indexed pairCode,
         uint256 lockedLP,
         uint256 depositTime
     );
@@ -184,16 +184,16 @@ contract YieldFarming is Ownable {
         uint256 withdrawTime
     );
 
-    event WithDrawn(
-        address indexed sender,
-        uint256 indexed pairCode,
-        uint256 KTYamount,
-        uint256 SDAOamount,
-        uint256 LPamount,
-        uint256 startBatchNumber,
-        uint256 endBatchNumber, 
-        uint256 withdrawTime
-    );
+    // event WithDrawn(
+    //     address indexed sender,
+    //     uint256 indexed pairCode,
+    //     uint256 KTYamount,
+    //     uint256 SDAOamount,
+    //     uint256 LPamount,
+    //     uint256 startBatchNumber,
+    //     uint256 endBatchNumber, 
+    //     uint256 withdrawTime
+    // );
 
     /*                                                 YIELD FARMING FUNCTIONS                                        */
     /* ============================================================================================================== */
@@ -293,6 +293,9 @@ contract YieldFarming is Ownable {
         // get the locked Liquidity token amount in this batch
         uint256 _amountLP = stakers[_originalOwner].batchLockedLPamount[_pairCode][_batchNumber];
         require(_amountLP > 0, "No locked tokens in this deposit");
+
+        uint256 _lockDuration = block.timestamp.sub(volcieTokens[_volcieID].lockedAt);
+        require(_lockDuration > MONTH, "Need to stake at least 30 days");
 
         volcie.burn(_volcieID);
 
@@ -936,21 +939,6 @@ contract YieldFarming is Ownable {
         totalLockedLP = totalLockedLP.sub(_LP);
 
         uint256 _currentMonth = getCurrentMonth();
-
-        if (_lockTime < monthsStartAt[_currentMonth]) {
-            // if rewards are 0, the deposit must have been made in the last month
-            if (_KTY == 0 && _SDAO == 0) {
-                uint256 _startingDay = yieldsCalculator.getDay(_lockTime);
-                uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
-                if (_daysInStartMonth == 0) {
-                    adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(adjustedLP);
-                } else {
-                    adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
-                                             .sub(startingLP);
-                } 
-            }
-        }
 
         if (_currentMonth < 5) {
             for (uint i = _currentMonth; i < 6; i++) {

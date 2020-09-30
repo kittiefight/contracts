@@ -1067,6 +1067,53 @@ contract("YieldFarming", accounts => {
        
   });
 
+  it("a user sells volcie tokens to another user", async () => {
+    let volcieIDs, volcieID
+    let seller = 18
+    let buyer = 20
+    volcieIDs = await volcie.allTokenOf(accounts[seller])
+    for (let i=0; i<volcieIDs.length; i++) {
+        volcieID = volcieIDs[i].toNumber()
+        await volcie.approve(accounts[buyer], volcieID, { from: accounts[seller] }).should.be.fulfilled
+        await volcie.transferFrom(accounts[seller], accounts[buyer], volcieID, { from: accounts[seller] }).should.be.fulfilled
+
+        await yieldFarming.withdrawByVolcieID(volcieID, {
+            from: accounts[seller]
+          }).should.be.rejected;
+    }
+  })
+
+  it("a user can burn volcie tokens bought from other users, and get rewards", async () => {
+    let volcieIDs, volcieID
+    let buyer = 20
+    volcieIDs = await volcie.allTokenOf(accounts[18])
+    for (let i=0; i<volcieIDs.length; i++) {
+        volcieID = volcieIDs[i].toNumber()
+        await yieldFarming.withdrawByVolcieID(volcieID, {
+            from: accounts[buyer]
+          }).should.be.fulfilled;
+    }
+
+    let newDepositEvents = await yieldFarming.getPastEvents("VolcieTokenBurnt", {
+        fromBlock: 0,
+        toBlock: "latest"
+      });
+  
+      newDepositEvents.map(async e => {
+        console.log("\n==== Volcie Burnt ===");
+        console.log("    Burner ", e.returnValues.burner);
+        console.log("    Original Owner ", e.returnValues.originalOwner);
+        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+        console.log("    Deposit Number ", e.returnValues.depositNumber);
+        console.log("    Pair Code ", e.returnValues.pairCode);
+        console.log("    KTY rewards ", e.returnValues.KTYamount);
+        console.log("    SDAO rewards ", e.returnValues.SDAOamount);
+        console.log("    Locked LP ", e.returnValues.LPamount);
+        console.log("    Deposit Time ", e.returnValues.withdrawTime);
+        console.log("========================\n");
+      });
+  })
+
 
   it("transfers leftover rewards to a new address", async () => {
     let advancement = 90 * 24 * 60 * 60;
