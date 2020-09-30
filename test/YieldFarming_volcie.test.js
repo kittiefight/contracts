@@ -1033,11 +1033,18 @@ contract("YieldFarming", accounts => {
   it("users withdraw LP and burn volcies", async () => {
     let advancement = DAY * 2;
     await advanceTimeAndBlock(advancement);
-    let user = 1
-    let volcieID = 1
-    await yieldFarming.withdrawByVolcieID(volcieID, {
-      from: accounts[user]
-    }).should.be.fulfilled;
+    let user, volcieIDs, volcieID
+    for (let i=1; i<18; i++) {
+        user = i
+        volcieIDs = await volcie.allTokenOf(accounts[i])
+        //console.log(volcieIDs)
+        for (let j=0; j<volcieIDs.length; j++) {
+            volcieID = volcieIDs[j].toNumber()
+            await yieldFarming.withdrawByVolcieID(volcieID, {
+                from: accounts[i]
+              }).should.be.fulfilled;
+        }
+    }
 
     let newDepositEvents = await yieldFarming.getPastEvents("VolcieTokenBurnt", {
         fromBlock: 0,

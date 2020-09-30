@@ -88,12 +88,12 @@ contract YieldFarming is Ownable {
         uint256 sdaoRewards;     // SDAO rewards distributed upon burning this token
     }
 
-    mapping(address => Staker) public stakers;
+    mapping(address => Staker) internal stakers;
 
-    mapping(uint256 => address) public pairPoolsInfo;
+    mapping(uint256 => address) internal pairPoolsInfo;
 
     /// @dev mapping volcieToken NFT to its properties
-    mapping(uint256 => VolcieToken) public volcieTokens;
+    mapping(uint256 => VolcieToken) internal volcieTokens;
 
     // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
     // month => total amount of Uniswap Liquidity tokens deposted in this month, adjusted to the bubbling factor
@@ -444,15 +444,22 @@ contract YieldFarming is Ownable {
 
     function getVolcieToken(uint256 _volcieTokenID) public view
         returns (
-            uint256 depositNumber, uint256 generation, uint256 LP,
-            uint256 pairCode, uint256 lockTime
+            address originalOwner, uint256 depositNumber, uint256 generation,
+            uint256 LP, uint256 pairCode, uint256 lockTime, bool tokenBurnt,
+            address tokenBurntBy, uint256 ktyRewardsDistributed, uint256 sdaoRewardsDistributed
         )
     {
+        originalOwner = volcieTokens[_volcieTokenID].originalOwner;
         depositNumber = volcieTokens[_volcieTokenID].depositNumber;
         generation = volcieTokens[_volcieTokenID].generation;
         LP = volcieTokens[_volcieTokenID].LP;
         pairCode = volcieTokens[_volcieTokenID].pairCode;
         lockTime = volcieTokens[_volcieTokenID].lockedAt;
+        tokenBurnt = volcieTokens[_volcieTokenID].tokenBurnt;
+        tokenBurntBy = volcieTokens[_volcieTokenID].tokenBurntBy;
+        ktyRewardsDistributed = volcieTokens[_volcieTokenID].ktyRewards;
+        sdaoRewardsDistributed = volcieTokens[_volcieTokenID].sdaoRewards;
+
     }
 
     /**
@@ -930,17 +937,19 @@ contract YieldFarming is Ownable {
 
         uint256 _currentMonth = getCurrentMonth();
 
-        // if rewards are 0, the deposit must have been made in the last month
-        if (_KTY == 0 && _SDAO == 0) {
-            uint256 _startingDay = yieldsCalculator.getDay(_lockTime);
-            uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
-            if (_daysInStartMonth == 0) {
-                adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
+        if (_lockTime < monthsStartAt[_currentMonth]) {
+            // if rewards are 0, the deposit must have been made in the last month
+            if (_KTY == 0 && _SDAO == 0) {
+                uint256 _startingDay = yieldsCalculator.getDay(_lockTime);
+                uint256 _daysInStartMonth = 30 - yieldsCalculator.getElapsedDaysInMonth(_startingDay, _currentMonth.sub(1));
+                if (_daysInStartMonth == 0) {
+                    adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
                                              .sub(adjustedLP);
-            } else {
-                adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
+                } else {
+                    adjustedMonthlyDeposits[_currentMonth.sub(1)] = adjustedMonthlyDeposits[_currentMonth.sub(1)]
                                              .sub(startingLP);
-            } 
+                } 
+            }
         }
 
         if (_currentMonth < 5) {
