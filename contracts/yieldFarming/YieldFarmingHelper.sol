@@ -19,7 +19,7 @@ contract YieldFarmingHelper is Ownable {
 
     address public ktyWethPair;
     address public ktySdaoPair;
-    IUniswapV2Pair public daiWethPair;
+    address public daiWethPair;
 
     address public kittieFightTokenAddr;
     address public superDaoTokenAddr;
@@ -41,7 +41,7 @@ contract YieldFarmingHelper is Ownable {
         YieldsCalculator _yieldsCalculator,
         address _ktyWethPair,
         address _ktySdaoPair,
-        IUniswapV2Pair _daiWethPair,
+        address _daiWethPair,
         address _kittieFightToken,
         address _superDaoToken,
         address _weth,
@@ -100,7 +100,7 @@ contract YieldFarmingHelper is Ownable {
      * @dev Set Uniswap Dai-Weth Pair contract
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function setDaiWethPair(IUniswapV2Pair _daiWethPair) public onlyOwner {
+    function setDaiWethPair(address _daiWethPair) public onlyOwner {
         daiWethPair = _daiWethPair;
     }
 
@@ -215,26 +215,26 @@ contract YieldFarmingHelper is Ownable {
         }
     }
 
-    function isDepositValid(address _staker, uint256 _depositNumber)
-        external view returns (bool)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-        return isBatchValid(_staker, _pairCode, _batchNumber);
-    }
+    // function isDepositValid(address _staker, uint256 _depositNumber)
+    //     external view returns (bool)
+    // {
+    //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
+    //     return isBatchValid(_staker, _pairCode, _batchNumber);
+    // }
 
-    function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
-        external view returns (bool)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-        return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
-    }
+    // function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
+    //     external view returns (bool)
+    // {
+    //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
+    //     return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
+    // }
 
-    function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
-        external view returns (bool)
-    {
-        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-        return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
-    }
+    // function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
+    //     external view returns (bool)
+    // {
+    //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
+    //     return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
+    // }
 
     function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256, uint256) {
         uint256[] memory depositsEarlyBonus = yieldFarming.getDepositsForEarlyBonus(_staker);
@@ -312,13 +312,13 @@ contract YieldFarmingHelper is Ownable {
         return (rewardsKTY, rewardsSDAO);
     }
 
-    /**
-     * @return uint256 the total amount of Uniswap Liquidity tokens deposited
-     *         including both locked tokens and withdrawn tokens
-     */
-    function getTotalDeposits() external view returns (uint256) {
-        return yieldFarming.totalDepositedLP();
-    }
+    // /**
+    //  * @return uint256 the total amount of Uniswap Liquidity tokens deposited
+    //  *         including both locked tokens and withdrawn tokens
+    //  */
+    // function getTotalDeposits() external view returns (uint256) {
+    //     return yieldFarming.totalDepositedLP();
+    // }
 
     /**
      * @return uint256 the total amount of KittieFightToken rewards yet to be distributed
@@ -512,22 +512,22 @@ contract YieldFarmingHelper is Ownable {
         return uint256(_reserveOtherToken);
     }
 
-    /**
-     * @dev returns the amount of ether(wrapped) reserves in ktyWethPair contract.
-     */
-    function getReserveETH()
-        public view
-        returns (uint256)
-    {
-        uint112 _reserveETH;
-        if (isKtyToken0(wethAddr)) {
-            (,_reserveETH,) = IUniswapV2Pair(ktyWethPair).getReserves();
-        } else {
-            (_reserveETH,,) = IUniswapV2Pair(ktyWethPair).getReserves();
-        }
+    // /**
+    //  * @dev returns the amount of ether(wrapped) reserves in ktyWethPair contract.
+    //  */
+    // function getReserveETH()
+    //     public view
+    //     returns (uint256)
+    // {
+    //     uint112 _reserveETH;
+    //     if (isKtyToken0(wethAddr)) {
+    //         (,_reserveETH,) = IUniswapV2Pair(ktyWethPair).getReserves();
+    //     } else {
+    //         (_reserveETH,,) = IUniswapV2Pair(ktyWethPair).getReserves();
+    //     }
 
-        return uint256(_reserveETH);
-    }
+    //     return uint256(_reserveETH);
+    // }
 
     /**
      * @dev returns the KTY to ether price on uniswap, that is, how many ether for 1 KTY
@@ -535,7 +535,7 @@ contract YieldFarmingHelper is Ownable {
     function KTY_ETH_price() public view returns (uint256) {
         uint256 _amountKTY = 1e18;  // 1 KTY
         uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
-        uint256 _reserveETH = getReserveETH();
+        uint256 _reserveETH = getReserveOtherToken(wethAddr, ktyWethPair);
         return UniswapV2Library.getAmountIn(_amountKTY, _reserveETH, _reserveKTY);
     } 
 
@@ -545,7 +545,7 @@ contract YieldFarmingHelper is Ownable {
     function ETH_KTY_price() public view returns (uint256) {
         uint256 _amountETH = 1e18;  // 1 KTY
         uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
-        uint256 _reserveETH = getReserveETH();
+        uint256 _reserveETH = getReserveOtherToken(wethAddr, ktyWethPair);
         return UniswapV2Library.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
     }
 
@@ -568,9 +568,9 @@ contract YieldFarmingHelper is Ownable {
     {
         uint112 _reserveDAI;
         if (isDaiToken0()) {
-            (_reserveDAI,,) = daiWethPair.getReserves();
+            (_reserveDAI,,) = IUniswapV2Pair(daiWethPair).getReserves();
         } else {
-            (,_reserveDAI,) = daiWethPair.getReserves();
+            (,_reserveDAI,) = IUniswapV2Pair(daiWethPair).getReserves();
         }
 
         return uint256(_reserveDAI);
@@ -585,9 +585,9 @@ contract YieldFarmingHelper is Ownable {
     {
         uint112 _reserveETHfromDAI;
         if (isDaiToken0()) {
-            (,_reserveETHfromDAI,) = daiWethPair.getReserves();
+            (,_reserveETHfromDAI,) = IUniswapV2Pair(daiWethPair).getReserves();
         } else {
-            (_reserveETHfromDAI,,) = daiWethPair.getReserves();
+            (_reserveETHfromDAI,,) = IUniswapV2Pair(daiWethPair).getReserves();
         }
 
         return uint256(_reserveETHfromDAI);
@@ -622,7 +622,7 @@ contract YieldFarmingHelper is Ownable {
         // get the amount of DAI for 1 ether
         uint256 daiPerEther = ETH_DAI_price();
         // get the amount of DAI for 1 KTY
-        uint256 daiPerKTY = etherPerKTY.mul(daiPerEther).div(1000000000000000000);
+        uint256 daiPerKTY = etherPerKTY.mul(daiPerEther).div(base18);
         return daiPerKTY;
     }
 
@@ -635,7 +635,7 @@ contract YieldFarmingHelper is Ownable {
         // get the amount of KTY for 1 ether
         uint256 ktyPerEther = ETH_KTY_price();
         // get the amount of KTY for 1 DAI
-        uint256 ktyPerDAI = etherPerDAI.mul(ktyPerEther).div(1000000000000000000);
+        uint256 ktyPerDAI = etherPerDAI.mul(ktyPerEther).div(base18);
         return ktyPerDAI;
     }
    

@@ -242,7 +242,7 @@ contract("YieldFarming", accounts => {
       weth.address,
       ktyWethPair.address
     );
-    let ethReserve = await yieldFarmingHelper.getReserveETH();
+    let ethReserve = await yieldFarmingHelper.getReserveOtherToken(weth.address, ktyWethPair.address);;
     console.log("reserveKTY:", weiToEther(ktyReserve));
     console.log("reserveETH:", weiToEther(ethReserve));
 
@@ -312,11 +312,11 @@ contract("YieldFarming", accounts => {
 
   it("users provides liquidity to Uniswap KTY-SDAO pool", async () => {
     const sdao_amount = new BigNumber(
-      web3.utils.toWei("5000", "ether") // 5000 SDAO   = 100 ether
+      web3.utils.toWei("5000", "ether") 
     );
 
     const kty_amount = new BigNumber(
-      web3.utils.toWei("50000", "ether") //100 ethers * 500 = 50,000 kty
+      web3.utils.toWei("5000", "ether") 
     );
 
     let balanceLP;
@@ -344,16 +344,16 @@ contract("YieldFarming", accounts => {
 
     let totalSupplyLP = await ktySDAOPair.totalSupply();
     console.log(
-      "Total Supply of Uniswap Liquidity tokens in KTY-GNO:",
+      "Total Supply of Uniswap Liquidity tokens in KTY-SDAO:",
       weiToEther(totalSupplyLP)
     );
 
     // check balance of pair contract
     let ktyBalance = await kittieFightToken.balanceOf(ktySDAOPair.address);
-    console.log("KTY balance of KTY-GNO pair contract:", ktyBalance.toString());
-    let sdaoBalancce = await gno.balanceOf(ktySDAOPair.address);
+    console.log("KTY balance of KTY-SDAO pair contract:", ktyBalance.toString());
+    let sdaoBalancce = await superDaoToken.balanceOf(ktySDAOPair.address);
     console.log(
-      "WETH balance of KTY-WETH pair contract:",
+      "SDAO balance of KTY-SDAO pair contract:",
       sdaoBalancce.toString()
     );
   });
@@ -401,7 +401,7 @@ contract("YieldFarming", accounts => {
     console.log("KTY balance of KTY-GNO pair contract:", ktyBalance.toString());
     let gnoBalancce = await gno.balanceOf(ktyGNOPair.address);
     console.log(
-      "WETH balance of KTY-WETH pair contract:",
+      "GNO balance of KTY-GNO pair contract:",
       gnoBalancce.toString()
     );
   });
@@ -1184,7 +1184,7 @@ contract("YieldFarming", accounts => {
         console.log("    KTY rewards ", e.returnValues.KTYamount);
         console.log("    SDAO rewards ", e.returnValues.SDAOamount);
         console.log("    Locked LP ", e.returnValues.LPamount);
-        console.log("    Deposit Time ", e.returnValues.withdrawTime);
+        console.log("    Withdrawal Time ", e.returnValues.withdrawTime);
         console.log("========================\n");
       });
   })
