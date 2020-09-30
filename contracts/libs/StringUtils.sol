@@ -15,7 +15,7 @@ library StringUtils {
         pure
         returns (string memory)
     {
-        return string(abi.encode(a, b));
+        return string(abi.encodePacked(a, b));
     }
 
     function concat(
@@ -23,7 +23,7 @@ library StringUtils {
         string memory b,
         string memory c
     ) internal pure returns (string memory) {
-        return string(abi.encode(a, b, c));
+        return string(abi.encodePacked(a, b, c));
     }
 
     function fromUint256(uint256 value) internal pure returns (string memory) {
