@@ -717,7 +717,7 @@ contract YieldsCalculator is Ownable {
 
         uint256 LPvalueInDai = yieldFarmingHelper.getLPvalueInDai(_pairCode, _LP);
         uint256 ktyRewardsInDai = _KTY.mul(kty_dai_price).div(base18);
-        uint256 sdaoRewardsInDai = _SDAO.mul(sdao_kty_price).div(base18);
+        uint256 sdaoRewardsInDai = _SDAO.mul(sdao_kty_price).div(base18).mul(kty_dai_price).div(base18);
         return (LPvalueInDai, ktyRewardsInDai, sdaoRewardsInDai);
     }
 
