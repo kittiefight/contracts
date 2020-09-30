@@ -6,6 +6,7 @@ require("chai")
   .should();
 
 //ARTIFACTS
+const Volcie = artifacts.require("VolcieToken");
 const YieldFarming = artifacts.require("YieldFarming");
 const SuperDaoToken = artifacts.require("MockSuperDaoToken");
 const KittieFightToken = artifacts.require("KittieFightToken");
@@ -96,7 +97,8 @@ advanceTimeAndBlock = async time => {
 };
 
 //Contract instances
-let yieldFarming,
+let volcie,
+  yieldFarming,
   superDaoToken,
   kittieFightToken,
   factory,
@@ -112,6 +114,7 @@ let yieldFarming,
 contract("YieldFarming", accounts => {
   it("instantiate contracts", async () => {
     // YieldFarming
+    volcie = await Volcie.deployed()
     yieldFarming = await YieldFarming.deployed();
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
@@ -593,12 +596,12 @@ contract("YieldFarming", accounts => {
 
     let user = 1;
     let pairCode = 0;
-    let depositNumber = 1;
+    let voicieID = 1;
     let withdraw_LP_amount = new BigNumber(
       web3.utils.toWei("20", "ether") //20 Uniswap Liquidity tokens
     );
 
-    await yieldFarming.withdrawByDepositNumber(depositNumber, {
+    await yieldFarming.withdrawByVolcieID(voicieID, {
       from: accounts[user]
     }).should.be.rejected;
 
@@ -1050,8 +1053,8 @@ contract("YieldFarming", accounts => {
         console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
         console.log("    Deposit Number ", e.returnValues.depositNumber);
         console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    Locked LP ", e.returnValues.KTYamount);
-        console.log("    Locked LP ", e.returnValues.SDAOamount);
+        console.log("    KTY rewards ", e.returnValues.KTYamount);
+        console.log("    SDAO rewards ", e.returnValues.SDAOamount);
         console.log("    Locked LP ", e.returnValues.LPamount);
         console.log("    Deposit Time ", e.returnValues.withdrawTime);
         console.log("========================\n");

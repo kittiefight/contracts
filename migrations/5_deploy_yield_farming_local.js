@@ -336,6 +336,8 @@ module.exports = (deployer, network, accounts) => {
         yieldFarmingHelper.address
       )
 
+      await volcie.addMinter(yieldFarming.address);
+
       // set up Dai-Weth pair - only needed in truffle local test, not needed in rinkeby or mainnet
       const ethAmount = new BigNumber(
         web3.utils.toWei("10", "ether") //0.1 ethers
