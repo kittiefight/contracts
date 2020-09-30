@@ -1092,6 +1092,7 @@ contract("YieldFarming", accounts => {
     let user, volcieIDs, volcieID, claimedRewards
     for (let i=1; i<18; i++) {
         user = i
+        console.log("user", i)
         volcieIDs = await volcie.allTokenOf(accounts[i])
         //console.log(volcieIDs)
         for (let j=0; j<volcieIDs.length; j++) {

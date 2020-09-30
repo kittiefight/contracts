@@ -68,8 +68,8 @@ contract YieldFarming is Ownable {
         uint256[][200] factor;                           // A 2d array showing the LP bubbling factor in each batch of each Pair Pool
         uint256[][200] batchLockedAt;                    // A 2d array showing the locked time of each batch in each Pair Pool
         uint256[200] totalLPlockedbyPairCode;            // Total amount of Liquidity tokens locked by this stader from all pair pools
-        uint256 rewardsKTYclaimed;                       // Total amount of KittieFightToken rewards already claimed by this Staker
-        uint256 rewardsSDAOclaimed;                      // Total amount of SuperDaoToken rewards already claimed by this Staker
+        //uint256 rewardsKTYclaimed;                       // Total amount of KittieFightToken rewards already claimed by this Staker
+        //uint256 rewardsSDAOclaimed;                      // Total amount of SuperDaoToken rewards already claimed by this Staker
         uint256[] depositNumberForEarlyBonus;            // An array of all the deposit number eligible for early bonus for this staker
     }
 
@@ -930,8 +930,8 @@ contract YieldFarming is Ownable {
         stakers[_sender].totalLPlockedbyPairCode[_pairCode] = stakers[_sender].totalLPlockedbyPairCode[_pairCode].sub(_LP);
         
         // general staker info
-        stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
-        stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
+        //stakers[_sender].rewardsKTYclaimed = stakers[_sender].rewardsKTYclaimed.add(_KTY);
+        //stakers[_sender].rewardsSDAOclaimed = stakers[_sender].rewardsSDAOclaimed.add(_SDAO);
 
         // ========= update public variables =========
         totalRewardsKTYclaimed = totalRewardsKTYclaimed.add(_KTY);
