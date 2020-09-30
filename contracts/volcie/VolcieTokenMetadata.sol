@@ -66,7 +66,7 @@ contract VolcieTokenMetadata is Context, ERC165, ERC721, IERC721Metadata {
      * Reverts if the token ID does not exist.
      */
     function tokenURI(uint256 tokenId) external view returns (string memory) {
-        require(_exists(tokenId), "EthieTokenMetadata: URI query for nonexistent token");
+        require(_exists(tokenId), "VolcieTokenMetadata: URI query for nonexistent token");
         return _baseURI.concat(tokenId.fromUint256(), ".json");
     }
 
