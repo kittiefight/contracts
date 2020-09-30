@@ -323,6 +323,7 @@ module.exports = (deployer, network, accounts) => {
         yieldFarming.address,
         yieldsCalculator.address,
         ktyWethPair.address,
+        ktySDAOPair.address,
         daiWethPair.address,
         kittieFightToken.address,
         superDaoToken.address,

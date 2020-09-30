@@ -299,7 +299,7 @@ contract YieldFarming is Ownable {
 
         volcie.burn(_volcieID);
 
-        (uint256 _KTY, uint256 _SDAO) = yieldsCalculator.calculateRewardsByBatchNumber(msg.sender, _batchNumber, _pairCode);
+        (uint256 _KTY, uint256 _SDAO) = yieldsCalculator.calculateRewardsByBatchNumber(_originalOwner, _batchNumber, _pairCode);
 
         _updateWithdrawByBatchNumber(_originalOwner, _pairCode, _batchNumber, _amountLP, _KTY, _SDAO);
 

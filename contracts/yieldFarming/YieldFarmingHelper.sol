@@ -18,6 +18,7 @@ contract YieldFarmingHelper is Ownable {
     YieldsCalculator public yieldsCalculator;
 
     address public ktyWethPair;
+    address public ktySdaoPair;
     IUniswapV2Pair public daiWethPair;
 
     address public kittieFightTokenAddr;
@@ -39,6 +40,7 @@ contract YieldFarmingHelper is Ownable {
         YieldFarming _yieldFarming,
         YieldsCalculator _yieldsCalculator,
         address _ktyWethPair,
+        address _ktySdaoPair,
         IUniswapV2Pair _daiWethPair,
         address _kittieFightToken,
         address _superDaoToken,
@@ -51,6 +53,7 @@ contract YieldFarmingHelper is Ownable {
         setYieldFarming(_yieldFarming);
         setYieldsCalculator(_yieldsCalculator);
         setKtyWethPair(_ktyWethPair);
+        setKtySdaoPair(_ktySdaoPair);
         setDaiWethPair(_daiWethPair);
         setRwardsTokenAddress(_kittieFightToken, true);
         setRwardsTokenAddress(_superDaoToken, false);
@@ -83,6 +86,14 @@ contract YieldFarmingHelper is Ownable {
      */
     function setKtyWethPair(address _ktyWethPair) public onlyOwner {
         ktyWethPair = _ktyWethPair;
+    }
+
+    /**
+     * @dev Set Uniswap KTY-SDAO Pair contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setKtySdaoPair(address _ktySdaoPair) public onlyOwner {
+        ktySdaoPair = _ktySdaoPair;
     }
 
     /**
@@ -401,12 +412,28 @@ contract YieldFarmingHelper is Ownable {
         (,address pairPoolAddress,) = yieldFarming.getPairPool(_pairCode);
         uint256 balance = IUniswapV2Pair(pairPoolAddress).balanceOf(address(yieldFarming));
         uint256 totalSupply = IUniswapV2Pair(pairPoolAddress).totalSupply();
-        uint256 percentLPinYieldFarm = balance.mul(base6).div(totalSupply);
+        uint256 percentLPinYieldFarm = balance.mul(base18).div(totalSupply);
         
         uint256 totalKtyInPairPool = IERC20(kittieFightTokenAddr).balanceOf(pairPoolAddress);
 
-        return totalKtyInPairPool.mul(percentLPinYieldFarm).mul(KTY_DAI_price())
-               .div(base18).div(base6);
+        return totalKtyInPairPool.mul(2).mul(percentLPinYieldFarm).mul(KTY_DAI_price())
+               .div(base18).div(base18);
+    }
+
+    /**
+       For example, if I have 1 of 1000 LP of KTY-WETH, and there is total 10000 KTY and 300 ETH 
+       staked in this pair, then 1 have 10 KTY + 0.3 ETH. And that is equal to 20 KTY or 0.6 ETH total.
+     */
+    function getLPvalueInDai(uint256 _pairCode, uint256 _LP) public view returns (uint256) {
+        (,address pairPoolAddress,) = yieldFarming.getPairPool(_pairCode);
+    
+        uint256 totalSupply = IUniswapV2Pair(pairPoolAddress).totalSupply();
+        uint256 percentLPinYieldFarm = _LP.mul(base18).div(totalSupply);
+        
+        uint256 totalKtyInPairPool = IERC20(kittieFightTokenAddr).balanceOf(pairPoolAddress);
+
+        return totalKtyInPairPool.mul(2).mul(percentLPinYieldFarm).mul(KTY_DAI_price())
+               .div(base18).div(base18);
     }
 
     function getWalletBalance(address _staker, uint256 _pairCode) external view returns (uint256) {
@@ -469,6 +496,23 @@ contract YieldFarmingHelper is Ownable {
     }
 
     /**
+     * @dev returns the amount of reserves of another token in kty-anotherToken Pair contract.
+     */
+    function getReserveOtherToken(address _otherTokenAddr, address _pairPoolAddr)
+        public view
+        returns (uint256)
+    {
+        uint112 _reserveOtherToken;
+        if (isKtyToken0(_otherTokenAddr)) {
+            (,_reserveOtherToken,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
+        } else {
+            (_reserveOtherToken,,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
+        }
+
+        return uint256(_reserveOtherToken);
+    }
+
+    /**
      * @dev returns the amount of ether(wrapped) reserves in ktyWethPair contract.
      */
     function getReserveETH()
@@ -503,6 +547,16 @@ contract YieldFarmingHelper is Ownable {
         uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
         uint256 _reserveETH = getReserveETH();
         return UniswapV2Library.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
+    }
+
+    /**
+     * @dev returns the SDAO KTY price on uniswap, that is, how many KTYs for 1 SDAO
+     */
+    function SDAO_KTY_price() public view returns (uint256) {
+        uint256 _amountSDAO = 1e18;  // 1 SDAO
+        uint256 _reserveKTY = getReserveKTY(superDaoTokenAddr, ktySdaoPair);
+        uint256 _reserveSDAO = getReserveOtherToken(superDaoTokenAddr, ktySdaoPair);
+        return UniswapV2Library.getAmountIn(_amountSDAO, _reserveKTY, _reserveSDAO);
     }
 
     /**
