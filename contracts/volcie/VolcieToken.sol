@@ -7,6 +7,8 @@ import "../libs/openzeppelin_v2_5_0/access/roles/MinterRole.sol";
 import "../libs/openzeppelin_v2_5_0/math/SafeMath.sol";
 import "../libs/openzeppelin_v2_5_0/drafts/Counters.sol";
 import "../libs/StringUtils.sol";
+import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
+import "../uniswapKTY/uniswap-v2-core/interfaces/IERC20.sol";
 import "./VolcieTokenMetadata.sol";
 
 contract VolcieToken is ERC721, ERC721Enumerable, ERC721Pausable, VolcieTokenMetadata, MinterRole {
@@ -15,9 +17,10 @@ contract VolcieToken is ERC721, ERC721Enumerable, ERC721Pausable, VolcieTokenMet
     using StringUtils for string;
     using StringUtils for uint256;
 
-    string constant NAME     = "Kittiefight VOLCIE";
-    string constant SYMBOL   = "VOLCIE";
-    string constant BASE_URI = "https://volcie.kittiefight.io/metadata/";
+    string constant internal NAME     = "Kittiefight VOLCIE";
+    string constant internal SYMBOL   = "VOLCIE";
+    string constant internal BASE_URI = "https://volcie.kittiefight.io/metadata/";
+    bytes32 constant internal KTY_NAME_HASH = keccak256(bytes("KTY"));
 
     struct TokenProperties {
         address lpToken;
@@ -77,11 +80,21 @@ contract VolcieToken is ERC721, ERC721Enumerable, ERC721Pausable, VolcieTokenMet
     }
 
 
-    function generateName(uint256 tokenId, address lpAddress, uint256 lpAmount, uint256 creationTime) public pure returns(string memory) {
+    function generateName(uint256 tokenId, address lpToken, uint256 lpAmount, uint256 creationTime) public view returns(string memory) {
+        string memory pair = getPairName(IUniswapV2Pair(lpToken));
         string memory id  = tokenId.fromUint256();
         string memory amnt = lpAmount.fromUint256(18, 4);
         string memory creation = creationTime.fromUint256();
-        return StringUtils.concat(amnt,"KTY-LP").concat("_CR").concat(creation).concat("_").concat(id);
+        return StringUtils.concat(amnt,pair).concat("_CR").concat(creation).concat("_").concat(id);
+    }
+
+    function getPairName(IUniswapV2Pair pair) internal view returns(string memory) {
+        string memory token0n = IERC20(pair.token0()).symbol();
+        string memory token1n = IERC20(pair.token1()).symbol();
+        if(keccak256(bytes(token1n)) == KTY_NAME_HASH){
+            (token1n, token0n) = (token0n, token1n);
+        }
+        return string(abi.encodePacked(token0n,"-",token1n));
     }
 
 }
