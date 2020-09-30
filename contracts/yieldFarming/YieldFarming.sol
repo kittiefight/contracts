@@ -97,7 +97,9 @@ contract YieldFarming is Ownable {
 
     // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
     // month => total amount of Uniswap Liquidity tokens deposted in this month, adjusted to the bubbling factor
-    mapping(uint256 => uint256) public adjustedMonthlyDeposits;   
+    mapping(uint256 => uint256) public adjustedMonthlyDeposits;
+
+    mapping(address => uint256[2]) internal rewardsClaimed;
 
     uint256 private unlocked = 1;
 
@@ -586,10 +588,8 @@ contract YieldFarming is Ownable {
      * @return uint256 the total amount of KittieFightToken that have been claimed by this _staker
      * @return uint256 the total amount of SuperDaoToken that have been claimed by this _staker
      */
-    function getTotalRewardsClaimedByStaker(address _staker) external view returns (uint256, uint256) {
-        uint256 totalKTYclaimedByStaker = stakers[_staker].rewardsKTYclaimed;
-        uint256 totalSDAOclaimedByStaker = stakers[_staker].rewardsSDAOclaimed;
-        return (totalKTYclaimedByStaker, totalSDAOclaimedByStaker);
+    function getTotalRewardsClaimedByStaker(address _staker) external view returns (uint256[2] memory) {
+        return rewardsClaimed[_staker];
     }
 
     function getAdjustedTotalMonthlyDeposits(uint256 _month) external view returns (uint256) {
@@ -975,6 +975,9 @@ contract YieldFarming is Ownable {
         volcieTokens[_volcieTokenID].tokenBurntBy = _burner;
         volcieTokens[_volcieTokenID].ktyRewards = _ktyRewards;
         volcieTokens[_volcieTokenID].sdaoRewards = _sdaoRewards;
+
+        rewardsClaimed[_burner][0] = rewardsClaimed[_burner][0].add(_ktyRewards);
+        rewardsClaimed[_burner][1] = rewardsClaimed[_burner][1].add(_sdaoRewards);
     }
 
     /**

@@ -578,7 +578,9 @@ contract YieldsCalculator is Ownable {
      */
     function getAccruedRewards(address _staker) public view returns (uint256, uint256) {
         // get rewards already claimed
-        (uint256 _claimedKTY, uint256 _claimedSDAO) = yieldFarming.getTotalRewardsClaimedByStaker(_staker);
+        uint256[2] memory rewardsClaimed = yieldFarming.getTotalRewardsClaimedByStaker(_staker);
+        uint256 _claimedKTY = rewardsClaimed[0];
+        uint256 _claimedSDAO = rewardsClaimed[1];
 
         // get rewards earned but yet to be claimed
         (uint256 _KTYtoClaim, uint256 _SDAOtoClaim) = getRewardsToClaim(_staker);

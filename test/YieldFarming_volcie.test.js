@@ -1033,17 +1033,22 @@ contract("YieldFarming", accounts => {
   it("users withdraw LP and burn volcies", async () => {
     let advancement = DAY * 2;
     await advanceTimeAndBlock(advancement);
-    let user, volcieIDs, volcieID
+    let user, volcieIDs, volcieID, claimedRewards
     for (let i=1; i<18; i++) {
         user = i
         volcieIDs = await volcie.allTokenOf(accounts[i])
         //console.log(volcieIDs)
         for (let j=0; j<volcieIDs.length; j++) {
             volcieID = volcieIDs[j].toNumber()
+
             await yieldFarming.withdrawByVolcieID(volcieID, {
                 from: accounts[i]
               }).should.be.fulfilled;
         }
+
+        claimedRewards = await yieldFarming.getTotalRewardsClaimedByStaker(accounts[i])
+        console.log("Total KTY reward claimed:", weiToEther(claimedRewards[0]))
+        console.log("Total SDAO reward claimed:", weiToEther(claimedRewards[1]))
     }
 
     let newDepositEvents = await yieldFarming.getPastEvents("VolcieTokenBurnt", {
@@ -1084,18 +1089,26 @@ contract("YieldFarming", accounts => {
   })
 
   it("a user can burn volcie tokens bought from other users, and get rewards", async () => {
-    let volcieIDs, volcieID
+    let volcieIDs, volcieID, estimatedValues
     let buyer = 20
-    volcieIDs = await volcie.allTokenOf(accounts[18])
+    volcieIDs = await volcie.allTokenOf(accounts[buyer])
     for (let i=0; i<volcieIDs.length; i++) {
         volcieID = volcieIDs[i].toNumber()
+        estimatedValues = await yieldsCalculator.getVolcieCurrentValues(volcieID);
+        console.log("estimated LP values:", weiToEther(estimatedValues.currentValues[0]))
+        console.log("estimated KTY values:", weiToEther(estimatedValues.currentValues[1]))
+        console.log("estimated SDAO values:", weiToEther(estimatedValues.currentValues[2]))
+        console.log("estimated LP values in DAI:", weiToEther(estimatedValues.currentValuesInDai[0]))
+        console.log("estimated KTY values in DAI:", weiToEther(estimatedValues.currentValuesInDai[1]))
+        console.log("estimated SDAO values in DAI:", weiToEther(estimatedValues.currentValuesInDai[2]))
+
         await yieldFarming.withdrawByVolcieID(volcieID, {
             from: accounts[buyer]
           }).should.be.fulfilled;
     }
 
     let newDepositEvents = await yieldFarming.getPastEvents("VolcieTokenBurnt", {
-        fromBlock: 0,
+        fromBlock: "latest",
         toBlock: "latest"
       });
   
