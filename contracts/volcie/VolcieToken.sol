@@ -20,7 +20,7 @@ contract VolcieToken is ERC721, ERC721Enumerable, ERC721Pausable, VolcieTokenMet
     string constant BASE_URI = "https://volcie.kittiefight.io/metadata/";
 
     struct TokenProperties {
-        uint256 lpAddress;
+        address lpToken;
         uint256 lpAmount;
         uint256 creationTime;
     }
@@ -38,7 +38,6 @@ contract VolcieToken is ERC721, ERC721Enumerable, ERC721Pausable, VolcieTokenMet
      * @notice Mint a new Ethie token
      * @param to Owner of a new token
      * @param lpToken Token locked as collaterla for this Volcie
-     * @param lockPeriod Lock time
      * @return id of the new token
      */
     function mint(address to, address lpToken, uint256 lpAmount)  public onlyMinter returns (uint256) {
@@ -63,8 +62,8 @@ contract VolcieToken is ERC721, ERC721Enumerable, ERC721Pausable, VolcieTokenMet
 
     function name(uint256 tokenId) public view returns(string memory) {
         TokenProperties memory p = properties[tokenId];
-        require(p.ethAmount > 0, "VolcieToken: name query for nonexistent token");
-        return generateName(tokenId, p.lpAddress, p.lpAmount, p.creationTime);
+        require(p.lpAmount > 0, "VolcieToken: name query for nonexistent token");
+        return generateName(tokenId, p.lpToken, p.lpAmount, p.creationTime);
     }
 
     function allTokenOf(address holder) public view returns(uint256[] memory) {

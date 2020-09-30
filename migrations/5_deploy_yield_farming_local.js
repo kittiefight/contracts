@@ -4,6 +4,7 @@
 const BigNumber = web3.utils.BN;
 
 //ARTIFACTS
+const Volcie = artifacts.require("VolcieToken.sol");
 const YieldFarming = artifacts.require("YieldFarming");
 const SuperDaoToken = artifacts.require("MockSuperDaoToken");
 const KittieFightToken = artifacts.require("KittieFightToken");
@@ -67,6 +68,7 @@ const TOKENS_SOLD = new BigNumber(
 module.exports = (deployer, network, accounts) => {
   deployer
     .deploy(YieldFarming)
+    .then(() => deployer.deploy(Volcie))
     .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
     .then(() => deployer.deploy(WETH))
@@ -88,6 +90,9 @@ module.exports = (deployer, network, accounts) => {
     .then(() => deployer.deploy(UNI, ERC20_TOKEN_SUPPLY))
     .then(async () => {
       console.log("\nGetting contract instances...");
+
+      // Volcie Token
+      volcie = await Volcie.deployed();
 
       // YieldFarming
       yieldFarming = await YieldFarming.deployed();
@@ -304,6 +309,7 @@ module.exports = (deployer, network, accounts) => {
 
       await yieldFarming.initialize(
         pairPoolAddrs,
+        volcie.address,
         kittieFightToken.address,
         superDaoToken.address,
         yieldFarmingHelper.address,

@@ -15,6 +15,7 @@ import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import "../uniswapKTY/uniswap-v2-core/interfaces/IERC20.sol";
 import "./YieldFarmingHelper.sol";
 import "./YieldsCalculator.sol";
+import '../interfaces/IVolcieToken.sol';
 
 contract YieldFarming is Ownable {
     using SafeMath for uint256;
@@ -22,10 +23,11 @@ contract YieldFarming is Ownable {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
 
-    IERC20 public kittieFightToken;              // KittieFightToken contract variable
-    IERC20 public superDaoToken;                 // SuperDaoToken contract variable
-    YieldFarmingHelper public yieldFarmingHelper;       // YieldFarmingHelper contract variable
-    YieldsCalculator public yieldsCalculator;           // YieldFarmingHelper contract variable
+    IVolcieToken public volcie;                       // EthieToken contract
+    IERC20 public kittieFightToken;                      // KittieFightToken contract variable
+    IERC20 public superDaoToken;                         // SuperDaoToken contract variable
+    YieldFarmingHelper public yieldFarmingHelper;        // YieldFarmingHelper contract variable
+    YieldsCalculator public yieldsCalculator;            // YieldFarmingHelper contract variable
 
     uint256 constant internal base18 = 1000000000000000000;
     uint256 constant internal base6 = 1000000;
@@ -69,16 +71,33 @@ contract YieldFarming is Ownable {
         uint256 rewardsKTYclaimed;                       // Total amount of KittieFightToken rewards already claimed by this Staker
         uint256 rewardsSDAOclaimed;                      // Total amount of SuperDaoToken rewards already claimed by this Staker
         uint256[] depositNumberForEarlyBonus;            // An array of all the deposit number eligible for early bonus for this staker
-        //uint256 totalDepositedLPs;
     }
 
     struct pairPoolInfo {
         address pairPoolAddress;
     }
 
+    /// @dev a VOLCIE Token NFT's associated properties
+    struct VolcieToken {
+        address originalOwner;   // the owner of this token at the time of minting
+        uint256 generation;      // the generation of this token, between number 0 and 5
+        uint256 depositNumber;   // the deposit number associated with this token
+        uint256 LP;              // the original LP locked in this volcie token
+        uint256 pairCode;        // the pair code of the uniswap pair pool from which the LP come from
+        uint256 lockedAt;        // the unix time at which this funds is locked
+        bool tokenBurnt;         // true if this token has been burnt
+        uint256 tokenBurntAt;    // the time when this token was burnt, 0 if token is not burnt
+        address tokenBurntBy;    // who burnt this token (if this token was burnt)
+        uint256 ktyRewards;      // KTY rewards distributed upon burning this token
+        uint256 sdaoRewards;     // SDAO rewards distributed upon burning this token
+    }
+
     mapping(address => Staker) public stakers;
 
     mapping(uint256 => pairPoolInfo) public pairPoolsInfo;
+
+    /// @dev mapping volcieToken NFT to its properties
+    mapping(uint256 => VolcieToken) public volcieTokens;
 
     // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
     // month => total amount of Uniswap Liquidity tokens deposted in this month, adjusted to the bubbling factor
@@ -103,6 +122,7 @@ contract YieldFarming is Ownable {
     function initialize
     (
         address[] calldata _pairPoolAddr,
+        IVolcieToken _volcie,
         IERC20 _kittieFightToken,
         IERC20 _superDaoToken,
         YieldFarmingHelper _yieldFarmingHelper,
@@ -114,6 +134,7 @@ contract YieldFarming is Ownable {
         external initializer
     {
         Ownable.initialize(_msgSender());
+        setVolcieToken(_volcie);
         setRewardsToken(_kittieFightToken, true);
         setRewardsToken(_superDaoToken, false);
 
@@ -147,11 +168,23 @@ contract YieldFarming is Ownable {
     /* ============================================================================================================== */
     event Deposited(
         address indexed sender,
-        uint256 indexed depositNumber,
-        uint256 indexed pairCode,
-        uint256 batchNumber,
-        uint256 depositAmount,
+        uint256 indexed volcieTokenID,
+        uint256 depositNumber,
+        uint256 pairCode,
+        uint256 lockedLP,
         uint256 depositTime
+    );
+
+    event VolcieTokenBurnt(
+        address indexed burner,
+        uint256 indexed volcieTokenID,
+        uint256 indexed depositNumber,
+        uint256 pairCode,
+        uint256 batchNumber,
+        uint256 KTYamount,
+        uint256 SDAOamount,
+        uint256 LPamount,
+        uint256 withdrawTime
     );
 
     event WithDrawn(
@@ -187,7 +220,17 @@ contract YieldFarming is Ownable {
 
         require(IUniswapV2Pair(pairPoolsInfo[_pairCode].pairPoolAddress).transferFrom(msg.sender, address(this), _amountLP), "Fail to deposit liquidity tokens");
 
-        _addDeposit(msg.sender, _pairCode, _amountLP, block.timestamp);
+        uint256 _depositNumber = stakers[msg.sender].totalDeposits.length;
+
+        _addDeposit(msg.sender, _depositNumber, _pairCode, _amountLP, block.timestamp);
+
+        (,address _LPaddress,) = getPairPool(_pairCode);
+
+        uint256 _volcieTokenID = _mint(msg.sender, _LPaddress, _amountLP);
+
+        _updateMint(msg.sender, _depositNumber, _amountLP, _pairCode, _volcieTokenID);
+
+        emit Deposited(msg.sender, _volcieTokenID, _depositNumber, _pairCode, _amountLP, block.timestamp);
 
         return true;
     }
@@ -231,12 +274,20 @@ contract YieldFarming is Ownable {
      * @notice Withdraw Uniswap Liquidity tokens locked in a batch with _batchNumber specified by the staker
      * @notice Three tokens (Uniswap Liquidity Tokens, KittieFightTokens, and SuperDaoTokens) are transferred
      *         to the user upon successful withdraw
-     * @param _depositNumber the deposit number of the deposit from which the user wishes to withdraw the Uniswap Liquidity tokens locked 
+     * @param _volcieID the deposit number of the deposit from which the user wishes to withdraw the Uniswap Liquidity tokens locked 
      * @return bool true if the withdraw is successful
      */
-    function withdrawByDepositNumber(uint256 _depositNumber) external lock returns (bool) {
+    function withdrawByVolcieID(uint256 _volcieID) external lock returns (bool) {
         (bool _isPayDay,) = yieldFarmingHelper.isPayDay();
         require(_isPayDay, "Can only withdraw on pay day");
+
+        address currentOwner = volcie.ownerOf(_volcieID);
+        require(currentOwner == msg.sender, "Only the owner of this token can burn it");
+
+        // require this token has not been burnt already
+        require(volcieTokens[_volcieID].tokenBurnt == false, "This Volcie Token has already been burnt");
+
+        uint256 _depositNumber = volcieTokens[_volcieID].depositNumber;
 
         uint256 _pairCode = stakers[msg.sender].totalDeposits[_depositNumber][0];
         uint256 _batchNumber = stakers[msg.sender].totalDeposits[_depositNumber][1];
@@ -245,13 +296,21 @@ contract YieldFarming is Ownable {
         uint256 _amountLP = stakers[msg.sender].batchLockedLPamount[_pairCode][_batchNumber];
         require(_amountLP > 0, "No locked tokens in this deposit");
 
+        volcie.burn(_volcieID);
+
         (uint256 _KTY, uint256 _SDAO) = yieldsCalculator.calculateRewardsByBatchNumber(msg.sender, _batchNumber, _pairCode);
 
         _updateWithdrawByBatchNumber(msg.sender, _pairCode, _batchNumber, _amountLP, _KTY, _SDAO);
 
+        _updateBurn(msg.sender, _volcieID, _KTY, _SDAO);
+
         _transferTokens(msg.sender, _pairCode, _amountLP, _KTY, _SDAO);
 
-        emit WithDrawn(msg.sender, _pairCode, _KTY, _SDAO, _amountLP, _batchNumber, _batchNumber, block.timestamp);
+        emit VolcieTokenBurnt(
+            msg.sender, _volcieID, _depositNumber, _pairCode,
+            _batchNumber, _KTY, _SDAO, _amountLP, block.timestamp
+        );
+
         return true;
     }
 
@@ -272,6 +331,14 @@ contract YieldFarming is Ownable {
         pairPoolsInfo[_pairCode].pairPoolAddress = _pairPoolAddr;
 
         totalNumberOfPairPools = totalNumberOfPairPools.add(1);
+    }
+
+    /**
+     * @dev Set VOLCIE contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setVolcieToken(IVolcieToken _volcie) public onlyOwner {
+        volcie = _volcie;
     }
 
     /**
@@ -375,6 +442,19 @@ contract YieldFarming is Ownable {
         address otherToken = (token0 == address(kittieFightToken))?token1:token0;
         string memory pairName = string(abi.encodePacked(kittieFightToken.symbol(),"-",IERC20(otherToken).symbol()));
         return (pairName, pairPoolsInfo[_pairCode].pairPoolAddress, otherToken);
+    }
+
+    function getVolcieToken(uint256 _volcieTokenID) public view
+        returns (
+            uint256 depositNumber, uint256 generation, uint256 LP,
+            uint256 pairCode, uint256 lockTime
+        )
+    {
+        depositNumber = volcieTokens[_volcieTokenID].depositNumber;
+        generation = volcieTokens[_volcieTokenID].generation;
+        LP = volcieTokens[_volcieTokenID].LP;
+        pairCode = volcieTokens[_volcieTokenID].pairCode;
+        lockTime = volcieTokens[_volcieTokenID].lockedAt;
     }
 
     /**
@@ -550,8 +630,11 @@ contract YieldFarming is Ownable {
      * @param _amount uint256 the amount of Uniswap Liquidity tokens to be deposited
      * @param _lockedAt uint256 the time when this depoist is made
      */
-    function _addDeposit(address _sender, uint256 _pairCode, uint256 _amount, uint256 _lockedAt) private {
-        uint256 _depositNumber = stakers[_sender].totalDeposits.length;
+    function _addDeposit
+    (
+        address _sender, uint256 _depositNumber, uint256 _pairCode, uint256 _amount, uint256 _lockedAt
+    ) private {
+        // uint256 _depositNumber = stakers[_sender].totalDeposits.length;
         uint256 _batchNumber = stakers[_sender].batchLockedLPamount[_pairCode].length;
         uint256 _currentMonth = getCurrentMonth();
         uint256 _factor = yieldFarmingHelper.bubbleFactor(_pairCode);
@@ -597,9 +680,29 @@ contract YieldFarming is Ownable {
             adjustedTotalLockedLPinEarlyMining = adjustedTotalLockedLPinEarlyMining.add(_adjustedAmount);
             stakers[_sender].depositNumberForEarlyBonus.push(_depositNumber);
         }
-
-        emit Deposited(msg.sender, _depositNumber, _pairCode, _batchNumber, _amount, _lockedAt);
     }
+
+    /**
+     * @dev Updates funder profile when minting a new token to a funder
+     */
+    function _updateMint
+    (
+        address _originalOwner,
+        uint256 _depositNumber,
+        uint256 _LP,
+        uint256 _pairCode,
+        uint256 _volcieTokenID
+    )
+        internal
+    {
+        volcieTokens[_volcieTokenID].generation = getCurrentMonth();
+        volcieTokens[_volcieTokenID].depositNumber = _depositNumber;
+        volcieTokens[_volcieTokenID].LP = _LP;
+        volcieTokens[_volcieTokenID].pairCode = _pairCode;
+        volcieTokens[_volcieTokenID].lockedAt = now;
+        volcieTokens[_volcieTokenID].originalOwner = _originalOwner;
+    }
+
 
     function _updateWithDrawByAmountCase1
     (
@@ -856,6 +959,30 @@ contract YieldFarming is Ownable {
     }
 
     /**
+     * @dev Updates funder profile when an existing Ethie Token NFT is burnt
+     * @param _burner address who burns this NFT
+     * @param _volcieTokenID uint256 the ID of the burnt Ethie Token NFT
+     */
+    function _updateBurn
+    (
+        address _burner,
+        uint256 _volcieTokenID,
+        uint256 _ktyRewards,
+        uint256 _sdaoRewards
+    )
+        internal
+    {
+        // set values to 0 can get gas refund
+        volcieTokens[_volcieTokenID].LP = 0;
+        volcieTokens[_volcieTokenID].lockedAt = 0;
+        volcieTokens[_volcieTokenID].tokenBurnt = true;
+        volcieTokens[_volcieTokenID].tokenBurntAt = now;
+        volcieTokens[_volcieTokenID].tokenBurntBy = _burner;
+        volcieTokens[_volcieTokenID].ktyRewards = _ktyRewards;
+        volcieTokens[_volcieTokenID].sdaoRewards = _sdaoRewards;
+    }
+
+    /**
      * @param _user address the address of the _user to whom the tokens are transferred
      * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @param _amountLP uint256 the amount of Uniswap Liquidity tokens to be transferred to the _user
@@ -871,5 +998,23 @@ contract YieldFarming is Ownable {
         // transfer rewards
         require(kittieFightToken.transfer(_user, _amountKTY), "Fail to transfer KTY");
         require(superDaoToken.transfer(_user, _amountSDAO), "Fail to transfer SDAO");
+    }
+
+     /**
+     * @dev Called by deposit(), pass values to generate Volcie Token NFT with all atrributes as listed in params
+     * @param _to address who this Ethie Token NFT is minted to
+     * @param _LPamount uint256 the amount of LPs associated with this NFT
+     * @return uint256 ID of the LP Token NFT minted
+     */
+    function _mint
+    (
+        address _to,
+        address _LPaddress,
+        uint256 _LPamount
+    )
+        private
+        returns (uint256)
+    {
+        return volcie.mint(_to, _LPaddress, _LPamount);
     }
 }
