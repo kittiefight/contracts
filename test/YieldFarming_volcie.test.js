@@ -19,6 +19,7 @@ const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const GNO = artifacts.require("MockGNO");
 const KtyGNOPair = artifacts.require("UniswapV2Pair");
+const KtySDAOPair = artifacts.require("UniswapV2Pair");
 
 const DAY = 48 * 60;
 
@@ -109,7 +110,8 @@ let volcie,
   dai,
   daiWethPair,
   gno,
-  ktyGNOPair;
+  ktyGNOPair,
+  ktySDAOPair;
 
 contract("YieldFarming", accounts => {
   it("instantiate contracts", async () => {
@@ -131,6 +133,12 @@ contract("YieldFarming", accounts => {
       kittieFightToken.address
     );
     ktyWethPair = await KtyWethPair.at(ktyPairAddress);
+
+    const ktySdaoPairAddress = await factory.getPair(
+        superDaoToken.address,
+        kittieFightToken.address
+      );
+      ktySDAOPair = await KtySDAOPair.at(ktySdaoPairAddress);
 
     const daiPairAddress = await factory.getPair(weth.address, dai.address);
     daiWethPair = await DaiWethPair.at(daiPairAddress);
@@ -299,6 +307,54 @@ contract("YieldFarming", accounts => {
     console.log(
       "WETH balance of KTY-WETH pair contract:",
       wethBalancce.toString()
+    );
+  });
+
+  it("users provides liquidity to Uniswap KTY-SDAO pool", async () => {
+    const sdao_amount = new BigNumber(
+      web3.utils.toWei("5000", "ether") // 5000 SDAO   = 100 ether
+    );
+
+    const kty_amount = new BigNumber(
+      web3.utils.toWei("50000", "ether") //100 ethers * 500 = 50,000 kty
+    );
+
+    let balanceLP;
+
+    for (let i = 1; i < 19; i++) {
+      await kittieFightToken.transfer(accounts[i], kty_amount);
+      await kittieFightToken.transfer(ktySDAOPair.address, kty_amount, {
+        from: accounts[i]
+      });
+      await superDaoToken.transfer(accounts[i], sdao_amount);
+      await superDaoToken.transfer(ktySDAOPair.address, sdao_amount, {
+        from: accounts[i]
+      });
+      await ktySDAOPair.mint(accounts[i], {from: accounts[i]});
+
+      balanceLP = await ktySDAOPair.balanceOf(accounts[i]);
+
+      console.log(
+        "User",
+        i,
+        ": Balance of Uniswap Liquidity tokens:",
+        weiToEther(balanceLP)
+      );
+    }
+
+    let totalSupplyLP = await ktySDAOPair.totalSupply();
+    console.log(
+      "Total Supply of Uniswap Liquidity tokens in KTY-GNO:",
+      weiToEther(totalSupplyLP)
+    );
+
+    // check balance of pair contract
+    let ktyBalance = await kittieFightToken.balanceOf(ktySDAOPair.address);
+    console.log("KTY balance of KTY-GNO pair contract:", ktyBalance.toString());
+    let sdaoBalancce = await gno.balanceOf(ktySDAOPair.address);
+    console.log(
+      "WETH balance of KTY-WETH pair contract:",
+      sdaoBalancce.toString()
     );
   });
 
@@ -1089,18 +1145,23 @@ contract("YieldFarming", accounts => {
   })
 
   it("a user can burn volcie tokens bought from other users, and get rewards", async () => {
-    let volcieIDs, volcieID, estimatedValues
+    let volcieIDs, volcieID, estimatedValues, earlyBonus
     let buyer = 20
     volcieIDs = await volcie.allTokenOf(accounts[buyer])
     for (let i=0; i<volcieIDs.length; i++) {
         volcieID = volcieIDs[i].toNumber()
+        console.log("volcie ID:", volcieID)
+        console.log("\n==== Before Burning ===");
+        earlyBonus = await yieldsCalculator.getEarlyBonusForVolcie(volcieID)
+        console.log("estimated early bonus:", weiToEther(earlyBonus))
         estimatedValues = await yieldsCalculator.getVolcieCurrentValues(volcieID);
-        console.log("estimated LP values:", weiToEther(estimatedValues.currentValues[0]))
+        console.log("LP values:", weiToEther(estimatedValues.currentValues[0]))
         console.log("estimated KTY values:", weiToEther(estimatedValues.currentValues[1]))
         console.log("estimated SDAO values:", weiToEther(estimatedValues.currentValues[2]))
-        console.log("estimated LP values in DAI:", weiToEther(estimatedValues.currentValuesInDai[0]))
+        console.log("LP values in DAI:", weiToEther(estimatedValues.currentValuesInDai[0]))
         console.log("estimated KTY values in DAI:", weiToEther(estimatedValues.currentValuesInDai[1]))
         console.log("estimated SDAO values in DAI:", weiToEther(estimatedValues.currentValuesInDai[2]))
+        console.log("========================\n");
 
         await yieldFarming.withdrawByVolcieID(volcieID, {
             from: accounts[buyer]

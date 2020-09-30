@@ -488,6 +488,11 @@ contract YieldsCalculator is Ownable {
         return _amountLP.mul(_earlyBonus).div(_adjustedTotalLockedLPinEarlyMining);
     }
 
+    function getEarlyBonusForVolcie(uint256 _volcieID) external view returns (uint256) {
+        (,,,uint256 _LP,,,,,,) = yieldFarming.getVolcieToken(_volcieID);
+        return getEarlyBonus(_LP);
+    }
+
     function calculateRewardsByDepositNumber(address _staker, uint256 _depositNumber)
         public view
         returns (uint256, uint256)
