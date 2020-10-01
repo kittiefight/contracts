@@ -4,6 +4,7 @@
 const BigNumber = web3.utils.BN;
 
 //ARTIFACTS
+const Volcie = artifacts.require("VolcieToken.sol");
 const YieldFarming = artifacts.require("YieldFarming");
 const SuperDaoToken = artifacts.require("MockSuperDaoToken");
 const KittieFightToken = artifacts.require("KittieFightToken");
@@ -76,6 +77,7 @@ const TOKENS_SOLD = new BigNumber(
 module.exports = (deployer, network, accounts) => {
   // deployer
   //   .deploy(YieldFarming)
+  //   .then(() => deployer.deploy(Volcie))
   //   .then(() => deployer.deploy(SuperDaoToken, ERC20_TOKEN_SUPPLY))
   //   // .then(() => deployer.deploy(KittieFightToken, ERC20_TOKEN_SUPPLY))
   //   // .then(() => deployer.deploy(WETH))
@@ -97,6 +99,10 @@ module.exports = (deployer, network, accounts) => {
   //   // .then(() => deployer.deploy(UNI, ERC20_TOKEN_SUPPLY))
   //   .then(async () => {
   //     console.log("\nGetting contract instances...");
+
+  //     // Volcie Token
+  //     volcie = await Volcie.deployed();
+  //     console.log("Volcie:", volcie.address)
 
   //     // YieldFarming
   //     yieldFarming = await YieldFarming.deployed();
@@ -286,28 +292,6 @@ module.exports = (deployer, network, accounts) => {
   //     console.log("yieldsCalculator:", yieldsCalculator.address);
 
   //     console.log("\nInitializing contracts...");
-  //     const pairPoolNames = [
-  //       "KTY_WETH_V2"
-  //       // "KTY_ANT_V2",
-  //       // "KTY_YDAI_V2",
-  //       // "KTY_YYFI_V2",
-  //       // "KTY_YYCRV_V2",
-  //       // "KTY_YALINK_V2",
-  //       // "KTY_ALEND_V2",
-  //       // "KTY_ASNX_V2",
-  //       // "KTY_GNO_V2",
-  //       // "KTY_2KEY_V2",
-  //       // "KTY_YETH_V2",
-  //       // "KTY_AYFI_V2",
-  //       // "KTY_UNI_V2",
-  //       // "KTY_SDAO_V2"
-  //     ]
-
-  //     let bytesNames = [];
-
-  //     for (i = 0; i < pairPoolNames.length; i++) {
-  //       bytesNames.push(web3.utils.asciiToHex(pairPoolNames[i]));
-  //     }
   
   //     const pairPoolAddrs = [
   //       ktyWethPair.address
@@ -326,23 +310,6 @@ module.exports = (deployer, network, accounts) => {
   //       // ktySDAOPair.address
   //     ]
 
-  //     const tokenAddrs = [
-  //       weth.address
-  //       // ant.address,
-  //       // dai.address,
-  //       // yYFI.address,
-  //       // yyCRV.address,
-  //       // yaLINK.address,
-  //       // aLend.address,
-  //       // aSNX.address,
-  //       // gno.address,
-  //       // _2key.address,
-  //       // yETH.address,
-  //       // aYFI.address,
-  //       // uni.address,
-  //       // superDaoToken.address
-  //     ]
-
   //     const ktyUnlockRates = [
   //       300000, 250000, 150000, 100000, 100000, 100000
   //     ]
@@ -351,12 +318,12 @@ module.exports = (deployer, network, accounts) => {
   //       165000, 165000, 165000, 165000, 165000, 175000
   //     ]
 
-  //     const programStartTime = 1601064000;
+  //     const latestBlock = await web3.eth.getBlock('latest');
+  //     const programStartTime = latestBlock.timestamp; //Math.floor(new Date().getTime() / 1000)
 
   //     await yieldFarming.initialize(
-  //       bytesNames,
   //       pairPoolAddrs,
-  //       tokenAddrs,
+  //       volcie.address,
   //       kittieFightToken.address,
   //       superDaoToken.address,
   //       yieldFarmingHelper.address,
@@ -380,7 +347,8 @@ module.exports = (deployer, network, accounts) => {
   //     await yieldsCalculator.initialize(
   //       TOKENS_SOLD,
   //       yieldFarming.address,
-  //       yieldFarmingHelper.address
+  //       yieldFarmingHelper.address,
+  //       volcie.address
   //     )
 
   //     // set up Dai-Weth pair - only needed in truffle local test, not needed in rinkeby or mainnet

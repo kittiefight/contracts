@@ -18,7 +18,6 @@ contract YieldFarmingHelper is Ownable {
     YieldsCalculator public yieldsCalculator;
 
     address public ktyWethPair;
-    address public ktySdaoPair;
     address public daiWethPair;
 
     address public kittieFightTokenAddr;
@@ -40,7 +39,6 @@ contract YieldFarmingHelper is Ownable {
         YieldFarming _yieldFarming,
         YieldsCalculator _yieldsCalculator,
         address _ktyWethPair,
-        address _ktySdaoPair,
         address _daiWethPair,
         address _kittieFightToken,
         address _superDaoToken,
@@ -53,7 +51,6 @@ contract YieldFarmingHelper is Ownable {
         setYieldFarming(_yieldFarming);
         setYieldsCalculator(_yieldsCalculator);
         setKtyWethPair(_ktyWethPair);
-        setKtySdaoPair(_ktySdaoPair);
         setDaiWethPair(_daiWethPair);
         setRwardsTokenAddress(_kittieFightToken, true);
         setRwardsTokenAddress(_superDaoToken, false);
@@ -86,14 +83,6 @@ contract YieldFarmingHelper is Ownable {
      */
     function setKtyWethPair(address _ktyWethPair) public onlyOwner {
         ktyWethPair = _ktyWethPair;
-    }
-
-    /**
-     * @dev Set Uniswap KTY-SDAO Pair contract
-     * @dev This function can only be carreid out by the owner of this contract.
-     */
-    function setKtySdaoPair(address _ktySdaoPair) public onlyOwner {
-        ktySdaoPair = _ktySdaoPair;
     }
 
     /**
