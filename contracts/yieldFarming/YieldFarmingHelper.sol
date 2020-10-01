@@ -132,7 +132,7 @@ contract YieldFarmingHelper is Ownable {
         public view returns (uint256 reserveKTY, uint256 totalSupplyLP) 
     {
         (,address pairPoolAddress, address _tokenAddr) = yieldFarming.getPairPool(_pairCode);
-        reserveKTY = getReserveKTY(_tokenAddr, pairPoolAddress);
+        (reserveKTY,) = getReserve(kittieFightTokenAddr, _tokenAddr, pairPoolAddress);
         totalSupplyLP = IUniswapV2Pair(pairPoolAddress).totalSupply();
     }
 
@@ -227,13 +227,6 @@ contract YieldFarmingHelper is Ownable {
     // {
     //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
     //     return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
-    // }
-
-    // function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
-    //     external view returns (bool)
-    // {
-    //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-    //     return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     // }
 
     function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256, uint256) {
@@ -447,95 +440,30 @@ contract YieldFarmingHelper is Ownable {
 
     // Getters Uniswap
 
-
-    function isKtyToken0(address _tokenAddr)
-        public view returns (bool)
-    {
-        address token0;
-        address token1;
-
-        (token0, token1) = UniswapV2Library.sortTokens(kittieFightTokenAddr, _tokenAddr);
-
-        if (token0 == kittieFightTokenAddr) {
-            return true;
-        } 
-
-        return false;
-    }
-
-    function isDaiToken0()
-        public view returns (bool)
-    {
-        address token0;
-        address token1;
-
-        (token0, token1) = UniswapV2Library.sortTokens(daiAddr, wethAddr);
-
-        if (token0 == daiAddr) {
-            return true;
-        } 
-        
-        return false;
-    }
-
     /**
-     * @dev returns the amount of KTY reserves in ktyWethPair contract.
+     * @dev returns the amount of reserves for the two tokens in uniswap pair contract.
      */
-    function getReserveKTY(address _otherTokenAddr, address _pairPoolAddr)
-        public view
-        returns (uint256)
+    function getReserve(address _tokenA, address _tokenB, address _pairPool)
+        public view returns (uint256 reserveA, uint256 reserveB)
     {
-        uint112 _reserveKTY;
-        if (isKtyToken0(_otherTokenAddr)) {
-            (_reserveKTY,,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
-        } else {
-            (,_reserveKTY,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
+        IUniswapV2Pair pair = IUniswapV2Pair(_pairPool);
+        address token0 = pair.token0();
+        address token1 = pair.token1();
+        if (token0 == _tokenA) {
+            (reserveA,,) = pair.getReserves();
+            (,reserveB,) = pair.getReserves();
+        } else if (token0 == _tokenB) {
+            (,reserveA,) = pair.getReserves();
+            (reserveB,,) = pair.getReserves();
         }
-
-        return uint256(_reserveKTY);
     }
-
-    /**
-     * @dev returns the amount of reserves of another token in kty-anotherToken Pair contract.
-     */
-    function getReserveOtherToken(address _otherTokenAddr, address _pairPoolAddr)
-        public view
-        returns (uint256)
-    {
-        uint112 _reserveOtherToken;
-        if (isKtyToken0(_otherTokenAddr)) {
-            (,_reserveOtherToken,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
-        } else {
-            (_reserveOtherToken,,) = IUniswapV2Pair(_pairPoolAddr).getReserves();
-        }
-
-        return uint256(_reserveOtherToken);
-    }
-
-    // /**
-    //  * @dev returns the amount of ether(wrapped) reserves in ktyWethPair contract.
-    //  */
-    // function getReserveETH()
-    //     public view
-    //     returns (uint256)
-    // {
-    //     uint112 _reserveETH;
-    //     if (isKtyToken0(wethAddr)) {
-    //         (,_reserveETH,) = IUniswapV2Pair(ktyWethPair).getReserves();
-    //     } else {
-    //         (_reserveETH,,) = IUniswapV2Pair(ktyWethPair).getReserves();
-    //     }
-
-    //     return uint256(_reserveETH);
-    // }
 
     /**
      * @dev returns the KTY to ether price on uniswap, that is, how many ether for 1 KTY
      */
     function KTY_ETH_price() public view returns (uint256) {
         uint256 _amountKTY = 1e18;  // 1 KTY
-        uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
-        uint256 _reserveETH = getReserveOtherToken(wethAddr, ktyWethPair);
+        (uint256 _reserveKTY, uint256 _reserveETH) = getReserve(kittieFightTokenAddr, wethAddr, ktyWethPair);
         return UniswapV2Library.getAmountIn(_amountKTY, _reserveETH, _reserveKTY);
     } 
 
@@ -544,53 +472,8 @@ contract YieldFarmingHelper is Ownable {
      */
     function ETH_KTY_price() public view returns (uint256) {
         uint256 _amountETH = 1e18;  // 1 KTY
-        uint256 _reserveKTY = getReserveKTY(wethAddr, ktyWethPair);
-        uint256 _reserveETH = getReserveOtherToken(wethAddr, ktyWethPair);
+        (uint256 _reserveKTY, uint256 _reserveETH) = getReserve(kittieFightTokenAddr, wethAddr, ktyWethPair);
         return UniswapV2Library.getAmountIn(_amountETH, _reserveKTY, _reserveETH);
-    }
-
-    /**
-     * @dev returns the SDAO KTY price on uniswap, that is, how many KTYs for 1 SDAO
-     */
-    function SDAO_KTY_price() public view returns (uint256) {
-        uint256 _amountSDAO = 1e18;  // 1 SDAO
-        uint256 _reserveKTY = getReserveKTY(superDaoTokenAddr, ktySdaoPair);
-        uint256 _reserveSDAO = getReserveOtherToken(superDaoTokenAddr, ktySdaoPair);
-        return UniswapV2Library.getAmountIn(_amountSDAO, _reserveKTY, _reserveSDAO);
-    }
-
-    /**
-     * @dev returns the amount of KTY reserves in ktyWethPair contract.
-     */
-    function getReserveDAI()
-        public view
-        returns (uint256)
-    {
-        uint112 _reserveDAI;
-        if (isDaiToken0()) {
-            (_reserveDAI,,) = IUniswapV2Pair(daiWethPair).getReserves();
-        } else {
-            (,_reserveDAI,) = IUniswapV2Pair(daiWethPair).getReserves();
-        }
-
-        return uint256(_reserveDAI);
-    }
-
-    /**
-     * @dev returns the amount of ether(wrapped) reserves in daiWethPair contract.
-     */
-    function getReserveETHfromDAI()
-        public view
-        returns (uint256)
-    {
-        uint112 _reserveETHfromDAI;
-        if (isDaiToken0()) {
-            (,_reserveETHfromDAI,) = IUniswapV2Pair(daiWethPair).getReserves();
-        } else {
-            (_reserveETHfromDAI,,) = IUniswapV2Pair(daiWethPair).getReserves();
-        }
-
-        return uint256(_reserveETHfromDAI);
     }
 
     /**
@@ -598,9 +481,8 @@ contract YieldFarmingHelper is Ownable {
      */
     function DAI_ETH_price() public view returns (uint256) {
         uint256 _amountDAI = 1e18;  // 1 KTY
-        uint256 _reserveDAI = getReserveDAI();
-        uint256 _reserveETHfromDAI = getReserveETHfromDAI();
-        return UniswapV2Library.getAmountIn(_amountDAI, _reserveETHfromDAI, _reserveDAI);
+        (uint256 _reserveDAI, uint256 _reserveETH) = getReserve(daiAddr, wethAddr, daiWethPair);
+        return UniswapV2Library.getAmountIn(_amountDAI, _reserveETH, _reserveDAI);
     }
 
     /**
@@ -608,9 +490,8 @@ contract YieldFarmingHelper is Ownable {
      */
     function ETH_DAI_price() public view returns (uint256) {
         uint256 _amountETH = 1e18;  // 1 KTY
-        uint256 _reserveDAI = getReserveDAI();
-        uint256 _reserveETHfromDAI = getReserveETHfromDAI();
-        return UniswapV2Library.getAmountIn(_amountETH, _reserveDAI, _reserveETHfromDAI);
+        (uint256 _reserveDAI, uint256 _reserveETH) = getReserve(daiAddr, wethAddr, daiWethPair);
+        return UniswapV2Library.getAmountIn(_amountETH, _reserveDAI, _reserveETH);
     }
 
     /**

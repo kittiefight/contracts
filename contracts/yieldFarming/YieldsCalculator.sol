@@ -435,6 +435,20 @@ contract YieldsCalculator is Ownable {
         return false;
     }
 
+    function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
+        public view returns (bool)
+    {
+        (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
+        return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
+    }
+
+    function isVolcieEligibleForRewards(uint256 _volcieID)
+        external view returns (bool)
+    {
+         (address _originalOwner, uint256 _depositNumber,,,,,,,,) = yieldFarming.getVolcieToken(_volcieID);
+         return isDepositEligibleForEarlyBonus(_originalOwner, _depositNumber);
+    }
+
     function getTotalRewards()
         external view
        returns (uint256[6] memory ktyRewards, uint256[6] memory sdaoRewards)
@@ -707,38 +721,12 @@ contract YieldsCalculator is Ownable {
     }
 
     function getVolcieValues(uint256 _volcieID)
-        public view returns (uint256, uint256, uint256)
+        public view returns (uint256, uint256, uint256, uint256)
     {
-        (address _originalOwner, uint256 _depositNumber,,uint256 _LP,,,,,,) = yieldFarming.getVolcieToken(_volcieID);
+        (address _originalOwner, uint256 _depositNumber,,uint256 _LP,uint256 _pairCode,,,,,) = yieldFarming.getVolcieToken(_volcieID);
+        uint256 _LPvalueInDai = yieldFarmingHelper.getLPvalueInDai(_pairCode, _LP);
         (uint256 _KTY, uint256 _SDAO) = calculateRewardsByDepositNumber(_originalOwner, _depositNumber);
-        return (_LP, _KTY, _SDAO);
-    }
-
-    function getVolcieValuesInDai(uint256 _volcieID)
-        public view returns (uint256, uint256, uint256)
-    {
-        (,,,,uint256 _pairCode,,,,,) = yieldFarming.getVolcieToken(_volcieID);
-        (uint256 _LP, uint256 _KTY, uint256 _SDAO) = getVolcieValues(_volcieID);
-        uint256 kty_dai_price = yieldFarmingHelper.KTY_DAI_price();
-        uint256 sdao_kty_price = yieldFarmingHelper.SDAO_KTY_price();
-
-        uint256 LPvalueInDai = yieldFarmingHelper.getLPvalueInDai(_pairCode, _LP);
-        uint256 ktyRewardsInDai = _KTY.mul(kty_dai_price).div(base18);
-        uint256 sdaoRewardsInDai = _SDAO.mul(sdao_kty_price).div(base18).mul(kty_dai_price).div(base18);
-        return (LPvalueInDai, ktyRewardsInDai, sdaoRewardsInDai);
-    }
-
-    function getVolcieCurrentValues(uint256 _volcieID)
-        external view returns (uint256[3] memory currentValues, uint256[3] memory currentValuesInDai)
-    {
-        (uint256 _LP, uint256 _KTY, uint256 _SDAO) = getVolcieValues(_volcieID);
-        (uint256 _LPinDai, uint256 _KTYinDai, uint256 _SDAOinDai) = getVolcieValuesInDai(_volcieID);
-        currentValues[0] = _LP;
-        currentValues[1] = _KTY;
-        currentValues[2] = _SDAO;
-        currentValuesInDai[0] = _LPinDai;
-        currentValuesInDai[1] = _KTYinDai;
-        currentValuesInDai[2] = _SDAOinDai;
+        return (_LP, _LPvalueInDai, _KTY, _SDAO);
     }
 
 }
