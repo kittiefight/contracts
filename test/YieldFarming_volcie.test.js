@@ -1183,6 +1183,21 @@ contract("YieldFarming", accounts => {
     });
   });
 
+  it("shows accrued rewards for a staker", async () => {
+    let user = 20;
+    console.log("user", user);
+    let accruedRewards = await yieldsCalculator.getAccruedRewards(
+      accounts[user]
+    );
+    console.log("accured KTY rewards:", weiToEther(accruedRewards[0]));
+    console.log("accured SDAO rewards:", weiToEther(accruedRewards[1]));
+
+    let volcieIDs = await volcie.allTokenOf(accounts[user]);
+    for (let i=0; i< volcieIDs.length; i++) {
+        console.log("volcie ID:",volcieIDs[i].toNumber())
+    }
+  });
+
   it("transfers leftover rewards to a new address", async () => {
     let advancement = 90 * 24 * 60 * 60;
     await advanceTimeAndBlock(advancement);

@@ -82,48 +82,48 @@ contract YieldsCalculator is Ownable {
     /*                                                 GETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
 
-    /**
-     * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
-     * @param _staker address the address of the staker for whom the rewards are calculated
-     * @param _amountLP the amount of Uniswap Liquidity tokens locked
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return unit256 the Batch Number of the starting batch to which LP is allocated
-     * @return unit256 the Batch Number of the end batch to which LP is allocated
-     * @return bool true if all the LP locked in the end batch is allocated, false if there is residual
-               amount left in the end batch after allocation
-     * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
-     */
-    function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
-        public view returns (uint256, uint256, uint256)
-    {
-        uint256 startBatchNumber;
-        uint256 endBatchNumber;
-        uint256[] memory allBatches = yieldFarming.getAllBatchesPerPairPool(_staker, _pairCode);
-        uint256 residual;
+    // /**
+    //  * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
+    //  * @param _staker address the address of the staker for whom the rewards are calculated
+    //  * @param _amountLP the amount of Uniswap Liquidity tokens locked
+    //  * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+    //  * @return unit256 the Batch Number of the starting batch to which LP is allocated
+    //  * @return unit256 the Batch Number of the end batch to which LP is allocated
+    //  * @return bool true if all the LP locked in the end batch is allocated, false if there is residual
+    //            amount left in the end batch after allocation
+    //  * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
+    //  */
+    // function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
+    //     public view returns (uint256, uint256, uint256)
+    // {
+    //     uint256 startBatchNumber;
+    //     uint256 endBatchNumber;
+    //     uint256[] memory allBatches = yieldFarming.getAllBatchesPerPairPool(_staker, _pairCode);
+    //     uint256 residual;
 
-        for (uint256 m = 0; m < allBatches.length; m++) {
-            if (allBatches[m] > 0) {
-                startBatchNumber = m;
-                break;
-            }
-        }
+    //     for (uint256 m = 0; m < allBatches.length; m++) {
+    //         if (allBatches[m] > 0) {
+    //             startBatchNumber = m;
+    //             break;
+    //         }
+    //     }
         
-        for (uint256 i = startBatchNumber; i < allBatches.length; i++) {
-            if (_amountLP <= allBatches[i]) {
-                if (_amountLP == allBatches[i]) {
-                    residual = 0;
-                } else {
-                    residual = allBatches[i].sub(_amountLP);
-                }
-                endBatchNumber = i;
-                break;
-            } else {
-                _amountLP = _amountLP.sub(allBatches[i]);
-            }
-        }
+    //     for (uint256 i = startBatchNumber; i < allBatches.length; i++) {
+    //         if (_amountLP <= allBatches[i]) {
+    //             if (_amountLP == allBatches[i]) {
+    //                 residual = 0;
+    //             } else {
+    //                 residual = allBatches[i].sub(_amountLP);
+    //             }
+    //             endBatchNumber = i;
+    //             break;
+    //         } else {
+    //             _amountLP = _amountLP.sub(allBatches[i]);
+    //         }
+    //     }
 
-        return (startBatchNumber, endBatchNumber, residual);
-    }
+    //     return (startBatchNumber, endBatchNumber, residual);
+    // }
 
     /**
      * @param _time uint256 The time point for which the month number is enquired
