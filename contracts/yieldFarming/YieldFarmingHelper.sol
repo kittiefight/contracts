@@ -294,13 +294,13 @@ contract YieldFarmingHelper is Ownable {
         return (rewardsKTY, rewardsSDAO);
     }
 
-    // /**
-    //  * @return uint256 the total amount of Uniswap Liquidity tokens deposited
-    //  *         including both locked tokens and withdrawn tokens
-    //  */
-    // function getTotalDeposits() external view returns (uint256) {
-    //     return yieldFarming.totalDepositedLP();
-    // }
+    /**
+     * @return uint256 the total amount of Uniswap Liquidity tokens deposited
+     *         including both locked tokens and withdrawn tokens
+     */
+    function getTotalDeposits() external view returns (uint256) {
+        return yieldFarming.totalDepositedLP();
+    }
 
     /**
      * @return uint256 the total amount of KittieFightToken rewards yet to be distributed
