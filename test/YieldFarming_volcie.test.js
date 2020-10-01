@@ -116,7 +116,7 @@ let volcie,
 contract("YieldFarming", accounts => {
   it("instantiate contracts", async () => {
     // YieldFarming
-    volcie = await Volcie.deployed()
+    volcie = await Volcie.deployed();
     yieldFarming = await YieldFarming.deployed();
     // TOKENS
     superDaoToken = await SuperDaoToken.deployed();
@@ -135,10 +135,10 @@ contract("YieldFarming", accounts => {
     ktyWethPair = await KtyWethPair.at(ktyPairAddress);
 
     const ktySdaoPairAddress = await factory.getPair(
-        superDaoToken.address,
-        kittieFightToken.address
-      );
-      ktySDAOPair = await KtySDAOPair.at(ktySdaoPairAddress);
+      superDaoToken.address,
+      kittieFightToken.address
+    );
+    ktySDAOPair = await KtySDAOPair.at(ktySdaoPairAddress);
 
     const daiPairAddress = await factory.getPair(weth.address, dai.address);
     daiWethPair = await DaiWethPair.at(daiPairAddress);
@@ -154,9 +154,9 @@ contract("YieldFarming", accounts => {
     let unlockRate, KTYunlockRate, SDAOunlockRate;
     console.log(`\n======== Rewards Unlock Rate ======== `);
     for (let i = 0; i < 6; i++) {
-      unlockRate = await yieldFarming.getRewardUnlockRateByMonth(i)
-      KTYunlockRate = unlockRate[0]
-      SDAOunlockRate = unlockRate[1]
+      unlockRate = await yieldFarming.getRewardUnlockRateByMonth(i);
+      KTYunlockRate = unlockRate[0];
+      SDAOunlockRate = unlockRate[1];
       console.log(
         "KTY rewards unlock rate in",
         "Month",
@@ -175,7 +175,6 @@ contract("YieldFarming", accounts => {
     }
 
     console.log("===============================\n");
-
   });
 
   it("sets total KittieFightToken and SuperDaoToken rewards for the entire program duration", async () => {
@@ -262,7 +261,11 @@ contract("YieldFarming", accounts => {
     );
 
     // daiWethPair info
-    let reserves = await yieldFarmingHelper.getReserve(dai.address, weth.address, daiWethPair.address);
+    let reserves = await yieldFarmingHelper.getReserve(
+      dai.address,
+      weth.address,
+      daiWethPair.address
+    );
     console.log("reserveDAI:", weiToEther(reserves[0]));
     console.log("reserveETH:", weiToEther(reserves[1]));
 
@@ -401,13 +404,13 @@ contract("YieldFarming", accounts => {
     console.log("Days Left:", daysLeft.toString());
     console.log("Elapsed Months:", elapsedMonths.toString());
     for (let i = 0; i < 6; i++) {
-      monthStartTime = await yieldFarming.getMonthStartAt(i)
+      monthStartTime = await yieldFarming.getMonthStartAt(i);
       console.log("Month", i, "Start Time:", monthStartTime.toString());
     }
     console.log("===============================================\n");
-    
-    let isProgramActive = await yieldFarmingHelper.isProgramActive()
-    console.log("Is program active?", isProgramActive)
+
+    let isProgramActive = await yieldFarmingHelper.isProgramActive();
+    console.log("Is program active?", isProgramActive);
   });
 
   it("gets current month", async () => {
@@ -441,7 +444,10 @@ contract("YieldFarming", accounts => {
         from: accounts[i]
       }).should.be.fulfilled;
 
-      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode_0);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(
+        accounts[i],
+        pairCode_0
+      );
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -476,20 +482,20 @@ contract("YieldFarming", accounts => {
     );
 
     let newDepositEvents = await yieldFarming.getPastEvents("Deposited", {
-        fromBlock: 0,
-        toBlock: "latest"
-      });
-  
-      newDepositEvents.map(async e => {
-        console.log("\n==== NEW volcie minted ===");
-        console.log("    funder ", e.returnValues.sender);
-        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
-        console.log("    Deposit Number ", e.returnValues.depositNumber);
-        console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    Locked LP ", e.returnValues.lockedLP);
-        console.log("    Deposit Time ", e.returnValues.depositTime);
-        console.log("========================\n");
-      });
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    newDepositEvents.map(async e => {
+      console.log("\n==== NEW volcie minted ===");
+      console.log("    funder ", e.returnValues.sender);
+      console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+      console.log("    Deposit Number ", e.returnValues.depositNumber);
+      console.log("    Pair Code ", e.returnValues.pairCode);
+      console.log("    Locked LP ", e.returnValues.lockedLP);
+      console.log("    Deposit Time ", e.returnValues.depositTime);
+      console.log("========================\n");
+    });
   });
 
   it("show batches of deposit of a staker", async () => {
@@ -546,39 +552,43 @@ contract("YieldFarming", accounts => {
         accounts[i],
         pairCode
       );
-      
+
       for (let j = 0; j < allBatches.length; j++) {
         console.log("Pair Code:", pairCode);
         console.log("Pair Pool:", pairCodeList[pairCode]);
         console.log("Batch Number:", j);
         console.log("Liquidity Locked:", weiToEther(allBatches[j]));
       }
-  
+
       console.log("Total number of batches:", allBatches.length);
       console.log("****************************\n");
     }
     console.log("===============================\n");
 
     let newDepositEvents = await yieldFarming.getPastEvents("Deposited", {
-        fromBlock: 0,
-        toBlock: "latest"
-      });
-  
-      newDepositEvents.map(async e => {
-        console.log("\n==== NEW volcie minted ===");
-        console.log("    funder ", e.returnValues.sender);
-        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
-        console.log("    Deposit Number ", e.returnValues.depositNumber);
-        console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    Locked LP ", e.returnValues.lockedLP);
-        console.log("    Deposit Time ", e.returnValues.depositTime);
-        console.log("========================\n");
-      });
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    newDepositEvents.map(async e => {
+      console.log("\n==== NEW volcie minted ===");
+      console.log("    funder ", e.returnValues.sender);
+      console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+      console.log("    Deposit Number ", e.returnValues.depositNumber);
+      console.log("    Pair Code ", e.returnValues.pairCode);
+      console.log("    Locked LP ", e.returnValues.lockedLP);
+      console.log("    Deposit Time ", e.returnValues.depositTime);
+      console.log("========================\n");
+    });
   });
 
   it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
-    let KTYrewards_month_0 = await yieldsCalculator.getTotalKTYRewardsByMonth(0);
-    let SDAOrewards_month_0 = await yieldsCalculator.getTotalSDAORewardsByMonth(0);
+    let KTYrewards_month_0 = await yieldsCalculator.getTotalKTYRewardsByMonth(
+      0
+    );
+    let SDAOrewards_month_0 = await yieldsCalculator.getTotalSDAORewardsByMonth(
+      0
+    );
 
     console.log("KTY Rewards for Month 0:", weiToEther(KTYrewards_month_0));
     console.log("SDAO Rewards for Month 0:", weiToEther(SDAOrewards_month_0));
@@ -588,14 +598,14 @@ contract("YieldFarming", accounts => {
   });
 
   it("shows locked and unloced rewards", async () => {
-    let lockedRewards = await yieldFarmingHelper.getLockedRewards()
-    console.log("locked KTY rewards:", weiToEther(lockedRewards[0]))
-    console.log("locked SDAO rewards:", weiToEther(lockedRewards[1]))
+    let lockedRewards = await yieldFarmingHelper.getLockedRewards();
+    console.log("locked KTY rewards:", weiToEther(lockedRewards[0]));
+    console.log("locked SDAO rewards:", weiToEther(lockedRewards[1]));
 
-    let unLockedRewards = await yieldFarmingHelper. getUnlockedRewards()
-    console.log("unlocked KTY rewards:", weiToEther(unLockedRewards[0]))
-    console.log("unlocked SDAO rewards:", weiToEther(unLockedRewards[1]))
-  })
+    let unLockedRewards = await yieldFarmingHelper.getUnlockedRewards();
+    console.log("unlocked KTY rewards:", weiToEther(unLockedRewards[0]));
+    console.log("unlocked SDAO rewards:", weiToEther(unLockedRewards[1]));
+  });
 
   it("user cannot withdraw if it is not on pay day", async () => {
     let payDay = await yieldFarmingHelper.isPayDay();
@@ -611,7 +621,6 @@ contract("YieldFarming", accounts => {
     await yieldFarming.withdrawByVolcieID(voicieID, {
       from: accounts[user]
     }).should.be.rejected;
-
   });
 
   it("Approching the second month: Month 1", async () => {
@@ -643,15 +652,17 @@ contract("YieldFarming", accounts => {
   it("calculates APY, reward multiplier, and accrued rewards for a user", async () => {
     let totalLPs = await yieldsCalculator.getTotalLPsLocked(accounts[17]);
     console.log("Total LPs locked:", weiToEther(totalLPs));
-    let APY = await yieldsCalculator.getAPY(accounts[17])
-    let rewardMultiplier = await yieldsCalculator.getRewardMultipliers(accounts[18])
-    let accruedRewards = await yieldsCalculator.getAccruedRewards(accounts[17])
-    console.log("APY:", APY.toString())
-    console.log("KTY Reward Multiplier:", rewardMultiplier[0].toString())
-    console.log("KTY Reward Multiplier:", rewardMultiplier[1].toString())
-    console.log("Accrued KTY Rewards:", weiToEther(accruedRewards[0]))
-    console.log("Accrued SDAO Rewards:", weiToEther(accruedRewards[1]))
-  })
+    let APY = await yieldsCalculator.getAPY(accounts[17]);
+    let rewardMultiplier = await yieldsCalculator.getRewardMultipliers(
+      accounts[18]
+    );
+    let accruedRewards = await yieldsCalculator.getAccruedRewards(accounts[17]);
+    console.log("APY:", APY.toString());
+    console.log("KTY Reward Multiplier:", rewardMultiplier[0].toString());
+    console.log("KTY Reward Multiplier:", rewardMultiplier[1].toString());
+    console.log("Accrued KTY Rewards:", weiToEther(accruedRewards[0]));
+    console.log("Accrued SDAO Rewards:", weiToEther(accruedRewards[1]));
+  });
 
   it("Approching the third month: Month 2", async () => {
     let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
@@ -692,7 +703,7 @@ contract("YieldFarming", accounts => {
   it("Approching the fourth month: Month 3", async () => {
     let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
 
-    let advancement = timeUntilCurrentMonthEnd.toNumber() + 3 * 60//2 * 24 * 60 * 60;
+    let advancement = timeUntilCurrentMonthEnd.toNumber() + 3 * 60; //2 * 24 * 60 * 60;
     await advanceTimeAndBlock(advancement);
     console.log("The Fourth Month starts: Month 3...");
   });
@@ -780,7 +791,7 @@ contract("YieldFarming", accounts => {
 
   // ==============================  FIFTH MONTH: MONTH 4  ==============================
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
-    let advancement = 3 * 60//2 * 24 * 60 * 60; // 2 days
+    let advancement = 3 * 60; //2 * 24 * 60 * 60; // 2 days
     await advanceTimeAndBlock(advancement);
 
     console.log(
@@ -798,7 +809,10 @@ contract("YieldFarming", accounts => {
       await yieldFarming.deposit(deposit_LP_amount, pairCode, {
         from: accounts[i]
       }).should.be.fulfilled;
-      LP_locked = await yieldFarming.getLockedLPbyPairCode(accounts[i], pairCode);
+      LP_locked = await yieldFarming.getLockedLPbyPairCode(
+        accounts[i],
+        pairCode
+      );
       console.log(
         "Uniswap Liquidity tokens locked by user",
         i,
@@ -848,33 +862,33 @@ contract("YieldFarming", accounts => {
         accounts[i],
         pairCode
       );
-    
+
       for (let j = 0; j < allBatches.length; j++) {
         console.log("Pair Pool:", pairCodeList[pairCode]);
         console.log("Batch Number:", j);
         console.log("Liquidity Locked:", weiToEther(allBatches[j]));
       }
- 
+
       console.log("Total number of batches:", allBatches.length);
       console.log("****************************\n");
     }
     console.log("===============================\n");
 
     let newDepositEvents = await yieldFarming.getPastEvents("Deposited", {
-        fromBlock: 0,
-        toBlock: "latest"
-      });
-  
-      newDepositEvents.map(async e => {
-        console.log("\n==== NEW volcie minted ===");
-        console.log("    funder ", e.returnValues.sender);
-        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
-        console.log("    Deposit Number ", e.returnValues.depositNumber);
-        console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    Locked LP ", e.returnValues.lockedLP);
-        console.log("    Deposit Time ", e.returnValues.depositTime);
-        console.log("========================\n");
-      });
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    newDepositEvents.map(async e => {
+      console.log("\n==== NEW volcie minted ===");
+      console.log("    funder ", e.returnValues.sender);
+      console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+      console.log("    Deposit Number ", e.returnValues.depositNumber);
+      console.log("    Pair Code ", e.returnValues.pairCode);
+      console.log("    Locked LP ", e.returnValues.lockedLP);
+      console.log("    Deposit Time ", e.returnValues.depositTime);
+      console.log("========================\n");
+    });
   });
 
   it("Approching the sixth month: Month 5", async () => {
@@ -945,20 +959,20 @@ contract("YieldFarming", accounts => {
     }
 
     let newDepositEvents = await yieldFarming.getPastEvents("Deposited", {
-        fromBlock: 0,
-        toBlock: "latest"
-      });
-  
-      newDepositEvents.map(async e => {
-        console.log("\n==== NEW volcie minted ===");
-        console.log("    funder ", e.returnValues.sender);
-        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
-        console.log("    Deposit Number ", e.returnValues.depositNumber);
-        console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    Locked LP ", e.returnValues.lockedLP);
-        console.log("    Deposit Time ", e.returnValues.depositTime);
-        console.log("========================\n");
-      });
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    newDepositEvents.map(async e => {
+      console.log("\n==== NEW volcie minted ===");
+      console.log("    funder ", e.returnValues.sender);
+      console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+      console.log("    Deposit Number ", e.returnValues.depositNumber);
+      console.log("    Pair Code ", e.returnValues.pairCode);
+      console.log("    Locked LP ", e.returnValues.lockedLP);
+      console.log("    Deposit Time ", e.returnValues.depositTime);
+      console.log("========================\n");
+    });
   });
 
   it("Approching the end of sixth month: Month 5", async () => {
@@ -1040,106 +1054,134 @@ contract("YieldFarming", accounts => {
   it("users withdraw LP and burn volcies", async () => {
     let advancement = DAY * 2;
     await advanceTimeAndBlock(advancement);
-    let user, volcieIDs, volcieID, claimedRewards
-    for (let i=1; i<18; i++) {
-        user = i
-        console.log("user", i)
-        volcieIDs = await volcie.allTokenOf(accounts[i])
-        //console.log(volcieIDs)
-        for (let j=0; j<volcieIDs.length; j++) {
-            volcieID = volcieIDs[j].toNumber()
+    let user, volcieIDs, volcieID, claimedRewards;
+    for (let i = 1; i < 18; i++) {
+      user = i;
+      console.log("user", i);
+      volcieIDs = await volcie.allTokenOf(accounts[i]);
+      //console.log(volcieIDs)
+      for (let j = 0; j < volcieIDs.length; j++) {
+        volcieID = volcieIDs[j].toNumber();
 
-            await yieldFarming.withdrawByVolcieID(volcieID, {
-                from: accounts[i]
-              }).should.be.fulfilled;
-        }
+        await yieldFarming.withdrawByVolcieID(volcieID, {
+          from: accounts[i]
+        }).should.be.fulfilled;
+      }
 
-        claimedRewards = await yieldFarming.getTotalRewardsClaimedByStaker(accounts[i])
-        console.log("Total KTY reward claimed:", weiToEther(claimedRewards[0]))
-        console.log("Total SDAO reward claimed:", weiToEther(claimedRewards[1]))
+      claimedRewards = await yieldFarming.getTotalRewardsClaimedByStaker(
+        accounts[i]
+      );
+      console.log("Total KTY reward claimed:", weiToEther(claimedRewards[0]));
+      console.log("Total SDAO reward claimed:", weiToEther(claimedRewards[1]));
     }
 
-    let newDepositEvents = await yieldFarming.getPastEvents("VolcieTokenBurnt", {
+    let newDepositEvents = await yieldFarming.getPastEvents(
+      "VolcieTokenBurnt",
+      {
         fromBlock: 0,
         toBlock: "latest"
-      });
-  
-      newDepositEvents.map(async e => {
-        console.log("\n==== Volcie Burnt ===");
-        console.log("    Burner ", e.returnValues.burner);
-        console.log("    Original Owner ", e.returnValues.originalOwner);
-        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
-        console.log("    Deposit Number ", e.returnValues.depositNumber);
-        console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    KTY rewards ", e.returnValues.KTYamount);
-        console.log("    SDAO rewards ", e.returnValues.SDAOamount);
-        console.log("    Locked LP ", e.returnValues.LPamount);
-        console.log("    Deposit Time ", e.returnValues.withdrawTime);
-        console.log("========================\n");
-      });
-       
+      }
+    );
+
+    newDepositEvents.map(async e => {
+      console.log("\n==== Volcie Burnt ===");
+      console.log("    Burner ", e.returnValues.burner);
+      console.log("    Original Owner ", e.returnValues.originalOwner);
+      console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+      console.log("    Deposit Number ", e.returnValues.depositNumber);
+      console.log("    Pair Code ", e.returnValues.pairCode);
+      console.log("    KTY rewards ", e.returnValues.KTYamount);
+      console.log("    SDAO rewards ", e.returnValues.SDAOamount);
+      console.log("    Locked LP ", e.returnValues.LPamount);
+      console.log("    Deposit Time ", e.returnValues.withdrawTime);
+      console.log("========================\n");
+    });
   });
 
   it("a user sells volcie tokens to another user", async () => {
-    let volcieIDs, volcieID
-    let seller = 18
-    let buyer = 20
-    volcieIDs = await volcie.allTokenOf(accounts[seller])
-    for (let i=0; i<volcieIDs.length; i++) {
-        volcieID = volcieIDs[i].toNumber()
-        await volcie.approve(accounts[buyer], volcieID, { from: accounts[seller] }).should.be.fulfilled
-        await volcie.transferFrom(accounts[seller], accounts[buyer], volcieID, { from: accounts[seller] }).should.be.fulfilled
+    let volcieIDs, volcieID;
+    let seller = 18;
+    let buyer = 20;
+    volcieIDs = await volcie.allTokenOf(accounts[seller]);
+    for (let i = 0; i < volcieIDs.length; i++) {
+      volcieID = volcieIDs[i].toNumber();
+      await volcie.approve(accounts[buyer], volcieID, {from: accounts[seller]})
+        .should.be.fulfilled;
+      await volcie.transferFrom(accounts[seller], accounts[buyer], volcieID, {
+        from: accounts[seller]
+      }).should.be.fulfilled;
 
-        await yieldFarming.withdrawByVolcieID(volcieID, {
-            from: accounts[seller]
-          }).should.be.rejected;
+      await yieldFarming.withdrawByVolcieID(volcieID, {
+        from: accounts[seller]
+      }).should.be.rejected;
     }
-  })
+  });
+
+  it("shows accrued rewards for a staker", async () => {
+    let user = 20;
+    console.log("user", user);
+    let accruedRewards = await yieldsCalculator.getAccruedRewards(
+      accounts[user]
+    );
+    console.log("accured KTY rewards:", weiToEther(accruedRewards[0]));
+    console.log("accured SDAO rewards:", weiToEther(accruedRewards[1]));
+  });
 
   it("a user can burn volcie tokens bought from other users, and get rewards", async () => {
-    let volcieIDs, volcieID, estimatedValues, earlyBonus, isEligibleForEarlyBonus
-    let buyer = 20
-    volcieIDs = await volcie.allTokenOf(accounts[buyer])
-    for (let i=0; i<volcieIDs.length; i++) {
-        volcieID = volcieIDs[i].toNumber()
-        console.log("volcie ID:", volcieID)
-        isEligibleForEarlyBonus = await yieldsCalculator.isVolcieEligibleForRewards(volcieID)
-        console.log("Is Volcie eligible for early bonus:", isEligibleForEarlyBonus)
-        console.log("\n==== Before Burning ===");
-        earlyBonus = await yieldsCalculator.getEarlyBonusForVolcie(volcieID)
-        console.log("estimated early bonus:", weiToEther(earlyBonus))
-        estimatedValues = await yieldsCalculator.getVolcieValues(volcieID);
-        console.log("LP values:", weiToEther(estimatedValues[0]))
-        console.log("LP values in DAI:", weiToEther(estimatedValues[1]))
-        console.log("estimated KTY values:", weiToEther(estimatedValues[2]))
-        console.log("estimated SDAO values:", weiToEther(estimatedValues[3]))
-        console.log("========================\n");
+    let volcieIDs,
+      volcieID,
+      estimatedValues,
+      earlyBonus,
+      isEligibleForEarlyBonus;
+    let buyer = 20;
+    volcieIDs = await volcie.allTokenOf(accounts[buyer]);
+    for (let i = 0; i < volcieIDs.length; i++) {
+      volcieID = volcieIDs[i].toNumber();
+      console.log("volcie ID:", volcieID);
+      isEligibleForEarlyBonus = await yieldsCalculator.isVolcieEligibleForEarlyBonus(
+        volcieID
+      );
+      console.log(
+        "Is Volcie eligible for early bonus:",
+        isEligibleForEarlyBonus
+      );
+      console.log("\n==== Before Burning ===");
+      earlyBonus = await yieldsCalculator.getEarlyBonusForVolcie(volcieID);
+      console.log("estimated early bonus:", weiToEther(earlyBonus));
+      estimatedValues = await yieldsCalculator.getVolcieValues(volcieID);
+      console.log("LP values:", weiToEther(estimatedValues[0]));
+      console.log("LP values in DAI:", weiToEther(estimatedValues[1]));
+      console.log("estimated KTY values:", weiToEther(estimatedValues[2]));
+      console.log("estimated SDAO values:", weiToEther(estimatedValues[3]));
+      console.log("========================\n");
 
-        await yieldFarming.withdrawByVolcieID(volcieID, {
-            from: accounts[buyer]
-          }).should.be.fulfilled;
+      await yieldFarming.withdrawByVolcieID(volcieID, {
+        from: accounts[buyer]
+      }).should.be.fulfilled;
     }
 
-    let newDepositEvents = await yieldFarming.getPastEvents("VolcieTokenBurnt", {
+    let newDepositEvents = await yieldFarming.getPastEvents(
+      "VolcieTokenBurnt",
+      {
         fromBlock: "latest",
         toBlock: "latest"
-      });
-  
-      newDepositEvents.map(async e => {
-        console.log("\n==== Volcie Burnt ===");
-        console.log("    Burner ", e.returnValues.burner);
-        console.log("    Original Owner ", e.returnValues.originalOwner);
-        console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
-        console.log("    Deposit Number ", e.returnValues.depositNumber);
-        console.log("    Pair Code ", e.returnValues.pairCode);
-        console.log("    KTY rewards ", e.returnValues.KTYamount);
-        console.log("    SDAO rewards ", e.returnValues.SDAOamount);
-        console.log("    Locked LP ", e.returnValues.LPamount);
-        console.log("    Withdrawal Time ", e.returnValues.withdrawTime);
-        console.log("========================\n");
-      });
-  })
+      }
+    );
 
+    newDepositEvents.map(async e => {
+      console.log("\n==== Volcie Burnt ===");
+      console.log("    Burner ", e.returnValues.burner);
+      console.log("    Original Owner ", e.returnValues.originalOwner);
+      console.log("    VOLCIE Token ID ", e.returnValues.volcieTokenID);
+      console.log("    Deposit Number ", e.returnValues.depositNumber);
+      console.log("    Pair Code ", e.returnValues.pairCode);
+      console.log("    KTY rewards ", e.returnValues.KTYamount);
+      console.log("    SDAO rewards ", e.returnValues.SDAOamount);
+      console.log("    Locked LP ", e.returnValues.LPamount);
+      console.log("    Withdrawal Time ", e.returnValues.withdrawTime);
+      console.log("========================\n");
+    });
+  });
 
   it("transfers leftover rewards to a new address", async () => {
     let advancement = 90 * 24 * 60 * 60;

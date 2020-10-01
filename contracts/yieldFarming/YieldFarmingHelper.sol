@@ -448,7 +448,6 @@ contract YieldFarmingHelper is Ownable {
     {
         IUniswapV2Pair pair = IUniswapV2Pair(_pairPool);
         address token0 = pair.token0();
-        address token1 = pair.token1();
         if (token0 == _tokenA) {
             (reserveA,,) = pair.getReserves();
             (,reserveB,) = pair.getReserves();

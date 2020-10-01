@@ -23,7 +23,7 @@ contract YieldFarming is Ownable {
     /*                                               GENERAL VARIABLES                                                */
     /* ============================================================================================================== */
 
-    IVolcieToken public volcie;                       // EthieToken contract
+    IVolcieToken public volcie;                          // VolcieToken contract
     IERC20 public kittieFightToken;                      // KittieFightToken contract variable
     IERC20 public superDaoToken;                         // SuperDaoToken contract variable
     YieldFarmingHelper public yieldFarmingHelper;        // YieldFarmingHelper contract variable
@@ -918,9 +918,7 @@ contract YieldFarming is Ownable {
     {
         // ========= update staker info =========
         // batch info
-        uint256 _lockTime = stakers[_sender].batchLockedAt[_pairCode][_batchNumber];
         uint256 adjustedLP = stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_batchNumber];
-        uint256 startingLP = stakers[_sender].adjustedStartingLPamount[_pairCode][_batchNumber];
         stakers[_sender].batchLockedLPamount[_pairCode][_batchNumber] = 0;
         stakers[_sender].adjustedBatchLockedLPamount[_pairCode][_batchNumber] = 0;
         stakers[_sender].adjustedStartingLPamount[_pairCode][_batchNumber] = 0;

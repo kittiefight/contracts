@@ -4,6 +4,7 @@ import "../libs/openzeppelin_upgradable_v2_5_0/ownership/Ownable.sol";
 import "../libs/SafeMath.sol";
 import './YieldFarming.sol';
 import './YieldFarmingHelper.sol';
+import '../interfaces/IVolcieToken.sol';
 
 contract YieldsCalculator is Ownable {
     using SafeMath for uint256;
@@ -13,6 +14,7 @@ contract YieldsCalculator is Ownable {
 
     YieldFarming public yieldFarming;
     YieldFarmingHelper public yieldFarmingHelper;
+    IVolcieToken public volcie;                                           // VolcieToken contract
 
     uint256 constant public base18 = 1000000000000000000;
     uint256 constant public base6 = 1000000;
@@ -34,7 +36,8 @@ contract YieldsCalculator is Ownable {
     (
         uint256 _tokensSold,
         YieldFarming _yieldFarming,
-        YieldFarmingHelper _yieldFarmingHelper
+        YieldFarmingHelper _yieldFarmingHelper,
+        IVolcieToken _volcie
     ) 
         public initializer
     {
@@ -42,6 +45,7 @@ contract YieldsCalculator is Ownable {
         tokensSold = _tokensSold;
         setYieldFarming(_yieldFarming);
         setYieldFarmingHelper(_yieldFarmingHelper);
+        setVolcieToken(_volcie);
     }
 
     /*                                                 SETTER FUNCTIONS                                               */
@@ -61,6 +65,14 @@ contract YieldsCalculator is Ownable {
      */
     function setYieldFarmingHelper(YieldFarmingHelper _yieldFarmingHelper) public onlyOwner {
         yieldFarmingHelper = _yieldFarmingHelper;
+    }
+
+    /**
+     * @dev Set VOLCIE contract
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
+    function setVolcieToken(IVolcieToken _volcie) public onlyOwner {
+        volcie = _volcie;
     }
 
     function setTokensSold(uint256 _tokensSold) public onlyOwner {
@@ -308,106 +320,106 @@ contract YieldsCalculator is Ownable {
         return (rewardKTY, rewardSDAO);
     }
 
-    function calculateRewardsByAmountCase1
-    (address _staker, uint256 _pairCode, uint256 _amountLP,
-     uint256 startBatchNumber)
-        internal view
-        returns (uint256 rewardKTY, uint256 rewardSDAO)
-    {
-        uint256 earlyBonus;
-        uint256 adjustedLockedLP;
-        uint256 adjustedStartingLP;
-        uint256 LP;
+    // function calculateRewardsByAmountCase1
+    // (address _staker, uint256 _pairCode, uint256 _amountLP,
+    //  uint256 startBatchNumber)
+    //     internal view
+    //     returns (uint256 rewardKTY, uint256 rewardSDAO)
+    // {
+    //     uint256 earlyBonus;
+    //     uint256 adjustedLockedLP;
+    //     uint256 adjustedStartingLP;
+    //     uint256 LP;
 
-        // // allocate _amountLP per FIFO
-        // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
-        if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
-            rewardKTY = 0;
-            rewardSDAO = 0;
-        } else {
-            (LP, adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, startBatchNumber);
+    //     // // allocate _amountLP per FIFO
+    //     // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
+    //     if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
+    //         rewardKTY = 0;
+    //         rewardSDAO = 0;
+    //     } else {
+    //         (LP, adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, startBatchNumber);
 
-            adjustedStartingLP = _amountLP.mul(adjustedStartingLP).div(LP);
-            adjustedLockedLP = _amountLP.mul(adjustedLockedLP).div(LP);
+    //         adjustedStartingLP = _amountLP.mul(adjustedStartingLP).div(LP);
+    //         adjustedLockedLP = _amountLP.mul(adjustedLockedLP).div(LP);
 
-            (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, startBatchNumber, adjustedLockedLP, adjustedStartingLP);
+    //         (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, startBatchNumber, adjustedLockedLP, adjustedStartingLP);
 
-            // check if early mining bonus applies here
-            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
-                earlyBonus = getEarlyBonus(adjustedLockedLP);
-                rewardKTY = rewardKTY.add(earlyBonus);
-                rewardSDAO = rewardKTY.add(earlyBonus);
-            }
-        }
-    }
+    //         // check if early mining bonus applies here
+    //         if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
+    //             earlyBonus = getEarlyBonus(adjustedLockedLP);
+    //             rewardKTY = rewardKTY.add(earlyBonus);
+    //             rewardSDAO = rewardKTY.add(earlyBonus);
+    //         }
+    //     }
+    // }
 
-    function calculateRewardsByAmountCase2
-    (address _staker, uint256 _pairCode,
-     uint256 startBatchNumber, uint256 endBatchNumber)
-        internal view
-        returns (uint256 rewardKTY, uint256 rewardSDAO)
-    {
-        uint256 earlyBonus;
-        uint256 adjustedLockedLP;
-        uint256 adjustedStartingLP;
+    // function calculateRewardsByAmountCase2
+    // (address _staker, uint256 _pairCode,
+    //  uint256 startBatchNumber, uint256 endBatchNumber)
+    //     internal view
+    //     returns (uint256 rewardKTY, uint256 rewardSDAO)
+    // {
+    //     uint256 earlyBonus;
+    //     uint256 adjustedLockedLP;
+    //     uint256 adjustedStartingLP;
 
-        for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
-            // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
-            if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
-                // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
-                (,adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
+    //     for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
+    //         // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
+    //         if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
+    //             // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
+    //             (,adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
 
-                (uint256 _KTY, uint256 _SDAO) = calculateYields2(_staker, _pairCode, i, adjustedLockedLP, adjustedStartingLP);
+    //             (uint256 _KTY, uint256 _SDAO) = calculateYields2(_staker, _pairCode, i, adjustedLockedLP, adjustedStartingLP);
 
-                rewardKTY = rewardKTY.add(_KTY);
-                rewardSDAO = rewardSDAO.add(_SDAO);
+    //             rewardKTY = rewardKTY.add(_KTY);
+    //             rewardSDAO = rewardSDAO.add(_SDAO);
 
-                // if eligible for early bonus, the rewards for early bonus is added for this batch
-                if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-                    earlyBonus = getEarlyBonus(adjustedLockedLP);
-                    rewardKTY = rewardKTY.add(earlyBonus);
-                    rewardSDAO = rewardSDAO.add(earlyBonus);
-                } 
-            } 
-        }
+    //             // if eligible for early bonus, the rewards for early bonus is added for this batch
+    //             if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
+    //                 earlyBonus = getEarlyBonus(adjustedLockedLP);
+    //                 rewardKTY = rewardKTY.add(earlyBonus);
+    //                 rewardSDAO = rewardSDAO.add(earlyBonus);
+    //             } 
+    //         } 
+    //     }
         
-    }
+    // }
     
-    /**
-     * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the amount of Uniswap Liquidity tokens 
-     *         locked by a staker
-     * @param _staker address the address of the staker for whom the rewards are calculated
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-     * @return unit256 the amount of KittieFightToken rewards associated with the _amountLP lockec by this _staker
-     * @return unit256 the amount of SuperDaoToken rewards associated with the _amountLP lockec by this _staker
-     * @return uint256 the starting batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
-     * @return uint256 the ending batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
-     * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
-     */
-    function calculateRewardsByAmountResidual
-    (address _staker, uint256 _pairCode, uint256 endBatchNumber, uint256 residual)
-        internal view
-        returns (uint256 rewardKTY, uint256 rewardSDAO)
-    {
-        uint256 earlyBonus;
+    // /**
+    //  * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the amount of Uniswap Liquidity tokens 
+    //  *         locked by a staker
+    //  * @param _staker address the address of the staker for whom the rewards are calculated
+    //  * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+    //  * @return unit256 the amount of KittieFightToken rewards associated with the _amountLP lockec by this _staker
+    //  * @return unit256 the amount of SuperDaoToken rewards associated with the _amountLP lockec by this _staker
+    //  * @return uint256 the starting batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
+    //  * @return uint256 the ending batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
+    //  * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
+    //  */
+    // function calculateRewardsByAmountResidual
+    // (address _staker, uint256 _pairCode, uint256 endBatchNumber, uint256 residual)
+    //     internal view
+    //     returns (uint256 rewardKTY, uint256 rewardSDAO)
+    // {
+    //     uint256 earlyBonus;
 
-        // add rewards for end Batch from which only part of the locked amount is to be withdrawn
-        if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
-            uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
+    //     // add rewards for end Batch from which only part of the locked amount is to be withdrawn
+    //     if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
+    //         uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
 
-            (uint256 LP,uint256 adjustedLockedLP , uint256 adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, endBatchNumber);
+    //         (uint256 LP,uint256 adjustedLockedLP , uint256 adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, endBatchNumber);
 
-            uint256 _adjustedStartingLP = residual.mul(adjustedStartingLP).div(LP);
+    //         uint256 _adjustedStartingLP = residual.mul(adjustedStartingLP).div(LP);
     
-            (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, endBatchNumber, residual, _adjustedStartingLP);
+    //         (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, endBatchNumber, residual, _adjustedStartingLP);
 
-            if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
-                earlyBonus = getEarlyBonus(adjustedLockedLP);
-                rewardKTY = rewardKTY.add(earlyBonus);
-                rewardSDAO = rewardSDAO.add(earlyBonus);
-            }
-        }    
-    }
+    //         if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
+    //             earlyBonus = getEarlyBonus(adjustedLockedLP);
+    //             rewardKTY = rewardKTY.add(earlyBonus);
+    //             rewardSDAO = rewardSDAO.add(earlyBonus);
+    //         }
+    //     }    
+    // }
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
@@ -442,7 +454,7 @@ contract YieldsCalculator is Ownable {
         return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
-    function isVolcieEligibleForRewards(uint256 _volcieID)
+    function isVolcieEligibleForEarlyBonus(uint256 _volcieID)
         external view returns (bool)
     {
          (address _originalOwner, uint256 _depositNumber,,,,,,,,) = yieldFarming.getVolcieToken(_volcieID);
@@ -516,29 +528,29 @@ contract YieldsCalculator is Ownable {
         return (_rewardKTY, _rewardSDAO);
     }
 
-    function calculateRewardsByAmount(address _staker, uint256 _LPamount, uint256 _pairCode)
-        public view
-        returns (uint256, uint256, uint256, uint256)
-    {
-        // allocate _amountLP per FIFO
-        (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = allocateLP(_staker, _LPamount, _pairCode);
-        uint256 _KTY;
-        uint256 _SDAO;
+    // function calculateRewardsByAmount(address _staker, uint256 _LPamount, uint256 _pairCode)
+    //     public view
+    //     returns (uint256, uint256, uint256, uint256)
+    // {
+    //     // allocate _amountLP per FIFO
+    //     (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = allocateLP(_staker, _LPamount, _pairCode);
+    //     uint256 _KTY;
+    //     uint256 _SDAO;
 
-        if (startBatchNumber == endBatchNumber) {
-            (_KTY, _SDAO) = calculateRewardsByAmountCase1(_staker, _pairCode, _LPamount, startBatchNumber);
+    //     if (startBatchNumber == endBatchNumber) {
+    //         (_KTY, _SDAO) = calculateRewardsByAmountCase1(_staker, _pairCode, _LPamount, startBatchNumber);
           
-        } else if (startBatchNumber < endBatchNumber && residual == 0) {
-            (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber);
+    //     } else if (startBatchNumber < endBatchNumber && residual == 0) {
+    //         (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber);
            
-        } else if (startBatchNumber < endBatchNumber && residual > 0) {
-            (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber.sub(1));
-            (uint256 _KTYresidual, uint256 _SDAOresidual) = calculateRewardsByAmountResidual(_staker, _pairCode, endBatchNumber, residual);
-            _KTY = _KTY.add(_KTYresidual);
-            _SDAO = _SDAO.add(_SDAOresidual);           
-        }
-        return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
-    }
+    //     } else if (startBatchNumber < endBatchNumber && residual > 0) {
+    //         (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber.sub(1));
+    //         (uint256 _KTYresidual, uint256 _SDAOresidual) = calculateRewardsByAmountResidual(_staker, _pairCode, endBatchNumber, residual);
+    //         _KTY = _KTY.add(_KTYresidual);
+    //         _SDAO = _SDAO.add(_SDAOresidual);           
+    //     }
+    //     return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
+    // }
 
     function getTotalLPsLocked(address _staker) public view returns (uint256) {
         uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
@@ -610,21 +622,29 @@ contract YieldsCalculator is Ownable {
     function getRewardsToClaim(address _staker) internal view returns (uint256, uint256) {
         uint256 _KTY = 0;
         uint256 _SDAO = 0;
-       
-        // get rewards earned but yet to be claimed
-        uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
         uint256 _ktyRewards;
         uint256 _sdaoRewards;
-        uint256 _LP;
-        for (uint256 i = 0; i < _totalPools; i++) {
-            _LP = yieldFarming.getLockedLPbyPairCode(_staker, i);
-            if (_LP > 0) {
-                (_ktyRewards, _sdaoRewards,,) = calculateRewardsByAmount(_staker, _LP, i);
-                _KTY = _KTY.add(_ktyRewards);
-                _SDAO = _SDAO.add(_sdaoRewards);
-            }
+       
+        // get rewards earned but yet to be claimed
+        uint256[] memory allVolcies = volcie.allTokenOf(_staker);
+        for (uint256 i = 0; i < allVolcies.length; i++) {
+            (,, _ktyRewards, _sdaoRewards) = getVolcieValues(allVolcies[i]);
+            _KTY = _KTY.add(_ktyRewards);
+            _SDAO = _SDAO.add(_sdaoRewards);
         }
 
+        // uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
+        // uint256 _ktyRewards;
+        // uint256 _sdaoRewards;
+        // uint256 _LP;
+        // for (uint256 i = 0; i < _totalPools; i++) {
+        //     _LP = yieldFarming.getLockedLPbyPairCode(_staker, i);
+        //     if (_LP > 0) {
+        //         (_ktyRewards, _sdaoRewards,,) = calculateRewardsByAmount(_staker, _LP, i);
+        //         _KTY = _KTY.add(_ktyRewards);
+        //         _SDAO = _SDAO.add(_sdaoRewards);
+        //     }
+        // }
         return (_KTY, _SDAO);  
     }
 

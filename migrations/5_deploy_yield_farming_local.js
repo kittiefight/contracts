@@ -334,7 +334,8 @@ module.exports = (deployer, network, accounts) => {
       await yieldsCalculator.initialize(
         TOKENS_SOLD,
         yieldFarming.address,
-        yieldFarmingHelper.address
+        yieldFarmingHelper.address,
+        volcie.address
       )
 
       await volcie.addMinter(yieldFarming.address);
