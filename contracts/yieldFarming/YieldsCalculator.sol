@@ -23,7 +23,7 @@ contract YieldsCalculator is Ownable {
     uint256 constant public DAY = 48 * 60;// 24 * 60 * 60;
     uint256 constant DAILY_PORTION_IN_MONTH = 33333;
 
-    // proportionate a month into 30 parts, each part is 0.033333 * 1000000 = 33333
+    // proportionate a month over days
     uint256 constant public monthDays = MONTH / DAY;
 
     // total amount of KTY sold
@@ -75,6 +75,10 @@ contract YieldsCalculator is Ownable {
         volcie = _volcie;
     }
 
+    /**
+     * @dev Set the amount of tokens sold on private sales
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
     function setTokensSold(uint256 _tokensSold) public onlyOwner {
         tokensSold = _tokensSold;
     }
@@ -239,6 +243,10 @@ contract YieldsCalculator is Ownable {
         return calculateYields(_startingMonth, _endingMonth, lockedLP, startingLP);
     }
 
+    /**
+     * @return unit256, uint256 the KTY and SDAO rewards calculated based on starting month, ending month,
+               locked LP, and starting LP.
+     */
     function calculateYields(uint256 startMonth, uint256 endMonth, uint256 lockedLP, uint256 startingLP)
         internal view
         returns (uint256 yieldsKTY, uint256 yieldsSDAO)
@@ -252,6 +260,10 @@ contract YieldsCalculator is Ownable {
         return (yields_part_1_KTY.add(yields_part_2_KTY), yields_part_1_SDAO.add(yields_part_2_SDAO));
     }
 
+    /**
+     * @return unit256, uint256 the KTY and SDAO rewards for the starting month, which are calculated based on
+               starting month, and starting LP.
+     */
     function calculateYields_part_1(uint256 startMonth, uint256 startingLP)
         internal view
         returns (uint256 yields_part_1_KTY, uint256 yields_part_1_SDAO)
@@ -265,6 +277,10 @@ contract YieldsCalculator is Ownable {
         yields_part_1_SDAO = rewardsSDAOstartMonth.mul(startingLP).div(adjustedMonthlyDeposit);
     }
 
+    /**
+     * @return unit256, uint256 the KTY and SDAO rewards in the months following the starting month until the end month,
+               calculated based on starting month, ending month, and locked LP
+     */
     function calculateYields_part_2(uint256 startMonth, uint256 endMonth, uint256 lockedLP)
         internal view
         returns (uint256 yields_part_2_KTY, uint256 yields_part_2_SDAO)
@@ -285,8 +301,8 @@ contract YieldsCalculator is Ownable {
      * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the batch number of deposits
      *         made by a staker
      * @param _staker address the address of the staker for whom the rewards are calculated
-     * @param _batchNumber the deposit number of the deposits made by _staker
-     * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
+     * @param _batchNumber the batch number of the deposis made by _staker
+     * @param _pairCode uint256 Pair Code assocated with a Pair Pool in this batch
      * @return unit256 the amount of KittieFightToken rewards associated with the _batchNumber of this _staker
      * @return unit256 the amount of SuperDaoToken rewards associated with the _batchNumber of this _staker
      */
@@ -423,11 +439,11 @@ contract YieldsCalculator is Ownable {
 
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
-     * @param _batchNumber uint256 the batch number of which deposit the staker wishes to see the locked amount
+     * @param _batchNumber uint256 the batch number of which deposit 
      * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
      * @return bool true if the batch with the _batchNumber in the _pairCode of the _staker is eligible for claiming yields, false if it is not eligible.
      * @dev    A batch needs to be locked for at least 30 days to be eligible for claiming yields.
-     * @dev    A batch locked for less than 30 days has 0 rewards, although the locked Liquidity tokens can be withdrawn at any time.
+     * @dev    A batch locked for less than 30 days has 0 rewards
      */
     function isBatchEligibleForRewards(address _staker, uint256 _batchNumber, uint256 _pairCode)
         public view returns (bool)
@@ -447,6 +463,12 @@ contract YieldsCalculator is Ownable {
         return false;
     }
 
+    /**
+     * @param _staker address the staker who has deposited Uniswap Liquidity tokens
+     * @param _depositNumber uint256 the deposit number of which deposit 
+     * @dev    A deposit needs to be locked for at least 30 days to be eligible for claiming yields.
+     * @dev    A deposit locked for less than 30 days has 0 rewards
+     */
     function isDepositEligibleForEarlyBonus(address _staker, uint256 _depositNumber)
         public view returns (bool)
     {
@@ -454,6 +476,11 @@ contract YieldsCalculator is Ownable {
         return yieldFarming.isBatchEligibleForEarlyBonus(_staker, _batchNumber, _pairCode);
     }
 
+    /**
+     * @param _volcieID uint256 the ID of the Volcie Token
+     * @dev    A Volcie Token needs to have its associated LP locked for at least 30 days to be eligible 
+     *         for claiming yields.
+     */
     function isVolcieEligibleForEarlyBonus(uint256 _volcieID)
         external view returns (bool)
     {
@@ -461,6 +488,10 @@ contract YieldsCalculator is Ownable {
          return isDepositEligibleForEarlyBonus(_originalOwner, _depositNumber);
     }
 
+    /**
+     * @return two arrays, the first array contains the monthly KTY rewards for the 6 months, 
+     *         and the second array contains the monthly SDAO rewards for the 6 months, respectively.
+     */
     function getTotalRewards()
         external view
        returns (uint256[6] memory ktyRewards, uint256[6] memory sdaoRewards)
@@ -478,7 +509,6 @@ contract YieldsCalculator is Ownable {
     /**
      * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
      * @return uint256 the amount of total Rewards for KittieFightToken for the _month
-     * @return uint256 the amount of total Rewards for SuperDaoToken for the _month
      */
     function getTotalKTYRewardsByMonth(uint256 _month)
         public view 
@@ -490,6 +520,10 @@ contract YieldsCalculator is Ownable {
         return (_totalRewardsKTY.sub(_earlyBonus)).mul(_KTYunlockRate).div(base6);
     }
 
+    /**
+     * @param _month uint256 the month (from 0 to 5) for which the Reward Unlock Rate is returned
+     * @return uint256 the amount of total Rewards for SuperDaoToken for the _month
+     */
     function getTotalSDAORewardsByMonth(uint256 _month)
         public view 
         returns (uint256)
@@ -504,6 +538,7 @@ contract YieldsCalculator is Ownable {
      * @param _amountLP the amount of locked Liquidity token eligible for claiming early bonus
      * @return uint256 the amount of early bonus for this _staker. Since the amount of early bonus is the same
      *         for KittieFightToken and SuperDaoToken, only one number is returned.
+     * @dev    KTY early bonus of the returned value and SDAO early bonus of the returned value are the early bonus accrued for the _amountLP
      */
     function getEarlyBonus(uint256 _amountLP)
         public view returns (uint256)
@@ -514,11 +549,25 @@ contract YieldsCalculator is Ownable {
         return _amountLP.mul(_earlyBonus).div(_adjustedTotalLockedLPinEarlyMining);
     }
 
+    /**
+     * @param _volcieID the ID of the Volcie token eligible for claiming early bonus
+     * @return uint256 the amount of early bonus for this volcie token. Since the amount of early bonus is the same
+     *         for KittieFightToken and SuperDaoToken, only one number is returned.
+     * @dev    KTY early bonus of the returned value and SDAO early bonus of the returned value are the early bonus accrued for the volcie token
+     */
     function getEarlyBonusForVolcie(uint256 _volcieID) external view returns (uint256) {
         (,,,uint256 _LP,,,,,,) = yieldFarming.getVolcieToken(_volcieID);
         return getEarlyBonus(_LP);
     }
 
+    /**
+     * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the deposit number of the deposit
+     *         made by a staker
+     * @param _staker address the address of the staker for whom the rewards are calculated
+     * @param _depositNumber the deposit number of the deposits made by _staker
+     * @return unit256 the amount of KittieFightToken rewards associated with the _depositNumber of this _staker
+     * @return unit256 the amount of SuperDaoToken rewards associated with the _depositNumber of this _staker
+     */
     function calculateRewardsByDepositNumber(address _staker, uint256 _depositNumber)
         public view
         returns (uint256, uint256)
@@ -619,6 +668,9 @@ contract YieldsCalculator is Ownable {
         return (_claimedKTY.add(_KTYtoClaim), _claimedSDAO.add(_SDAOtoClaim));  
     }
 
+    /**
+     * @return the KTY and SDAO rewards earned but yet to claim by a staker
+     */
     function getRewardsToClaim(address _staker) internal view returns (uint256, uint256) {
         uint256 _KTY = 0;
         uint256 _SDAO = 0;
@@ -633,18 +685,6 @@ contract YieldsCalculator is Ownable {
             _SDAO = _SDAO.add(_sdaoRewards);
         }
 
-        // uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
-        // uint256 _ktyRewards;
-        // uint256 _sdaoRewards;
-        // uint256 _LP;
-        // for (uint256 i = 0; i < _totalPools; i++) {
-        //     _LP = yieldFarming.getLockedLPbyPairCode(_staker, i);
-        //     if (_LP > 0) {
-        //         (_ktyRewards, _sdaoRewards,,) = calculateRewardsByAmount(_staker, _LP, i);
-        //         _KTY = _KTY.add(_ktyRewards);
-        //         _SDAO = _SDAO.add(_sdaoRewards);
-        //     }
-        // }
         return (_KTY, _SDAO);  
     }
 
@@ -663,6 +703,11 @@ contract YieldsCalculator is Ownable {
             .div(monthDays);
     }
 
+    /**
+     * @return estimated KTY and SDAO rewards or any hypothetical amount of LPs from a pair code,
+     *         if staking starts from now and keep locked until program ends.
+     * @dev This function is only used for estimating rewards only
+     */
     function estimateRewards(uint256 _LP, uint256 _pairCode) external view returns (uint256, uint256) {
         uint256 startMonth = yieldFarming.getCurrentMonth();
         uint256 startDay = getDay(block.timestamp);
@@ -686,7 +731,10 @@ contract YieldsCalculator is Ownable {
         return (_KTY, _SDAO);
     }
 
-    // These internal functions are for estimating rewards only
+    /**
+     * @return estimated KTY and SDAO rewards
+     * @dev This function is only used for estimating rewards only
+     */
     function estimateYields(uint256 startMonth, uint256 endMonth, uint256 lockedLP, uint256 startingLP, uint256 adjustedMonthlyDeposit)
         internal view
         returns (uint256, uint256)
@@ -700,6 +748,10 @@ contract YieldsCalculator is Ownable {
         return (yields_part_1_KTY.add(yields_part_2_KTY), yields_part_1_SDAO.add(yields_part_2_SDAO));
     }
 
+    /**
+     * @return estimated KTY and SDAO rewards for the starting month
+     * @dev This function is only used for estimating rewards only
+     */
     function estimateYields_part_1(uint256 startMonth, uint256 startingLP, uint256 adjustedMonthlyDeposit)
         internal view
         returns (uint256 yieldsKTY_part_1, uint256 yieldsSDAO_part_1)
@@ -712,6 +764,10 @@ contract YieldsCalculator is Ownable {
         yieldsSDAO_part_1 = rewardsSDAOstartMonth.mul(startingLP).div(adjustedMonthlyDeposit);
     }
 
+    /**
+     * @return estimated KTY and SDAO rewards for the for the months following the starting month until the end month
+     * @dev This function is only used for estimating rewards only
+     */
     function estimateYields_part_2(uint256 startMonth, uint256 endMonth, uint256 lockedLP, uint256 adjustedMonthlyDeposit)
         internal view
         returns (uint256 yieldsKTY_part_2, uint256 yieldsSDAO_part_2)
@@ -727,6 +783,9 @@ contract YieldsCalculator is Ownable {
          
     }
 
+    /**
+     * @return estimated early bonus for any hypothetical amount of LPs locked
+     */
     function estimateEarlyBonus(uint256 _amountLP)
         public view returns (uint256)
     {
@@ -740,6 +799,10 @@ contract YieldsCalculator is Ownable {
         return _amountLP.mul(_earlyBonus).div(_adjustedTotalLockedLPinEarlyMining);
     }
 
+    /**
+     * @return the LP locked, LP locked value in DAI, accrued KTY rewards, and accrued SDAO rewards 
+     *         of a Volcie token until the current moment.
+     */
     function getVolcieValues(uint256 _volcieID)
         public view returns (uint256, uint256, uint256, uint256)
     {
