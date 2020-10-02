@@ -1,0 +1,813 @@
+{
+  "contracts": {
+    "YieldFarming": {
+      "address": "0x24Fdc89CA3F34863D1Bb4caa7E46045C0A2e1bA4",
+      "constructorCode": "6080604052615d18806100136000396000f3fe",
+      "bodyBytecodeHash": "d4fbf8c7f3b1de01a9707654941cce652c69a6b9714a7afbc3c63a6dd18d704b",
+      "localBytecodeHash": "3593982982e584d6ab48b1d8e8dfc0e6b55f43ea5dcfedd4b21bd306cda0a918",
+      "deployedBytecodeHash": "3593982982e584d6ab48b1d8e8dfc0e6b55f43ea5dcfedd4b21bd306cda0a918",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        },
+        "t_array:6<t_uint256>": {
+          "id": "t_array:6<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "6",
+          "kind": "array",
+          "label": "uint256[6]"
+        },
+        "t_struct<YieldFarming.Staker>": {
+          "id": "t_struct<YieldFarming.Staker>",
+          "kind": "struct",
+          "label": "YieldFarming.Staker",
+          "members": [
+            {
+              "label": "totalDeposits",
+              "astId": 10903,
+              "type": "t_array:dyn<t_array:2<t_uint256>>",
+              "src": "3766:26:50"
+            },
+            {
+              "label": "batchLockedLPamount",
+              "astId": 10908,
+              "type": "t_array:200<t_array:dyn<t_uint256>>",
+              "src": "3913:34:50"
+            },
+            {
+              "label": "adjustedBatchLockedLPamount",
+              "astId": 10913,
+              "type": "t_array:200<t_array:dyn<t_uint256>>",
+              "src": "4062:42:50"
+            },
+            {
+              "label": "adjustedStartingLPamount",
+              "astId": 10918,
+              "type": "t_array:200<t_array:dyn<t_uint256>>",
+              "src": "4243:39:50"
+            },
+            {
+              "label": "factor",
+              "astId": 10923,
+              "type": "t_array:200<t_array:dyn<t_uint256>>",
+              "src": "4292:21:50"
+            },
+            {
+              "label": "batchLockedAt",
+              "astId": 10928,
+              "type": "t_array:200<t_array:dyn<t_uint256>>",
+              "src": "4426:28:50"
+            },
+            {
+              "label": "totalLPlockedbyPairCode",
+              "astId": 10932,
+              "type": "t_array:200<t_uint256>",
+              "src": "4553:36:50"
+            },
+            {
+              "label": "depositNumberForEarlyBonus",
+              "astId": 10935,
+              "type": "t_array:dyn<t_uint256>",
+              "src": "4949:36:50"
+            }
+          ]
+        },
+        "t_array:2<t_uint256>": {
+          "id": "t_array:2<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "2",
+          "kind": "array",
+          "label": "uint256[2]"
+        },
+        "t_array:dyn<t_array:2<t_uint256>>": {
+          "id": "t_array:dyn<t_array:2<t_uint256>>",
+          "valueType": "t_array:2<t_uint256>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "uint256[2][]"
+        },
+        "t_array:dyn<t_uint256>": {
+          "id": "t_array:dyn<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "dyn",
+          "kind": "array",
+          "label": "uint256[]"
+        },
+        "t_array:200<t_array:dyn<t_uint256>>": {
+          "id": "t_array:200<t_array:dyn<t_uint256>>",
+          "valueType": "t_array:dyn<t_uint256>",
+          "length": "200",
+          "kind": "array",
+          "label": "uint256[][200]"
+        },
+        "t_array:200<t_uint256>": {
+          "id": "t_array:200<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "200",
+          "kind": "array",
+          "label": "uint256[200]"
+        },
+        "t_mapping<t_struct<YieldFarming.Staker>>": {
+          "id": "t_mapping<t_struct<YieldFarming.Staker>>",
+          "valueType": "t_struct<YieldFarming.Staker>",
+          "label": "mapping(key => YieldFarming.Staker)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_address>": {
+          "id": "t_mapping<t_address>",
+          "valueType": "t_address",
+          "label": "mapping(key => address)",
+          "kind": "mapping"
+        },
+        "t_struct<YieldFarming.VolcieToken>": {
+          "id": "t_struct<YieldFarming.VolcieToken>",
+          "kind": "struct",
+          "label": "YieldFarming.VolcieToken",
+          "members": [
+            {
+              "label": "originalOwner",
+              "astId": 10938,
+              "type": "t_address",
+              "src": "5173:21:50"
+            },
+            {
+              "label": "generation",
+              "astId": 10940,
+              "type": "t_uint256",
+              "src": "5256:18:50"
+            },
+            {
+              "label": "depositNumber",
+              "astId": 10942,
+              "type": "t_uint256",
+              "src": "5345:21:50"
+            },
+            {
+              "label": "LP",
+              "astId": 10944,
+              "type": "t_uint256",
+              "src": "5450:10:50"
+            },
+            {
+              "label": "pairCode",
+              "astId": 10946,
+              "type": "t_uint256",
+              "src": "5530:16:50"
+            },
+            {
+              "label": "lockedAt",
+              "astId": 10948,
+              "type": "t_uint256",
+              "src": "5633:16:50"
+            },
+            {
+              "label": "tokenBurnt",
+              "astId": 10950,
+              "type": "t_bool",
+              "src": "5713:15:50"
+            },
+            {
+              "label": "tokenBurntAt",
+              "astId": 10952,
+              "type": "t_uint256",
+              "src": "5783:20:50"
+            },
+            {
+              "label": "tokenBurntBy",
+              "astId": 10954,
+              "type": "t_address",
+              "src": "5879:20:50"
+            },
+            {
+              "label": "ktyRewards",
+              "astId": 10956,
+              "type": "t_uint256",
+              "src": "5962:18:50"
+            },
+            {
+              "label": "sdaoRewards",
+              "astId": 10958,
+              "type": "t_uint256",
+              "src": "6046:19:50"
+            }
+          ]
+        },
+        "t_mapping<t_struct<YieldFarming.VolcieToken>>": {
+          "id": "t_mapping<t_struct<YieldFarming.VolcieToken>>",
+          "valueType": "t_struct<YieldFarming.VolcieToken>",
+          "label": "mapping(key => YieldFarming.VolcieToken)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_uint256>": {
+          "id": "t_mapping<t_uint256>",
+          "valueType": "t_uint256",
+          "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_array:2<t_uint256>>": {
+          "id": "t_mapping<t_array:2<t_uint256>>",
+          "valueType": "t_array:2<t_uint256>",
+          "label": "mapping(key => uint256[2])",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "initialized",
+          "astId": 3725,
+          "type": "t_bool",
+          "src": "757:24:20"
+        },
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "initializing",
+          "astId": 3727,
+          "type": "t_bool",
+          "src": "876:25:20"
+        },
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "______gap",
+          "astId": 3789,
+          "type": "t_array:50<t_uint256>",
+          "src": "1982:29:20"
+        },
+        {
+          "contract": "Ownable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\ownership\\Ownable.sol",
+          "label": "_owner",
+          "astId": 3987,
+          "type": "t_address",
+          "src": "496:22:22"
+        },
+        {
+          "contract": "Ownable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\ownership\\Ownable.sol",
+          "label": "______gap",
+          "astId": 4100,
+          "type": "t_array:50<t_uint256>",
+          "src": "2441:29:22"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "volcie",
+          "astId": 10833,
+          "type": "t_address",
+          "src": "1230:26:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "kittieFightToken",
+          "astId": 10835,
+          "type": "t_address",
+          "src": "1311:30:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "superDaoToken",
+          "astId": 10837,
+          "type": "t_address",
+          "src": "1406:27:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "yieldFarmingHelper",
+          "astId": 10839,
+          "type": "t_address",
+          "src": "1498:44:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "yieldsCalculator",
+          "astId": 10841,
+          "type": "t_address",
+          "src": "1595:40:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalNumberOfPairPools",
+          "astId": 10864,
+          "type": "t_uint256",
+          "src": "2157:37:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "EARLY_MINING_BONUS",
+          "astId": 10866,
+          "type": "t_uint256",
+          "src": "2284:33:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "adjustedTotalLockedLPinEarlyMining",
+          "astId": 10868,
+          "type": "t_uint256",
+          "src": "2372:49:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalDepositedLP",
+          "astId": 10870,
+          "type": "t_uint256",
+          "src": "2428:31:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalLockedLP",
+          "astId": 10872,
+          "type": "t_uint256",
+          "src": "2528:28:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalRewardsKTY",
+          "astId": 10874,
+          "type": "t_uint256",
+          "src": "2625:30:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalRewardsSDAO",
+          "astId": 10876,
+          "type": "t_uint256",
+          "src": "2715:31:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalRewardsKTYclaimed",
+          "astId": 10878,
+          "type": "t_uint256",
+          "src": "2802:37:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "totalRewardsSDAOclaimed",
+          "astId": 10880,
+          "type": "t_uint256",
+          "src": "2902:38:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "programDuration",
+          "astId": 10882,
+          "type": "t_uint256",
+          "src": "3000:30:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "programStartAt",
+          "astId": 10884,
+          "type": "t_uint256",
+          "src": "3105:29:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "programEndAt",
+          "astId": 10886,
+          "type": "t_uint256",
+          "src": "3201:27:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "monthsStartAt",
+          "astId": 10890,
+          "type": "t_array:6<t_uint256>",
+          "src": "3295:31:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "KTYunlockRates",
+          "astId": 10894,
+          "type": "t_array:6<t_uint256>",
+          "src": "3399:32:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "SDAOunlockRates",
+          "astId": 10898,
+          "type": "t_array:6<t_uint256>",
+          "src": "3555:33:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "stakers",
+          "astId": 10963,
+          "type": "t_mapping<t_struct<YieldFarming.Staker>>",
+          "src": "6134:43:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "pairPoolsInfo",
+          "astId": 10967,
+          "type": "t_mapping<t_address>",
+          "src": "6184:50:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "volcieTokens",
+          "astId": 10971,
+          "type": "t_mapping<t_struct<YieldFarming.VolcieToken>>",
+          "src": "6296:53:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "adjustedMonthlyDeposits",
+          "astId": 10975,
+          "type": "t_mapping<t_uint256>",
+          "src": "6573:58:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "rewardsClaimed",
+          "astId": 10981,
+          "type": "t_mapping<t_array:2<t_uint256>>",
+          "src": "6638:54:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "unlocked",
+          "astId": 10983,
+          "type": "t_uint256",
+          "src": "6699:24:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "calculated",
+          "astId": 10985,
+          "type": "t_uint256",
+          "src": "6730:25:50"
+        },
+        {
+          "contract": "YieldFarming",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarming.sol",
+          "label": "calculated1",
+          "astId": 10987,
+          "type": "t_uint256",
+          "src": "6761:26:50"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    },
+    "YieldFarmingHelper": {
+      "address": "0x0F2C5A36857cd13c90ffEEA600696f14a742C67C",
+      "constructorCode": "6080604052615677806100136000396000f3fe",
+      "bodyBytecodeHash": "1393d51d26c19cb6322876a04b4ac602db13e2ba0dde52b684227895bb0bc88b",
+      "localBytecodeHash": "78ee6429f456f39e585502f1e81a52d047db9903aaec2109b535c64ef7f363dc",
+      "deployedBytecodeHash": "78ee6429f456f39e585502f1e81a52d047db9903aaec2109b535c64ef7f363dc",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "initialized",
+          "astId": 3725,
+          "type": "t_bool",
+          "src": "757:24:20"
+        },
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "initializing",
+          "astId": 3727,
+          "type": "t_bool",
+          "src": "876:25:20"
+        },
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "______gap",
+          "astId": 3789,
+          "type": "t_array:50<t_uint256>",
+          "src": "1982:29:20"
+        },
+        {
+          "contract": "Ownable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\ownership\\Ownable.sol",
+          "label": "_owner",
+          "astId": 3987,
+          "type": "t_address",
+          "src": "496:22:22"
+        },
+        {
+          "contract": "Ownable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\ownership\\Ownable.sol",
+          "label": "______gap",
+          "astId": 4100,
+          "type": "t_array:50<t_uint256>",
+          "src": "2441:29:22"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "yieldFarming",
+          "astId": 12880,
+          "type": "t_address",
+          "src": "719:32:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "yieldsCalculator",
+          "astId": 12882,
+          "type": "t_address",
+          "src": "757:40:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "ktyWethPair",
+          "astId": 12884,
+          "type": "t_address",
+          "src": "804:26:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "daiWethPair",
+          "astId": 12886,
+          "type": "t_address",
+          "src": "836:26:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "kittieFightTokenAddr",
+          "astId": 12888,
+          "type": "t_address",
+          "src": "869:35:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "superDaoTokenAddr",
+          "astId": 12890,
+          "type": "t_address",
+          "src": "910:32:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "wethAddr",
+          "astId": 12892,
+          "type": "t_address",
+          "src": "948:23:51"
+        },
+        {
+          "contract": "YieldFarmingHelper",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldFarmingHelper.sol",
+          "label": "daiAddr",
+          "astId": 12894,
+          "type": "t_address",
+          "src": "977:22:51"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    },
+    "YieldsCalculator": {
+      "address": "0x0E2EB1056d3AB6F3B9a67FbaFf15dbDA20198553",
+      "constructorCode": "60806040526149a3806100136000396000f3fe",
+      "bodyBytecodeHash": "c8c9c08b21896bf95465420cccc97925100d6943c5f34b61b5605bd4e4feda9f",
+      "localBytecodeHash": "2e2dda55abef152db8b04ed3f6cbfbf2aac0d4e70b1d566e797b7992f4aa3d34",
+      "deployedBytecodeHash": "2e2dda55abef152db8b04ed3f6cbfbf2aac0d4e70b1d566e797b7992f4aa3d34",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "initialized",
+          "astId": 3725,
+          "type": "t_bool",
+          "src": "757:24:20"
+        },
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "initializing",
+          "astId": 3727,
+          "type": "t_bool",
+          "src": "876:25:20"
+        },
+        {
+          "contract": "Initializable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\Initializable.sol",
+          "label": "______gap",
+          "astId": 3789,
+          "type": "t_array:50<t_uint256>",
+          "src": "1982:29:20"
+        },
+        {
+          "contract": "Ownable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\ownership\\Ownable.sol",
+          "label": "_owner",
+          "astId": 3987,
+          "type": "t_address",
+          "src": "496:22:22"
+        },
+        {
+          "contract": "Ownable",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\libs\\openzeppelin_upgradable_v2_5_0\\ownership\\Ownable.sol",
+          "label": "______gap",
+          "astId": 4100,
+          "type": "t_array:50<t_uint256>",
+          "src": "2441:29:22"
+        },
+        {
+          "contract": "YieldsCalculator",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldsCalculator.sol",
+          "label": "yieldFarming",
+          "astId": 14349,
+          "type": "t_address",
+          "src": "552:32:52"
+        },
+        {
+          "contract": "YieldsCalculator",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldsCalculator.sol",
+          "label": "yieldFarmingHelper",
+          "astId": 14351,
+          "type": "t_address",
+          "src": "590:44:52"
+        },
+        {
+          "contract": "YieldsCalculator",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldsCalculator.sol",
+          "label": "volcie",
+          "astId": 14353,
+          "type": "t_address",
+          "src": "640:26:52"
+        },
+        {
+          "contract": "YieldsCalculator",
+          "path": "..\\..\\..\\D\\projects\\kittiefight\\alpha\\contracts\\yieldFarming\\YieldsCalculator.sol",
+          "label": "tokensSold",
+          "astId": 14381,
+          "type": "t_uint256",
+          "src": "1207:27:52"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    }
+  },
+  "solidityLibs": {},
+  "proxies": {
+    "kittiefight/VolcieToken": [
+      {
+        "address": "0x761f743986d8E118a89e16f19a39A119Cd960072",
+        "kind": "NonProxy",
+        "bytecodeHash": "9f540053e47be1b405d4ee71cb1464e5742cdeccf1bf1188f6817c5d8267a93a"
+      }
+    ],
+    "kittiefight/MockSuperDaoToken": [
+      {
+        "address": "0xE3895bd9a995FE0cC2b2C494af2289d95c21c7B1",
+        "kind": "NonProxy",
+        "bytecodeHash": "8aa71a3f4b366e98036c0a2ff5d1fda9c4c9403aa89162d6a92691598debce25"
+      }
+    ],
+    "kittiefight/YieldFarming": [
+      {
+        "address": "0xf8C8e32F1a444b4664A18fc663b5147347D3BfC6",
+        "version": "0.0.1",
+        "implementation": "0x24Fdc89CA3F34863D1Bb4caa7E46045C0A2e1bA4",
+        "admin": "0x3101a87236131c476e16F7bCb50727e0a68107bD",
+        "kind": "Upgradeable"
+      }
+    ],
+    "kittiefight/YieldFarmingHelper": [
+      {
+        "address": "0x68F9905A46214688713D951f27CCf9F7a7fAcdDa",
+        "version": "0.0.1",
+        "implementation": "0x0F2C5A36857cd13c90ffEEA600696f14a742C67C",
+        "admin": "0x3101a87236131c476e16F7bCb50727e0a68107bD",
+        "kind": "Upgradeable"
+      }
+    ],
+    "kittiefight/YieldsCalculator": [
+      {
+        "address": "0xC941F91a6FE4A978409b8b64ed06e6c25b3FbfB7",
+        "version": "0.0.1",
+        "implementation": "0x0E2EB1056d3AB6F3B9a67FbaFf15dbDA20198553",
+        "admin": "0x3101a87236131c476e16F7bCb50727e0a68107bD",
+        "kind": "Upgradeable"
+      }
+    ]
+  },
+  "manifestVersion": "2.2",
+  "version": "0.0.1",
+  "proxyAdmin": {
+    "address": "0x3101a87236131c476e16F7bCb50727e0a68107bD"
+  }
+}

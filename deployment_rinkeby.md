@@ -1,0 +1,10 @@
+# Rinkeby deployment
+
+
+## Yield Farming
+* VolcieToken 0x761f743986d8E118a89e16f19a39A119Cd960072
+* SuperDaoToken 0xE3895bd9a995FE0cC2b2C494af2289d95c21c7B1
+* YieldFarming 0xf8C8e32F1a444b4664A18fc663b5147347D3BfC6
+* YieldFarmingHelper 0x68F9905A46214688713D951f27CCf9F7a7fAcdDa
+* YieldsCalculator 0xC941F91a6FE4A978409b8b64ed06e6c25b3FbfB7
+
