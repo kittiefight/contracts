@@ -78,7 +78,7 @@ contract YieldFarmingHelper is Ownable {
     }
 
     /**
-     * @dev Set Uniswap KTY-Weth Pair contract
+     * @dev Set Uniswap KTY-Weth Pair contract address
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function setKtyWethPair(address _ktyWethPair) public onlyOwner {
@@ -86,7 +86,7 @@ contract YieldFarmingHelper is Ownable {
     }
 
     /**
-     * @dev Set Uniswap Dai-Weth Pair contract
+     * @dev Set Uniswap Dai-Weth Pair contract address
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function setDaiWethPair(address _daiWethPair) public onlyOwner {
@@ -105,10 +105,18 @@ contract YieldFarmingHelper is Ownable {
         }        
     }
 
+    /**
+     * @dev Set Weth contract address
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
     function setWethAddress(address _weth) public onlyOwner {
         wethAddr = _weth;
     }
 
+    /**
+     * @dev Set Dai contract address
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
     function setDaiAddress(address _dai) public onlyOwner {
         daiAddr = _dai;
     }
@@ -117,6 +125,11 @@ contract YieldFarmingHelper is Ownable {
     /* ============================================================================================================== */
 
     // Getters YieldFarming
+
+    /**
+     * @return KTY reserves and the total supply of LPs from a uniswap pair contract associated with a
+              pair code in Yield Farming.
+     */
     function getLPinfo(uint256 _pairCode)
         public view returns (uint256 reserveKTY, uint256 totalSupplyLP) 
     {
@@ -125,8 +138,11 @@ contract YieldFarmingHelper is Ownable {
         totalSupplyLP = IUniswapV2Pair(pairPoolAddress).totalSupply();
     }
 
-    // LP1 / LP =  (T1 x R) / (T x R1)
-    // amplify 1000000 times to avoid float imprecision
+    /**
+     * @return returns the LP “Bubble Factor” of LP from a uniswap pair contract associate with a pair code. 
+     * @dev calculation is based on formula: LP1 / LP =  (T1 x R) / (T x R1)
+     * @dev returned value is amplified 1000000 times to avoid float imprecision
+     */
     function bubbleFactor(uint256 _pairCode) external view returns (uint256)
     {
         (uint256 reserveKTY, uint256 totalSupply) = getLPinfo(0);
@@ -170,6 +186,9 @@ contract YieldFarmingHelper is Ownable {
         return yieldFarming.totalLockedLP();
     }
 
+    /**
+     * @return uint256 the total locked LPs in Yield Farming in DAI value
+     */
     function totalLockedLPinDAI() external view returns (uint256) {
         uint256 _totalLockedLPinDAI = 0;
         uint256 _LPinDai;
@@ -218,7 +237,12 @@ contract YieldFarmingHelper is Ownable {
     //     return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
     // }
 
-    function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode) public view returns (uint256, uint256) {
+    /**
+     * @return A staker's total LPs locked associated with a pair code, qualifying for claiming early bonus, and its values adjusted
+     *         to the LP “Bubble Factor”.
+     */
+    function totalLPforEarlyBonusPerPairCode(address _staker, uint256 _pairCode)
+        public view returns (uint256, uint256) {
         uint256[] memory depositsEarlyBonus = yieldFarming.getDepositsForEarlyBonus(_staker);
         uint256 totalLPEarlyBonus = 0;
         uint256 adjustedTotalLPEarlyBonus = 0;
@@ -241,6 +265,10 @@ contract YieldFarmingHelper is Ownable {
         return (totalLPEarlyBonus, adjustedTotalLPEarlyBonus);
     }
 
+    /**
+     * @return A staker's total LPs locked qualifying for claiming early bonus, and its values adjusted
+     *         to the LP “Bubble Factor”.
+     */
     function totalLPforEarlyBonus(address _staker) public view returns (uint256, uint256) {
         uint256[] memory _depositsEarlyBonus = yieldFarming.getDepositsForEarlyBonus(_staker);
         if (_depositsEarlyBonus.length == 0) {
@@ -267,6 +295,9 @@ contract YieldFarmingHelper is Ownable {
         return (_totalLPEarlyBonus, _adjustedTotalLPEarlyBonus);
     }
 
+    /**
+     * @return uint256, uint256 a staker's total early bonus (KTY and SDAO) he/she has accrued.
+     */
     function getTotalEarlyBonus(address _staker) external view returns (uint256, uint256) {
         (, uint256 totalEarlyLP) = totalLPforEarlyBonus(_staker);
         uint256 earlyBonus = yieldsCalculator.getEarlyBonus(totalEarlyLP);
@@ -403,8 +434,12 @@ contract YieldFarmingHelper is Ownable {
     }
 
     /**
-       For example, if I have 1 of 1000 LP of KTY-WETH, and there is total 10000 KTY and 300 ETH 
-       staked in this pair, then 1 have 10 KTY + 0.3 ETH. And that is equal to 20 KTY or 0.6 ETH total.
+     * @param _pairCode uint256 the pair code of which the LPs are 
+     * @param _LP uint256 the amount of LPs
+     * @return uint256 DAI value of the amount LPs which are from a pair pool associated with the pair code
+     * @dev the calculations is as below:
+     *      For example, if I have 1 of 1000 LP of KTY-WETH, and there is total 10000 KTY and 300 ETH 
+     *      staked in this pair, then 1 have 10 KTY + 0.3 ETH. And that is equal to 20 KTY or 0.6 ETH total.
      */
     function getLPvalueInDai(uint256 _pairCode, uint256 _LP) public view returns (uint256) {
         (,address pairPoolAddress,) = yieldFarming.getPairPool(_pairCode);

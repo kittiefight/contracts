@@ -447,6 +447,10 @@ contract YieldFarming is Ownable {
         return (pairName, pairPoolsInfo[_pairCode], otherToken);
     }
 
+    /**
+     * @param _volcieTokenID uint256 Volcie Token ID 
+     * @return the properties of this Volcie Token 
+     */
     function getVolcieToken(uint256 _volcieTokenID) public view
         returns (
             address originalOwner, uint256 depositNumber, uint256 generation,
@@ -592,6 +596,10 @@ contract YieldFarming is Ownable {
         return rewardsClaimed[_staker];
     }
 
+    /**
+     * @return unit256 the total monthly deposits of LPs, adjusted to LP factor.
+     * @dev    LP factor reflects the difference of the intrinsic value of LP from different uniswap pair contracts
+     */
     function getAdjustedTotalMonthlyDeposits(uint256 _month) external view returns (uint256) {
         return adjustedMonthlyDeposits[_month];
     }
@@ -621,6 +629,11 @@ contract YieldFarming is Ownable {
         uint256 _SDAOunlockRate = SDAOunlockRates[_month];
         return (_KTYunlockRate, _SDAOunlockRate);
     }
+
+    /**
+     * @return unit256 the starting time of a month
+     * @dev    There are 6 months in this program in total, starting from month 0 to month 5.
+     */
 
     function getMonthStartAt(uint256 month) external view returns (uint256) {
         return monthsStartAt[month];
@@ -999,6 +1012,7 @@ contract YieldFarming is Ownable {
      /**
      * @dev Called by deposit(), pass values to generate Volcie Token NFT with all atrributes as listed in params
      * @param _to address who this Ethie Token NFT is minted to
+     * @param _LPaddress address of the uniswap pair contract of which the LPs are 
      * @param _LPamount uint256 the amount of LPs associated with this NFT
      * @return uint256 ID of the LP Token NFT minted
      */
