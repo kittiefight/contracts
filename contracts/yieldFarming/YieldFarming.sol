@@ -101,7 +101,7 @@ contract YieldFarming is Ownable {
 
     mapping(address => uint256[2]) internal rewardsClaimed;
 
-    uint256 private unlocked = 1;
+    uint256 private unlocked;
 
     uint256 public calculated;
     uint256 public calculated1;
@@ -160,6 +160,9 @@ contract YieldFarming is Ownable {
 
         // Set program duration (for a period of 6 months). Month starts at time of program deployment/initialization
         setProgramDuration(6, _programStartTime);
+
+        //Reentrancy lock
+        unlocked = 1;
     }
 
     /*                                                      EVENTS                                                    */
