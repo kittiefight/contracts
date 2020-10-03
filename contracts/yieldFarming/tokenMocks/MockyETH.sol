@@ -2,7 +2,7 @@ pragma solidity ^0.5.5;
 
 import "../../interfaces/ERC20Basic.sol";
 import "../../interfaces/ERC20Advanced.sol";
-import "../../libs/SafeMath.sol";
+import "../../libs/openzeppelin_upgradable_v2_5_0/math/SafeMath.sol";
 
 
 contract MockyETH is ERC20Basic, ERC20Advanced {

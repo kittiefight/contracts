@@ -1,8 +1,8 @@
 pragma solidity ^0.5.5;
 
 import '../../uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
+import "../../../libs/openzeppelin_upgradable_v2_5_0/math/SafeMath.sol";
 
-import "../../../libs/SafeMath.sol";
 
 library UniswapV2Library {
     using SafeMath for uint;

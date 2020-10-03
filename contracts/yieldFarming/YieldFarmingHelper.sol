@@ -1,7 +1,7 @@
 pragma solidity ^0.5.5;
 
 import "../libs/openzeppelin_upgradable_v2_5_0/ownership/Ownable.sol";
-import "../libs/SafeMath.sol";
+import "../libs/openzeppelin_upgradable_v2_5_0/math/SafeMath.sol";
 import '../uniswapKTY/uniswap-v2-core/interfaces/IUniswapV2Pair.sol';
 import '../uniswapKTY/uniswap-v2-periphery/libraries/UniswapV2Library.sol';
 import "../uniswapKTY/uniswap-v2-core/interfaces/IERC20.sol";
