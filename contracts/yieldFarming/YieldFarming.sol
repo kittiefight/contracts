@@ -45,7 +45,7 @@ contract YieldFarming is Ownable {
     uint256 public adjustedTotalLockedLPinEarlyMining;
 
     //uint256 public totalDepositedLP;                    // Total Uniswap Liquidity tokens deposited
-    uint256 public __gap0;                              //!!! REMOVE BEFORE PRODUCTION (Upgradable prevents removing now)
+    uint256 public __gap0;                              // previously was totalDepositedLP
     uint256 public totalLockedLP;                       // Total Uniswap Liquidity tokens locked
     uint256 public totalRewardsKTY;                     // Total KittieFightToken rewards
     uint256 public totalRewardsSDAO;                    // Total SuperDaoToken rewards
@@ -167,6 +167,13 @@ contract YieldFarming is Ownable {
 
         //Reentrancy lock
         unlocked = 1;
+    }
+
+
+    function upgrade() public onlyOwner {
+        require(__gap0 > 0, "No upgrade required");
+        totalDepositedLPbyPairCode[0] = __gap0;
+        __gap0 = 0;
     }
 
     /*                                                      EVENTS                                                    */
