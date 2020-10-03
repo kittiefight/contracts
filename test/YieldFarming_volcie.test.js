@@ -413,10 +413,29 @@ contract("YieldFarming", accounts => {
     console.log("Is program active?", isProgramActive);
   });
 
-  it("gets current month", async () => {
+  it("estimates rewards for any hypothetical amount of LPs to be diposited", async () => {
+    let LP_amount = new BigNumber(
+      web3.utils.toWei("30", "ether") //30 Uniswap Liquidity tokens
+    );
     let currentMonth = await yieldFarming.getCurrentMonth();
-    console.log("Current Month:", currentMonth.toString());
-  });
+    currentMonth = currentMonth.toNumber()
+    console.log("Current Month:", currentMonth);
+    let currentDay = await yieldsCalculator.getCurrentDay();
+    currentDay = currentDay.toNumber()
+    console.log("Current Day:", currentDay);
+    let monthlyProportion = await yieldsCalculator.getElapsedDaysInMonth(currentDay, currentMonth);
+    console.log("Monthly Proportion:", monthlyProportion.toString())
+    let firstMonthAmount = await yieldsCalculator.getFirstMonthAmount(
+      currentDay, currentMonth, LP_amount, LP_amount);
+    console.log("firstMonthAmount:", weiToEther(firstMonthAmount))
+
+    let estimatedEarlyBonus = await yieldsCalculator.estimateEarlyBonus(LP_amount, 0);
+    console.log("estimated early bonus:", weiToEther(estimatedEarlyBonus))
+  
+    let estimatedRewards = await yieldsCalculator.estimateRewards(LP_amount, 0);
+    console.log("estimated KTY rewards:", weiToEther(estimatedRewards[0]))
+    console.log("estimated SDAO rewards:", weiToEther(estimatedRewards[1]))
+  })
 
   it("users deposit Uinswap Liquidity tokens in Yield Farming contract", async () => {
     console.log(
@@ -663,6 +682,30 @@ contract("YieldFarming", accounts => {
     console.log("Accrued KTY Rewards:", weiToEther(accruedRewards[0]));
     console.log("Accrued SDAO Rewards:", weiToEther(accruedRewards[1]));
   });
+
+  it("estimates rewards for any hypothetical amount of LPs to be diposited", async () => {
+    let LP_amount = new BigNumber(
+      web3.utils.toWei("30", "ether") //30 Uniswap Liquidity tokens
+    );
+    let currentMonth = await yieldFarming.getCurrentMonth();
+    currentMonth = currentMonth.toNumber()
+    console.log("Current Month:", currentMonth);
+    let currentDay = await yieldsCalculator.getCurrentDay();
+    currentDay = currentDay.toNumber()
+    console.log("Current Day:", currentDay);
+    let monthlyProportion = await yieldsCalculator.getElapsedDaysInMonth(currentDay, currentMonth);
+    console.log("Monthly Proportion:", monthlyProportion.toString())
+    let firstMonthAmount = await yieldsCalculator.getFirstMonthAmount(
+      currentDay, currentMonth, LP_amount, LP_amount);
+    console.log("firstMonthAmount:", weiToEther(firstMonthAmount))
+
+    let estimatedEarlyBonus = await yieldsCalculator.estimateEarlyBonus(LP_amount, 0);
+    console.log("estimated early bonus:", weiToEther(estimatedEarlyBonus))
+  
+    let estimatedRewards = await yieldsCalculator.estimateRewards(LP_amount, 0);
+    console.log("estimated KTY rewards:", weiToEther(estimatedRewards[0]))
+    console.log("estimated SDAO rewards:", weiToEther(estimatedRewards[1]))
+  })
 
   it("Approching the third month: Month 2", async () => {
     let timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();

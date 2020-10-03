@@ -710,11 +710,13 @@ contract YieldsCalculator is Ownable {
      */
     function estimateRewards(uint256 _LP, uint256 _pairCode) external view returns (uint256, uint256) {
         uint256 startMonth = yieldFarming.getCurrentMonth();
-        uint256 startDay = getDay(block.timestamp);
+        uint256 startDay = getCurrentDay();
         uint256 factor = yieldFarmingHelper.bubbleFactor(_pairCode);
         uint256 adjustedLP = _LP.mul(base6).div(factor);
         
         uint256 adjustedMonthlyDeposit = yieldFarming.getAdjustedTotalMonthlyDeposits(startMonth);
+
+        adjustedMonthlyDeposit = adjustedMonthlyDeposit.add(adjustedLP);
 
         uint256 currentDepositedAmount = getFirstMonthAmount(startDay, startMonth, adjustedMonthlyDeposit, adjustedLP);
 
@@ -723,7 +725,7 @@ contract YieldsCalculator is Ownable {
         // if eligible for Early Mining Bonus, add the rewards for early bonus
         uint256 startTime = yieldFarming.programStartAt();
         if (block.timestamp <= startTime.add(DAY.mul(21))){
-            uint256 _earlyBonus = estimateEarlyBonus(adjustedLP);
+            uint256 _earlyBonus = _estimateEarlyBonus(adjustedLP);
             _KTY = _KTY.add(_earlyBonus);
             _SDAO = _SDAO.add(_earlyBonus);
         }
@@ -758,7 +760,6 @@ contract YieldsCalculator is Ownable {
     {
         uint256 rewardsKTYstartMonth = getTotalKTYRewardsByMonth(startMonth);
         uint256 rewardsSDAOstartMonth = getTotalSDAORewardsByMonth(startMonth);
-        adjustedMonthlyDeposit = adjustedMonthlyDeposit.add(startingLP);
 
         yieldsKTY_part_1 = rewardsKTYstartMonth.mul(startingLP).div(adjustedMonthlyDeposit);
         yieldsSDAO_part_1 = rewardsSDAOstartMonth.mul(startingLP).div(adjustedMonthlyDeposit);
@@ -775,7 +776,6 @@ contract YieldsCalculator is Ownable {
         for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
             uint256 monthlyRewardsKTY = getTotalKTYRewardsByMonth(i);
             uint256 monthlyRewardsSDAO = getTotalSDAORewardsByMonth(i);
-            adjustedMonthlyDeposit = adjustedMonthlyDeposit.add(lockedLP);
 
             yieldsKTY_part_2 = yieldsKTY_part_2
                 .add(monthlyRewardsKTY.mul(lockedLP).div(adjustedMonthlyDeposit));
@@ -788,17 +788,21 @@ contract YieldsCalculator is Ownable {
     /**
      * @return estimated early bonus for any hypothetical amount of LPs locked
      */
-    function estimateEarlyBonus(uint256 _amountLP)
+    function estimateEarlyBonus(uint256 _LP, uint256 _pairCode)
         public view returns (uint256)
+    {
+        uint256 factor = yieldFarmingHelper.bubbleFactor(_pairCode);
+        uint256 adjustedLP = _LP.mul(base6).div(factor);
+        return _estimateEarlyBonus(adjustedLP);
+    }
+
+    function _estimateEarlyBonus(uint256 adjustedLP)
+        internal view returns (uint256)
     {
         uint256 _earlyBonus = yieldFarming.EARLY_MINING_BONUS();
         uint256 _adjustedTotalLockedLPinEarlyMining = yieldFarming.adjustedTotalLockedLPinEarlyMining();
-        if (_adjustedTotalLockedLPinEarlyMining == 0) {
-            _adjustedTotalLockedLPinEarlyMining = _amountLP;
-        } else {
-            _adjustedTotalLockedLPinEarlyMining = _adjustedTotalLockedLPinEarlyMining.add(_amountLP);
-        }
-        return _amountLP.mul(_earlyBonus).div(_adjustedTotalLockedLPinEarlyMining);
+        _adjustedTotalLockedLPinEarlyMining = _adjustedTotalLockedLPinEarlyMining.add(adjustedLP);
+        return adjustedLP.mul(_earlyBonus).div(_adjustedTotalLockedLPinEarlyMining);
     }
 
     /**
