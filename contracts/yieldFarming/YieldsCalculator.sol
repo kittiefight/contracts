@@ -775,6 +775,8 @@ contract YieldsCalculator is Ownable {
         for (uint256 i = startMonth.add(1); i <= endMonth; i++) {
             uint256 monthlyRewardsKTY = getTotalKTYRewardsByMonth(i);
             uint256 monthlyRewardsSDAO = getTotalSDAORewardsByMonth(i);
+            adjustedMonthlyDeposit = adjustedMonthlyDeposit.add(lockedLP);
+
             yieldsKTY_part_2 = yieldsKTY_part_2
                 .add(monthlyRewardsKTY.mul(lockedLP).div(adjustedMonthlyDeposit));
             yieldsSDAO_part_2 = yieldsSDAO_part_2
