@@ -45,6 +45,7 @@ contract YieldFarming is Ownable {
     uint256 public adjustedTotalLockedLPinEarlyMining;
 
     //uint256 public totalDepositedLP;                    // Total Uniswap Liquidity tokens deposited
+    uint256 public __gap0;                              //!!! REMOVE BEFORE PRODUCTION (Upgradable prevents removing now)
     uint256 public totalLockedLP;                       // Total Uniswap Liquidity tokens locked
     uint256 public totalRewardsKTY;                     // Total KittieFightToken rewards
     uint256 public totalRewardsSDAO;                    // Total SuperDaoToken rewards
@@ -101,13 +102,13 @@ contract YieldFarming is Ownable {
     /// @notice mapping staker to the rewards she has already claimed
     mapping(address => uint256[2]) internal rewardsClaimed;
 
-    /// @notice mapping of pair code to total deposited LPs associated with this pair code
-    mapping(uint256 => uint256) internal totalDepositedLPbyPairCode;
-
     uint256 private unlocked;
 
     uint256 public calculated;
     uint256 public calculated1;
+
+    /// @notice mapping of pair code to total deposited LPs associated with this pair code
+    mapping(uint256 => uint256) internal totalDepositedLPbyPairCode;
 
     /*                                                   MODIFIERS                                                    */
     /* ============================================================================================================== */
