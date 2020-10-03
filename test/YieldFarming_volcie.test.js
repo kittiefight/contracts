@@ -1200,7 +1200,9 @@ contract("YieldFarming", accounts => {
 
   it("shows total deposited LP", async () => {
     let totalDeposit = await yieldFarmingHelper.getTotalDeposits()
-    console.log("Total Deposites LPs:", weiToEther(totalDeposit))
+    console.log("Total Deposited LPs:", weiToEther(totalDeposit))
+    let totalDepositsInDai = await yieldFarmingHelper.getTotalDepositsInDai()
+    console.log("Total Deposited LPs in Dai value:", weiToEther(totalDepositsInDai))
   })
 
   it("transfers leftover rewards to a new address", async () => {

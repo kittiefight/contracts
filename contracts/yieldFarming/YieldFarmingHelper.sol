@@ -329,8 +329,32 @@ contract YieldFarmingHelper is Ownable {
      * @return uint256 the total amount of Uniswap Liquidity tokens deposited
      *         including both locked tokens and withdrawn tokens
      */
-    function getTotalDeposits() external view returns (uint256) {
-        return yieldFarming.totalDepositedLP();
+    function getTotalDeposits() public view returns (uint256) {
+        uint256 totalPools = yieldFarming.totalNumberOfPairPools();
+        uint256 totalDeposits = 0;
+        uint256 deposits;
+        for (uint256 i = 0; i < totalPools; i++) {
+            deposits = yieldFarming.getTotalDepositsPerPairCode(i);
+            totalDeposits = totalDeposits.add(deposits);
+        }
+        return totalDeposits;
+    }
+
+    /**
+     * @return uint256 the dai value of the total amount of Uniswap Liquidity tokens deposited 
+     *         including both locked tokens and withdrawn tokens 
+     */
+    function getTotalDepositsInDai() external view returns (uint256) {
+        uint256 totalPools = yieldFarming.totalNumberOfPairPools();
+        uint256 totalDepositsInDai = 0;
+        uint256 deposits;
+        uint256 depositsInDai;
+        for (uint256 i = 0; i < totalPools; i++) {
+            deposits = yieldFarming.getTotalDepositsPerPairCode(i);
+            depositsInDai = deposits > 0 ? getLPvalueInDai(i, deposits) : 0;
+            totalDepositsInDai = totalDepositsInDai.add(depositsInDai);
+        }
+        return totalDepositsInDai;
     }
 
     /**

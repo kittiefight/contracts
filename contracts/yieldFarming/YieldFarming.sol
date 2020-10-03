@@ -44,7 +44,7 @@ contract YieldFarming is Ownable {
     //uint256 public totalLockedLPinEarlyMining;
     uint256 public adjustedTotalLockedLPinEarlyMining;
 
-    uint256 public totalDepositedLP;                    // Total Uniswap Liquidity tokens deposited
+    //uint256 public totalDepositedLP;                    // Total Uniswap Liquidity tokens deposited
     uint256 public totalLockedLP;                       // Total Uniswap Liquidity tokens locked
     uint256 public totalRewardsKTY;                     // Total KittieFightToken rewards
     uint256 public totalRewardsSDAO;                    // Total SuperDaoToken rewards
@@ -92,14 +92,17 @@ contract YieldFarming is Ownable {
 
     mapping(uint256 => address) internal pairPoolsInfo;
 
-    /// @dev mapping volcieToken NFT to its properties
+    /// @notice mapping volcieToken NFT to its properties
     mapping(uint256 => VolcieToken) internal volcieTokens;
 
-    // a mapping of every month to the deposits made during that month, adjusted to the bubbling factor
-    // month => total amount of Uniswap Liquidity tokens deposted in this month, adjusted to the bubbling factor
+    /// @notice mapping of every month to the total deposits made during that month, adjusted to the bubbling factor
     mapping(uint256 => uint256) public adjustedMonthlyDeposits;
 
+    /// @notice mapping staker to the rewards she has already claimed
     mapping(address => uint256[2]) internal rewardsClaimed;
+
+    /// @notice mapping of pair code to total deposited LPs associated with this pair code
+    mapping(uint256 => uint256) internal totalDepositedLPbyPairCode;
 
     uint256 private unlocked;
 
@@ -642,6 +645,10 @@ contract YieldFarming is Ownable {
         return monthsStartAt[month];
     }
 
+    function getTotalDepositsPerPairCode(uint256 _pairCode) external view returns (uint256) {
+        return totalDepositedLPbyPairCode[_pairCode];
+    }
+
     
 
     /*                                                 PRIVATE FUNCTIONS                                             */
@@ -697,7 +704,8 @@ contract YieldFarming is Ownable {
             }
         }
 
-        totalDepositedLP = totalDepositedLP.add(_amount);
+        //totalDepositedLP = totalDepositedLP.add(_amount);
+        totalDepositedLPbyPairCode[_pairCode] = totalDepositedLPbyPairCode[_pairCode].add(_amount);
         totalLockedLP = totalLockedLP.add(_amount);
 
         if (block.timestamp <= programStartAt.add(DAY.mul(21))) {
