@@ -1,0 +1,459 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "betting",
+    "outputs": [
+      {
+        "internalType": "contract Betting",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "currentRandom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "proxy",
+    "outputs": [
+      {
+        "internalType": "contract ProxyBase",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "contract ProxyBase",
+        "name": "_proxy",
+        "type": "address"
+      }
+    ],
+    "name": "setProxy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "seed",
+        "type": "uint256"
+      }
+    ],
+    "name": "randomGen",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "randomNumber",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "seed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "size",
+        "type": "uint256"
+      }
+    ],
+    "name": "multiBlockRandomGen",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "randomNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateCurrentRandom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "currentRandomNum",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_seed",
+        "type": "uint256"
+      }
+    ],
+    "name": "finalizeHitTypeValues",
+    "outputs": [
+      {
+        "internalType": "uint256[7]",
+        "name": "hitTypeVals",
+        "type": "uint256[7]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_seed",
+        "type": "uint256"
+      }
+    ],
+    "name": "assignLowValues",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "lowPunch",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lowKick",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lowThunder",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_seed",
+        "type": "uint256"
+      }
+    ],
+    "name": "assignHighValues",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "hardPunch",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "hardKick",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "hardThunder",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_seed",
+        "type": "uint256"
+      }
+    ],
+    "name": "assignSlashValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "slash",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_randomNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateFinalDirectAttacksPointsLowValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "finalDirectAttacksPointsLowValue",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_randomNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateFinalDirectAttacksPointsHighValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "finalDirectAttacksPointsHighValue",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_randomNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateFinalBlockedAttacksPointsLowValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "finalBlockedAttacksPointsLowValue",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_randomNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateFinalBlockedAttacksPointsHighValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "finalBlockedAttacksPointsHighValue",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_randomNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateFinalPoints",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "finalPoints",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

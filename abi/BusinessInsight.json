@@ -1,0 +1,812 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "accountingDB",
+    "outputs": [
+      {
+        "internalType": "contract AccountingDB",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "earningsTrackerDB",
+    "outputs": [
+      {
+        "internalType": "contract EarningsTrackerDB",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "gameManagerHelper",
+    "outputs": [
+      {
+        "internalType": "contract GameManagerHelper",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "gameStore",
+    "outputs": [
+      {
+        "internalType": "contract GameStore",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "genericDB",
+    "outputs": [
+      {
+        "internalType": "contract GenericDB",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "gmGetterDB",
+    "outputs": [
+      {
+        "internalType": "contract GMGetterDB",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "ktyUniswap",
+    "outputs": [
+      {
+        "internalType": "contract KtyUniswap",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "proxy",
+    "outputs": [
+      {
+        "internalType": "contract ProxyBase",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "contract ProxyBase",
+        "name": "_proxy",
+        "type": "address"
+      }
+    ],
+    "name": "setProxy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "timeFrame",
+    "outputs": [
+      {
+        "internalType": "contract TimeFrame",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getCurrentEpoch",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "KTY_ETH_price",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "ETH_KTY_price",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTotalSpentInGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTotalSwappedKtyInGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getLastGameID",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getTotalGames",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getInitialHoneypot",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "initialHoneypotEth",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialHoneypotKty",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getInitialHoneypotKTYInEther",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_epochID",
+        "type": "uint256"
+      }
+    ],
+    "name": "viewWeeklyInterests",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getLastWeeklyLenderPayOut",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "viewTotalInterests",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_epochID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPooledEther",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "viewTotalEthAllocatedToPools",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getEthPaidOut",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_poolID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getInitialETH",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_ethieTokenID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getEthieInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "etherValue",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startingEpoch",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "generation",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lockedAt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lockTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isBurnt",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getGameStaticInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "bettingFeeEtherSwap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bettingFeeKTY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ticketFeeEtherSwap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ticketFeeKTY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "redemptionFeeEtherSwap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "redemptionFeeKTY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "kittieHellExpirationTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "honeypotExpirationTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumContributors",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[5]",
+        "name": "shares",
+        "type": "uint256[5]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getGameDynamicInfo",
+    "outputs": [
+      {
+        "internalType": "uint256[3]",
+        "name": "gameTimes",
+        "type": "uint256[3]"
+      },
+      {
+        "internalType": "uint256[6]",
+        "name": "honeypotInfo",
+        "type": "uint256[6]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "ethByCorner",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "finalHoneypot",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "address[3]",
+        "name": "winners",
+        "type": "address[3]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getAccountInfo",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isRegistered",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "isVerified",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "civicId",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getWinners",
+    "outputs": [
+      {
+        "internalType": "address[3]",
+        "name": "winners",
+        "type": "address[3]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getGameTimes",
+    "outputs": [
+      {
+        "internalType": "uint256[3]",
+        "name": "gameTimes",
+        "type": "uint256[3]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getHoneypot",
+    "outputs": [
+      {
+        "internalType": "uint256[6]",
+        "name": "honeypotInfo",
+        "type": "uint256[6]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "ethByCorner",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "finalHoneypot",
+        "type": "uint256[2]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "getMyInfo",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isSupporter",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "supportedCorner",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isPlayerInGame",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "corner",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "getPlayer",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "kittieId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "corner",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "betsTotalEth",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
