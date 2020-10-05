@@ -196,7 +196,7 @@ contract TokenDistribution is Ownable {
         return _ether.mul(percentBonus).div(base18);
     }
 
-    function getInvestmentID(address _investAddr) external view returns (uint256[] memory) {
+    function getInvestmentIDs(address _investAddr) external view returns (uint256[] memory) {
         return investmentIDs[_investAddr];
     }
 
