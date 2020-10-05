@@ -1,11 +1,9 @@
 /**
-* @title YieldFarming
+* @title TokenDistribution
 * @author @Ola, @ziweidream
-* @notice This contract will track uniswap pool contract and addresses that deposit "UNISWAP pool" tokens 
-*         and allow each individual address to DEPOSIT and  withdraw percentage of KTY and SDAO tokens 
-*         according to number of "pool" tokens they own, relative to total pool tokens.
-*         This contract contains two tokens in contract KTY and SDAO. The contract will also return 
-*         certain statistics about rates, availability and timing period of the program.
+* @notice This contract allows Investors to claim tokens based on a future token WITHDRAWAL date,
+*         and an amount of ether they contributed and bonus percentage of KTY allocations based on
+*         amount of Ether contributed.
 */
 pragma solidity ^0.5.5;
 
@@ -23,13 +21,12 @@ contract TokenDistribution is Ownable {
 
     uint256 constant internal base18 = 1000000000000000000;
 
-    uint256 public percentBonus;
-    uint256 public withdrawDate;
+    uint256 public percentBonus;                        // Percentage Bonus
+    uint256 public withdrawDate;                        // Withdraw Date
+    uint256 public totalNumberOfInvestments;            // total number of investments
+    uint256 public totalEtherInvested;                  // total amount of ethers invested from all investments
 
-    uint256 public totalNumberOfInvestments;
-
-    uint256 public totalEtherInvested;
-
+    // details of an Investment
     struct Investment {
         address investAddr;
         uint256 ethAmount;
@@ -41,7 +38,7 @@ contract TokenDistribution is Ownable {
     // mapping investment number to the details of the investment
     mapping(uint256 => Investment) public investments;
 
-    // mapping investment address to its investment ID
+    // mapping investment address to the investment ID of all the investments made by this address
     mapping(address => uint256[]) public investmentIDs;
 
     uint256 private unlocked;
@@ -69,7 +66,7 @@ contract TokenDistribution is Ownable {
     {
         Ownable.initialize(_msgSender());
 
-        // set investors address
+        // set investments
         for (uint256 i = 0; i < _investors.length; i++) {
             addInvestments(_investors[i], _ethAmounts[i]);
         }
@@ -126,7 +123,7 @@ contract TokenDistribution is Ownable {
     /*                                                 SETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
     /**
-     * @dev Add new investor
+     * @dev Add new investments
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function addInvestments(address _investor, uint256 _eth) public onlyOwner {
@@ -192,15 +189,27 @@ contract TokenDistribution is Ownable {
         }
     }
 
+    /**
+     * @return uint256 bonus tokens calculated for the amount of ether specified
+     */
     function calculateBonus(uint256 _ether) public view returns (uint256) {
         return _ether.mul(percentBonus).div(base18);
     }
 
+    /**
+     * @return address an array of the ID of each investment belonging to the investor
+     */
     function getInvestmentIDs(address _investAddr) external view returns (uint256[] memory) {
         return investmentIDs[_investAddr];
     }
 
-
+    /**
+     * @return the details of an investment associated with an investment ID, including the address 
+     *         of the investor, the amount of ether invested in this investment, whether bonus tokens
+     *         have been claimed for this investment, the amount of bonus tokens already claimed for
+     *         this investment(0 if bonus tokens are not claimed yet), the unix time when the bonus tokens
+     *         have been claimed(0 if bonus tokens are not claimed yet)
+     */
     function getInvestment(uint256 _investmentID) external view
         returns(address _investAddr, uint256 _ethAmount, bool _hasClaimedBonus,
                 uint256 _bonusClaimed, uint256 _bonusClaimTime)
@@ -218,6 +227,7 @@ contract TokenDistribution is Ownable {
     /**
      * @param _investmentID uint256 investment ID of the investment for which tokens are withdrawn
      * @param _bonus uint256 tokens distributed to this investor
+     * @dev this function updates the storage upon successful withdraw of tokens.
      */
     function _updateWithdraw(uint256 _investmentID, uint256 _bonus) 
         private
