@@ -67,9 +67,7 @@ contract TokenDistribution is Ownable {
         Ownable.initialize(_msgSender());
 
         // set investments
-        for (uint256 i = 0; i < _investors.length; i++) {
-            addInvestments(_investors[i], _ethAmounts[i]);
-        }
+        addInvestments(_investors, _ethAmounts);
         // set ERC20Token contract variable
         setERC20Token(_erc20Token);
 
@@ -126,15 +124,11 @@ contract TokenDistribution is Ownable {
      * @dev Add new investments
      * @dev This function can only be carreid out by the owner of this contract.
      */
-    function addInvestments(address _investor, uint256 _eth) public onlyOwner {
-        uint256 investmentID = totalNumberOfInvestments.add(1);
-        investments[investmentID].investAddr = _investor;
-        investments[investmentID].ethAmount = _eth;
-   
-        totalEtherInvested = totalEtherInvested.add(_eth);
-        totalNumberOfInvestments = investmentID;
-
-        investmentIDs[_investor].push(investmentID);
+    function addInvestments(address[] memory _investors, uint256[] memory _ethAmounts) public onlyOwner {
+        require(_investors.length == _ethAmounts.length, "The number of investing addresses should equal the number of ether amounts");
+        for (uint256 i = 0; i < _investors.length; i++) {
+             addInvestment(_investors[i], _ethAmounts[i]); 
+        }
     }
 
     /**
@@ -236,5 +230,19 @@ contract TokenDistribution is Ownable {
         investments[_investmentID].bonusClaimed = _bonus;
         investments[_investmentID].bonusClaimTime = block.timestamp;
         investments[_investmentID].ethAmount = 0;
+    }
+
+    /**
+     * @dev Add one new investment
+     */
+    function addInvestment(address _investor, uint256 _eth) private {
+        uint256 investmentID = totalNumberOfInvestments.add(1);
+        investments[investmentID].investAddr = _investor;
+        investments[investmentID].ethAmount = _eth;
+   
+        totalEtherInvested = totalEtherInvested.add(_eth);
+        totalNumberOfInvestments = investmentID;
+
+        investmentIDs[_investor].push(investmentID);
     }
 }
