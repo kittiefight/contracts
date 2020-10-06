@@ -226,7 +226,7 @@ contract TokenDistribution is Ownable {
     function _updateWithdraw(uint256 _investmentID, uint256 _bonus) 
         private
     {
-        investments[_investmentID].hasClaimedBonus == true;
+        investments[_investmentID].hasClaimedBonus = true;
         investments[_investmentID].bonusClaimed = _bonus;
         investments[_investmentID].bonusClaimTime = block.timestamp;
         investments[_investmentID].ethAmount = 0;
