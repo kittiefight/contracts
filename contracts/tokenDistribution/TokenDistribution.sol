@@ -161,7 +161,7 @@ contract TokenDistribution is Ownable {
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function returnTokens(address _token, uint256 _amount, address _newAddress) external onlyOwner {
-        require(block.timestamp >= withdrawDate.add(7 * 24 * 7), "Cannot return any token within 7 days of withdraw date");
+        require(block.timestamp >= withdrawDate.add(7 * 24 * 60 * 60), "Cannot return any token within 7 days of withdraw date");
         uint256 balance = ERC20Standard(_token).balanceOf(address(this));
         require(_amount <= balance, "Exceeds balance");
         require(ERC20Standard(_token).transfer(_newAddress, _amount), "Fail to transfer tokens");
