@@ -197,7 +197,7 @@ contract TokenDistribution is Ownable {
         public view returns (uint256, uint256, uint256)
     {
         uint256 principal = _ether.mul(standardRate).div(base18);
-        uint256 bonus = _ether.mul(percentBonus).div(base18);
+        uint256 bonus = principal.mul(percentBonus).div(base18);
         uint256 principalAndBonus = principal.add(bonus);
         return (principal, bonus, principalAndBonus);
     }

@@ -128,7 +128,7 @@ contract("TokenDistribution", accounts => {
 
   it("imports investmet lists", async () => {
       let investmentInfo;
-      for (let i = 1; i < 11; i++) {
+      for (let i = 1; i < 19; i++) {
           investmentInfo = await tokenDistribution.getInvestment(i)
           console.log("Investment ID:", i)
           console.log("Investor:", investmentInfo[0])
@@ -200,9 +200,48 @@ contract("TokenDistribution", accounts => {
       })
   })
 
+  it ("many investors withdraw", async () => {
+    let investor, investmentIDs, ethAmount, bonus
+    for (let m = 2; m < 19; m++) {
+      investor = accounts[m]
+      console.log("Investor: user", m)
+      // get all investments belonging to this investor
+      investmentIDs = await tokenDistribution.getInvestmentIDs(investor);
+      for (let i=0; i<investmentIDs.length; i++) {
+          console.log("Investment ID:", investmentIDs[i].toString())
+          ethAmount = await tokenDistribution.getInvestment(Number(investmentIDs[i].toString()))
+          console.log("Ether invested:", weiToEther(ethAmount[1]))
+          eth_amount = new BigNumber(
+            web3.utils.toWei(weiToEther(ethAmount[1]), "ether")
+          );
+          bonus = await tokenDistribution.calculatePrincipalAndBonus(eth_amount)
+          console.log("Principal calculated:", weiToEther(bonus[0]))
+          console.log("Token Bonus calculated:", weiToEther(bonus[1]))
+          console.log("Total rewards calculated:", weiToEther(bonus[2]))
+          await tokenDistribution.withdraw(Number(investmentIDs[i].toString()), { from: investor }).should.be.fulfilled;
+      }
+
+    }
+
+    let newWithdraw = await tokenDistribution.getPastEvents("WithDrawn", {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+
+    newWithdraw.map(async (e) => {
+      console.log('\n==== NEW WITHDRAW HAPPENED ===');
+      console.log('    Investor ', e.returnValues.investor)
+      console.log('    InvestmentID ', e.returnValues.investmentID)
+      console.log('    Principal ', weiToEther(e.returnValues.principal))
+      console.log('    Bonus ', weiToEther(e.returnValues.bonus))
+      console.log('    WithdrawTime ', e.returnValues.withdrawTime)
+      console.log('========================\n')
+    })
+  })
+
   it("updataes investmet info", async () => {
     let investmentInfo;
-    for (let i = 1; i < 11; i++) {
+    for (let i = 1; i < 19; i++) {
         investmentInfo = await tokenDistribution.getInvestment(i)
         console.log("Investment ID:", i)
         console.log("Investor:", investmentInfo[0])
