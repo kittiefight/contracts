@@ -37,8 +37,7 @@ contract TimeFrame is Proxied, Guard {
     event NewEpochSet(uint256 indexed newEpochId, uint256 newEpochStartTime);
     event GamingDelayAdded(
         uint256 indexed epoch_id,
-        uint256 gamingDelay,
-        uint256 newEpochEndingTime
+        uint256 newEpochRestDayStartTime
     );
 
     //===================== modifiers ===================
@@ -400,7 +399,7 @@ contract TimeFrame is Proxied, Guard {
             restDayStart.add(REST_DAY)
         );
 
-        emit GamingDelayAdded(_epoch_id, _gamingDelay, _restDayStart.add(_gamingDelay).add(REST_DAY));
+        emit GamingDelayAdded(_epoch_id, restDayStart);
     }
 
     /**
