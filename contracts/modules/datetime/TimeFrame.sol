@@ -282,38 +282,24 @@ contract TimeFrame is Proxied, Guard {
 
     /**
      * @dev return true if the epoch with epoch_id is on its working days
-     * @param epoch_id the id of the epoch
      */
-    function isWorkingDay(uint256 epoch_id) public view returns (bool) {
-        uint256 _sixDayStart = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "sixDayStart"))
-        );
-        uint256 _restDayStart = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "restDayStart"))
-        );
+    function isWorkingDay() public view returns (bool) {
         return
-            (block.timestamp >= _sixDayStart) &&
-            (block.timestamp <= _restDayStart);
+            !genericDB.getBoolStorage(
+                CONTRACT_NAME_WITHDRAW_POOL,
+                keccak256(abi.encodePacked("rest_day"))
+            );
     }
 
     /**
      * @dev return true if the epoch with epoch_id is on its rest day
-     * @param epoch_id the id of the epoch
      */
-    function isRestDay(uint256 epoch_id) public view returns (bool) {
-        uint256 _restDayStart = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "restDayStart"))
-        );
-        uint256 _restDayEnd = genericDB.getUintStorage(
-            CONTRACT_NAME_TIMEFRAME,
-            keccak256(abi.encodePacked(epoch_id, "restDayEnd"))
-        );
+    function isRestDay() public view returns (bool) {
         return
-            (block.timestamp >= _restDayStart) &&
-            (block.timestamp <= _restDayEnd);
+            genericDB.getBoolStorage(
+                CONTRACT_NAME_WITHDRAW_POOL,
+                keccak256(abi.encodePacked("rest_day"))
+            );
     }
 
     /**

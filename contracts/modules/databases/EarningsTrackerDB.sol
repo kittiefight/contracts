@@ -369,14 +369,19 @@ contract EarningsTrackerDB is Proxied, Guard {
             uint256 end
         )
     {
-        if (now <= timeFrame.workingDayEndTime()) {
-            state = "Working Days";
-            start = timeFrame.workingDayStartTime();
-            end = timeFrame.workingDayEndTime();
-        } else if (now > timeFrame.workingDayEndTime()) {
+        if (
+            genericDB.getBoolStorage(
+                CONTRACT_NAME_WITHDRAW_POOL,
+                keccak256(abi.encodePacked("rest_day"))
+            )
+        ) {
             state = "Rest Day";
             start = timeFrame.restDayStartTime();
             end = timeFrame.restDayEndTime();
+        } else {
+            state = "Working Days";
+            start = timeFrame.workingDayStartTime();
+            end = timeFrame.workingDayEndTime();
         }
     }
 

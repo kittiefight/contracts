@@ -112,7 +112,7 @@ contract WithdrawPool is Proxied, Guard {
 
         timeFrame.setEpoch_0();
 
-        _startNewEpoch(0);
+        _startNewEpoch(0, now);
 
         emit Pool0Set(0, now);
     }
@@ -230,9 +230,14 @@ contract WithdrawPool is Proxied, Guard {
         external
         onlyContract(CONTRACT_NAME_CRONJOB)
     {
-        _startNewEpoch(epochID);
+        uint256 _startTime = genericDB.getUintStorage(
+            CONTRACT_NAME_TIMEFRAME,
+            keccak256(abi.encodePacked(epochID.sub(1), "restDayEnd"))
+        );
 
-        emit PoolDissolved(epochID.sub(1), now);
+        _startNewEpoch(epochID, _startTime);
+
+        emit PoolDissolved(epochID.sub(1), _startTime);
     }
 
     function _startRestDay(uint256 epochID) internal {
@@ -269,7 +274,7 @@ contract WithdrawPool is Proxied, Guard {
         );
     }
 
-    function _startNewEpoch(uint256 epochID) internal {
+    function _startNewEpoch(uint256 epochID, uint256 _startTime) internal {
         uint256 investment = endowmentDB.checkInvestment(epochID);
         if (investment == 0) {
             _addInvestmentDelay();
@@ -324,7 +329,7 @@ contract WithdrawPool is Proxied, Guard {
         if (schedulerMode)
             Scheduler(proxy.getContract(CONTRACT_NAME_SCHEDULER)).startGame();
 
-        emit NewPoolCreated(epochID, now);
+        emit NewPoolCreated(epochID, _startTime);
     }
 
     /*                                                INTERNAL FUNCTIONS                                              */
