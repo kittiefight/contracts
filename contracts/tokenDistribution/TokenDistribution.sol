@@ -108,7 +108,7 @@ contract TokenDistribution is Ownable {
     function withdraw(uint256 investmentID) external lock returns (bool) {
         require(investments[investmentID].investAddr == msg.sender, "You are not the investor of this investment");
         require(block.timestamp >= withdrawDate, "Can only withdraw after withdraw date");
-        require(investments[investmentID].hasClaimed == false, "Tokens already withdrawn for this investment");
+        require(!investments[investmentID].hasClaimed, "Tokens already withdrawn for this investment");
         require(investments[investmentID].ethAmount > 0, "0 ether in this investment");
 
         // get the ether amount of this investment
@@ -169,7 +169,7 @@ contract TokenDistribution is Ownable {
      * @dev This function can only be carreid out by the owner of this contract.
      */
     function returnTokens(address _token, uint256 _amount, address _newAddress) external onlyOwner {
-        require(block.timestamp >= withdrawDate.add(7 * 24 * 7), "Cannot return any token within 7 days of withdraw date");
+        require(block.timestamp >= withdrawDate.add(7 * 24 * 60 * 60), "Cannot return any token within 7 days of withdraw date");
         uint256 balance = ERC20Standard(_token).balanceOf(address(this));
         require(_amount <= balance, "Exceeds balance");
         require(ERC20Standard(_token).transfer(_newAddress, _amount), "Fail to transfer tokens");
