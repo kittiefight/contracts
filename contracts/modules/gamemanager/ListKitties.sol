@@ -122,10 +122,10 @@ contract ListKitties is Proxied, Guard {
         onlyKittyOwner(playerBlack, kittyBlack)
     {
         require(genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked(
-            genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encode("activeEpoch"))),"endTimeForGames"))) > gameStartTime,
+            genericDB.getUintStorage(CONTRACT_NAME_TIMEFRAME, keccak256(abi.encodePacked("activeEpoch"))),"endTimeForGames"))) > gameStartTime,
             "Wrong start time");
 
-        require(!genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))), "No manual match mode");
+        require(!genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked("schedulerMode"))), "No manual match mode");
 
         require(!scheduler.isKittyListedForMatching(kittyRed), "fighter already listed");
         require(!scheduler.isKittyListedForMatching(kittyBlack), "fighter already listed");

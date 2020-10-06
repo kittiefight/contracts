@@ -75,7 +75,7 @@ contract ERC721Metadata is Context, ERC165, ERC721, IERC721Metadata {
             return "";
         } else {
             // abi.encodePacked is being used to concatenate strings
-            return string(abi.encode(_baseURI, _tokenURI));
+            return string(abi.encodePacked(_baseURI, _tokenURI));
         }
     }
 

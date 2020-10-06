@@ -7,7 +7,7 @@ import "./EarningsTrackerDB.sol";
 import "../../libs/SafeMath.sol";
 import "../gamemanager/GameStore.sol";
 import "../gamemanager/GameManagerHelper.sol";
-import '../endowment/KtyUniswap.sol';
+import "../endowment/KtyUniswap.sol";
 import "../datetime/TimeFrame.sol";
 import "./AccountingDB.sol";
 
@@ -28,7 +28,9 @@ contract BusinessInsight is Proxied {
     KtyUniswap public ktyUniswap;
     AccountingDB public accountingDB;
 
-    bytes32 internal constant TABLE_KEY_GAME= keccak256(abi.encodePacked("GameTable"));
+    bytes32 internal constant TABLE_KEY_GAME = keccak256(
+        abi.encodePacked("GameTable")
+    );
     string internal constant TABLE_NAME_BETTOR = "BettorTable";
 
     function initialize() external onlyOwner {
@@ -36,10 +38,16 @@ contract BusinessInsight is Proxied {
         timeFrame = TimeFrame(proxy.getContract(CONTRACT_NAME_TIMEFRAME));
         gmGetterDB = GMGetterDB(proxy.getContract(CONTRACT_NAME_GM_GETTER_DB));
         gameStore = GameStore(proxy.getContract(CONTRACT_NAME_GAMESTORE));
-        gameManagerHelper = GameManagerHelper(proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER));
-        earningsTrackerDB = EarningsTrackerDB(proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER_DB));
+        gameManagerHelper = GameManagerHelper(
+            proxy.getContract(CONTRACT_NAME_GAMEMANAGER_HELPER)
+        );
+        earningsTrackerDB = EarningsTrackerDB(
+            proxy.getContract(CONTRACT_NAME_EARNINGS_TRACKER_DB)
+        );
         ktyUniswap = KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP));
-        accountingDB = AccountingDB(proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB));
+        accountingDB = AccountingDB(
+            proxy.getContract(CONTRACT_NAME_ACCOUNTING_DB)
+        );
     }
 
     // ===================== FRONTEND GETTERS =====================
@@ -70,61 +78,88 @@ contract BusinessInsight is Proxied {
     /**
      * @dev return total Spent in ether in a game with gameId
      */
-    function getTotalSpentInGame(uint256 gameId)
-    public view returns (uint256)
-    {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_ACCOUNTING_DB,
-            keccak256(abi.encodePacked(gameId, "totalSpentInGame")));
+    function getTotalSpentInGame(uint256 gameId) public view returns (uint256) {
+        return
+            genericDB.getUintStorage(
+                CONTRACT_NAME_ACCOUNTING_DB,
+                keccak256(abi.encodePacked(gameId, "totalSpentInGame"))
+            );
     }
 
     /**
      * @dev return total uniswap auto-swapped KTY in a game with gameId
      */
     function getTotalSwappedKtyInGame(uint256 gameId)
-    public view returns (uint256)
+        public
+        view
+        returns (uint256)
     {
-        return genericDB.getUintStorage(
-        CONTRACT_NAME_ACCOUNTING_DB,
-        keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame")));
+        return
+            genericDB.getUintStorage(
+                CONTRACT_NAME_ACCOUNTING_DB,
+                keccak256(abi.encodePacked(gameId, "totalSwappedKtyInGame"))
+            );
     }
 
     // ========= getters about game and honeypot =========
-    function getLastGameID()
-    public view returns (uint256)
-    {
-        (,uint256 _prevGameId) = genericDB.getAdjacent(CONTRACT_NAME_GM_SETTER_DB, TABLE_KEY_GAME, 0, true);
+    function getLastGameID() public view returns (uint256) {
+        (, uint256 _prevGameId) = genericDB.getAdjacent(
+            CONTRACT_NAME_GM_SETTER_DB,
+            TABLE_KEY_GAME,
+            0,
+            true
+        );
         return _prevGameId;
     }
 
-    function getTotalGames()
-    public view returns (uint256)
-    {
+    function getTotalGames() public view returns (uint256) {
         return getLastGameID();
     }
 
     function getInitialHoneypot(uint256 gameId)
-        public view returns(uint256 initialHoneypotEth, uint256 initialHoneypotKty)
+        public
+        view
+        returns (uint256 initialHoneypotEth, uint256 initialHoneypotKty)
     {
-        initialHoneypotEth = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialEth")));
-        initialHoneypotKty = genericDB.getUintStorage(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, "initialKty")));
+        initialHoneypotEth = genericDB.getUintStorage(
+            CONTRACT_NAME_GM_SETTER_DB,
+            keccak256(abi.encodePacked(gameId, "initialEth"))
+        );
+        initialHoneypotKty = genericDB.getUintStorage(
+            CONTRACT_NAME_GM_SETTER_DB,
+            keccak256(abi.encodePacked(gameId, "initialKty"))
+        );
     }
 
     function getInitialHoneypotKTYInEther(uint256 gameId)
-        public view returns (uint256)
+        public
+        view
+        returns (uint256)
     {
-        (,uint256 _initialKTY) = getInitialHoneypot(gameId);
-        return _initialKTY.mul(KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP)).KTY_ETH_price()).div(1000000000000000000);
+        (, uint256 _initialKTY) = getInitialHoneypot(gameId);
+        return
+            _initialKTY
+                .mul(
+                KtyUniswap(proxy.getContract(CONTRACT_NAME_KTY_UNISWAP))
+                    .KTY_ETH_price()
+            )
+                .div(1000000000000000000);
     }
 
     // ========= getters about lenders (ethie token holders) =========
     /**
      * @return uint256 total interest accumulated for all Ethie Token NFTs in each epoch
      */
-    function viewWeeklyInterests(uint256 _epochID) public view returns (uint256) {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_EARNINGS_TRACKER_DB,
-            keccak256(abi.encodePacked(_epochID, "interest")));
+    function viewWeeklyInterests(uint256 _epochID)
+        public
+        view
+        returns (uint256)
+    {
+        return
+            genericDB.getUintStorage(
+                CONTRACT_NAME_EARNINGS_TRACKER_DB,
+                keccak256(abi.encodePacked(_epochID, "interest"))
+            );
     }
 
     /**
@@ -132,10 +167,10 @@ contract BusinessInsight is Proxied {
      *      in the last weekly epoch
      * @return uint256 total payout for all lenders in the last weekly epoch
      */
-    function getLastWeeklyLenderPayOut()
-        public view returns (uint256)
-    {
-        uint256 lastEpochID = getCurrentEpoch() == 0 ? 0 : getCurrentEpoch().sub(1);
+    function getLastWeeklyLenderPayOut() public view returns (uint256) {
+        uint256 lastEpochID = getCurrentEpoch() == 0
+            ? 0
+            : getCurrentEpoch().sub(1);
         uint256 lastWeeklyPayOut = viewWeeklyInterests(lastEpochID);
         return lastWeeklyPayOut;
     }
@@ -147,8 +182,11 @@ contract BusinessInsight is Proxied {
     function viewTotalInterests() public view returns (uint256) {
         uint256 activeEpochID = timeFrame.getActiveEpochID();
         uint256 totalInterest = 0;
-        for (uint256 i = 0; i < activeEpochID+1; i++) {
-            uint256 interest = genericDB.getUintStorage(CONTRACT_NAME_EARNINGS_TRACKER_DB, keccak256(abi.encodePacked(i, "interest")));
+        for (uint256 i = 0; i < activeEpochID + 1; i++) {
+            uint256 interest = genericDB.getUintStorage(
+                CONTRACT_NAME_EARNINGS_TRACKER_DB,
+                keccak256(abi.encodePacked(i, "interest"))
+            );
             totalInterest = totalInterest.add(interest);
         }
         return totalInterest;
@@ -159,12 +197,12 @@ contract BusinessInsight is Proxied {
      * @param _epochID uint256 epoch ID of the pooled ether
      * @return uint256 total payout for all lenders in all epochs
      */
-    function getPooledEther(uint256 _epochID)
-        public view returns (uint256)
-    {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_EARNINGS_TRACKER_DB,
-            keccak256(abi.encodePacked(_epochID, "investment")));
+    function getPooledEther(uint256 _epochID) public view returns (uint256) {
+        return
+            genericDB.getUintStorage(
+                CONTRACT_NAME_EARNINGS_TRACKER_DB,
+                keccak256(abi.encodePacked(_epochID, "investment"))
+            );
     }
 
     // ========= getters about withdraw pools (SuperDao stakers) =========
@@ -174,7 +212,7 @@ contract BusinessInsight is Proxied {
     function viewTotalEthAllocatedToPools() public view returns (uint256) {
         uint256 activeEpochID = timeFrame.getActiveEpochID();
         uint256 totalAllocated = 0;
-        for (uint256 i = 0; i < activeEpochID+1; i++) {
+        for (uint256 i = 0; i < activeEpochID + 1; i++) {
             uint256 allocated = getInitialETH(i);
             totalAllocated = totalAllocated.add(allocated);
         }
@@ -184,32 +222,27 @@ contract BusinessInsight is Proxied {
     /**
      * @dev This function is returning the Ether that has been claimed by all pools.
      */
-    function getEthPaidOut()
-    external
-    view
-    returns(uint256)
-    {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_WITHDRAW_POOL_YIELDS,
-            keccak256(abi.encode("totalEthPaidOut"))
-          );
+    function getEthPaidOut() external view returns (uint256) {
+        return
+            genericDB.getUintStorage(
+                CONTRACT_NAME_WITHDRAW_POOL_YIELDS,
+                keccak256(abi.encodePacked("totalEthPaidOut"))
+            );
     }
 
     // get the initial ether available in a pool
-    function getInitialETH(uint256 _poolID)
-        public
-        view
-        returns (uint256)
-    {
-        return genericDB.getUintStorage(
-            CONTRACT_NAME_ENDOWMENT_DB,
-            keccak256(abi.encodePacked(_poolID, "InitialETHinPool"))
-          );
+    function getInitialETH(uint256 _poolID) public view returns (uint256) {
+        return
+            genericDB.getUintStorage(
+                CONTRACT_NAME_ENDOWMENT_DB,
+                keccak256(abi.encodePacked(_poolID, "InitialETHinPool"))
+            );
     }
 
     // ========= getters about ethie tokens =========
     function getEthieInfo(uint256 _ethieTokenID)
-        public view
+        public
+        view
         returns (
             uint256 etherValue,
             uint256 startingEpoch,
@@ -222,30 +255,30 @@ contract BusinessInsight is Proxied {
         etherValue = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "ethValue"))
-            );
+        );
         startingEpoch = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "startingEpochID"))
-            );
+        );
 
         generation = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "generation"))
-            );
+        );
         lockedAt = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "lockedAt"))
-            );
+        );
         lockTime = genericDB.getUintStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "lockTime"))
-            );
+        );
         isBurnt = genericDB.getBoolStorage(
             CONTRACT_NAME_EARNINGS_TRACKER,
             keccak256(abi.encodePacked(_ethieTokenID, "tokenBurnt"))
-            );
+        );
     }
-    
+
     // ========= getters for static values =========
     /** returns following values:
      *   bettingFee((1)ether for swap, (2)KTY)
@@ -264,46 +297,51 @@ contract BusinessInsight is Proxied {
             shareEndowmentFund,
         ]
      */
-     function getGameStaticInfo(uint256 gameId)
-     public view
-     returns (
-         uint256 bettingFeeEtherSwap,
-         uint256 bettingFeeKTY,
-         uint256 ticketFeeEtherSwap,
-         uint256 ticketFeeKTY,
-         uint256 redemptionFeeEtherSwap,
-         uint256 redemptionFeeKTY,
-         uint256 kittieHellExpirationTime,
-         uint256 honeypotExpirationTime,
-         uint256 minimumContributors,
-         uint256[5] memory shares
-     )
-     {
-         (bettingFeeEtherSwap, bettingFeeKTY) = accountingDB.getBettingFee(gameId);
-         (ticketFeeEtherSwap, ticketFeeKTY) = accountingDB.getTicketFee(gameId);
-         (redemptionFeeEtherSwap, redemptionFeeKTY) = accountingDB.getKittieRedemptionFee(gameId);
-         kittieHellExpirationTime = accountingDB.getKittieExpirationTime(gameId);
-         honeypotExpirationTime = accountingDB.getHoneypotExpiration(gameId);
-         minimumContributors = gameManagerHelper.getMinimumContributors(gameId);
-         shares = gameManagerHelper.getDistributionRates(gameId);
-     }
+    function getGameStaticInfo(uint256 gameId)
+        public
+        view
+        returns (
+            uint256 bettingFeeEtherSwap,
+            uint256 bettingFeeKTY,
+            uint256 ticketFeeEtherSwap,
+            uint256 ticketFeeKTY,
+            uint256 redemptionFeeEtherSwap,
+            uint256 redemptionFeeKTY,
+            uint256 kittieHellExpirationTime,
+            uint256 honeypotExpirationTime,
+            uint256 minimumContributors,
+            uint256[5] memory shares
+        )
+    {
+        (bettingFeeEtherSwap, bettingFeeKTY) = accountingDB.getBettingFee(
+            gameId
+        );
+        (ticketFeeEtherSwap, ticketFeeKTY) = accountingDB.getTicketFee(gameId);
+        (redemptionFeeEtherSwap, redemptionFeeKTY) = accountingDB
+            .getKittieRedemptionFee(gameId);
+        kittieHellExpirationTime = accountingDB.getKittieExpirationTime(gameId);
+        honeypotExpirationTime = accountingDB.getHoneypotExpiration(gameId);
+        minimumContributors = gameManagerHelper.getMinimumContributors(gameId);
+        shares = gameManagerHelper.getDistributionRates(gameId);
+    }
 
-     /**
-      * getter for dynamic values which are called periodically (every block) in FE
-      * returns:
-      * time info         (GMGetterDB.getGameTimes)
-      * honeypot info     (GMGetterDB.getHoneypotInfo, getFinalHoneypot)
-      * winner info       (GMGetterDB.getWinners)
-      */
-    function getGameDynamicInfo(uint gameId)
-    public view
-    returns (
-        uint[3] memory gameTimes,
-        uint[6] memory honeypotInfo,
-        uint[2] memory ethByCorner,
-        uint[2] memory finalHoneypot,
-        address[3] memory winners
-    )
+    /**
+     * getter for dynamic values which are called periodically (every block) in FE
+     * returns:
+     * time info         (GMGetterDB.getGameTimes)
+     * honeypot info     (GMGetterDB.getHoneypotInfo, getFinalHoneypot)
+     * winner info       (GMGetterDB.getWinners)
+     */
+    function getGameDynamicInfo(uint256 gameId)
+        public
+        view
+        returns (
+            uint256[3] memory gameTimes,
+            uint256[6] memory honeypotInfo,
+            uint256[2] memory ethByCorner,
+            uint256[2] memory finalHoneypot,
+            address[3] memory winners
+        )
     {
         // get game times
         gameTimes = getGameTimes(gameId);
@@ -314,65 +352,114 @@ contract BusinessInsight is Proxied {
     }
 
     function getAccountInfo(address account)
-    public view
-    returns(bool isRegistered, bool isVerified, uint256 civicId)
+        public
+        view
+        returns (
+            bool isRegistered,
+            bool isVerified,
+            uint256 civicId
+        )
     {
-        isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER)).isRegistered(account);
-        civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB)).getCivicId(account);
+        isRegistered = Register(proxy.getContract(CONTRACT_NAME_REGISTER))
+            .isRegistered(account);
+        civicId = ProfileDB(proxy.getContract(CONTRACT_NAME_PROFILE_DB))
+            .getCivicId(account);
         isVerified = civicId > 0;
     }
 
     // ========= other getters =========
-    function getWinners(uint gameId) public view returns (address[3] memory winners) {
-        (address winner, address topBettor, address secondTopBettor) = gmGetterDB.getWinners(gameId);
+    function getWinners(uint256 gameId)
+        public
+        view
+        returns (address[3] memory winners)
+    {
+        (
+            address winner,
+            address topBettor,
+            address secondTopBettor
+        ) = gmGetterDB.getWinners(gameId);
         winners[0] = winner;
         winners[1] = topBettor;
         winners[2] = secondTopBettor;
     }
 
-    function getGameTimes(uint gameId) public view returns (uint[3] memory gameTimes) {
-        (uint startTime, uint preStartTime, uint endTime) = gmGetterDB.getGameTimes(gameId);
+    function getGameTimes(uint256 gameId)
+        public
+        view
+        returns (uint256[3] memory gameTimes)
+    {
+        (uint256 startTime, uint256 preStartTime, uint256 endTime) = gmGetterDB
+            .getGameTimes(gameId);
         gameTimes[0] = startTime;
         gameTimes[1] = preStartTime;
         gameTimes[2] = endTime;
     }
 
-    function getHoneypot(uint gameId)
-    public view
-    returns (uint[6] memory honeypotInfo, uint[2] memory ethByCorner, uint[2] memory finalHoneypot)
+    function getHoneypot(uint256 gameId)
+        public
+        view
+        returns (
+            uint256[6] memory honeypotInfo,
+            uint256[2] memory ethByCorner,
+            uint256[2] memory finalHoneypot
+        )
     {
-        // honeypot 
-        (uint status, uint initialKty, uint initialEth,
-         uint ethTotal,,uint ktyTotal, uint expTime) = gmGetterDB.getHoneypotInfo(gameId);
+        // honeypot
+        (
+            uint256 status,
+            uint256 initialKty,
+            uint256 initialEth,
+            uint256 ethTotal,
+            ,
+            uint256 ktyTotal,
+            uint256 expTime
+        ) = gmGetterDB.getHoneypotInfo(gameId);
         honeypotInfo[0] = status;
         honeypotInfo[1] = initialKty;
         honeypotInfo[2] = initialEth;
         honeypotInfo[3] = ethTotal;
         honeypotInfo[4] = ktyTotal;
         honeypotInfo[5] = expTime;
-        (,,,,ethByCorner,,) = gmGetterDB.getHoneypotInfo(gameId);
+        (, , , , ethByCorner, , ) = gmGetterDB.getHoneypotInfo(gameId);
         // final honey pot
-        (uint totalEthFinal, uint totalKtyFinal) = gmGetterDB.getFinalHoneypot(gameId);
+        (uint256 totalEthFinal, uint256 totalKtyFinal) = gmGetterDB
+            .getFinalHoneypot(gameId);
         finalHoneypot[0] = totalEthFinal;
         finalHoneypot[1] = totalKtyFinal;
     }
 
     function getMyInfo(uint256 gameId, address sender)
-    public view
-    returns(bool isSupporter, uint supportedCorner, bool isPlayerInGame, uint corner)
+        public
+        view
+        returns (
+            bool isSupporter,
+            uint256 supportedCorner,
+            bool isPlayerInGame,
+            uint256 corner
+        )
     {
-        isSupporter = genericDB.doesNodeAddrExist(CONTRACT_NAME_GM_SETTER_DB, keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)), sender);
+        isSupporter = genericDB.doesNodeAddrExist(
+            CONTRACT_NAME_GM_SETTER_DB,
+            keccak256(abi.encodePacked(gameId, TABLE_NAME_BETTOR)),
+            sender
+        );
         address supportedPlayer = genericDB.getAddressStorage(
             CONTRACT_NAME_GM_SETTER_DB,
-            keccak256(abi.encodePacked(gameId, sender, "supportedPlayer")));
+            keccak256(abi.encodePacked(gameId, sender, "supportedPlayer"))
+        );
         supportedCorner = gameManagerHelper.getCorner(gameId, supportedPlayer);
         isPlayerInGame = gmGetterDB.isPlayer(gameId, sender);
         corner = gameManagerHelper.getCorner(gameId, sender);
     }
 
-    function getPlayer(uint gameId, address player)
-    public view
-    returns(uint kittieId, uint corner, uint betsTotalEth)
+    function getPlayer(uint256 gameId, address player)
+        public
+        view
+        returns (
+            uint256 kittieId,
+            uint256 corner,
+            uint256 betsTotalEth
+        )
     {
         kittieId = gmGetterDB.getKittieInGame(gameId, player);
         corner = gameManagerHelper.getCorner(gameId, player);

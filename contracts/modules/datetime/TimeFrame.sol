@@ -400,7 +400,7 @@ contract TimeFrame is Proxied, Guard {
             restDayStart.add(REST_DAY)
         );
 
-        // emit GamingDelayAdded(_epoch_id, _gamingDelay, _restDayStart.add(_gamingDelay).add(REST_DAY));
+        emit GamingDelayAdded(_epoch_id, _gamingDelay, _restDayStart.add(_gamingDelay).add(REST_DAY));
     }
 
     /**

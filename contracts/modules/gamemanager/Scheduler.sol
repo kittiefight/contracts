@@ -440,7 +440,7 @@ contract Scheduler is Proxied, SchedulerDB {
 
     function encodeGame(Game memory game) internal pure returns (bytes memory) {
         return
-            abi.encode(
+            abi.encodePacked(
                 // game.playerRed;
                 // game.playerBlack;
                 game.kittyRed,

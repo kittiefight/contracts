@@ -283,7 +283,7 @@ contract GameManagerHelper is Proxied, Guard {
         //Set gameId to 0 to both kitties (not playing any game)
         _updateKittiesGame(kittyBlack, kittyRed, 0);
 
-        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encode("schedulerMode"))))
+        if(genericDB.getBoolStorage(CONTRACT_NAME_SCHEDULER, keccak256(abi.encodePacked("schedulerMode"))))
             scheduler.startGame();
     }
 
