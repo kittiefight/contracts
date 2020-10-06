@@ -108,7 +108,7 @@ contract TokenDistribution is Ownable {
     function withdraw(uint256 investmentID) external lock returns (bool) {
         require(investments[investmentID].investAddr == msg.sender, "You are not the investor of this investment");
         require(block.timestamp >= withdrawDate, "Can only withdraw after withdraw date");
-        require(investments[investmentID].hasClaimed == false, "Tokens already withdrawn for this investment");
+        require(!investments[investmentID].hasClaimed, "Tokens already withdrawn for this investment");
         require(investments[investmentID].ethAmount > 0, "0 ether in this investment");
 
         // get the ether amount of this investment
