@@ -79,8 +79,11 @@ contract("TokenDistribution", accounts => {
 
   it("initialize tokenDistribution contract", async () => {
     let investors = [], ethAmounts = [], eth_amount;
+    let standardRate = new BigNumber(
+      web3.utils.toWei("1000", "ether") // 1000
+    );
     let percentBonus = new BigNumber(
-      web3.utils.toWei("1000", "ether") // 1000%
+      web3.utils.toWei("0.3", "ether") // 0.3
     );
 
     for (let i = 1; i < 11; i++) {
@@ -112,6 +115,7 @@ contract("TokenDistribution", accounts => {
       ethAmounts,
       kittieFightToken.address,
       Math.floor(new Date().getTime() / 1000) + 3 * 24 * 60 * 60, // withdraw after 3 days
+      standardRate,
       percentBonus
     ).should.be.fulfilled;
 
@@ -133,7 +137,9 @@ contract("TokenDistribution", accounts => {
       }
   })
 
-  it("sets percentage bonus and withdraw date", async () => {
+  it("sets standardRate, percentage bonus and withdraw date", async () => {
+      let standardRate = await tokenDistribution.standardRate.call()
+      console.log("Standard Rate:", weiToEther(standardRate))
       let percentBonus = await tokenDistribution.percentBonus.call()
       console.log("Percentage Bonus:", weiToEther(percentBonus))
       let withdrawDate = await tokenDistribution.withdrawDate.call()
@@ -171,8 +177,10 @@ contract("TokenDistribution", accounts => {
           eth_amount = new BigNumber(
             web3.utils.toWei(weiToEther(ethAmount[1]), "ether")
           );
-          bonus = await tokenDistribution.calculateBonus(eth_amount)
-          console.log("Token Bonus calculated:", weiToEther(bonus))
+          bonus = await tokenDistribution.calculatePrincipalAndBonus(eth_amount)
+          console.log("Principal calculated:", weiToEther(bonus[0]))
+          console.log("Token Bonus calculated:", weiToEther(bonus[1]))
+          console.log("Total rewards calculated:", weiToEther(bonus[2]))
           await tokenDistribution.withdraw(Number(investmentIDs[i].toString()), { from: investor }).should.be.fulfilled;
       }
 
@@ -185,11 +193,26 @@ contract("TokenDistribution", accounts => {
         console.log('\n==== NEW WITHDRAW HAPPENED ===');
         console.log('    Investor ', e.returnValues.investor)
         console.log('    InvestmentID ', e.returnValues.investmentID)
+        console.log('    Principal ', weiToEther(e.returnValues.principal))
         console.log('    Bonus ', weiToEther(e.returnValues.bonus))
         console.log('    WithdrawTime ', e.returnValues.withdrawTime)
         console.log('========================\n')
       })
   })
+
+  it("updataes investmet info", async () => {
+    let investmentInfo;
+    for (let i = 1; i < 11; i++) {
+        investmentInfo = await tokenDistribution.getInvestment(i)
+        console.log("Investment ID:", i)
+        console.log("Investor:", investmentInfo[0])
+        console.log("Ether invested:", weiToEther(investmentInfo[1]))
+        console.log("Has bonus been claimed from this investment?", investmentInfo[2])
+        console.log("Principal Claimed:", weiToEther(investmentInfo[3]))
+        console.log("Bonus Claimed:", weiToEther(investmentInfo[4]))
+        console.log("Claim Time:", weiToEther(investmentInfo[5]))
+    }
+})
 
   it("transfers leftover rewards to a new address", async () => {
     let advancement = 10 * 24 * 60 * 60;

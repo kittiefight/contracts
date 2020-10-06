@@ -21,6 +21,8 @@ contract TokenDistribution is Ownable {
 
     uint256 constant internal base18 = 1000000000000000000;
 
+    uint256 public standardRate;
+
     uint256 public percentBonus;                        // Percentage Bonus
     uint256 public withdrawDate;                        // Withdraw Date
     uint256 public totalNumberOfInvestments;            // total number of investments
@@ -30,9 +32,10 @@ contract TokenDistribution is Ownable {
     struct Investment {
         address investAddr;
         uint256 ethAmount;
-        bool hasClaimedBonus;
+        bool hasClaimed;
+        uint256 principalClaimed;
         uint256 bonusClaimed;
-        uint256 bonusClaimTime;
+        uint256 claimTime;
     }
 
     // mapping investment number to the details of the investment
@@ -60,6 +63,7 @@ contract TokenDistribution is Ownable {
         uint256[] calldata _ethAmounts,
         ERC20Standard _erc20Token,
         uint256 _withdrawDate,
+        uint256 _standardRate,
         uint256 _percentBonus
     )
         external initializer
@@ -74,6 +78,8 @@ contract TokenDistribution is Ownable {
         // Set withdraw date
         withdrawDate = _withdrawDate;
 
+        standardRate = _standardRate;
+
         // Set percentage bonus
         percentBonus = _percentBonus;
 
@@ -86,7 +92,8 @@ contract TokenDistribution is Ownable {
     event WithDrawn(
         address indexed investor,
         uint256 indexed investmentID,
-        uint256 indexed bonus, 
+        uint256 principal,
+        uint256 bonus,
         uint256 withdrawTime
     );
 
@@ -101,20 +108,20 @@ contract TokenDistribution is Ownable {
     function withdraw(uint256 investmentID) external lock returns (bool) {
         require(investments[investmentID].investAddr == msg.sender, "You are not the investor of this investment");
         require(block.timestamp >= withdrawDate, "Can only withdraw after withdraw date");
-        require(investments[investmentID].hasClaimedBonus == false, "Tokens already withdrawn for this investment");
+        require(investments[investmentID].hasClaimed == false, "Tokens already withdrawn for this investment");
         require(investments[investmentID].ethAmount > 0, "0 ether in this investment");
 
         // get the ether amount of this investment
         uint256 _ethAmount = investments[investmentID].ethAmount;
 
-        uint256 _bonus = calculateBonus(_ethAmount);
+        (uint256 _principal, uint256 _bonus, uint256 _principalAndBonus) = calculatePrincipalAndBonus(_ethAmount);
 
-        _updateWithdraw(investmentID, _bonus);
+        _updateWithdraw(investmentID, _principal, _bonus);
 
         // transfer tokens to this investor
-        require(token.transfer(msg.sender, _bonus), "Fail to transfer tokens");
+        require(token.transfer(msg.sender, _principalAndBonus), "Fail to transfer tokens");
 
-        emit WithDrawn(msg.sender, investmentID, _bonus, block.timestamp);
+        emit WithDrawn(msg.sender, investmentID, _principal, _bonus, block.timestamp);
         return true;
     }
 
@@ -186,8 +193,13 @@ contract TokenDistribution is Ownable {
     /**
      * @return uint256 bonus tokens calculated for the amount of ether specified
      */
-    function calculateBonus(uint256 _ether) public view returns (uint256) {
-        return _ether.mul(percentBonus).div(base18);
+    function calculatePrincipalAndBonus(uint256 _ether)
+        public view returns (uint256, uint256, uint256)
+    {
+        uint256 principal = _ether.mul(standardRate).div(base18);
+        uint256 bonus = _ether.mul(percentBonus).div(base18);
+        uint256 principalAndBonus = principal.add(bonus);
+        return (principal, bonus, principalAndBonus);
     }
 
     /**
@@ -205,14 +217,15 @@ contract TokenDistribution is Ownable {
      *         have been claimed(0 if bonus tokens are not claimed yet)
      */
     function getInvestment(uint256 _investmentID) external view
-        returns(address _investAddr, uint256 _ethAmount, bool _hasClaimedBonus,
-                uint256 _bonusClaimed, uint256 _bonusClaimTime)
+        returns(address _investAddr, uint256 _ethAmount, bool _hasClaimed,
+                uint256 _principalClaimed, uint256 _bonusClaimed, uint256 _claimTime)
     {
         _investAddr = investments[_investmentID].investAddr;
         _ethAmount = investments[_investmentID].ethAmount;
-        _hasClaimedBonus = investments[_investmentID].hasClaimedBonus;
+        _hasClaimed = investments[_investmentID].hasClaimed;
+        _principalClaimed = investments[_investmentID].principalClaimed;
         _bonusClaimed = investments[_investmentID].bonusClaimed;
-        _bonusClaimTime = investments[_investmentID].bonusClaimTime;
+        _claimTime = investments[_investmentID].claimTime;
     }
     
 
@@ -223,12 +236,13 @@ contract TokenDistribution is Ownable {
      * @param _bonus uint256 tokens distributed to this investor
      * @dev this function updates the storage upon successful withdraw of tokens.
      */
-    function _updateWithdraw(uint256 _investmentID, uint256 _bonus) 
+    function _updateWithdraw(uint256 _investmentID, uint256 _principal, uint256 _bonus) 
         private
     {
-        investments[_investmentID].hasClaimedBonus = true;
+        investments[_investmentID].hasClaimed = true;
+        investments[_investmentID].principalClaimed = _principal;
         investments[_investmentID].bonusClaimed = _bonus;
-        investments[_investmentID].bonusClaimTime = block.timestamp;
+        investments[_investmentID].claimTime = block.timestamp;
         investments[_investmentID].ethAmount = 0;
     }
 
