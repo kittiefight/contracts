@@ -150,6 +150,14 @@ contract TokenDistribution is Ownable {
      * @dev Set percentage bonus. Percentage bonus is amplified 10**8 times for float precision
      * @dev This function can only be carreid out by the owner of this contract.
      */
+    function setStandardRate(uint256 _standardRate) public onlyOwner {
+        standardRate = _standardRate; 
+    }
+
+    /**
+     * @dev Set percentage bonus. Percentage bonus is amplified 10**8 times for float precision
+     * @dev This function can only be carreid out by the owner of this contract.
+     */
     function setPercentBonus(uint256 _percentBonus) public onlyOwner {
         percentBonus = _percentBonus; 
     }
