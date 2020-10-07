@@ -160,6 +160,26 @@ contract("TokenDistribution", accounts => {
     }
   });
 
+  it("only the owner can reset standard rate and percent bonus", async () => {
+    let standardRate = new BigNumber(
+      web3.utils.toWei("2000", "ether") // 2000
+    );
+    let percentBonus = new BigNumber(
+      web3.utils.toWei("0.4", "ether") // 0.5
+    );
+
+    await tokenDistribution.setStandardRate(standardRate, { from: accounts[1] }).should.be.rejected;
+    await tokenDistribution.setPercentBonus(percentBonus, { from: accounts[1] }).should.be.rejected;
+
+    await tokenDistribution.setStandardRate(standardRate).should.be.fulfilled;
+    await tokenDistribution.setPercentBonus(percentBonus).should.be.fulfilled;
+
+    standardRate = await tokenDistribution.standardRate.call();
+    console.log("Standard Rate:", weiToEther(standardRate));
+    percentBonus = await tokenDistribution.percentBonus.call();
+    console.log("Percentage Bonus:", weiToEther(percentBonus));
+  })
+
   it("an investor can withdraw after withdraw date", async () => {
     let canWithdraw = await tokenDistribution.canWithdraw();
     console.log("Can withdraw?", canWithdraw[0]);
