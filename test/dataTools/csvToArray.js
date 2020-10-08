@@ -12,7 +12,7 @@ const csv = require("fast-csv");
 let file = process.argv[2]
 let removeAddrs = process.argv[3].split(',')
 
-console.log("====================== Investment File:", file.charAt(file.length-5), "======================")
+console.log("====================== EtherScan Investment File ======================")
 console.log('\n======================  addresses ======================\n')
 
 let addressArray = [];
