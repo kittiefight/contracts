@@ -120,12 +120,6 @@ contract("TokenDistribution", accounts => {
       standardRate,
       percentBonus
     ).should.be.fulfilled;
-
-    let token_bonus = new BigNumber(
-      web3.utils.toWei("5000000", "ether") // 5 million
-    );
-
-    await kittieFightToken.transfer(tokenDistribution.address, token_bonus);
   });
 
   it("imports investmet lists", async () => {
@@ -178,6 +172,19 @@ contract("TokenDistribution", accounts => {
     console.log("Standard Rate:", weiToEther(standardRate));
     percentBonus = await tokenDistribution.percentBonus.call();
     console.log("Percentage Bonus:", weiToEther(percentBonus));
+
+    // owner tranfer tokens to the contract
+    let totalEth = await tokenDistribution.totalEtherInvested.call()
+    let total_eth = new BigNumber(
+      web3.utils.toWei(weiToEther(totalEth), "ether") // 5 million
+    );
+    let totalToken = await tokenDistribution.calculatePrincipalAndBonus(total_eth)
+    console.log("Total Token Needed for Distribution:", weiToEther(totalToken[2]))
+    let total_token = new BigNumber(
+      web3.utils.toWei(weiToEther(totalToken[2]), "ether") // 5 million
+    );
+
+    await kittieFightToken.transfer(tokenDistribution.address, total_token);
   })
 
   it("an investor can withdraw after withdraw date", async () => {
