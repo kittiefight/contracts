@@ -86,49 +86,6 @@ contract YieldsCalculator is Ownable {
     /*                                                 GETTER FUNCTIONS                                               */
     /* ============================================================================================================== */
 
-    // /**
-    //  * @notice Allocate a sepcific amount of Uniswap Liquidity tokens locked by a staker to batches
-    //  * @param _staker address the address of the staker for whom the rewards are calculated
-    //  * @param _amountLP the amount of Uniswap Liquidity tokens locked
-    //  * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-    //  * @return unit256 the Batch Number of the starting batch to which LP is allocated
-    //  * @return unit256 the Batch Number of the end batch to which LP is allocated
-    //  * @return bool true if all the LP locked in the end batch is allocated, false if there is residual
-    //            amount left in the end batch after allocation
-    //  * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
-    //  */
-    // function allocateLP(address _staker, uint256 _amountLP, uint256 _pairCode)
-    //     public view returns (uint256, uint256, uint256)
-    // {
-    //     uint256 startBatchNumber;
-    //     uint256 endBatchNumber;
-    //     uint256[] memory allBatches = yieldFarming.getAllBatchesPerPairPool(_staker, _pairCode);
-    //     uint256 residual;
-
-    //     for (uint256 m = 0; m < allBatches.length; m++) {
-    //         if (allBatches[m] > 0) {
-    //             startBatchNumber = m;
-    //             break;
-    //         }
-    //     }
-        
-    //     for (uint256 i = startBatchNumber; i < allBatches.length; i++) {
-    //         if (_amountLP <= allBatches[i]) {
-    //             if (_amountLP == allBatches[i]) {
-    //                 residual = 0;
-    //             } else {
-    //                 residual = allBatches[i].sub(_amountLP);
-    //             }
-    //             endBatchNumber = i;
-    //             break;
-    //         } else {
-    //             _amountLP = _amountLP.sub(allBatches[i]);
-    //         }
-    //     }
-
-    //     return (startBatchNumber, endBatchNumber, residual);
-    // }
-
     /**
      * @param _time uint256 The time point for which the month number is enquired
      * @return uint256 the month in which the time point _time is
@@ -336,107 +293,6 @@ contract YieldsCalculator is Ownable {
         return (rewardKTY, rewardSDAO);
     }
 
-    // function calculateRewardsByAmountCase1
-    // (address _staker, uint256 _pairCode, uint256 _amountLP,
-    //  uint256 startBatchNumber)
-    //     internal view
-    //     returns (uint256 rewardKTY, uint256 rewardSDAO)
-    // {
-    //     uint256 earlyBonus;
-    //     uint256 adjustedLockedLP;
-    //     uint256 adjustedStartingLP;
-    //     uint256 LP;
-
-    //     // // allocate _amountLP per FIFO
-    //     // (startBatchNumber, endBatchNumber, residual) = allocateLP(_staker, _amountLP, _pairCode);
-    //     if (!isBatchEligibleForRewards(_staker, startBatchNumber, _pairCode)) {
-    //         rewardKTY = 0;
-    //         rewardSDAO = 0;
-    //     } else {
-    //         (LP, adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, startBatchNumber);
-
-    //         adjustedStartingLP = _amountLP.mul(adjustedStartingLP).div(LP);
-    //         adjustedLockedLP = _amountLP.mul(adjustedLockedLP).div(LP);
-
-    //         (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, startBatchNumber, adjustedLockedLP, adjustedStartingLP);
-
-    //         // check if early mining bonus applies here
-    //         if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker,startBatchNumber, _pairCode)) {
-    //             earlyBonus = getEarlyBonus(adjustedLockedLP);
-    //             rewardKTY = rewardKTY.add(earlyBonus);
-    //             rewardSDAO = rewardKTY.add(earlyBonus);
-    //         }
-    //     }
-    // }
-
-    // function calculateRewardsByAmountCase2
-    // (address _staker, uint256 _pairCode,
-    //  uint256 startBatchNumber, uint256 endBatchNumber)
-    //     internal view
-    //     returns (uint256 rewardKTY, uint256 rewardSDAO)
-    // {
-    //     uint256 earlyBonus;
-    //     uint256 adjustedLockedLP;
-    //     uint256 adjustedStartingLP;
-
-    //     for (uint256 i = startBatchNumber; i <= endBatchNumber; i++) {
-    //         // if this batch is eligible for claiming rewards, we calculate its rewards and add to total rewards for this staker
-    //         if(isBatchEligibleForRewards(_staker, i, _pairCode)) {
-    //             // lockedLP = stakers[_staker].batchLockedLPamount[_pairCode][i];
-    //             (,adjustedLockedLP, adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, i);
-
-    //             (uint256 _KTY, uint256 _SDAO) = calculateYields2(_staker, _pairCode, i, adjustedLockedLP, adjustedStartingLP);
-
-    //             rewardKTY = rewardKTY.add(_KTY);
-    //             rewardSDAO = rewardSDAO.add(_SDAO);
-
-    //             // if eligible for early bonus, the rewards for early bonus is added for this batch
-    //             if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, i, _pairCode)) {
-    //                 earlyBonus = getEarlyBonus(adjustedLockedLP);
-    //                 rewardKTY = rewardKTY.add(earlyBonus);
-    //                 rewardSDAO = rewardSDAO.add(earlyBonus);
-    //             } 
-    //         } 
-    //     }
-        
-    // }
-    
-    // /**
-    //  * @notice Calculate the rewards (KittieFightToken and SuperDaoToken) by the amount of Uniswap Liquidity tokens 
-    //  *         locked by a staker
-    //  * @param _staker address the address of the staker for whom the rewards are calculated
-    //  * @param _pairCode uint256 Pair Code assocated with a Pair Pool 
-    //  * @return unit256 the amount of KittieFightToken rewards associated with the _amountLP lockec by this _staker
-    //  * @return unit256 the amount of SuperDaoToken rewards associated with the _amountLP lockec by this _staker
-    //  * @return uint256 the starting batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
-    //  * @return uint256 the ending batch number of deposit from which the amount of Uniswap Liquidity tokens are allocated
-    //  * @dev    FIFO (First In, First Out) is used to allocate the amount of liquidity tokens to the batches of deposits of this staker
-    //  */
-    // function calculateRewardsByAmountResidual
-    // (address _staker, uint256 _pairCode, uint256 endBatchNumber, uint256 residual)
-    //     internal view
-    //     returns (uint256 rewardKTY, uint256 rewardSDAO)
-    // {
-    //     uint256 earlyBonus;
-
-    //     // add rewards for end Batch from which only part of the locked amount is to be withdrawn
-    //     if(isBatchEligibleForRewards(_staker, endBatchNumber, _pairCode)) {
-    //         uint256 factor = yieldFarming.getFactorInBatch(_staker, _pairCode, endBatchNumber);
-
-    //         (uint256 LP,uint256 adjustedLockedLP , uint256 adjustedStartingLP,) = yieldFarming.getLPinBatch(_staker, _pairCode, endBatchNumber);
-
-    //         uint256 _adjustedStartingLP = residual.mul(adjustedStartingLP).div(LP);
-    
-    //         (rewardKTY, rewardSDAO) = calculateYields2(_staker, _pairCode, endBatchNumber, residual, _adjustedStartingLP);
-
-    //         if (block.timestamp >= yieldFarming.programEndAt() && yieldFarming.isBatchEligibleForEarlyBonus(_staker, endBatchNumber, _pairCode)) {
-    //             earlyBonus = getEarlyBonus(adjustedLockedLP);
-    //             rewardKTY = rewardKTY.add(earlyBonus);
-    //             rewardSDAO = rewardSDAO.add(earlyBonus);
-    //         }
-    //     }    
-    // }
-
     /**
      * @param _staker address the staker who has deposited Uniswap Liquidity tokens
      * @param _batchNumber uint256 the batch number of which deposit 
@@ -577,30 +433,6 @@ contract YieldsCalculator is Ownable {
         return (_rewardKTY, _rewardSDAO);
     }
 
-    // function calculateRewardsByAmount(address _staker, uint256 _LPamount, uint256 _pairCode)
-    //     public view
-    //     returns (uint256, uint256, uint256, uint256)
-    // {
-    //     // allocate _amountLP per FIFO
-    //     (uint256 startBatchNumber, uint256 endBatchNumber, uint256 residual) = allocateLP(_staker, _LPamount, _pairCode);
-    //     uint256 _KTY;
-    //     uint256 _SDAO;
-
-    //     if (startBatchNumber == endBatchNumber) {
-    //         (_KTY, _SDAO) = calculateRewardsByAmountCase1(_staker, _pairCode, _LPamount, startBatchNumber);
-          
-    //     } else if (startBatchNumber < endBatchNumber && residual == 0) {
-    //         (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber);
-           
-    //     } else if (startBatchNumber < endBatchNumber && residual > 0) {
-    //         (_KTY, _SDAO) = calculateRewardsByAmountCase2(_staker, _pairCode, startBatchNumber, endBatchNumber.sub(1));
-    //         (uint256 _KTYresidual, uint256 _SDAOresidual) = calculateRewardsByAmountResidual(_staker, _pairCode, endBatchNumber, residual);
-    //         _KTY = _KTY.add(_KTYresidual);
-    //         _SDAO = _SDAO.add(_SDAOresidual);           
-    //     }
-    //     return (_KTY, _SDAO, startBatchNumber, endBatchNumber);
-    // }
-
     function getTotalLPsLocked(address _staker) public view returns (uint256) {
         uint256 _totalPools = yieldFarming.totalNumberOfPairPools();
         uint256 _totalLPs;
@@ -610,25 +442,6 @@ contract YieldsCalculator is Ownable {
             _totalLPs = _totalLPs.add(_LP);
         }
         return _totalLPs;
-    }
-
-    /**
-     * This should actually take users address as parameter to check total LP tokens locked.
-       Then it should calculate possible APY, proportional to lp tokens locked, over the 6 month 
-       program duration. Proportional meaning, total personal amount of LP tokens LOCKED relative
-       and what total percentage of the 7000,000 KTY and SDAO tokens to be earned over the next 6 months.
-     * @return uint256 APY amplified 1000000 times to avoid float imprecision
-     */
-    function getAPY(address _staker) external view returns (uint256) {
-        uint256 totalRewards = yieldFarming.totalRewardsKTY();
-        // get total number of LPs deposited
-        uint256 totalLPs = getTotalLPsLocked(_staker);
-
-        if (totalLPs == 0) {
-            return 0;
-        }
-        // return APY calculated
-        return totalLPs.mul(base6).mul(totalRewards).div(tokensSold).div(base18);
     }
 
     /**

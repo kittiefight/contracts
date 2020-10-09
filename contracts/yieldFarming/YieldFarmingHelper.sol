@@ -223,20 +223,6 @@ contract YieldFarmingHelper is Ownable {
         }
     }
 
-    // function isDepositValid(address _staker, uint256 _depositNumber)
-    //     external view returns (bool)
-    // {
-    //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-    //     return isBatchValid(_staker, _pairCode, _batchNumber);
-    // }
-
-    // function isDepositEligibleForRewards(address _staker, uint256 _depositNumber)
-    //     external view returns (bool)
-    // {
-    //     (uint256 _pairCode, uint256 _batchNumber) = yieldFarming.getBatchNumberAndPairCode(_staker, _depositNumber); 
-    //     return yieldsCalculator.isBatchEligibleForRewards(_staker, _batchNumber, _pairCode);
-    // }
-
     /**
      * @return A staker's total LPs locked associated with a pair code, qualifying for claiming early bonus, and its values adjusted
      *         to the LP “Bubble Factor”.

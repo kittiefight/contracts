@@ -18,6 +18,7 @@ const Dai = artifacts.require("Dai");
 const DaiWethPair = artifacts.require("IDaiWethPair");
 const GNO = artifacts.require("MockGNO");
 const KtyGNOPair = artifacts.require("UniswapV2Pair");
+const KtySDAOPair = artifacts.require("UniswapV2Pair");
 
 const {assert} = require("chai");
 
@@ -112,6 +113,7 @@ contract("YieldFarming", accounts => {
         ktyGNOPair;
 
     let depositNumber;
+    let ktySDAOPairAddress;
 
     async function advanceToNextMonth () {
         const timeUntilCurrentMonthEnd = await yieldsCalculator.timeUntilCurrentMonthEnd();
@@ -147,6 +149,12 @@ contract("YieldFarming", accounts => {
         );
         ktyGNOPair = await KtyGNOPair.at(ktyGNOPairAddress);
 
+        ktySDAOPairAddress = await factory.getPair(
+            kittieFightToken.address,
+            superDaoToken.address
+        );
+        ktySDAOPair = await KtySDAOPair.at(ktySDAOPairAddress);
+
         // Owner takes weth.
         await weth.deposit({value: web3.utils.toWei('10000')});
 
@@ -166,7 +174,12 @@ contract("YieldFarming", accounts => {
         await kittieFightToken.transfer(ktyGNOPairAddress, airdropAmount);
         await gno.transfer(ktyGNOPairAddress, web3.utils.toWei('1000'));
         await ktyGNOPair.mint(owner);
-        const balance1 = await ktyGNOPair.balanceOf(owner);
+        const balance2 = await ktyGNOPair.balanceOf(owner);
+
+        await kittieFightToken.transfer(ktySDAOPairAddress, web3.utils.toWei('1000000'));
+        await superDaoToken.transfer(ktySDAOPairAddress, web3.utils.toWei('1000000'));
+        await ktySDAOPair.mint(owner);
+        const balance1 = await ktySDAOPair.balanceOf(owner);
 
         console.log(web3.utils.fromWei(balance1.toString()));
 
@@ -230,6 +243,10 @@ contract("YieldFarming", accounts => {
 
         const adjustedDeposits = await yieldFarming.adjustedMonthlyDeposits(0);
         console.log(adjustedDeposits.toString());
+
+        const APY = await yieldFarming.getAPY(ktySDAOPairAddress);
+
+        console.log(`APY:  ${web3.utils.fromWei(APY).toString()} %`);
     });
 
     it("unlocks KittieFightToken and SuperDaoToken rewards for the first month", async () => {
@@ -254,120 +271,5 @@ contract("YieldFarming", accounts => {
         kittieFightToken.transfer(yieldFarming.address, KTYrewards_month_1);
         superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_1);
         await advanceToNextMonth();
-    });
-
-    it('account 1 should be able to withdraw 100 kty-weth lps in day 61', async () => {
-        const payDay = await yieldFarmingHelper.isPayDay();
-        console.log("Is Pay Day?", payDay[0]);
-
-        const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[2]);
-        const lpKtyGnoAmount = web3.utils.toWei('30');
-        // withdraw by Deposit NUmber
-        await yieldFarming.withdrawByAmount(lpKtyGnoAmount, 8, {
-          from: accounts[2]
-        }).should.be.fulfilled;
-
-        const calculated = await yieldFarming.calculated();
-
-        console.log("To be withdrawn: ", web3.utils.fromWei(calculated));
-        const calculated1 = await yieldFarming.calculated1();
-
-        console.log("To be withdrawn1: ", web3.utils.fromWei(calculated1));
-
-        const balanceKTYafter = await kittieFightToken.balanceOf(accounts[2]);
-
-        console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
-        console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));
-    });
-
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the third month", async () => {
-        const KTYrewards_month_2 = await yieldsCalculator.getTotalKTYRewardsByMonth(2);
-        const SDAOrewards_month_2 = await yieldsCalculator.getTotalSDAORewardsByMonth(2);
-
-        console.log("KTY Rewards for Month 2:", weiToEther(KTYrewards_month_2));
-        console.log("SDAO Rewards for Month 2:", weiToEther(SDAOrewards_month_2));
-
-        kittieFightToken.transfer(yieldFarming.address, KTYrewards_month_2);
-        superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_2);
-        await advanceToNextMonth();
-    });
-
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the fourth month", async () => {
-        const KTYrewards_month_3 = await yieldsCalculator.getTotalKTYRewardsByMonth(3);
-        const SDAOrewards_month_3 = await yieldsCalculator.getTotalSDAORewardsByMonth(3);
-
-        console.log("KTY Rewards for Month 3:", weiToEther(KTYrewards_month_3));
-        console.log("SDAO Rewards for Month 3:", weiToEther(SDAOrewards_month_3));
-
-        kittieFightToken.transfer(yieldFarming.address, KTYrewards_month_3);
-        superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_3);
-        await advanceToNextMonth();
-    });
-
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the fifth month", async () => {
-        const KTYrewards_month_4 = await yieldsCalculator.getTotalKTYRewardsByMonth(4);
-        const SDAOrewards_month_4 = await yieldsCalculator.getTotalSDAORewardsByMonth(4);
-
-        console.log("KTY Rewards for Month 4:", weiToEther(KTYrewards_month_4));
-        console.log("SDAO Rewards for Month 4:", weiToEther(SDAOrewards_month_4));
-
-        kittieFightToken.transfer(yieldFarming.address, KTYrewards_month_4);
-        superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_4);
-        await advanceToNextMonth();
-    });
-
-    it("unlocks KittieFightToken and SuperDaoToken rewards for the sixth month", async () => {
-        const KTYrewards_month_5 = await yieldsCalculator.getTotalKTYRewardsByMonth(5);
-        const SDAOrewards_month_5 = await yieldsCalculator.getTotalSDAORewardsByMonth(5);
-
-        console.log("KTY Rewards for Month 5:", weiToEther(KTYrewards_month_5));
-        console.log("SDAO Rewards for Month 5:", weiToEther(SDAOrewards_month_5));
-
-        kittieFightToken.transfer(yieldFarming.address, KTYrewards_month_5);
-        superDaoToken.transfer(yieldFarming.address, SDAOrewards_month_5);
-        await advanceToNextMonth();
-    });
-
-    it('account 2 should be able to withdraw 100 kty-weth lps in day 61', async () => {
-        const payDay = await yieldFarmingHelper.isPayDay();
-        console.log("Is Pay Day?", payDay[0]);
-
-        const lpKtyWethAmount = web3.utils.toWei('10');
-
-        const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[1]);
-
-        // withdraw by Deposit NUmber
-        await yieldFarming.withdrawByAmount(lpKtyWethAmount, 0, {
-          from: accounts[1]
-        }).should.be.fulfilled;
-
-        const balanceKTYafter = await kittieFightToken.balanceOf(accounts[1]);
-
-        console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
-        console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));
-    });
-
-    it('account 1 should be able to withdraw 100 kty-weth lps in day 61', async () => {
-        const payDay = await yieldFarmingHelper.isPayDay();
-        console.log("Is Pay Day?", payDay[0]);
-
-        const balanceKTYbefore = await kittieFightToken.balanceOf(accounts[2]);
-        const lpKtyGnoAmount = web3.utils.toWei('20');
-        // withdraw by Deposit NUmber
-        await yieldFarming.withdrawByAmount(lpKtyGnoAmount, 8, {
-          from: accounts[2]
-        }).should.be.fulfilled;
-
-        const calculated = await yieldFarming.calculated();
-
-        console.log("To be withdrawn: ", web3.utils.fromWei(calculated));
-        const calculated1 = await yieldFarming.calculated1();
-
-        console.log("To be withdrawn1: ", web3.utils.fromWei(calculated1));
-
-        const balanceKTYafter = await kittieFightToken.balanceOf(accounts[2]);
-
-        console.log("Balance before withdrawal: ", web3.utils.fromWei(balanceKTYbefore));
-        console.log("Balance after withdrawal: ", web3.utils.fromWei(balanceKTYafter));
     });
 });
