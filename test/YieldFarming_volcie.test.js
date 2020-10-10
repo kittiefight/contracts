@@ -360,6 +360,54 @@ contract("YieldFarming", accounts => {
     );
   });
 
+  it("users provides liquidity to Uniswap KTY-SDAO pool", async () => {
+    const sdao_amount = new BigNumber(
+      web3.utils.toWei("25000", "ether") // 
+    );
+
+    const kty_amount = new BigNumber(
+      web3.utils.toWei("50000", "ether") //
+    );
+
+    let balanceLP;
+
+    for (let i = 1; i < 19; i++) {
+      await kittieFightToken.transfer(accounts[i], kty_amount);
+      await kittieFightToken.transfer(ktySDAOPair.address, kty_amount, {
+        from: accounts[i]
+      });
+      await superDaoToken.transfer(accounts[i], sdao_amount);
+      await superDaoToken.transfer(ktySDAOPair.address, sdao_amount, {
+        from: accounts[i]
+      });
+      await ktySDAOPair.mint(accounts[i], {from: accounts[i]});
+
+      balanceLP = await ktySDAOPair.balanceOf(accounts[i]);
+
+      console.log(
+        "User",
+        i,
+        ": Balance of Uniswap Liquidity tokens:",
+        weiToEther(balanceLP)
+      );
+    }
+
+    let totalSupplyLP = await ktySDAOPair.totalSupply();
+    console.log(
+      "Total Supply of Uniswap Liquidity tokens in KTY-SDAO:",
+      weiToEther(totalSupplyLP)
+    );
+
+    // check balance of pair contract
+    let ktyBalance = await kittieFightToken.balanceOf(ktySDAOPair.address);
+    console.log("KTY balance of KTY-SDAO pair contract:", ktyBalance.toString());
+    let sdaoBalancce = await superDaoToken.balanceOf(ktySDAOPair.address);
+    console.log(
+      "SDAO balance of KTY-SDAO pair contract:",
+      sdaoBalancce.toString()
+    );
+  });
+
   // ==============================  FIRST MONTH: MONTH 0  ==============================
 
   it("calculates the relational factor reflecting the true intrinsic value of LP from differet pools", async () => {
@@ -671,12 +719,14 @@ contract("YieldFarming", accounts => {
   it("calculates APY, reward multiplier, and accrued rewards for a user", async () => {
     let totalLPs = await yieldsCalculator.getTotalLPsLocked(accounts[17]);
     console.log("Total LPs locked:", weiToEther(totalLPs));
-    let APY = await yieldsCalculator.getAPY(accounts[17]);
+    let APY = await yieldFarming.getAPY(ktySDAOPair.address);
+    let expectedPrice_KTY_SDAO = await yieldFarming.getExpectedPrice_KTY_SDAO(ktySDAOPair.address)
     let rewardMultiplier = await yieldsCalculator.getRewardMultipliers(
       accounts[18]
     );
     let accruedRewards = await yieldsCalculator.getAccruedRewards(accounts[17]);
-    console.log("APY:", APY.toString());
+    console.log("APY:", weiToEther(APY));
+    console.log("expectedPrice_KTY_SDAO", weiToEther(expectedPrice_KTY_SDAO));
     console.log("KTY Reward Multiplier:", rewardMultiplier[0].toString());
     console.log("KTY Reward Multiplier:", rewardMultiplier[1].toString());
     console.log("Accrued KTY Rewards:", weiToEther(accruedRewards[0]));

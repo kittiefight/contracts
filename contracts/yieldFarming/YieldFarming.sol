@@ -16,6 +16,7 @@ import "../uniswapKTY/uniswap-v2-core/interfaces/IERC20.sol";
 import "./YieldFarmingHelper.sol";
 import "./YieldsCalculator.sol";
 import '../interfaces/IVolcieToken.sol';
+import '../uniswapKTY/uniswap-v2-periphery/libraries/UniswapV2Library.sol';
 
 contract YieldFarming is Ownable {
     using SafeMath for uint256;
@@ -636,10 +637,19 @@ contract YieldFarming is Ownable {
         return base18.mul(200).mul(lockedKTYs.add(totalRewardsInKTY)).div(lockedKTYs);
     }
 
+    /**
+     * @dev returns the SDAO KTY price on uniswap, that is, how many KTYs for 1 SDAO
+     */
     function getExpectedPrice_KTY_SDAO(address _pair_KTY_SDAO) public view returns (uint256) {
-        uint256 KTYbalance = kittieFightToken.balanceOf(_pair_KTY_SDAO);
-        uint256 SDAObalance = superDaoToken.balanceOf(_pair_KTY_SDAO);
-        return KTYbalance.mul(base18).div(SDAObalance);
+        // uint256 KTYbalance = kittieFightToken.balanceOf(_pair_KTY_SDAO);
+        // uint256 SDAObalance = superDaoToken.balanceOf(_pair_KTY_SDAO);
+        // return KTYbalance.mul(base18).div(SDAObalance);
+
+        uint256 _amountSDAO = 1e18;  // 1 SDAO
+        (uint256 _reserveKTY, uint256 _reserveSDAO) = yieldFarmingHelper.getReserve(
+            address(kittieFightToken), address(superDaoToken), _pair_KTY_SDAO
+            );
+        return UniswapV2Library.getAmountIn(_amountSDAO, _reserveKTY, _reserveSDAO);
     }
 
     /*                                                 PRIVATE FUNCTIONS                                             */
