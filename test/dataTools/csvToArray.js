@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const csv = require("fast-csv");
 
+const BigNumber = require('bignumber.js')
+
 // node test/dataTools/csvToArray.js "investments2.csv" ''
 
 // if want to exclude an address, put the address inside ''
@@ -28,7 +30,8 @@ function addInvestment(addr, eth) {
         }
     }
   addressArray.push(addr);
-  ethArray.push(Number(eth) * 1000000000000000000);
+  let x = new BigNumber(eth)
+  ethArray.push(x.times(1000000000000000000));
 }
 
 fs.createReadStream(path.resolve(__dirname, "csvFiles", file))
