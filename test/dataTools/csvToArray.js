@@ -19,6 +19,9 @@ let addressArray = [];
 let ethArray = []
 
 function addInvestment(addr, eth) {
+    if (eth == 0) {
+      return;
+    }
     for (let i=0; i<removeAddrs.length; i++) {
         if (addr == removeAddrs[i]) {
             return;
